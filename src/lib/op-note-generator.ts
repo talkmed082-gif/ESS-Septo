@@ -94,6 +94,23 @@ function hasPolypAt(sideName: "좌측" | "우측", values: FieldValues): boolean
   return bool(values, sideKey) || centralKeys.some((k) => bool(values, k));
 }
 
+// ---------- Turbinoplasty (비중격교정술/FESS 공통) ----------
+
+const turbinateFields: { key: string; side: "좌측" | "우측"; label: string }[] = [
+  { key: "turb_middle_left", side: "좌측", label: "중비갑개" },
+  { key: "turb_inferior_left", side: "좌측", label: "하비갑개" },
+  { key: "turb_middle_right", side: "우측", label: "중비갑개" },
+  { key: "turb_inferior_right", side: "우측", label: "하비갑개" },
+];
+
+function turbinateLabelsForSide(side: "좌측" | "우측", values: FieldValues): string[] {
+  return turbinateFields.filter((f) => f.side === side && bool(values, f.key)).map((f) => f.label);
+}
+
+function allTurbinateItems(values: FieldValues): string[] {
+  return turbinateFields.filter((f) => bool(values, f.key)).map((f) => `${f.side} ${f.label}`);
+}
+
 // ---------- 비중격교정술 ----------
 
 const incisionNames: Record<string, string> = {
@@ -111,7 +128,7 @@ function septoCore(values: FieldValues): string[] {
   const incision = str(values, "s_incision", "Hemitransfixion incision");
   const caudal = bool(values, "s_caudal");
   const spur = bool(values, "s_spur");
-  const turb = bool(values, "s_turb");
+  const turbItems = allTurbinateItems(values);
   const debrider = bool(values, "s_debrider");
   const splint = bool(values, "s_splint");
   const quiltingSuture = str(values, "s_quilting_suture", "4-0 chromic catgut");
@@ -123,7 +140,7 @@ function septoCore(values: FieldValues): string[] {
     spur && "골성 비중격(perpendicular plate of ethmoid, vomer)에서 bony spur를 확인하고 제거함",
     "확인된 편위 부위의 변형된 septal cartilage 및 골성 비중격 일부를 절제 및 교정하여 straightening 후 정중앙에 위치시킴",
     debrider && "Microdebrider를 이용하여 골성 및 연골성 비중격 조작을 보조적으로 시행함",
-    turb && "동반된 하비갑개 비후 소견에 대해 양측 하비갑개 점막하 절제술을 함께 시행함",
+    turbItems.length > 0 && `${turbItems.join(", ")}에 대해 축소술(turbinoplasty)을 함께 시행함`,
     `Flap을 원위치로 정복한 후 ${quiltingSuture}를 사용하여 quilting suture 시행`,
     splint && `양측 비강에 silastic splint를 삽입하고 ${splintSuture}로 관통 봉합하여 고정함`,
   ];
@@ -148,7 +165,6 @@ function genSeptoplasty(values: FieldValues, mode: OpNoteMode, anesLabel: string
 // ---------- FESS ----------
 
 const fessStepSentences: Record<(typeof fessStepFieldKeys)[number], string> = {
-  uncinectomy: "Uncinectomy 시행",
   mma: "Middle meatal antrostomy를 통해 상악동 자연공 확장",
   ant_eth: "Anterior ethmoidectomy 시행",
   post_eth: "Posterior ethmoidectomy 시행",
@@ -162,12 +178,23 @@ function fessSideBlock(
   debriderUsed: boolean,
   values: FieldValues,
 ): string[] {
+  const selectedSteps = fessStepFieldKeys.filter((key) => bool(values, `${prefix}${key}`));
   const block: string[] = [`[${sideName}] 내시경(0°/30°)을 이용하여 수술을 진행함`];
-  for (const key of fessStepFieldKeys) {
-    if (bool(values, `${prefix}${key}`)) {
+
+  if (selectedSteps.length > 0) {
+    // Uncinectomy는 FESS 진행 시 당연히 선행되는 조작이라 선택 항목에는 없지만
+    // 기록지에는 항상 포함시킨다.
+    block.push(`[${sideName}] Uncinectomy 시행`);
+    for (const key of selectedSteps) {
       block.push(`[${sideName}] ${fessStepSentences[key]}`);
     }
   }
+
+  const turbLabels = turbinateLabelsForSide(sideName, values);
+  if (turbLabels.length > 0) {
+    block.push(`[${sideName}] ${turbLabels.join(", ")} 축소술(turbinoplasty) 시행`);
+  }
+
   if (hasPolypAt(sideName, values)) {
     block.push(
       `[${sideName}] 관찰된 비용종은 ` +
@@ -283,7 +310,6 @@ function septoConciseItems(values: FieldValues, includePacking: boolean): string
     incision,
     bool(values, "s_caudal") && "Caudal septum 편위 교정",
     bool(values, "s_spur") && "Bony spur 제거",
-    bool(values, "s_turb") && "하비갑개 축소술(SMR) 병행",
     bool(values, "s_debrider") && "Microdebrider 사용",
     bool(values, "s_splint") && "Silastic splint 삽입",
   ];
@@ -313,8 +339,11 @@ function fessConciseItems(values: FieldValues, includePacking: boolean): string[
 }
 
 function planItemsFor(surgeryCode: BuiltInSurgeryCode, values: FieldValues): string[] {
-  if (surgeryCode === "SEPTOPLASTY") return septoConciseItems(values, true);
-  if (surgeryCode === "ESS") return fessConciseItems(values, true);
+  const turbItems = allTurbinateItems(values);
+  const turbLine = turbItems.length > 0 ? [`Turbinoplasty: ${turbItems.join(", ")}`] : [];
+
+  if (surgeryCode === "SEPTOPLASTY") return [...septoConciseItems(values, true), ...turbLine];
+  if (surgeryCode === "ESS") return [...fessConciseItems(values, true), ...turbLine];
 
   const order = str(values, "c_order", "비중격 → 좌 FESS → 우 FESS");
   return [
@@ -323,15 +352,64 @@ function planItemsFor(surgeryCode: BuiltInSurgeryCode, values: FieldValues): str
     ...septoConciseItems(values, false).map((i) => `  - ${i}`),
     "[FESS]",
     ...fessConciseItems(values, false).map((i) => `  - ${i}`),
+    ...turbLine,
     `공통 packing: ${str(values, "c_pack", "Nasopore")} 예정`,
   ];
 }
 
 export function generatePlanSummary(surgeryCode: BuiltInSurgeryCode, values: FieldValues): string {
+  const procedureName = buildProcedureName(surgeryCode, values);
   const findings = nasalFindingsText(values);
   const items = planItemsFor(surgeryCode, values);
   const bulletList = items.map((i) => (i.startsWith("[") || i.startsWith("  -") ? i : `- ${i}`)).join("\n");
-  return `[비강 소견]\n${findings}\n\n[예정 술식]\n${bulletList}`;
+  return `수술명: ${procedureName}\n\n[비강 소견]\n${findings}\n\n[예정 술식]\n${bulletList}`;
+}
+
+// ---------- 수술명(Procedure name) 자동 생성 ----------
+
+const fessRegionOrder = ["Frontal", "Ethmoid", "Maxillary", "Sphenoid"] as const;
+const fessStepToRegion: Partial<Record<(typeof fessStepFieldKeys)[number], (typeof fessRegionOrder)[number]>> = {
+  frontal: "Frontal",
+  ant_eth: "Ethmoid",
+  post_eth: "Ethmoid",
+  mma: "Maxillary",
+  sphenoid: "Sphenoid",
+};
+
+function fessRegionsForSide(prefix: "f_left_" | "f_right_", values: FieldValues): string[] {
+  const regions = new Set<string>();
+  for (const key of fessStepFieldKeys) {
+    if (bool(values, `${prefix}${key}`)) {
+      const region = fessStepToRegion[key];
+      if (region) regions.add(region);
+    }
+  }
+  return fessRegionOrder.filter((r) => regions.has(r));
+}
+
+function buildFessProcedureName(values: FieldValues, label: string): string {
+  const left = fessRegionsForSide("f_left_", values);
+  const right = fessRegionsForSide("f_right_", values);
+
+  if (left.length === 0 && right.length === 0) return label;
+
+  const sameSet = left.length === right.length && left.every((r, i) => r === right[i]);
+  if (left.length > 0 && right.length > 0 && sameSet) {
+    return `Both ${label}(${left.join(", ")})`;
+  }
+
+  const parts: string[] = [];
+  if (right.length > 0) parts.push(`Rt. ${label}(${right.join(", ")})`);
+  if (left.length > 0) parts.push(`Lt. ${label}(${left.join(", ")})`);
+  return parts.join(", ");
+}
+
+export function buildProcedureName(surgeryCode: BuiltInSurgeryCode, values: FieldValues): string {
+  const turbSuffix = allTurbinateItems(values).length > 0 ? " + Turbinoplasty" : "";
+
+  if (surgeryCode === "SEPTOPLASTY") return `Septoplasty${turbSuffix}`;
+  if (surgeryCode === "ESS") return `${buildFessProcedureName(values, "ESS")}${turbSuffix}`;
+  return `Septoplasty + ${buildFessProcedureName(values, "ESS")}${turbSuffix}`;
 }
 
 // ---------- Op Plan 표 형식 (인쇄용 — 내시경 앞에 붙여두고 한눈에 보는 용도) ----------
@@ -348,6 +426,7 @@ export interface PlanSideMatrixRow {
 }
 
 export interface PlanTable {
+  procedureName: string;
   findings: string;
   keyValueRows: PlanKeyValueRow[];
   sideMatrix?: { title: string; rows: PlanSideMatrixRow[] };
@@ -365,15 +444,21 @@ function fessSideMatrix(values: FieldValues): { title: string; rows: PlanSideMat
 }
 
 export function buildPlanTable(surgeryCode: BuiltInSurgeryCode, values: FieldValues): PlanTable {
+  const procedureName = buildProcedureName(surgeryCode, values);
   const findings = nasalFindingsText(values);
+  const turbItems = allTurbinateItems(values);
+  const turbRow: PlanKeyValueRow[] =
+    turbItems.length > 0 ? [{ label: "Turbinoplasty", value: turbItems.join(", ") }] : [];
 
   if (surgeryCode === "SEPTOPLASTY") {
     const [incision, ...rest] = septoConciseItems(values, false);
     return {
+      procedureName,
       findings,
       keyValueRows: [
         { label: "절개", value: incision },
         { label: "동반 술식", value: rest.length > 0 ? rest.join(", ") : "-" },
+        ...turbRow,
         { label: "Packing", value: str(values, "s_pack", "Merocel") },
       ],
     };
@@ -381,8 +466,10 @@ export function buildPlanTable(surgeryCode: BuiltInSurgeryCode, values: FieldVal
 
   if (surgeryCode === "ESS") {
     return {
+      procedureName,
       findings,
       keyValueRows: [
+        ...turbRow,
         { label: "Navigation", value: bool(values, "f_nav") ? "사용" : "미사용" },
         { label: "Packing", value: str(values, "f_pack", "Nasopore") },
       ],
@@ -392,11 +479,13 @@ export function buildPlanTable(surgeryCode: BuiltInSurgeryCode, values: FieldVal
 
   const [incision, ...rest] = septoConciseItems(values, false);
   return {
+    procedureName,
     findings,
     keyValueRows: [
       { label: "시행 순서", value: str(values, "c_order", "비중격 → 좌 FESS → 우 FESS") },
       { label: "절개(비중격)", value: incision },
       { label: "동반 술식(비중격)", value: rest.length > 0 ? rest.join(", ") : "-" },
+      ...turbRow,
       { label: "Packing(공통)", value: str(values, "c_pack", "Nasopore") },
     ],
     sideMatrix: fessSideMatrix(values),

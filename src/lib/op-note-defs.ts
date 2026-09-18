@@ -26,6 +26,11 @@ export const nasalFindingFields: SurgeryFieldDef[] = [
   { key: "n_polyp_maxillary", label: "비용종 - 상악동 자연공", type: "checkbox" },
   { key: "n_polyp_sphenoid", label: "비용종 - 접형동", type: "checkbox" },
   { key: "n_polyp_choana", label: "비용종 - 후비공까지 연장", type: "checkbox" },
+  // Turbinoplasty — 비중격교정술/FESS 어느 쪽에도 단독 또는 동반될 수 있어 공통 항목으로 둠
+  { key: "turb_middle_left", label: "중비갑개 축소술 - 좌측", type: "checkbox" },
+  { key: "turb_middle_right", label: "중비갑개 축소술 - 우측", type: "checkbox" },
+  { key: "turb_inferior_left", label: "하비갑개 축소술 - 좌측", type: "checkbox" },
+  { key: "turb_inferior_right", label: "하비갑개 축소술 - 우측", type: "checkbox" },
 ];
 
 // 비중격교정술 전용 항목
@@ -44,7 +49,6 @@ export const septoFields: SurgeryFieldDef[] = [
   },
   { key: "s_caudal", label: "Caudal septum 편위 동반 교정", type: "checkbox" },
   { key: "s_spur", label: "Bony spur 제거", type: "checkbox" },
-  { key: "s_turb", label: "하비갑개 축소술(SMR) 병행", type: "checkbox" },
   { key: "s_debrider", label: "Microdebrider 사용", type: "checkbox" },
   { key: "s_splint", label: "Silastic splint 삽입", type: "checkbox" },
   {
@@ -73,18 +77,11 @@ export const septoFields: SurgeryFieldDef[] = [
   },
 ];
 
-// FESS 좌/우 각각 시행 술식
-export const fessStepFieldKeys = [
-  "uncinectomy",
-  "mma",
-  "ant_eth",
-  "post_eth",
-  "sphenoid",
-  "frontal",
-] as const;
+// FESS 좌/우 각각 시행 술식 — Uncinectomy는 FESS 시행 시 당연히 포함되는 기본
+// 조작이라 선택 항목에서는 빼고, 기록지 서술문 생성 시 자동으로 포함시킨다.
+export const fessStepFieldKeys = ["mma", "ant_eth", "post_eth", "sphenoid", "frontal"] as const;
 
 export const fessStepLabels: Record<(typeof fessStepFieldKeys)[number], string> = {
-  uncinectomy: "Uncinectomy",
   mma: "MMA (Middle meatal antrostomy)",
   ant_eth: "Ant. ethmoidectomy",
   post_eth: "Post. ethmoidectomy",

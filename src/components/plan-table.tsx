@@ -10,8 +10,12 @@ export function PlanTableView({
   const textSize = size === "large" ? "text-lg" : "text-sm";
   const cellPad = size === "large" ? "px-3 py-2.5" : "px-2 py-1.5";
 
+  const nameSize = size === "large" ? "text-2xl" : "text-base";
+
   return (
     <div className="space-y-4">
+      <p className={`${nameSize} font-bold`}>{table.procedureName}</p>
+
       <div className={`${textSize} whitespace-pre-wrap rounded-md border border-slate-300 bg-slate-50 p-3`}>
         <span className="font-semibold">비강 소견: </span>
         {table.findings}

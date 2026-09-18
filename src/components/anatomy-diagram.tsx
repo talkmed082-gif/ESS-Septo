@@ -8,7 +8,7 @@ const SINUS_STEPS: { key: string; label: string }[] = [
   { key: "ant_eth", label: "Ant. Ethmoid" },
   { key: "post_eth", label: "Post. Ethmoid" },
   { key: "sphenoid", label: "Sphenoid" },
-  { key: "maxillary", label: "Maxillary" },
+  { key: "mma", label: "Maxillary" },
 ];
 
 // 모식도가 대신 담당하는 필드 키 목록 — 같은 항목이 아래 체크리스트에도 중복으로

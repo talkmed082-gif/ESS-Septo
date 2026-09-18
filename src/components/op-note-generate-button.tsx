@@ -3,7 +3,12 @@
 import { useState } from "react";
 import { fieldValuesFromFormData, type SurgeryFieldDef } from "@/lib/field-types";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
-import { generateOpNote, generatePlanSummary, type OpNoteMode } from "@/lib/op-note-generator";
+import {
+  buildProcedureName,
+  generateOpNote,
+  generatePlanSummary,
+  type OpNoteMode,
+} from "@/lib/op-note-generator";
 
 function setFieldValue(form: HTMLFormElement, name: string, value: string) {
   const el = form.elements.namedItem(name);
@@ -43,6 +48,7 @@ export function OpNoteGenerateButton({
         mode,
         typeof anesthesiaType === "string" ? anesthesiaType : undefined,
       );
+      setFieldValue(form, "procedureName", buildProcedureName(code, values));
       setFieldValue(form, "findings", result.findings);
       setFieldValue(form, "procedureDetail", result.procedureDetail);
     }
