@@ -14,7 +14,7 @@
 ## 기술 스택
 
 - Next.js 16 (App Router, Server Actions)
-- Prisma 7 + SQLite (`@prisma/adapter-better-sqlite3`)
+- Prisma 7 + PostgreSQL (`@prisma/adapter-pg`)
 - jose 기반 stateless 세션 인증 (httpOnly 쿠키)
 - Tailwind CSS 4
 
@@ -22,7 +22,7 @@
 
 ```bash
 npm install
-cp .env.example .env   # SESSION_SECRET 값을 openssl rand -base64 32 로 생성해서 채워주세요
+cp .env.example .env   # DATABASE_URL(Postgres 연결 문자열), SESSION_SECRET(openssl rand -base64 32) 채워주세요
 npx prisma migrate deploy
 npx prisma db seed     # ESS / 비중격교정술 기본 수술 종류 생성
 npm run dev
@@ -38,5 +38,17 @@ http://localhost:3000 접속 후 회원가입으로 계정을 만들어 사용�
 
 ## 데이터베이스
 
-기본값은 로컬 SQLite(`dev.db`)입니다. 운영 환경에서는 `DATABASE_URL`을 원하는 데이터베이스로
-바꾸고, `@prisma/adapter-better-sqlite3` 대신 해당 DB용 Prisma 드라이버 어댑터로 교체하면 됩니다.
+PostgreSQL을 사용합니다. 로컬 개발 시 `docker run -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:16`
+같은 방식으로 로컬 Postgres를 띄우거나, Vercel Postgres/Neon/Supabase 등 클라우드 DB의 연결
+문자열을 `DATABASE_URL`에 넣어 사용하면 됩니다.
+
+## Vercel 배포
+
+1. 이 저장소를 GitHub에 연결한 Vercel 프로젝트를 만듭니다.
+2. Vercel 대시보드의 Storage 탭에서 Postgres(Neon)를 추가합니다 — 프로젝트에 자동으로
+   `DATABASE_URL`(혹은 `POSTGRES_PRISMA_URL`) 환경 변수가 연결됩니다. 서버리스 환경에서는
+   반드시 커넥션 풀링이 적용된 URL을 사용하세요(Neon의 `-pooler` 호스트).
+3. `SESSION_SECRET` 환경 변수를 Vercel 프로젝트 설정에 추가합니다 (`openssl rand -base64 32`).
+4. 빌드 시 `prisma migrate deploy`가 자동 실행되도록 `package.json`의 `build` 스크립트가
+   구성되어 있습니다. 최초 배포 후 `npx prisma db seed`를 로컬에서 프로덕션 `DATABASE_URL`로
+   한 번 실행해 기본 수술 종류(ESS/비중격교정술)를 넣어주세요.
