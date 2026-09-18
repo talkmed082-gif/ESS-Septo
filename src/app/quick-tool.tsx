@@ -100,7 +100,7 @@ export function QuickTool({
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <form ref={formRef} onChange={regenerateFromForm} className="space-y-4">
+      <form ref={formRef} className="space-y-4">
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">수술 종류</label>
           <select
@@ -133,13 +133,21 @@ export function QuickTool({
 
         {selected && (
           <div key={selected.id} className="space-y-4">
-            <AnatomyPicker surgeryTypeCode={selected.code} onChange={regenerateFromForm} />
+            <AnatomyPicker surgeryTypeCode={selected.code} />
             <SurgeryFieldInputs
               fields={selected.fields}
               excludeKeys={getAnatomyCoveredKeys(selected.code)}
             />
           </div>
         )}
+
+        <button
+          type="button"
+          onClick={regenerateFromForm}
+          className="w-full rounded-md border border-emerald-600 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
+        >
+          위 항목으로 미리보기 생성 / 새로고침
+        </button>
       </form>
 
       <div className="space-y-4">
@@ -158,7 +166,8 @@ export function QuickTool({
           <pre className="whitespace-pre-wrap font-sans text-sm text-slate-800">{recordText}</pre>
         </div>
         <p className="text-xs text-slate-500">
-          자동 생성된 초안입니다. 실제 소견에 맞게 검토 후 사용해주세요.
+          자동 생성된 초안입니다. 항목을 바꾼 뒤에는 왼쪽의 &quot;미리보기 생성 / 새로고침&quot;을 눌러야 반영됩니다.
+          실제 소견에 맞게 검토 후 사용해주세요.
           {!loggedIn && (
             <>
               {" "}
