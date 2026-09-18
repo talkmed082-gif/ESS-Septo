@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
 import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
 import { createOpRecord } from "@/app/actions/op-records";
-import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
+import { buildProcedureName, generateOpNote, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
+import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
 import { RecordForm } from "../../../records/record-form";
 
 export default async function NewOpRecordPage({
@@ -29,6 +30,11 @@ export default async function NewOpRecordPage({
   const fields = parseFieldDefs(plan.surgeryType.fields);
   const planValues = parseFieldValues(plan.planData);
   const action = createOpRecord.bind(null, planId);
+
+  const code = plan.surgeryType.code;
+  const auto = isBuiltInSurgeryCode(code)
+    ? { procedureName: buildProcedureName(code, planValues, nameStyle), ...generateOpNote(code, planValues, "record") }
+    : { procedureName: "", findings: "", procedureDetail: "" };
 
   return (
     <div className="max-w-lg">
@@ -56,9 +62,9 @@ export default async function NewOpRecordPage({
           anesthesiaType: "General",
           preOpDiagnosis: plan.diagnosis ?? "",
           postOpDiagnosis: plan.diagnosis ?? "",
-          procedureName: "",
-          findings: "",
-          procedureDetail: "",
+          procedureName: auto.procedureName,
+          findings: auto.findings,
+          procedureDetail: auto.procedureDetail,
           complication: "없음",
           estimatedBloodLoss: "Minimal",
           specimen: "없음",
