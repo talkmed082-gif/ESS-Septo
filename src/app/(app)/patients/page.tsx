@@ -26,19 +26,25 @@ export default async function PatientsPage({
         }
       : undefined,
     orderBy: { createdAt: "desc" },
-    include: { opPlans: { select: { id: true, status: true, plannedDate: true } } },
+    include: { opPlans: { select: { id: true, plannedDate: true } } },
   });
 
   const rows: PatientRow[] = patients.map((p) => {
-    const dates = p.opPlans.map((pl) => pl.plannedDate).filter((d): d is Date => d !== null);
-    const latest = dates.length > 0 ? new Date(Math.max(...dates.map((d) => d.getTime()))) : null;
+    const withDates = p.opPlans.filter(
+      (pl): pl is typeof pl & { plannedDate: Date } => pl.plannedDate !== null,
+    );
+    const latestPlan =
+      withDates.length > 0
+        ? withDates.reduce((a, b) => (a.plannedDate > b.plannedDate ? a : b))
+        : null;
     return {
       id: p.id,
       name: p.name,
       chartNo: p.chartNo,
       sex: p.sex,
       birthDate: toDateStr(p.birthDate),
-      surgeryDate: toDateStr(latest),
+      surgeryDate: toDateStr(latestPlan?.plannedDate),
+      surgeryPlanId: latestPlan?.id ?? null,
       planCount: p.opPlans.length,
     };
   });

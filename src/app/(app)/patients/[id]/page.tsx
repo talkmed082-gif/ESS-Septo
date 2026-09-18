@@ -72,14 +72,14 @@ export default async function PatientDetailPage({
           수술 계획 / 기록지
         </h2>
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-          <table className="w-full text-sm">
+          <table className="w-full table-fixed text-sm">
             <thead className="bg-slate-50 text-left text-slate-500">
               <tr>
                 <th className="px-4 py-2 font-medium">수술 이름</th>
-                <th className="px-4 py-2 font-medium">예정일</th>
-                <th className="px-4 py-2 font-medium">비강/영상 소견</th>
-                <th className="px-4 py-2 font-medium">Op Plan</th>
-                <th className="px-4 py-2 font-medium">수술 기록지</th>
+                <th className="w-24 px-4 py-2 font-medium sm:w-28">예정일</th>
+                <th className="hidden px-4 py-2 font-medium sm:table-cell">비강/영상 소견</th>
+                <th className="hidden w-20 px-4 py-2 font-medium sm:table-cell">Op Plan</th>
+                <th className="w-20 px-4 py-2 font-medium sm:w-24">수술 기록지</th>
               </tr>
             </thead>
             <tbody>
@@ -94,7 +94,7 @@ export default async function PatientDetailPage({
                   : "-";
                 return (
                   <tr key={plan.id} className="border-t border-slate-100 hover:bg-slate-50">
-                    <td className="px-4 py-2 font-medium text-slate-900">
+                    <td className="truncate px-4 py-2 font-medium text-slate-900">
                       <Link href={`/plans/${plan.id}`} className="hover:underline">
                         {procedureName}
                       </Link>
@@ -102,22 +102,22 @@ export default async function PatientDetailPage({
                         <span className="ml-1 font-normal text-slate-500">({plan.side})</span>
                       )}
                     </td>
-                    <td className="px-4 py-2 text-slate-600">
+                    <td className="truncate px-4 py-2 text-slate-600">
                       <Link href={`/plans/${plan.id}`} className="hover:underline">
                         {plan.plannedDate ? plan.plannedDate.toISOString().slice(0, 10) : "입력"}
                       </Link>
                     </td>
-                    <td className="max-w-xs px-4 py-2 text-slate-600">
+                    <td className="hidden truncate px-4 py-2 text-slate-600 sm:table-cell">
                       <Link href={`/plans/${plan.id}`} className="hover:underline">
                         {findings}
                       </Link>
                     </td>
-                    <td className="px-4 py-2">
+                    <td className="hidden truncate px-4 py-2 sm:table-cell">
                       <Link href={`/plans/${plan.id}`} className="text-slate-900 underline">
                         계획 보기
                       </Link>
                     </td>
-                    <td className="px-4 py-2">
+                    <td className="truncate px-4 py-2">
                       {plan.opRecord ? (
                         <Link href={`/records/${plan.opRecord.id}`} className="text-slate-900 underline">
                           기록지 보기

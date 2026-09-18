@@ -94,11 +94,6 @@ export async function createOpRecord(
     },
   });
 
-  await prisma.opPlan.update({
-    where: { id: planId },
-    data: { status: "DONE" },
-  });
-
   revalidatePath(`/plans/${planId}`);
   revalidatePath(`/patients/${plan.patientId}`);
   redirect(`/records/${record.id}`);

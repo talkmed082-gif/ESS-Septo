@@ -141,8 +141,14 @@ const incisionNames: Record<string, string> = {
     "Cottle incision(maxilla-premaxillary approach)을 시행한 후 양측 mucoperichondrial 및 mucoperiosteal flap을 거상함",
 };
 
-function septoCore(values: FieldValues): string[] {
+function incisionSentence(values: FieldValues): string {
   const incision = str(values, "s_incision", "Hemitransfixion incision");
+  const side = str(values, "s_incision_side", "");
+  const base = incisionNames[incision] ?? incisionNames["Killian incision"];
+  return side ? `${side}에서 ${base}` : base;
+}
+
+function septoCore(values: FieldValues): string[] {
   const caudal = bool(values, "s_caudal");
   const spur = bool(values, "s_spur");
   const turbItems = allTurbinateItems(values);
@@ -152,7 +158,7 @@ function septoCore(values: FieldValues): string[] {
   const splintSuture = str(values, "s_splint_suture", "4-0 nylon");
 
   const steps: (string | false)[] = [
-    incisionNames[incision] ?? incisionNames["Killian incision"],
+    incisionSentence(values),
     caudal && "Caudal septum의 편위 부위에 대해 함께 교정을 시행함",
     spur && "골성 비중격(perpendicular plate of ethmoid, vomer)에서 bony spur를 확인하고 제거함",
     "확인된 편위 부위의 변형된 septal cartilage 및 골성 비중격 일부를 절제 및 교정하여 straightening 후 정중앙에 위치시킴",
@@ -196,6 +202,14 @@ function fessSideBlock(
   values: FieldValues,
 ): string[] {
   const selectedSteps = fessStepFieldKeys.filter((key) => bool(values, `${prefix}${key}`));
+  const turbLabels = turbinateLabelsForSide(sideName, values);
+  const silasticSheet = bool(values, `${prefix}silastic_sheet`);
+  // 해당 측에 실제로 시행한 것이 하나도 없으면(반대측만 시행한 편측 FESS 등)
+  // "수술을 진행함"이나 "비용종 제거함" 같은 문장이 생기지 않도록 블록 자체를 건너뜀
+  if (selectedSteps.length === 0 && turbLabels.length === 0 && !silasticSheet) {
+    return [];
+  }
+
   const block: string[] = [`[${sideName}] 내시경(0°/30°)을 이용하여 수술을 진행함`];
 
   if (selectedSteps.length > 0) {
@@ -205,22 +219,20 @@ function fessSideBlock(
     for (const key of selectedSteps) {
       block.push(`[${sideName}] ${fessStepSentences[key]}`);
     }
+    if (hasPolypAt(sideName, values)) {
+      block.push(
+        `[${sideName}] 관찰된 비용종은 ` +
+          (debriderUsed ? "microdebrider를 이용하여" : "forceps를 이용하여 조심스럽게") +
+          ` 제거함`,
+      );
+    }
   }
 
-  const turbLabels = turbinateLabelsForSide(sideName, values);
   if (turbLabels.length > 0) {
     block.push(`[${sideName}] ${turbLabels.join(", ")} 축소술(turbinoplasty) 시행`);
   }
 
-  if (hasPolypAt(sideName, values)) {
-    block.push(
-      `[${sideName}] 관찰된 비용종은 ` +
-        (debriderUsed ? "microdebrider를 이용하여" : "forceps를 이용하여 조심스럽게") +
-        ` 제거함`,
-    );
-  }
-
-  if (bool(values, `${prefix}silastic_sheet`)) {
+  if (silasticSheet) {
     block.push(`[${sideName}] 유착 방지를 위해 middle meatus에 silastic sheet를 삽입함`);
   }
 
@@ -302,6 +314,7 @@ function genCombo(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpN
     n += opening.length;
   }
   for (const key of seq) {
+    if (blocks[key].length === 0) continue;
     parts.push(`--- ${comboBlockLabels[key]} ---`);
     parts.push(numberSteps(blocks[key], n));
     n += blocks[key].length;
@@ -328,8 +341,9 @@ export function generateOpNote(
 
 function septoConciseItems(values: FieldValues, includePacking: boolean): string[] {
   const incision = str(values, "s_incision", "Hemitransfixion incision");
+  const incisionSide = str(values, "s_incision_side", "");
   const items: (string | false)[] = [
-    incision,
+    incisionSide ? `${incisionSide} ${incision}` : incision,
     bool(values, "s_caudal") && "Caudal septum 편위 교정",
     bool(values, "s_spur") && "Bony spur 제거",
     bool(values, "s_debrider") && "Microdebrider 사용",

@@ -61,6 +61,12 @@ export const septoFields: SurgeryFieldDef[] = [
     ],
     default: "Hemitransfixion incision",
   },
+  {
+    key: "s_incision_side",
+    label: "절개 방향 (시작 측)",
+    type: "select",
+    options: ["좌측", "우측"],
+  },
   { key: "s_caudal", label: "Caudal septum 편위 동반 교정", type: "checkbox" },
   { key: "s_spur", label: "Bony spur 제거", type: "checkbox" },
   { key: "s_debrider", label: "Microdebrider 사용", type: "checkbox" },

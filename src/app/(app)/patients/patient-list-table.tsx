@@ -11,6 +11,7 @@ export interface PatientRow {
   sex: string | null;
   birthDate: string | null;
   surgeryDate: string | null;
+  surgeryPlanId: string | null;
   planCount: number;
 }
 
@@ -117,7 +118,15 @@ export function PatientListTable({
                   {p.sex === "M" ? "남" : p.sex === "F" ? "여" : "-"}
                 </td>
                 <td className="px-4 py-2 text-slate-600">{p.birthDate ?? "-"}</td>
-                <td className="px-4 py-2 text-slate-600">{p.surgeryDate ?? "-"}</td>
+                <td className="px-4 py-2 text-slate-600">
+                  {p.surgeryPlanId ? (
+                    <Link href={`/plans/${p.surgeryPlanId}`} className="hover:underline">
+                      {p.surgeryDate ?? "입력"}
+                    </Link>
+                  ) : (
+                    (p.surgeryDate ?? "-")
+                  )}
+                </td>
                 <td className="px-4 py-2 text-slate-600">{p.planCount}건</td>
               </tr>
             ))}

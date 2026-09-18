@@ -6,7 +6,7 @@ import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import { AnatomyPicker, getAnatomyCoveredKeys } from "@/components/anatomy-diagram";
 import { fieldValuesFromFormData, type FieldValues, type SurgeryFieldDef } from "@/lib/field-types";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
-import { generateOpNote, generatePlanSummary } from "@/lib/op-note-generator";
+import { buildProcedureName, generateOpNote, generatePlanSummary } from "@/lib/op-note-generator";
 
 export interface SurgeryTypeOption {
   id: string;
@@ -29,9 +29,10 @@ function buildTexts(
   }
   const plan = generatePlanSummary(code, values);
   const record = generateOpNote(code, values, "record", anesthesiaType);
+  const procedureName = buildProcedureName(code, values);
   return {
     planText: plan,
-    recordText: `[수술 소견]\n${record.findings}\n\n[수술 과정]\n${record.procedureDetail}`,
+    recordText: `수술명: ${procedureName}\n\n[수술 소견]\n${record.findings}\n\n[수술 과정]\n${record.procedureDetail}`,
   };
 }
 
