@@ -20,6 +20,12 @@ export const nasalFindingFields: SurgeryFieldDef[] = [
     type: "select",
     options: ["없음", "우측", "좌측", "양측"],
   },
+  {
+    key: "n_chr",
+    label: "하비갑개 비후 (CHR, Chronic Hypertrophic Rhinitis)",
+    type: "select",
+    options: ["없음", "우측", "좌측", "양측"],
+  },
   // 비용종 — 방향을 먼저 고르고(없는 경우가 많아 기본값은 "없음"), 방향을
   // 선택했을 때만 위치를 고르게 한다(PolypPicker 컴포넌트가 조건부로 노출).
   {
@@ -47,6 +53,52 @@ export const nasalFindingFields: SurgeryFieldDef[] = [
     label: "Skull base 높이 - 좌측 (Keros)",
     type: "select",
     options: ["Type I (얕음, 저위험)", "Type II (중등도)", "Type III (깊음, 고위험)"],
+  },
+  // Uncinate process attachment — frontal recess 배출 경로를 결정하는 해부학적
+  // 변이로, FESS 시 frontal sinusotomy 접근 방향 계획에 참고
+  {
+    key: "n_uncinate_right",
+    label: "Uncinate process attachment - 우측",
+    type: "select",
+    options: ["Lamina papyracea", "Skull base", "중비갑개 (Middle turbinate)", "불명확/혼합"],
+  },
+  {
+    key: "n_uncinate_left",
+    label: "Uncinate process attachment - 좌측",
+    type: "select",
+    options: ["Lamina papyracea", "Skull base", "중비갑개 (Middle turbinate)", "불명확/혼합"],
+  },
+  // 아래 4개는 술전 CT에서 흔히 확인하는 해부학적 변이/위험 소견 — FESS 접근
+  // 경로 계획 및 안전(시신경·경동맥 손상 위험)에 직접 관련되어 함께 기록
+  {
+    key: "n_onodi",
+    label: "Onodi cell (접형사골동)",
+    type: "select",
+    options: ["없음", "우측", "좌측", "양측"],
+  },
+  {
+    key: "n_haller",
+    label: "Haller cell (안하사골봉소)",
+    type: "select",
+    options: ["없음", "우측", "좌측", "양측"],
+  },
+  {
+    key: "n_agger_nasi",
+    label: "Agger nasi cell",
+    type: "select",
+    options: ["없음", "우측", "좌측", "양측"],
+  },
+  {
+    key: "n_paradoxical_mt",
+    label: "Paradoxical middle turbinate",
+    type: "select",
+    options: ["없음", "우측", "좌측", "양측"],
+  },
+  {
+    key: "n_dehiscence",
+    label: "시신경/경동맥 골 결손 (Optic nerve/ICA dehiscence)",
+    type: "select",
+    options: ["없음", "우측", "좌측", "양측"],
   },
   // Turbinoplasty — 비중격교정술/FESS 어느 쪽에도 단독 또는 동반될 수 있어 공통 항목으로 둠
   { key: "turb_middle_right", label: "중비갑개 축소술 - 우측", type: "checkbox" },
@@ -187,4 +239,13 @@ export type BuiltInSurgeryCode = (typeof BUILT_IN_SURGERY_CODES)[number];
 
 export function isBuiltInSurgeryCode(code: string): code is BuiltInSurgeryCode {
   return (BUILT_IN_SURGERY_CODES as readonly string[]).includes(code);
+}
+
+// 기록지/계획 화면을 "비강/영상 소견"과 "수술 방법" 두 페이지로 나눌 때 쓰는
+// 분류 기준. 비강 소견(n_*)과 술전 CT 소견(skull_base_*)만 소견 페이지로 가고,
+// turbinoplasty 시행 여부(turb_*)는 실제 시행한 술식이라 방법 페이지로 간다.
+const NASAL_FINDING_KEY_PREFIXES = ["n_", "skull_base_"];
+
+export function isNasalFindingKey(key: string): boolean {
+  return NASAL_FINDING_KEY_PREFIXES.some((prefix) => key.startsWith(prefix));
 }

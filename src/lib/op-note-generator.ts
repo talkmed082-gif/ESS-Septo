@@ -82,6 +82,36 @@ function skullBaseSentence(values: FieldValues): string {
   return ` 술전 CT상 skull base 높이는 ${parts.join(", ")} 소견.`;
 }
 
+// Uncinate process attachment — skull base/CT 소견과 같은 좌우 비교 문장 형식
+function uncinateSentence(values: FieldValues): string {
+  const left = str(values, "n_uncinate_left", "");
+  const right = str(values, "n_uncinate_right", "");
+  if (!left && !right) return "";
+
+  if (left && right && left === right) {
+    return ` Uncinate process attachment: 양측 ${left}.`;
+  }
+  const parts: string[] = [];
+  if (right) parts.push(`우측 ${right}`);
+  if (left) parts.push(`좌측 ${left}`);
+  return ` Uncinate process attachment: ${parts.join(", ")}.`;
+}
+
+// CHR/Onodi/Haller/Agger nasi/Paradoxical MT처럼 "없음/우측/좌측/양측" 형태를
+// 공유하는 소견들의 공통 문장 생성기
+function sidedFindingSentence(label: string, key: string, values: FieldValues): string {
+  const v = str(values, key, "없음");
+  if (!v || v === "없음") return "";
+  return ` ${label}: ${v}.`;
+}
+
+// 시신경/경동맥 골 결손 — 수술 중 손상 위험과 직결되는 소견이라 주의 문구를 덧붙임
+function dehiscenceSentence(values: FieldValues): string {
+  const v = str(values, "n_dehiscence", "없음");
+  if (!v || v === "없음") return "";
+  return ` 시신경/경동맥 골 결손(dehiscence): ${v} — 수술 중 주의 필요.`;
+}
+
 // 비강 소견 — 내시경 소견과 술전 CT 소견을 함께 서술함 (한쪽 검사로 국한하지 않음)
 // 맨 앞에 비중격 편위를 짧은 한 줄로 요약하고, 나머지도 문장 대신 간결한 항목 나열로 구성
 export function nasalFindingsText(values: FieldValues): string {
@@ -92,7 +122,18 @@ export function nasalFindingsText(values: FieldValues): string {
     ? `비용종: ${str(values, "n_polyp_side")} ${polypSites(values).join(", ")}`
     : "비용종 없음";
 
-  return [septumSummaryLine(values), cbText, polypText].join(". ") + "." + skullBaseSentence(values);
+  return (
+    [septumSummaryLine(values), cbText, polypText].join(". ") +
+    "." +
+    skullBaseSentence(values) +
+    uncinateSentence(values) +
+    sidedFindingSentence("하비갑개 비후(CHR)", "n_chr", values) +
+    sidedFindingSentence("Onodi cell", "n_onodi", values) +
+    sidedFindingSentence("Haller cell", "n_haller", values) +
+    sidedFindingSentence("Agger nasi cell", "n_agger_nasi", values) +
+    sidedFindingSentence("Paradoxical middle turbinate", "n_paradoxical_mt", values) +
+    dehiscenceSentence(values)
+  );
 }
 
 function hasPolypAt(sideName: "좌측" | "우측", values: FieldValues): boolean {

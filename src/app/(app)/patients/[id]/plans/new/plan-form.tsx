@@ -18,6 +18,7 @@ export function PlanForm({
   fields,
   nameStyle,
   recentCombos,
+  patientNasalFindings,
 }: {
   patientId: string;
   surgeryTypeId: string;
@@ -26,6 +27,7 @@ export function PlanForm({
   fields: SurgeryFieldDef[];
   nameStyle?: NameStyle;
   recentCombos?: RecentCombo[];
+  patientNasalFindings?: FieldValues;
 }) {
   const action = createOpPlan.bind(null, patientId);
   const [state, formAction, pending] = useActionState<
@@ -38,6 +40,11 @@ export function PlanForm({
   function applyCombo(values: FieldValues) {
     setTemplateValues(values);
     setTemplateKey((k) => k + 1);
+  }
+
+  function applyPatientNasalFindings() {
+    if (!patientNasalFindings) return;
+    applyCombo({ ...templateValues, ...patientNasalFindings });
   }
 
   return (
@@ -83,6 +90,21 @@ export function PlanForm({
           className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
         />
       </div>
+
+      {patientNasalFindings && Object.keys(patientNasalFindings).length > 0 && (
+        <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3">
+          <p className="mb-2 text-xs font-medium text-emerald-700">
+            이 환자의 이전 기록에 비강/영상 소견이 저장되어 있습니다
+          </p>
+          <button
+            type="button"
+            onClick={applyPatientNasalFindings}
+            className="rounded-full border border-emerald-600 bg-white px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
+          >
+            저장된 비강/영상 소견 불러오기
+          </button>
+        </div>
+      )}
 
       {recentCombos && recentCombos.length > 0 && (
         <div className="rounded-md border border-slate-200 bg-slate-50 p-3">

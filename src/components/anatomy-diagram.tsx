@@ -11,14 +11,25 @@ const SINUS_STEPS: { key: string; label: string }[] = [
   { key: "mma", label: "Maxillary" },
 ];
 
+// 수술 종류별로 SeptumDiagram(비강 소견 페이지용)과 SinusDiagram(수술 방법
+// 페이지용)을 각각 보여줄지 판단하는 공통 기준
+export function getAnatomyVisibility(surgeryTypeCode: string): {
+  showSeptum: boolean;
+  showSinus: boolean;
+} {
+  return {
+    showSeptum:
+      surgeryTypeCode === "SEPTOPLASTY" || surgeryTypeCode === "ESS" || surgeryTypeCode === "COMBO",
+    showSinus: surgeryTypeCode === "ESS" || surgeryTypeCode === "COMBO",
+  };
+}
+
 // 모식도가 대신 담당하는 필드 키 목록 — 같은 항목이 아래 체크리스트에도 중복으로
 // 나타나 두 입력 방식이 서로 어긋나 보이는 것("원활하지 않음")을 막기 위해,
 // 이 키들은 SurgeryFieldInputs 목록에서는 제외하고 모식도에서만 선택하게 한다.
 export function getAnatomyCoveredKeys(surgeryTypeCode: string): string[] {
   const keys: string[] = [];
-  const showSeptum =
-    surgeryTypeCode === "SEPTOPLASTY" || surgeryTypeCode === "ESS" || surgeryTypeCode === "COMBO";
-  const showSinus = surgeryTypeCode === "ESS" || surgeryTypeCode === "COMBO";
+  const { showSeptum, showSinus } = getAnatomyVisibility(surgeryTypeCode);
 
   if (showSeptum) keys.push("n_dev_side");
   if (showSinus) {
@@ -27,6 +38,16 @@ export function getAnatomyCoveredKeys(surgeryTypeCode: string): string[] {
     }
   }
   return keys;
+}
+
+// getAnatomyCoveredKeys 중 비강 소견 페이지(SeptumDiagram)가 담당하는 키만
+export function getSeptumCoveredKeys(surgeryTypeCode: string): string[] {
+  return getAnatomyVisibility(surgeryTypeCode).showSeptum ? ["n_dev_side"] : [];
+}
+
+// getAnatomyCoveredKeys 중 수술 방법 페이지(SinusDiagram)가 담당하는 키만
+export function getSinusCoveredKeys(surgeryTypeCode: string): string[] {
+  return getAnatomyCoveredKeys(surgeryTypeCode).filter((k) => k !== "n_dev_side");
 }
 
 function findForm(el: HTMLElement | null): HTMLFormElement | null {
