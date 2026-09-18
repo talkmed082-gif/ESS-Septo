@@ -152,9 +152,9 @@ export function SinusDiagram({
   }
 
   const column = (prefix: "f_left_" | "f_right_", label: string) => (
-    <div className="flex flex-col items-center gap-1">
+    <div className="flex flex-col items-center gap-2">
       <span className="text-xs font-medium text-slate-600">{label}</span>
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-2">
         {SINUS_STEPS.map((s) => {
           const active = checked[`${prefix}${s.key}`];
           return (
@@ -162,7 +162,7 @@ export function SinusDiagram({
               type="button"
               key={s.key}
               onClick={() => toggle(prefix, s.key)}
-              className={`w-24 rounded-md border px-2 py-1.5 text-[11px] leading-tight ${
+              className={`min-h-[44px] w-28 touch-manipulation rounded-md border px-3 py-2.5 text-xs leading-tight select-none active:scale-95 ${
                 active
                   ? "border-emerald-600 bg-emerald-600 text-white"
                   : "border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100"
