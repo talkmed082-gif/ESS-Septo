@@ -6,6 +6,7 @@ import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import { OpNoteGenerateButton } from "@/components/op-note-generate-button";
 import { AnatomyPicker, getAnatomyCoveredKeys } from "@/components/anatomy-diagram";
 import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
+import type { NameStyle } from "@/lib/op-note-generator";
 
 export function PlanEditForm({
   planId,
@@ -13,6 +14,7 @@ export function PlanEditForm({
   fields,
   values,
   defaultValues,
+  nameStyle,
 }: {
   planId: string;
   surgeryTypeCode: string;
@@ -24,6 +26,7 @@ export function PlanEditForm({
     diagnosis: string;
     planNote: string;
   };
+  nameStyle?: NameStyle;
 }) {
   const action = updateOpPlan.bind(null, planId);
   const [state, formAction, pending] = useActionState<
@@ -80,7 +83,12 @@ export function PlanEditForm({
         excludeKeys={getAnatomyCoveredKeys(surgeryTypeCode)}
       />
 
-      <OpNoteGenerateButton fields={fields} surgeryTypeCode={surgeryTypeCode} mode="plan" />
+      <OpNoteGenerateButton
+        fields={fields}
+        surgeryTypeCode={surgeryTypeCode}
+        mode="plan"
+        nameStyle={nameStyle}
+      />
 
       <div>
         <label className="mb-1 block text-sm font-medium text-slate-700">

@@ -16,7 +16,13 @@ export const getCurrentUser = cache(async () => {
   const session = await verifySession();
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { id: true, name: true, email: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      sideNotation: true,
+      abbreviateRegions: true,
+    },
   });
   if (!user) {
     redirect("/login");

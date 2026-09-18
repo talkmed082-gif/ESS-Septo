@@ -1,16 +1,25 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { verifySession } from "@/lib/dal";
+import { getCurrentUser } from "@/lib/dal";
 import { parseFieldValues } from "@/lib/field-types";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
-import { buildProcedureName, nasalFindingsText } from "@/lib/op-note-generator";
+import {
+  buildProcedureName,
+  nasalFindingsText,
+  type NameStyle,
+  type SideNotation,
+} from "@/lib/op-note-generator";
 
 export default async function PatientDetailPage({
   params,
 }: PageProps<"/patients/[id]">) {
-  await verifySession();
+  const user = await getCurrentUser();
   const { id } = await params;
+  const nameStyle: NameStyle = {
+    sideNotation: user.sideNotation as SideNotation,
+    abbreviateRegions: user.abbreviateRegions,
+  };
 
   const patient = await prisma.patient.findUnique({
     where: { id },
@@ -78,7 +87,7 @@ export default async function PatientDetailPage({
                 const code = plan.surgeryType.code;
                 const values = parseFieldValues(plan.planData);
                 const procedureName = isBuiltInSurgeryCode(code)
-                  ? buildProcedureName(code, values)
+                  ? buildProcedureName(code, values, nameStyle)
                   : plan.surgeryType.name;
                 const findings = isBuiltInSurgeryCode(code)
                   ? nasalFindingsText(values)

@@ -16,6 +16,9 @@ model User {
   name         String
   passwordHash String
   createdAt    DateTime   @default(now())
+  // 수술명 자동 생성 표기 설정
+  sideNotation      String  @default("full") // "full" | "paren" | "bracket"
+  abbreviateRegions Boolean @default(false)
   patients     Patient[]
   opPlans      OpPlan[]
   opRecords    OpRecord[]

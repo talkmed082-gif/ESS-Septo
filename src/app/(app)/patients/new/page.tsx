@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
-import { verifySession } from "@/lib/dal";
+import { getCurrentUser } from "@/lib/dal";
 import { parseFieldDefs } from "@/lib/field-types";
+import type { SideNotation } from "@/lib/op-note-generator";
 import { NewPatientPlanForm } from "./new-patient-plan-form";
 
 export default async function NewPatientPage() {
-  await verifySession();
+  const user = await getCurrentUser();
 
   const surgeryTypes = await prisma.surgeryType.findMany({
     orderBy: [{ isBuiltIn: "desc" }, { createdAt: "asc" }],
@@ -23,6 +24,10 @@ export default async function NewPatientPage() {
           name: st.name,
           fields: parseFieldDefs(st.fields),
         }))}
+        nameStyle={{
+          sideNotation: user.sideNotation as SideNotation,
+          abbreviateRegions: user.abbreviateRegions,
+        }}
       />
     </div>
   );

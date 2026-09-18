@@ -1,16 +1,16 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { verifySession } from "@/lib/dal";
+import { getCurrentUser } from "@/lib/dal";
 import { parseFieldValues } from "@/lib/field-types";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
-import { buildPlanTable } from "@/lib/op-note-generator";
+import { buildPlanTable, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { PlanTableView } from "@/components/plan-table";
 import { PrintButton } from "@/components/print-button";
 
 export default async function OpPlanPrintPage({
   params,
 }: PageProps<"/plans/[id]/print">) {
-  await verifySession();
+  const user = await getCurrentUser();
   const { id } = await params;
 
   const plan = await prisma.opPlan.findUnique({
@@ -19,9 +19,13 @@ export default async function OpPlanPrintPage({
   });
   if (!plan) notFound();
 
+  const nameStyle: NameStyle = {
+    sideNotation: user.sideNotation as SideNotation,
+    abbreviateRegions: user.abbreviateRegions,
+  };
   const values = parseFieldValues(plan.planData);
   const table = isBuiltInSurgeryCode(plan.surgeryType.code)
-    ? buildPlanTable(plan.surgeryType.code, values)
+    ? buildPlanTable(plan.surgeryType.code, values, nameStyle)
     : null;
 
   return (

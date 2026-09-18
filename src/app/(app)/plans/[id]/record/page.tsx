@@ -1,16 +1,16 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { verifySession } from "@/lib/dal";
 import { getCurrentUser } from "@/lib/dal";
 import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
 import { createOpRecord } from "@/app/actions/op-records";
+import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
 import { RecordForm } from "../../../records/record-form";
 
 export default async function NewOpRecordPage({
   params,
 }: PageProps<"/plans/[id]/record">) {
-  await verifySession();
+  const currentUser = await getCurrentUser();
   const { id: planId } = await params;
 
   const plan = await prisma.opPlan.findUnique({
@@ -22,7 +22,10 @@ export default async function NewOpRecordPage({
     redirect(`/records/${plan.opRecord.id}`);
   }
 
-  const currentUser = await getCurrentUser();
+  const nameStyle: NameStyle = {
+    sideNotation: currentUser.sideNotation as SideNotation,
+    abbreviateRegions: currentUser.abbreviateRegions,
+  };
   const fields = parseFieldDefs(plan.surgeryType.fields);
   const planValues = parseFieldValues(plan.planData);
   const action = createOpRecord.bind(null, planId);
@@ -61,6 +64,7 @@ export default async function NewOpRecordPage({
           specimen: "",
           postOpPlan: "",
         }}
+        nameStyle={nameStyle}
       />
     </div>
   );

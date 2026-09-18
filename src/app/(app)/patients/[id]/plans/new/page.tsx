@@ -1,14 +1,15 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { verifySession } from "@/lib/dal";
+import { getCurrentUser } from "@/lib/dal";
 import { parseFieldDefs } from "@/lib/field-types";
+import type { SideNotation } from "@/lib/op-note-generator";
 import { PlanForm } from "./plan-form";
 
 export default async function NewOpPlanPage({
   params,
   searchParams,
 }: PageProps<"/patients/[id]/plans/new">) {
-  await verifySession();
+  const user = await getCurrentUser();
   const { id: patientId } = await params;
   const { surgeryTypeId } = await searchParams;
 
@@ -59,6 +60,10 @@ export default async function NewOpPlanPage({
           surgeryTypeCode={selected.code}
           surgeryTypeName={selected.name}
           fields={parseFieldDefs(selected.fields)}
+          nameStyle={{
+            sideNotation: user.sideNotation as SideNotation,
+            abbreviateRegions: user.abbreviateRegions,
+          }}
         />
       )}
     </div>

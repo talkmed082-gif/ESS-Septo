@@ -363,8 +363,12 @@ function planItemsFor(surgeryCode: BuiltInSurgeryCode, values: FieldValues): str
   ];
 }
 
-export function generatePlanSummary(surgeryCode: BuiltInSurgeryCode, values: FieldValues): string {
-  const procedureName = buildProcedureName(surgeryCode, values);
+export function generatePlanSummary(
+  surgeryCode: BuiltInSurgeryCode,
+  values: FieldValues,
+  style: NameStyle = DEFAULT_NAME_STYLE,
+): string {
+  const procedureName = buildProcedureName(surgeryCode, values, style);
   const findings = nasalFindingsText(values);
   const items = planItemsFor(surgeryCode, values);
   const bulletList = items.map((i) => (i.startsWith("[") || i.startsWith("  -") ? i : `- ${i}`)).join("\n");
@@ -372,6 +376,15 @@ export function generatePlanSummary(surgeryCode: BuiltInSurgeryCode, values: Fie
 }
 
 // ---------- 수술명(Procedure name) 자동 생성 ----------
+
+export type SideNotation = "full" | "paren" | "bracket";
+
+export interface NameStyle {
+  sideNotation: SideNotation;
+  abbreviateRegions: boolean;
+}
+
+export const DEFAULT_NAME_STYLE: NameStyle = { sideNotation: "full", abbreviateRegions: false };
 
 const fessRegionOrder = ["Frontal", "Ethmoid", "Maxillary", "Sphenoid"] as const;
 const fessStepToRegion: Partial<Record<(typeof fessStepFieldKeys)[number], (typeof fessRegionOrder)[number]>> = {
@@ -381,6 +394,26 @@ const fessStepToRegion: Partial<Record<(typeof fessStepFieldKeys)[number], (type
   mma: "Maxillary",
   sphenoid: "Sphenoid",
 };
+
+const regionAbbreviations: Record<(typeof fessRegionOrder)[number], string> = {
+  Frontal: "F",
+  Ethmoid: "E",
+  Maxillary: "M",
+  Sphenoid: "S",
+};
+
+function formatRegionList(regions: string[], style: NameStyle): string {
+  if (style.abbreviateRegions) {
+    return regions.map((r) => regionAbbreviations[r as (typeof fessRegionOrder)[number]]).join("");
+  }
+  return regions.join(", ");
+}
+
+function formatSideLabel(side: "R" | "L" | "B", style: NameStyle): string {
+  if (style.sideNotation === "paren") return `${side})`;
+  if (style.sideNotation === "bracket") return `${side}]`;
+  return side === "R" ? "Rt." : side === "L" ? "Lt." : "Both";
+}
 
 function fessRegionsForSide(prefix: "f_left_" | "f_right_", values: FieldValues): string[] {
   const regions = new Set<string>();
@@ -393,7 +426,7 @@ function fessRegionsForSide(prefix: "f_left_" | "f_right_", values: FieldValues)
   return fessRegionOrder.filter((r) => regions.has(r));
 }
 
-function buildFessProcedureName(values: FieldValues, label: string): string {
+function buildFessProcedureName(values: FieldValues, label: string, style: NameStyle): string {
   const left = fessRegionsForSide("f_left_", values);
   const right = fessRegionsForSide("f_right_", values);
 
@@ -401,21 +434,25 @@ function buildFessProcedureName(values: FieldValues, label: string): string {
 
   const sameSet = left.length === right.length && left.every((r, i) => r === right[i]);
   if (left.length > 0 && right.length > 0 && sameSet) {
-    return `Both ${label}(${left.join(", ")})`;
+    return `${formatSideLabel("B", style)} ${label}(${formatRegionList(left, style)})`;
   }
 
   const parts: string[] = [];
-  if (right.length > 0) parts.push(`Rt. ${label}(${right.join(", ")})`);
-  if (left.length > 0) parts.push(`Lt. ${label}(${left.join(", ")})`);
+  if (right.length > 0) parts.push(`${formatSideLabel("R", style)} ${label}(${formatRegionList(right, style)})`);
+  if (left.length > 0) parts.push(`${formatSideLabel("L", style)} ${label}(${formatRegionList(left, style)})`);
   return parts.join(", ");
 }
 
-export function buildProcedureName(surgeryCode: BuiltInSurgeryCode, values: FieldValues): string {
+export function buildProcedureName(
+  surgeryCode: BuiltInSurgeryCode,
+  values: FieldValues,
+  style: NameStyle = DEFAULT_NAME_STYLE,
+): string {
   const turbSuffix = allTurbinateItems(values).length > 0 ? " + Turbinoplasty" : "";
 
   if (surgeryCode === "SEPTOPLASTY") return `Septoplasty${turbSuffix}`;
-  if (surgeryCode === "ESS") return `${buildFessProcedureName(values, "ESS")}${turbSuffix}`;
-  return `Septoplasty + ${buildFessProcedureName(values, "ESS")}${turbSuffix}`;
+  if (surgeryCode === "ESS") return `${buildFessProcedureName(values, "ESS", style)}${turbSuffix}`;
+  return `Septoplasty + ${buildFessProcedureName(values, "ESS", style)}${turbSuffix}`;
 }
 
 // ---------- Op Plan 표 형식 (인쇄용 — 내시경 앞에 붙여두고 한눈에 보는 용도) ----------
@@ -456,8 +493,12 @@ function fessSideMatrix(values: FieldValues): { title: string; rows: PlanSideMat
   };
 }
 
-export function buildPlanTable(surgeryCode: BuiltInSurgeryCode, values: FieldValues): PlanTable {
-  const procedureName = buildProcedureName(surgeryCode, values);
+export function buildPlanTable(
+  surgeryCode: BuiltInSurgeryCode,
+  values: FieldValues,
+  style: NameStyle = DEFAULT_NAME_STYLE,
+): PlanTable {
+  const procedureName = buildProcedureName(surgeryCode, values, style);
   const findings = nasalFindingsText(values);
   const turbItems = allTurbinateItems(values);
   const turbRow: PlanKeyValueRow[] =

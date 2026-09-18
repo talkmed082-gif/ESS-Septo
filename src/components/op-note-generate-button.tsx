@@ -7,6 +7,7 @@ import {
   buildProcedureName,
   generateOpNote,
   generatePlanSummary,
+  type NameStyle,
   type OpNoteMode,
 } from "@/lib/op-note-generator";
 
@@ -21,10 +22,12 @@ export function OpNoteGenerateButton({
   fields,
   surgeryTypeCode,
   mode,
+  nameStyle,
 }: {
   fields: SurgeryFieldDef[];
   surgeryTypeCode: string;
   mode: OpNoteMode;
+  nameStyle?: NameStyle;
 }) {
   const [justGenerated, setJustGenerated] = useState(false);
 
@@ -39,7 +42,7 @@ export function OpNoteGenerateButton({
     const values = fieldValuesFromFormData(formData, fields);
 
     if (mode === "plan") {
-      setFieldValue(form, "planNote", generatePlanSummary(code, values));
+      setFieldValue(form, "planNote", generatePlanSummary(code, values, nameStyle));
     } else {
       const anesthesiaType = formData.get("anesthesiaType");
       const result = generateOpNote(
@@ -48,7 +51,7 @@ export function OpNoteGenerateButton({
         mode,
         typeof anesthesiaType === "string" ? anesthesiaType : undefined,
       );
-      setFieldValue(form, "procedureName", buildProcedureName(code, values));
+      setFieldValue(form, "procedureName", buildProcedureName(code, values, nameStyle));
       setFieldValue(form, "findings", result.findings);
       setFieldValue(form, "procedureDetail", result.procedureDetail);
     }

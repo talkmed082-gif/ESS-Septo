@@ -6,6 +6,7 @@ import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import { OpNoteGenerateButton } from "@/components/op-note-generate-button";
 import { AnatomyPicker, getAnatomyCoveredKeys } from "@/components/anatomy-diagram";
 import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
+import type { NameStyle } from "@/lib/op-note-generator";
 
 type Action = (
   state: OpRecordFormState | undefined,
@@ -35,6 +36,7 @@ export function RecordForm({
   fieldValues,
   defaultValues,
   submitLabel,
+  nameStyle,
 }: {
   action: Action;
   surgeryTypeCode: string;
@@ -42,6 +44,7 @@ export function RecordForm({
   fieldValues: FieldValues;
   defaultValues: RecordDefaultValues;
   submitLabel: string;
+  nameStyle?: NameStyle;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
 
@@ -143,7 +146,12 @@ export function RecordForm({
         excludeKeys={getAnatomyCoveredKeys(surgeryTypeCode)}
       />
 
-      <OpNoteGenerateButton fields={fields} surgeryTypeCode={surgeryTypeCode} mode="record" />
+      <OpNoteGenerateButton
+        fields={fields}
+        surgeryTypeCode={surgeryTypeCode}
+        mode="record"
+        nameStyle={nameStyle}
+      />
 
       <div>
         <label className="mb-1 block text-sm font-medium text-slate-700">

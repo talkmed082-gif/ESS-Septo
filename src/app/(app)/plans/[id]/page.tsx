@@ -1,18 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { verifySession } from "@/lib/dal";
+import { getCurrentUser } from "@/lib/dal";
 import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
 import { deleteOpPlan } from "@/app/actions/op-plans";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
-import { buildPlanTable } from "@/lib/op-note-generator";
+import { buildPlanTable, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { PlanTableView } from "@/components/plan-table";
 import { PlanEditForm } from "./plan-edit-form";
 
 export default async function OpPlanPage({
   params,
 }: PageProps<"/plans/[id]">) {
-  await verifySession();
+  const user = await getCurrentUser();
   const { id } = await params;
 
   const plan = await prisma.opPlan.findUnique({
@@ -21,10 +21,14 @@ export default async function OpPlanPage({
   });
   if (!plan) notFound();
 
+  const nameStyle: NameStyle = {
+    sideNotation: user.sideNotation as SideNotation,
+    abbreviateRegions: user.abbreviateRegions,
+  };
   const fields = parseFieldDefs(plan.surgeryType.fields);
   const values = parseFieldValues(plan.planData);
   const table = isBuiltInSurgeryCode(plan.surgeryType.code)
-    ? buildPlanTable(plan.surgeryType.code, values)
+    ? buildPlanTable(plan.surgeryType.code, values, nameStyle)
     : null;
 
   return (
@@ -92,6 +96,7 @@ export default async function OpPlanPage({
           diagnosis: plan.diagnosis ?? "",
           planNote: plan.planNote ?? "",
         }}
+        nameStyle={nameStyle}
       />
     </div>
   );

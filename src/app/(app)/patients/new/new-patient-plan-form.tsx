@@ -9,6 +9,7 @@ import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import { OpNoteGenerateButton } from "@/components/op-note-generate-button";
 import { AnatomyPicker, getAnatomyCoveredKeys } from "@/components/anatomy-diagram";
 import type { SurgeryFieldDef } from "@/lib/field-types";
+import type { NameStyle } from "@/lib/op-note-generator";
 
 export interface SurgeryTypeOption {
   id: string;
@@ -19,8 +20,10 @@ export interface SurgeryTypeOption {
 
 export function NewPatientPlanForm({
   surgeryTypes,
+  nameStyle,
 }: {
   surgeryTypes: SurgeryTypeOption[];
+  nameStyle?: NameStyle;
 }) {
   const [state, formAction, pending] = useActionState<
     PatientPlanFormState | undefined,
@@ -161,7 +164,12 @@ export function NewPatientPlanForm({
             fields={selected.fields}
             excludeKeys={getAnatomyCoveredKeys(selected.code)}
           />
-          <OpNoteGenerateButton fields={selected.fields} surgeryTypeCode={selected.code} mode="plan" />
+          <OpNoteGenerateButton
+            fields={selected.fields}
+            surgeryTypeCode={selected.code}
+            mode="plan"
+            nameStyle={nameStyle}
+          />
 
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">
