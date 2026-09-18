@@ -221,26 +221,3 @@ export function SinusDiagram({
     </div>
   );
 }
-
-export function AnatomyPicker({
-  surgeryTypeCode,
-  values,
-  onChange,
-}: {
-  surgeryTypeCode: string;
-  values?: FieldValues;
-  onChange?: () => void;
-}) {
-  const showSeptum =
-    surgeryTypeCode === "SEPTOPLASTY" || surgeryTypeCode === "ESS" || surgeryTypeCode === "COMBO";
-  const showSinus = surgeryTypeCode === "ESS" || surgeryTypeCode === "COMBO";
-
-  if (!showSeptum && !showSinus) return null;
-
-  return (
-    <div className="flex flex-wrap gap-3">
-      {showSeptum && <SeptumDiagram values={values} onChange={onChange} />}
-      {showSinus && <SinusDiagram values={values} onChange={onChange} />}
-    </div>
-  );
-}

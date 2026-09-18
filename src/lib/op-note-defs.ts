@@ -94,20 +94,35 @@ export const nasalFindingFields: SurgeryFieldDef[] = [
     options: ["없음", "우측", "좌측", "양측"],
     default: "없음",
   },
-  // Lamina papyracea 결손 — ethmoidectomy 시 안구 손상과 직결되는, 가장
-  // 흔하고 실제로 중요한 골 결손 소견 (시신경/경동맥 결손과는 별도로 기록)
+  // 골 결손(dehiscence) 소견 — 좌/우가 독립적으로 있을 수 있어 측별로 따로
+  // 기록한다. Lamina papyracea 결손은 ethmoidectomy 시 안구 손상과 직결되는,
+  // 가장 흔하고 실제로 중요한 골 결손 소견 (시신경/경동맥 결손과는 별도로 기록)
   {
-    key: "n_lp_dehiscence",
-    label: "Lamina papyracea 결손",
+    key: "n_lp_dehiscence_right",
+    label: "Lamina papyracea 결손 - 우측",
     type: "select",
-    options: ["없음", "우측", "좌측", "양측"],
+    options: ["없음", "있음"],
     default: "없음",
   },
   {
-    key: "n_dehiscence",
-    label: "시신경/경동맥 골 결손 (Optic nerve/ICA dehiscence)",
+    key: "n_lp_dehiscence_left",
+    label: "Lamina papyracea 결손 - 좌측",
     type: "select",
-    options: ["없음", "우측", "좌측", "양측"],
+    options: ["없음", "있음"],
+    default: "없음",
+  },
+  {
+    key: "n_dehiscence_right",
+    label: "시신경/경동맥 골 결손 - 우측 (Optic nerve/ICA dehiscence)",
+    type: "select",
+    options: ["없음", "있음"],
+    default: "없음",
+  },
+  {
+    key: "n_dehiscence_left",
+    label: "시신경/경동맥 골 결손 - 좌측 (Optic nerve/ICA dehiscence)",
+    type: "select",
+    options: ["없음", "있음"],
     default: "없음",
   },
   // Turbinoplasty — 비중격교정술/FESS 어느 쪽에도 단독 또는 동반될 수 있어 공통 항목으로 둠

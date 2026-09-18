@@ -3,10 +3,16 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
-import { AnatomyPicker, getAnatomyCoveredKeys } from "@/components/anatomy-diagram";
+import {
+  SeptumDiagram,
+  SinusDiagram,
+  getAnatomyVisibility,
+  getSeptumCoveredKeys,
+  getSinusCoveredKeys,
+} from "@/components/anatomy-diagram";
 import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
 import { fieldValuesFromFormData, type FieldValues, type SurgeryFieldDef } from "@/lib/field-types";
-import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
+import { isBuiltInSurgeryCode, isNasalFindingKey } from "@/lib/op-note-defs";
 import { buildProcedureName, generateOpNote, generatePlanSummary, type NameStyle } from "@/lib/op-note-generator";
 
 export interface SurgeryTypeOption {
@@ -75,8 +81,18 @@ export function QuickTool({
     first ? buildTexts(first.code, first.fields, {}, "General", nameStyle) : { planText: "", recordText: "" },
   );
   const formRef = useRef<HTMLFormElement>(null);
+  const [step, setStep] = useState<1 | 2>(1);
 
   const selected = surgeryTypes.find((st) => st.id === selectedId);
+  const nasalFields = selected ? selected.fields.filter((f) => isNasalFindingKey(f.key)) : [];
+  const procedureFields = selected ? selected.fields.filter((f) => !isNasalFindingKey(f.key)) : [];
+  const { showSeptum, showSinus } = selected
+    ? getAnatomyVisibility(selected.code)
+    : { showSeptum: false, showSinus: false };
+  const stepButtonClass = (active: boolean) =>
+    `rounded-md px-3 py-2 text-sm font-medium ${
+      active ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+    }`;
 
   function regenerateFromForm() {
     if (!selected || !formRef.current) return;
@@ -137,12 +153,29 @@ export function QuickTool({
 
         {selected && (
           <div key={selected.id} className="space-y-4">
-            <AnatomyPicker surgeryTypeCode={selected.code} />
-            <PolypPicker />
-            <SurgeryFieldInputs
-              fields={selected.fields}
-              excludeKeys={[...getAnatomyCoveredKeys(selected.code), ...POLYP_FIELD_KEYS]}
-            />
+            <div className="flex gap-2 border-b border-slate-200 pb-3">
+              <button type="button" onClick={() => setStep(1)} className={stepButtonClass(step === 1)}>
+                1. 비강/영상 소견
+              </button>
+              <button type="button" onClick={() => setStep(2)} className={stepButtonClass(step === 2)}>
+                2. 수술 방법
+              </button>
+            </div>
+            <div className={step === 1 ? "space-y-4" : "hidden"}>
+              {showSeptum && <SeptumDiagram />}
+              <PolypPicker />
+              <SurgeryFieldInputs
+                fields={nasalFields}
+                excludeKeys={[...getSeptumCoveredKeys(selected.code), ...POLYP_FIELD_KEYS]}
+              />
+            </div>
+            <div className={step === 2 ? "space-y-4" : "hidden"}>
+              {showSinus && <SinusDiagram />}
+              <SurgeryFieldInputs
+                fields={procedureFields}
+                excludeKeys={getSinusCoveredKeys(selected.code)}
+              />
+            </div>
           </div>
         )}
 

@@ -112,6 +112,9 @@ export async function reseedBuiltInSurgeryTypes() {
   }
 
   revalidatePath("/surgery-types");
+  // 폼 제출만으로는 페이지가 그대로라 클릭이 반영됐는지 알기 어려워서,
+  // 완료 표시를 위해 쿼리 파라미터를 붙여 리다이렉트한다.
+  redirect("/surgery-types?updated=1");
 }
 
 export async function deleteSurgeryType(surgeryTypeId: string) {

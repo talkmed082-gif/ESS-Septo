@@ -123,13 +123,23 @@ function sidedFindingSentence(label: string, key: string, values: FieldValues): 
   return ` ${label}: ${v}.`;
 }
 
-// 골 결손(dehiscence) 소견 — 수술 중 손상 위험과 직결되는 소견이라 주의 문구를 덧붙임.
+// 골 결손(dehiscence) 소견 — 좌/우가 독립적으로 있을 수 있어 측별로 따로
+// 기록한다. 수술 중 손상 위험과 직결되는 소견이라 주의 문구를 덧붙임.
 // Lamina papyracea 결손(안구 손상 위험, ethmoidectomy 시 항상 관련)과
 // 시신경/경동맥 결손(sphenoid 수술 시 관련)을 각각 따로 기록한다.
-function dehiscenceSentence(label: string, key: string, values: FieldValues): string {
-  const v = str(values, key, "없음");
-  if (!v || v === "없음") return "";
-  return ` ${label} 결손(dehiscence): ${v} — 수술 중 주의 필요.`;
+function dehiscenceSentence(
+  label: string,
+  rightKey: string,
+  leftKey: string,
+  values: FieldValues,
+): string {
+  const right = str(values, rightKey, "없음") === "있음";
+  const left = str(values, leftKey, "없음") === "있음";
+  if (!right && !left) return "";
+  const parts: string[] = [];
+  if (right) parts.push("우측");
+  if (left) parts.push("좌측");
+  return ` ${label} 결손(dehiscence): ${parts.join(", ")} — 수술 중 주의 필요.`;
 }
 
 // 비강 소견 — 내시경 소견과 술전 CT 소견을 함께 서술함 (한쪽 검사로 국한하지 않음)
@@ -146,8 +156,8 @@ export function nasalFindingsText(values: FieldValues): string {
     sidedFindingSentence("하비갑개 비후(CHR)", "n_chr", values) +
     sidedFindingSentence("Onodi cell", "n_onodi", values) +
     sidedFindingSentence("Haller cell", "n_haller", values) +
-    dehiscenceSentence("Lamina papyracea", "n_lp_dehiscence", values) +
-    dehiscenceSentence("시신경/경동맥", "n_dehiscence", values)
+    dehiscenceSentence("Lamina papyracea", "n_lp_dehiscence_right", "n_lp_dehiscence_left", values) +
+    dehiscenceSentence("시신경/경동맥", "n_dehiscence_right", "n_dehiscence_left", values)
   );
 }
 
@@ -201,11 +211,20 @@ export function nasalFindingsSummary(values: FieldValues): string {
   const haller = str(values, "n_haller", "없음");
   if (haller !== "없음") items.push(`${haller} Haller cell`);
 
-  const lpDehiscence = str(values, "n_lp_dehiscence", "없음");
-  if (lpDehiscence !== "없음") items.push(`${lpDehiscence} Lamina papyracea 결손(주의)`);
+  const dehiscenceSideLabel = (right: boolean, left: boolean): string =>
+    right && left ? "양측" : right ? "우측" : "좌측";
 
-  const dehiscence = str(values, "n_dehiscence", "없음");
-  if (dehiscence !== "없음") items.push(`${dehiscence} 시신경/경동맥 골 결손(주의)`);
+  const lpRight = str(values, "n_lp_dehiscence_right", "없음") === "있음";
+  const lpLeft = str(values, "n_lp_dehiscence_left", "없음") === "있음";
+  if (lpRight || lpLeft) {
+    items.push(`${dehiscenceSideLabel(lpRight, lpLeft)} Lamina papyracea 결손(주의)`);
+  }
+
+  const opticRight = str(values, "n_dehiscence_right", "없음") === "있음";
+  const opticLeft = str(values, "n_dehiscence_left", "없음") === "있음";
+  if (opticRight || opticLeft) {
+    items.push(`${dehiscenceSideLabel(opticRight, opticLeft)} 시신경/경동맥 골 결손(주의)`);
+  }
 
   return items.length > 0 ? items.join(", ") + "." : "특이 소견 없음";
 }

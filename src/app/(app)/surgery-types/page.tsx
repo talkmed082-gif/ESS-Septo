@@ -4,8 +4,11 @@ import { deleteSurgeryType, reseedBuiltInSurgeryTypes } from "@/app/actions/surg
 import { parseFieldDefs } from "@/lib/field-types";
 import { SurgeryTypeFieldBuilder } from "./field-builder";
 
-export default async function SurgeryTypesPage() {
+export default async function SurgeryTypesPage({
+  searchParams,
+}: PageProps<"/surgery-types">) {
   await verifySession();
+  const { updated } = await searchParams;
   const surgeryTypes = await prisma.surgeryType.findMany({
     orderBy: [{ isBuiltIn: "desc" }, { createdAt: "asc" }],
   });
@@ -20,6 +23,12 @@ export default async function SurgeryTypesPage() {
         </p>
       </div>
 
+      {updated && (
+        <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          완료: 기본 수술 종류 입력 항목이 최신화되었습니다.
+        </p>
+      )}
+
       <form action={reseedBuiltInSurgeryTypes}>
         <button
           type="submit"
@@ -28,7 +37,8 @@ export default async function SurgeryTypesPage() {
           기본 수술 종류(ESS/비중격교정술/병행) 입력 항목 최신화
         </button>
         <p className="mt-1 text-xs text-slate-400">
-          코드에 새로 추가된 입력 항목을 반영합니다. 기존에 저장된 계획/기록지 값은 바뀌지 않습니다.
+          매 배포 시 자동으로 실행되므로 보통 누를 필요는 없습니다. 반영이 안 됐을 때 수동으로 다시
+          실행하는 용도입니다. 기존에 저장된 계획/기록지 값은 바뀌지 않습니다.
         </p>
       </form>
 

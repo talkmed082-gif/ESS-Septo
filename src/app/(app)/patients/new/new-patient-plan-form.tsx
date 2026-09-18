@@ -7,10 +7,17 @@ import {
 } from "@/app/actions/patient-plan";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import { OpNoteGenerateButton } from "@/components/op-note-generate-button";
-import { AnatomyPicker, getAnatomyCoveredKeys } from "@/components/anatomy-diagram";
+import {
+  SeptumDiagram,
+  SinusDiagram,
+  getAnatomyVisibility,
+  getSeptumCoveredKeys,
+  getSinusCoveredKeys,
+} from "@/components/anatomy-diagram";
 import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
 import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 import type { NameStyle } from "@/lib/op-note-generator";
+import { isNasalFindingKey } from "@/lib/op-note-defs";
 import type { RecentCombo } from "@/lib/recent-combos";
 
 export interface SurgeryTypeOption {
@@ -36,9 +43,19 @@ export function NewPatientPlanForm({
   const [surgeryTypeId, setSurgeryTypeId] = useState("");
   const [templateValues, setTemplateValues] = useState<FieldValues | undefined>(undefined);
   const [templateKey, setTemplateKey] = useState(0);
+  const [step, setStep] = useState<1 | 2>(1);
 
   const selected = surgeryTypes.find((st) => st.id === surgeryTypeId);
   const recentCombos = surgeryTypeId ? recentCombosByType?.[surgeryTypeId] ?? [] : [];
+  const nasalFields = selected ? selected.fields.filter((f) => isNasalFindingKey(f.key)) : [];
+  const procedureFields = selected ? selected.fields.filter((f) => !isNasalFindingKey(f.key)) : [];
+  const { showSeptum, showSinus } = selected
+    ? getAnatomyVisibility(selected.code)
+    : { showSeptum: false, showSinus: false };
+  const stepButtonClass = (active: boolean) =>
+    `rounded-md px-3 py-2 text-sm font-medium ${
+      active ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+    }`;
 
   function applyCombo(values: FieldValues) {
     setTemplateValues(values);
@@ -192,13 +209,32 @@ export function NewPatientPlanForm({
             />
           </div>
 
-          <AnatomyPicker surgeryTypeCode={selected.code} values={templateValues} />
-          <PolypPicker values={templateValues} />
-          <SurgeryFieldInputs
-            fields={selected.fields}
-            values={templateValues}
-            excludeKeys={[...getAnatomyCoveredKeys(selected.code), ...POLYP_FIELD_KEYS]}
-          />
+          <div className="flex gap-2 border-b border-slate-200 pb-3">
+            <button type="button" onClick={() => setStep(1)} className={stepButtonClass(step === 1)}>
+              1. 비강/영상 소견
+            </button>
+            <button type="button" onClick={() => setStep(2)} className={stepButtonClass(step === 2)}>
+              2. 수술 방법
+            </button>
+          </div>
+
+          <div className={step === 1 ? "space-y-4" : "hidden"}>
+            {showSeptum && <SeptumDiagram values={templateValues} />}
+            <PolypPicker values={templateValues} />
+            <SurgeryFieldInputs
+              fields={nasalFields}
+              values={templateValues}
+              excludeKeys={[...getSeptumCoveredKeys(selected.code), ...POLYP_FIELD_KEYS]}
+            />
+          </div>
+          <div className={step === 2 ? "space-y-4" : "hidden"}>
+            {showSinus && <SinusDiagram values={templateValues} />}
+            <SurgeryFieldInputs
+              fields={procedureFields}
+              values={templateValues}
+              excludeKeys={getSinusCoveredKeys(selected.code)}
+            />
+          </div>
           <OpNoteGenerateButton
             fields={selected.fields}
             surgeryTypeCode={selected.code}
