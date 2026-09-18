@@ -8,6 +8,7 @@ import { verifySession } from "@/lib/dal";
 const SettingsSchema = z.object({
   sideNotation: z.enum(["full", "paren", "bracket"]),
   abbreviateRegions: z.enum(["true", "false"]),
+  defaultAssistantName: z.string().trim().optional(),
 });
 
 export interface SettingsFormState {
@@ -23,6 +24,7 @@ export async function updateNameStyleSettings(
   const validated = SettingsSchema.safeParse({
     sideNotation: formData.get("sideNotation"),
     abbreviateRegions: formData.get("abbreviateRegions"),
+    defaultAssistantName: formData.get("defaultAssistantName") ?? "",
   });
   if (!validated.success) {
     return { message: "입력값을 확인하세요." };
@@ -33,6 +35,7 @@ export async function updateNameStyleSettings(
     data: {
       sideNotation: validated.data.sideNotation,
       abbreviateRegions: validated.data.abbreviateRegions === "true",
+      defaultAssistantName: validated.data.defaultAssistantName || null,
     },
   });
 

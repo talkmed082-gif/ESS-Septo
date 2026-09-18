@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { verifySession } from "@/lib/dal";
+import { getCurrentUser } from "@/lib/dal";
+import { parseFieldValues } from "@/lib/field-types";
+import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
+import { buildProcedureName, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { PatientListTable, type PatientRow } from "./patient-list-table";
 
 function toDateStr(d: Date | null | undefined) {
@@ -10,7 +13,20 @@ function toDateStr(d: Date | null | undefined) {
 export default async function PatientsPage({
   searchParams,
 }: PageProps<"/patients">) {
-  await verifySession();
+  const user = await getCurrentUser();
+  const nameStyle: NameStyle = {
+    sideNotation: user.sideNotation as SideNotation,
+    abbreviateRegions: user.abbreviateRegions,
+  };
+  const todayUtc = new Date(new Date().toISOString().slice(0, 10));
+
+  const upcomingPlans = await prisma.opPlan.findMany({
+    where: { plannedDate: { gte: todayUtc }, opRecord: null },
+    orderBy: { plannedDate: "asc" },
+    take: 10,
+    include: { patient: true, surgeryType: true },
+  });
+
   const { q, sort: sortParam, dir: dirParam } = await searchParams;
   const query = typeof q === "string" ? q.trim() : "";
   const sort = typeof sortParam === "string" ? sortParam : "createdAt";
@@ -97,6 +113,42 @@ export default async function PatientsPage({
           + 새 환자 등록
         </Link>
       </div>
+
+      {upcomingPlans.length > 0 && (
+        <div className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+          <h2 className="mb-3 text-sm font-semibold text-emerald-900">
+            다가오는 수술 ({upcomingPlans.length}건)
+          </h2>
+          <ul className="space-y-2">
+            {upcomingPlans.map((plan) => {
+              const code = plan.surgeryType.code;
+              const values = parseFieldValues(plan.planData);
+              const procedureName = isBuiltInSurgeryCode(code)
+                ? buildProcedureName(code, values, nameStyle)
+                : plan.surgeryType.name;
+              return (
+                <li key={plan.id} className="flex items-center justify-between text-sm">
+                  <Link href={`/plans/${plan.id}`} className="hover:underline">
+                    <span className="font-medium text-slate-900">
+                      {plan.plannedDate?.toISOString().slice(0, 10)}
+                    </span>
+                    <span className="mx-2 text-slate-400">·</span>
+                    <span className="text-slate-900">{plan.patient.name}</span>
+                    <span className="mx-2 text-slate-400">·</span>
+                    <span className="text-slate-600">{procedureName}</span>
+                  </Link>
+                  <Link
+                    href={`/plans/${plan.id}/record`}
+                    className="shrink-0 rounded-md border border-emerald-600 px-2.5 py-1 text-xs text-emerald-700 hover:bg-emerald-100"
+                  >
+                    기록지 작성
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
 
       <form className="mb-4">
         <input

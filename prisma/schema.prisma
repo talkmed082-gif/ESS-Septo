@@ -19,6 +19,8 @@ model User {
   // 수술명 자동 생성 표기 설정
   sideNotation      String  @default("full") // "full" | "paren" | "bracket"
   abbreviateRegions Boolean @default(false)
+  // 기록지 작성 시 기본값으로 채워줄 보조의 이름 (매번 같은 사람과 수술하는 경우가 많아 입력을 줄여줌)
+  defaultAssistantName String?
   patients     Patient[]
   opPlans      OpPlan[]
   opRecords    OpRecord[]

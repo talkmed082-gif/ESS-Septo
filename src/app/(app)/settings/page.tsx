@@ -14,6 +14,7 @@ export default async function SettingsPage() {
       <SettingsForm
         initialSideNotation={user.sideNotation as SideNotation}
         initialAbbreviate={user.abbreviateRegions}
+        initialDefaultAssistantName={user.defaultAssistantName ?? ""}
       />
     </div>
   );

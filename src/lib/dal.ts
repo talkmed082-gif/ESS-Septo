@@ -22,6 +22,7 @@ export const getCurrentUser = cache(async () => {
       email: true,
       sideNotation: true,
       abbreviateRegions: true,
+      defaultAssistantName: true,
     },
   });
   if (!user) {
