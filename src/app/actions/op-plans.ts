@@ -117,22 +117,3 @@ export async function deleteOpPlan(planId: string, patientId: string) {
   revalidatePath(`/patients/${patientId}`);
   redirect(`/patients/${patientId}`);
 }
-
-export async function toggleChecklistItem(
-  planId: string,
-  itemKey: string,
-  checked: boolean,
-) {
-  await verifySession();
-  const plan = await prisma.opPlan.findUnique({
-    where: { id: planId },
-    select: { checklist: true },
-  });
-  if (!plan) return;
-  const current = (plan.checklist as Record<string, boolean> | null) ?? {};
-  await prisma.opPlan.update({
-    where: { id: planId },
-    data: { checklist: { ...current, [itemKey]: checked } },
-  });
-  revalidatePath(`/plans/${planId}`);
-}

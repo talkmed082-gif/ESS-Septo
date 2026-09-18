@@ -136,6 +136,66 @@ export function nasalFindingsText(values: FieldValues): string {
   );
 }
 
+// 예정 술식 표는 한눈에 보는 용도라 "없음/정상" 항목까지 다 나열하면 오히려
+// 읽기 어려워진다. 실제로 임상적 의미가 있는(정상/기본값이 아닌) 소견만 짧게
+// 추려서 보여준다 — 전체 서술문(nasalFindingsText)과는 별도로 둔다.
+export function nasalFindingsSummary(values: FieldValues): string {
+  const items: string[] = [];
+
+  const devSide = str(values, "n_dev_side", "특이 만곡 없음");
+  const devDegree = str(values, "n_deviation", "해당없음");
+  if (devSide !== "특이 만곡 없음" && devDegree !== "해당없음") {
+    items.push(`비중격 ${devSide} ${devDegree} 편위`);
+  }
+
+  const cb = str(values, "n_cb", "없음");
+  if (cb !== "없음") items.push(`${cb} concha bullosa`);
+
+  if (hasPolyp(values)) {
+    items.push(`비용종(${str(values, "n_polyp_side")}: ${polypSites(values).join(", ")})`);
+  }
+
+  const chr = str(values, "n_chr", "없음");
+  if (chr !== "없음") items.push(`${chr} 하비갑개 비후(CHR)`);
+
+  const isNotableSkullBase = (v: string) => v !== "" && !v.startsWith("Type I ");
+  const skullLeft = str(values, "skull_base_left", "");
+  const skullRight = str(values, "skull_base_right", "");
+  if (isNotableSkullBase(skullLeft) || isNotableSkullBase(skullRight)) {
+    const parts: string[] = [];
+    if (isNotableSkullBase(skullRight)) parts.push(`우측 ${skullRight}`);
+    if (isNotableSkullBase(skullLeft)) parts.push(`좌측 ${skullLeft}`);
+    items.push(`Skull base ${parts.join(", ")}`);
+  }
+
+  const isNotableUncinate = (v: string) => v !== "" && v !== "Lamina papyracea";
+  const uncLeft = str(values, "n_uncinate_left", "");
+  const uncRight = str(values, "n_uncinate_right", "");
+  if (isNotableUncinate(uncLeft) || isNotableUncinate(uncRight)) {
+    const parts: string[] = [];
+    if (isNotableUncinate(uncRight)) parts.push(`우측 ${uncRight}`);
+    if (isNotableUncinate(uncLeft)) parts.push(`좌측 ${uncLeft}`);
+    items.push(`Uncinate attachment ${parts.join(", ")}`);
+  }
+
+  const onodi = str(values, "n_onodi", "없음");
+  if (onodi !== "없음") items.push(`${onodi} Onodi cell`);
+
+  const haller = str(values, "n_haller", "없음");
+  if (haller !== "없음") items.push(`${haller} Haller cell`);
+
+  const aggerNasi = str(values, "n_agger_nasi", "없음");
+  if (aggerNasi !== "없음") items.push(`${aggerNasi} Agger nasi cell`);
+
+  const paradoxicalMt = str(values, "n_paradoxical_mt", "없음");
+  if (paradoxicalMt !== "없음") items.push(`${paradoxicalMt} Paradoxical middle turbinate`);
+
+  const dehiscence = str(values, "n_dehiscence", "없음");
+  if (dehiscence !== "없음") items.push(`${dehiscence} 시신경/경동맥 골 결손(주의)`);
+
+  return items.length > 0 ? items.join(", ") + "." : "특이 소견 없음";
+}
+
 function hasPolypAt(sideName: "좌측" | "우측", values: FieldValues): boolean {
   if (!hasPolyp(values)) return false;
   const side = str(values, "n_polyp_side", "없음");
@@ -561,7 +621,7 @@ export function buildPlanTable(
   style: NameStyle = DEFAULT_NAME_STYLE,
 ): PlanTable {
   const procedureName = buildProcedureName(surgeryCode, values, style);
-  const findings = nasalFindingsText(values);
+  const findings = nasalFindingsSummary(values);
   const turbItems = allTurbinateItems(values);
   const turbRow: PlanKeyValueRow[] =
     turbItems.length > 0 ? [{ label: "Turbinoplasty", value: turbItems.join(", ") }] : [];

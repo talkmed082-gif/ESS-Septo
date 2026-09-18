@@ -5,11 +5,16 @@ import { getCurrentUser } from "@/lib/dal";
 import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
 import { deleteOpPlan } from "@/app/actions/op-plans";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
-import { buildPlanTable, buildProcedureName, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
+import {
+  buildPlanTable,
+  buildProcedureName,
+  nasalFindingsText,
+  type NameStyle,
+  type SideNotation,
+} from "@/lib/op-note-generator";
 import { buildGoogleCalendarUrl } from "@/lib/calendar";
 import { getRecentCombosForSurgeryType } from "@/lib/recent-combos";
 import { PlanTableView } from "@/components/plan-table";
-import { SurgeryChecklist } from "@/components/surgery-checklist";
 import { PlanEditForm } from "./plan-edit-form";
 
 export default async function OpPlanPage({
@@ -81,11 +86,13 @@ export default async function OpPlanPage({
         </div>
       )}
 
-      {!plan.opRecord && (
-        <SurgeryChecklist
-          planId={plan.id}
-          checklist={(plan.checklist as Record<string, boolean> | null) ?? {}}
-        />
+      {isBuiltInSurgeryCode(plan.surgeryType.code) && (
+        <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <h2 className="mb-2 text-sm font-semibold text-slate-700">비강/영상 소견</h2>
+          <p className="whitespace-pre-wrap text-sm text-slate-600">
+            {nasalFindingsText(values)}
+          </p>
+        </div>
       )}
 
       {table && (

@@ -68,7 +68,7 @@ export default async function NewOpRecordPage({
           complication: "없음",
           estimatedBloodLoss: "Minimal",
           specimen: "없음",
-          postOpPlan: "특이 출혈 소견 없음 확인 후 종료. 익일 외래 재방문 예정.",
+          postOpPlan: "특이 출혈 소견 없음 확인 후 종료. 익일 퇴원 예정, 술후 2주 뒤 외래 F/U 예정.",
         }}
         nameStyle={nameStyle}
       />
