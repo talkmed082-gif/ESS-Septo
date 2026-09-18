@@ -14,7 +14,7 @@ export default async function AppLayout({
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <nav className="flex items-center gap-5">
-            <Link href="/patients" className="text-base font-semibold">
+            <Link href="/" className="text-base font-semibold">
               Op Plan &amp; 기록지
             </Link>
             <Link
