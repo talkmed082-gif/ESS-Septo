@@ -53,11 +53,15 @@ export function SeptumDiagram({
   );
 
   function pick(value: string) {
-    const form = findForm(rootRef.current);
-    const el = getInput(form, "field_n_dev_side");
-    if (el) el.value = value;
     setSide(value);
     onChange?.();
+    // 실제 제출용 select 값은 다음 페인트 이후에 맞춰서 React state와
+    // 항상 같은 값이 되도록 함 (state가 유일한 출처, DOM은 그 결과를 따라감)
+    requestAnimationFrame(() => {
+      const form = findForm(rootRef.current);
+      const el = getInput(form, "field_n_dev_side");
+      if (el) el.value = value;
+    });
   }
 
   const zone = (label: string, value: string, x: number) => {
@@ -142,12 +146,18 @@ export function SinusDiagram({
   });
 
   function toggle(prefix: "f_left_" | "f_right_", key: string) {
-    const form = findForm(rootRef.current);
-    const name = `field_${prefix}${key}`;
-    const el = getInput(form, name);
-    const nextVal = !checked[`${prefix}${key}`];
-    if (el instanceof HTMLInputElement) el.checked = nextVal;
-    setChecked((c) => ({ ...c, [`${prefix}${key}`]: nextVal }));
+    const fullKey = `${prefix}${key}`;
+    setChecked((c) => {
+      const nextVal = !c[fullKey];
+      // 실제 제출용 checkbox도 React state와 항상 같은 값이 되도록 다음
+      // 페인트 이후에 맞춰준다 (state가 유일한 출처, DOM은 그 결과를 따라감)
+      requestAnimationFrame(() => {
+        const form = findForm(rootRef.current);
+        const el = getInput(form, `field_${fullKey}`);
+        if (el instanceof HTMLInputElement) el.checked = nextVal;
+      });
+      return { ...c, [fullKey]: nextVal };
+    });
     onChange?.();
   }
 
