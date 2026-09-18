@@ -1,5 +1,5 @@
 import type { FieldValues } from "./field-types";
-import { fessStepFieldKeys, type BuiltInSurgeryCode } from "./op-note-defs";
+import { fessStepFieldKeys, fessStepLabels, type BuiltInSurgeryCode } from "./op-note-defs";
 
 export type OpNoteMode = "plan" | "record";
 
@@ -273,4 +273,63 @@ export function generateOpNote(
   if (surgeryCode === "SEPTOPLASTY") return genSeptoplasty(values, mode, anesLabel);
   if (surgeryCode === "ESS") return genFess(values, mode, anesLabel);
   return genCombo(values, mode, anesLabel);
+}
+
+// ---------- Op Plan 요약 (짧은 항목 나열 — 기록지의 서술형 문장과는 별도) ----------
+
+function septoConciseItems(values: FieldValues, includePacking: boolean): string[] {
+  const incision = str(values, "s_incision", "Killian incision");
+  const items: (string | false)[] = [
+    incision,
+    bool(values, "s_caudal") && "Caudal septum 편위 교정",
+    bool(values, "s_spur") && "Bony spur 제거",
+    bool(values, "s_turb") && "하비갑개 축소술(SMR) 병행",
+    bool(values, "s_debrider") && "Microdebrider 사용",
+    bool(values, "s_splint") && "Silastic splint 삽입",
+  ];
+  if (includePacking) items.push(`${str(values, "s_pack", "Merocel")} packing 예정`);
+  return items.filter((s): s is string => Boolean(s));
+}
+
+function fessConciseSideLine(
+  sideLabel: "좌측" | "우측",
+  prefix: "f_left_" | "f_right_",
+  values: FieldValues,
+): string {
+  const picked = fessStepFieldKeys
+    .filter((k) => bool(values, `${prefix}${k}`))
+    .map((k) => fessStepLabels[k]);
+  return picked.length > 0 ? `${sideLabel}: ${picked.join(", ")}` : `${sideLabel}: 해당 없음`;
+}
+
+function fessConciseItems(values: FieldValues, includePacking: boolean): string[] {
+  const items: string[] = [
+    fessConciseSideLine("좌측", "f_left_", values),
+    fessConciseSideLine("우측", "f_right_", values),
+  ];
+  if (bool(values, "f_nav")) items.push("Navigation(항법장치) 병용");
+  if (includePacking) items.push(`${str(values, "f_pack", "Nasopore")} packing 예정`);
+  return items;
+}
+
+function planItemsFor(surgeryCode: BuiltInSurgeryCode, values: FieldValues): string[] {
+  if (surgeryCode === "SEPTOPLASTY") return septoConciseItems(values, true);
+  if (surgeryCode === "ESS") return fessConciseItems(values, true);
+
+  const order = str(values, "c_order", "비중격 → 좌 FESS → 우 FESS");
+  return [
+    `시행 순서: ${order}`,
+    "[비중격교정술]",
+    ...septoConciseItems(values, false).map((i) => `  - ${i}`),
+    "[FESS]",
+    ...fessConciseItems(values, false).map((i) => `  - ${i}`),
+    `공통 packing: ${str(values, "c_pack", "Nasopore")} 예정`,
+  ];
+}
+
+export function generatePlanSummary(surgeryCode: BuiltInSurgeryCode, values: FieldValues): string {
+  const findings = nasalFindingsText(values);
+  const items = planItemsFor(surgeryCode, values);
+  const bulletList = items.map((i) => (i.startsWith("[") || i.startsWith("  -") ? i : `- ${i}`)).join("\n");
+  return `[비강 소견]\n${findings}\n\n[예정 술식]\n${bulletList}`;
 }
