@@ -3,15 +3,18 @@
 import { useActionState } from "react";
 import { updateOpPlan, type OpPlanFormState } from "@/app/actions/op-plans";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
+import { OpNoteGenerateButton } from "@/components/op-note-generate-button";
 import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 
 export function PlanEditForm({
   planId,
+  surgeryTypeCode,
   fields,
   values,
   defaultValues,
 }: {
   planId: string;
+  surgeryTypeCode: string;
   fields: SurgeryFieldDef[];
   values: FieldValues;
   defaultValues: {
@@ -70,6 +73,8 @@ export function PlanEditForm({
       </div>
 
       <SurgeryFieldInputs fields={fields} values={values} />
+
+      <OpNoteGenerateButton fields={fields} surgeryTypeCode={surgeryTypeCode} mode="plan" />
 
       <div>
         <label className="mb-1 block text-sm font-medium text-slate-700">

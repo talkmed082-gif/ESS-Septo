@@ -34,6 +34,7 @@ export default async function EditOpRecordPage({
 
       <RecordForm
         action={action}
+        surgeryTypeCode={record.opPlan.surgeryType.code}
         fields={fields}
         fieldValues={values}
         submitLabel="저장"

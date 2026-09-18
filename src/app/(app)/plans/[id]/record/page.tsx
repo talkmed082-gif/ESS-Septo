@@ -40,6 +40,7 @@ export default async function NewOpRecordPage({
 
       <RecordForm
         action={action}
+        surgeryTypeCode={plan.surgeryType.code}
         fields={fields}
         fieldValues={planValues}
         submitLabel="기록지 저장"

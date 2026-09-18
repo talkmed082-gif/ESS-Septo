@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import type { OpRecordFormState } from "@/app/actions/op-records";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
+import { OpNoteGenerateButton } from "@/components/op-note-generate-button";
 import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 
 type Action = (
@@ -28,12 +29,14 @@ export interface RecordDefaultValues {
 
 export function RecordForm({
   action,
+  surgeryTypeCode,
   fields,
   fieldValues,
   defaultValues,
   submitLabel,
 }: {
   action: Action;
+  surgeryTypeCode: string;
   fields: SurgeryFieldDef[];
   fieldValues: FieldValues;
   defaultValues: RecordDefaultValues;
@@ -133,6 +136,8 @@ export function RecordForm({
 
       <p className="text-sm font-medium text-slate-700">수술 소견 / 시행 항목</p>
       <SurgeryFieldInputs fields={fields} values={fieldValues} />
+
+      <OpNoteGenerateButton fields={fields} surgeryTypeCode={surgeryTypeCode} mode="record" />
 
       <div>
         <label className="mb-1 block text-sm font-medium text-slate-700">

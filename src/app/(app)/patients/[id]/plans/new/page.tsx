@@ -56,6 +56,7 @@ export default async function NewOpPlanPage({
         <PlanForm
           patientId={patientId}
           surgeryTypeId={selected.id}
+          surgeryTypeCode={selected.code}
           surgeryTypeName={selected.name}
           fields={parseFieldDefs(selected.fields)}
         />

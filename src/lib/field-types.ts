@@ -10,6 +10,7 @@ export interface SurgeryFieldDef {
   label: string;
   type: SurgeryFieldType;
   options?: string[];
+  default?: string;
 }
 
 export function parseFieldDefs(json: unknown): SurgeryFieldDef[] {
@@ -27,6 +28,7 @@ export function parseFieldDefs(json: unknown): SurgeryFieldDef[] {
       label: f.label,
       type: f.type ?? "text",
       options: Array.isArray(f.options) ? f.options : undefined,
+      default: typeof f.default === "string" ? f.default : undefined,
     }));
 }
 

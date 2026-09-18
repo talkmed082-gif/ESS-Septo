@@ -84,6 +84,7 @@ export default async function OpPlanPage({
 
       <PlanEditForm
         planId={plan.id}
+        surgeryTypeCode={plan.surgeryType.code}
         fields={fields}
         values={values}
         defaultValues={{

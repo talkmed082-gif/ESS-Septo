@@ -59,7 +59,7 @@ export function SurgeryFieldInputs({
               </label>
               <textarea
                 name={name}
-                defaultValue={typeof value === "string" ? value : ""}
+                defaultValue={typeof value === "string" ? value : field.default ?? ""}
                 rows={2}
                 className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
               />
@@ -75,7 +75,7 @@ export function SurgeryFieldInputs({
             <input
               type={field.type === "number" ? "number" : "text"}
               name={name}
-              defaultValue={typeof value === "string" ? value : ""}
+              defaultValue={typeof value === "string" ? value : field.default ?? ""}
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
             />
           </div>
