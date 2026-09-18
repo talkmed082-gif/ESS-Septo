@@ -37,7 +37,7 @@ export function SurgeryFieldInputs({
               </label>
               <select
                 name={name}
-                defaultValue={typeof value === "string" ? value : ""}
+                defaultValue={typeof value === "string" ? value : field.default ?? ""}
                 className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
               >
                 <option value="">선택 안 함</option>

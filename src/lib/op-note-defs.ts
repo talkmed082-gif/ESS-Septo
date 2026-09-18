@@ -35,11 +35,12 @@ export const septoFields: SurgeryFieldDef[] = [
     label: "절개(Incision) 방법",
     type: "select",
     options: [
-      "Killian incision",
       "Hemitransfixion incision",
+      "Killian incision",
       "Full transfixion incision",
       "Cottle incision (maxilla-premaxillary)",
     ],
+    default: "Hemitransfixion incision",
   },
   { key: "s_caudal", label: "Caudal septum 편위 동반 교정", type: "checkbox" },
   { key: "s_spur", label: "Bony spur 제거", type: "checkbox" },

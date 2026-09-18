@@ -21,7 +21,13 @@ function getInput(form: HTMLFormElement | null, name: string) {
   return el instanceof HTMLInputElement || el instanceof HTMLSelectElement ? el : null;
 }
 
-export function SeptumDiagram({ values }: { values?: FieldValues }) {
+export function SeptumDiagram({
+  values,
+  onChange,
+}: {
+  values?: FieldValues;
+  onChange?: () => void;
+}) {
   const rootRef = useRef<HTMLDivElement>(null);
   const initial = values?.n_dev_side;
   const [side, setSide] = useState<string>(
@@ -33,6 +39,7 @@ export function SeptumDiagram({ values }: { values?: FieldValues }) {
     const el = getInput(form, "field_n_dev_side");
     if (el) el.value = value;
     setSide(value);
+    onChange?.();
   }
 
   const zone = (label: string, value: string, x: number) => {
@@ -96,7 +103,13 @@ export function SeptumDiagram({ values }: { values?: FieldValues }) {
   );
 }
 
-export function SinusDiagram({ values }: { values?: FieldValues }) {
+export function SinusDiagram({
+  values,
+  onChange,
+}: {
+  values?: FieldValues;
+  onChange?: () => void;
+}) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [checked, setChecked] = useState<Record<string, boolean>>(() => {
     const next: Record<string, boolean> = {};
@@ -115,6 +128,7 @@ export function SinusDiagram({ values }: { values?: FieldValues }) {
     const nextVal = !checked[`${prefix}${key}`];
     if (el instanceof HTMLInputElement) el.checked = nextVal;
     setChecked((c) => ({ ...c, [`${prefix}${key}`]: nextVal }));
+    onChange?.();
   }
 
   const column = (prefix: "f_left_" | "f_right_", label: string) => (
@@ -158,9 +172,11 @@ export function SinusDiagram({ values }: { values?: FieldValues }) {
 export function AnatomyPicker({
   surgeryTypeCode,
   values,
+  onChange,
 }: {
   surgeryTypeCode: string;
   values?: FieldValues;
+  onChange?: () => void;
 }) {
   const showSeptum =
     surgeryTypeCode === "SEPTOPLASTY" || surgeryTypeCode === "ESS" || surgeryTypeCode === "COMBO";
@@ -170,8 +186,8 @@ export function AnatomyPicker({
 
   return (
     <div className="flex flex-wrap gap-3">
-      {showSeptum && <SeptumDiagram values={values} />}
-      {showSinus && <SinusDiagram values={values} />}
+      {showSeptum && <SeptumDiagram values={values} onChange={onChange} />}
+      {showSinus && <SinusDiagram values={values} onChange={onChange} />}
     </div>
   );
 }

@@ -108,7 +108,7 @@ const incisionNames: Record<string, string> = {
 };
 
 function septoCore(values: FieldValues): string[] {
-  const incision = str(values, "s_incision", "Killian incision");
+  const incision = str(values, "s_incision", "Hemitransfixion incision");
   const caudal = bool(values, "s_caudal");
   const spur = bool(values, "s_spur");
   const turb = bool(values, "s_turb");
@@ -278,7 +278,7 @@ export function generateOpNote(
 // ---------- Op Plan 요약 (짧은 항목 나열 — 기록지의 서술형 문장과는 별도) ----------
 
 function septoConciseItems(values: FieldValues, includePacking: boolean): string[] {
-  const incision = str(values, "s_incision", "Killian incision");
+  const incision = str(values, "s_incision", "Hemitransfixion incision");
   const items: (string | false)[] = [
     incision,
     bool(values, "s_caudal") && "Caudal septum 편위 교정",
