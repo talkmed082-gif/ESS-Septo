@@ -38,19 +38,15 @@ export function anesthesiaLabel(anesthesiaType: string | undefined): string {
 
 // ---------- 비강 소견 (공통) ----------
 
-const devSideText: Record<string, string> = {
-  "특이 만곡 없음": "",
-  좌측: "좌측으로 ",
-  우측: "우측으로 ",
-  "양측(C자형)": "양측(C자형)으로 ",
-};
-
-const devSeverityText: Record<string, string> = {
-  해당없음: "특이 만곡 소견은 관찰되지 않았고",
-  경도: "경도 편위되어 있었고",
-  중등도: "중등도 편위되어 있었고",
-  고도: "고도 편위되어 있었고",
-};
+// 비중격 편위 방향/정도 — 예전엔 아래 nasalFindingsText 문장 속에 녹여서 길게
+// 서술했으나, 기록지 내용이 장황해져서 맨 앞에 짧은 한 줄로 요약해 붙임
+function septumSummaryLine(values: FieldValues): string {
+  const side = str(values, "n_dev_side", "특이 만곡 없음");
+  const dev = str(values, "n_deviation", "해당없음");
+  return side === "특이 만곡 없음" || dev === "해당없음"
+    ? "비중격: 특이 편위 없음"
+    : `비중격: ${side} ${dev} 편위`;
+}
 
 // 비용종 — 방향(n_polyp_side)을 먼저 고르고, 방향이 "없음"이 아닐 때만
 // 위치(n_polyp_site_*)를 고르는 2단계 구조. 위치는 방향에 상관없이 공통 목록으로 둠
@@ -87,31 +83,16 @@ function skullBaseSentence(values: FieldValues): string {
 }
 
 // 비강 소견 — 내시경 소견과 술전 CT 소견을 함께 서술함 (한쪽 검사로 국한하지 않음)
+// 맨 앞에 비중격 편위를 짧은 한 줄로 요약하고, 나머지도 문장 대신 간결한 항목 나열로 구성
 export function nasalFindingsText(values: FieldValues): string {
-  const side = str(values, "n_dev_side", "특이 만곡 없음");
-  const dev = str(values, "n_deviation", "해당없음");
   const cb = str(values, "n_cb", "없음");
+  const cbText =
+    cb === "없음" ? "Concha bullosa 없음" : cb === "양측" ? "양측 concha bullosa" : `${cb} concha bullosa`;
+  const polypText = hasPolyp(values)
+    ? `비용종: ${str(values, "n_polyp_side")} ${polypSites(values).join(", ")}`
+    : "비용종 없음";
 
-  let s = "비강 소견상 비중격은 ";
-  s +=
-    side === "특이 만곡 없음" || dev === "해당없음"
-      ? `${devSeverityText["해당없음"]}, `
-      : `${devSideText[side] ?? ""}${devSeverityText[dev] ?? devSeverityText["해당없음"]}, `;
-
-  s +=
-    cb === "없음"
-      ? "concha bullosa 소견은 관찰되지 않음. "
-      : cb === "양측"
-        ? "양측 중비갑개에 concha bullosa 소견이 관찰됨. "
-        : `${cb} 중비갑개에 concha bullosa 소견이 관찰됨. `;
-
-  s += hasPolyp(values)
-    ? `비용종은 ${str(values, "n_polyp_side")} ${polypSites(values).join(", ")}에서 관찰됨.`
-    : "비용종 소견은 관찰되지 않음.";
-
-  s += skullBaseSentence(values);
-
-  return s;
+  return [septumSummaryLine(values), cbText, polypText].join(". ") + "." + skullBaseSentence(values);
 }
 
 function hasPolypAt(sideName: "좌측" | "우측", values: FieldValues): boolean {
