@@ -3,15 +3,20 @@ import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 export function SurgeryFieldInputs({
   fields,
   values,
+  excludeKeys,
 }: {
   fields: SurgeryFieldDef[];
   values?: FieldValues;
+  excludeKeys?: string[];
 }) {
-  if (fields.length === 0) return null;
+  const visibleFields = excludeKeys
+    ? fields.filter((f) => !excludeKeys.includes(f.key))
+    : fields;
+  if (visibleFields.length === 0) return null;
 
   return (
     <div className="space-y-3 rounded-md border border-slate-200 p-4">
-      {fields.map((field) => {
+      {visibleFields.map((field) => {
         const name = `field_${field.key}`;
         const value = values?.[field.key];
 

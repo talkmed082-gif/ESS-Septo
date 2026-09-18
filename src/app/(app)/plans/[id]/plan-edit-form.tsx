@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { updateOpPlan, type OpPlanFormState } from "@/app/actions/op-plans";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import { OpNoteGenerateButton } from "@/components/op-note-generate-button";
-import { AnatomyPicker } from "@/components/anatomy-diagram";
+import { AnatomyPicker, getAnatomyCoveredKeys } from "@/components/anatomy-diagram";
 import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 
 export function PlanEditForm({
@@ -74,7 +74,11 @@ export function PlanEditForm({
       </div>
 
       <AnatomyPicker surgeryTypeCode={surgeryTypeCode} values={values} />
-      <SurgeryFieldInputs fields={fields} values={values} />
+      <SurgeryFieldInputs
+        fields={fields}
+        values={values}
+        excludeKeys={getAnatomyCoveredKeys(surgeryTypeCode)}
+      />
 
       <OpNoteGenerateButton fields={fields} surgeryTypeCode={surgeryTypeCode} mode="plan" />
 

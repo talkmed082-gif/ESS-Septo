@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
-import { AnatomyPicker } from "@/components/anatomy-diagram";
+import { AnatomyPicker, getAnatomyCoveredKeys } from "@/components/anatomy-diagram";
 import { fieldValuesFromFormData, type FieldValues, type SurgeryFieldDef } from "@/lib/field-types";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
 import { generateOpNote, generatePlanSummary } from "@/lib/op-note-generator";
@@ -133,7 +133,10 @@ export function QuickTool({
         {selected && (
           <div key={selected.id} className="space-y-4">
             <AnatomyPicker surgeryTypeCode={selected.code} onChange={regenerateFromForm} />
-            <SurgeryFieldInputs fields={selected.fields} />
+            <SurgeryFieldInputs
+              fields={selected.fields}
+              excludeKeys={getAnatomyCoveredKeys(selected.code)}
+            />
           </div>
         )}
       </form>

@@ -11,6 +11,24 @@ const SINUS_STEPS: { key: string; label: string }[] = [
   { key: "maxillary", label: "Maxillary" },
 ];
 
+// 모식도가 대신 담당하는 필드 키 목록 — 같은 항목이 아래 체크리스트에도 중복으로
+// 나타나 두 입력 방식이 서로 어긋나 보이는 것("원활하지 않음")을 막기 위해,
+// 이 키들은 SurgeryFieldInputs 목록에서는 제외하고 모식도에서만 선택하게 한다.
+export function getAnatomyCoveredKeys(surgeryTypeCode: string): string[] {
+  const keys: string[] = [];
+  const showSeptum =
+    surgeryTypeCode === "SEPTOPLASTY" || surgeryTypeCode === "ESS" || surgeryTypeCode === "COMBO";
+  const showSinus = surgeryTypeCode === "ESS" || surgeryTypeCode === "COMBO";
+
+  if (showSeptum) keys.push("n_dev_side");
+  if (showSinus) {
+    for (const prefix of ["f_left_", "f_right_"] as const) {
+      for (const step of SINUS_STEPS) keys.push(`${prefix}${step.key}`);
+    }
+  }
+  return keys;
+}
+
 function findForm(el: HTMLElement | null): HTMLFormElement | null {
   return el?.closest("form") ?? null;
 }

@@ -7,7 +7,7 @@ import {
 } from "@/app/actions/patient-plan";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import { OpNoteGenerateButton } from "@/components/op-note-generate-button";
-import { AnatomyPicker } from "@/components/anatomy-diagram";
+import { AnatomyPicker, getAnatomyCoveredKeys } from "@/components/anatomy-diagram";
 import type { SurgeryFieldDef } from "@/lib/field-types";
 
 export interface SurgeryTypeOption {
@@ -157,7 +157,10 @@ export function NewPatientPlanForm({
           </div>
 
           <AnatomyPicker surgeryTypeCode={selected.code} />
-          <SurgeryFieldInputs fields={selected.fields} />
+          <SurgeryFieldInputs
+            fields={selected.fields}
+            excludeKeys={getAnatomyCoveredKeys(selected.code)}
+          />
           <OpNoteGenerateButton fields={selected.fields} surgeryTypeCode={selected.code} mode="plan" />
 
           <div>
