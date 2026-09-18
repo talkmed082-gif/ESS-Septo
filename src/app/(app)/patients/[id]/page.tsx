@@ -95,15 +95,23 @@ export default async function PatientDetailPage({
                 return (
                   <tr key={plan.id} className="border-t border-slate-100 hover:bg-slate-50">
                     <td className="px-4 py-2 font-medium text-slate-900">
-                      {procedureName}
+                      <Link href={`/plans/${plan.id}`} className="hover:underline">
+                        {procedureName}
+                      </Link>
                       {plan.side && (
                         <span className="ml-1 font-normal text-slate-500">({plan.side})</span>
                       )}
                     </td>
                     <td className="px-4 py-2 text-slate-600">
-                      {plan.plannedDate ? plan.plannedDate.toISOString().slice(0, 10) : "-"}
+                      <Link href={`/plans/${plan.id}`} className="hover:underline">
+                        {plan.plannedDate ? plan.plannedDate.toISOString().slice(0, 10) : "입력"}
+                      </Link>
                     </td>
-                    <td className="max-w-xs px-4 py-2 text-slate-600">{findings}</td>
+                    <td className="max-w-xs px-4 py-2 text-slate-600">
+                      <Link href={`/plans/${plan.id}`} className="hover:underline">
+                        {findings}
+                      </Link>
+                    </td>
                     <td className="px-4 py-2">
                       <Link href={`/plans/${plan.id}`} className="text-slate-900 underline">
                         계획 보기

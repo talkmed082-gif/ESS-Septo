@@ -5,7 +5,8 @@ import { getCurrentUser } from "@/lib/dal";
 import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
 import { deleteOpPlan } from "@/app/actions/op-plans";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
-import { buildPlanTable, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
+import { buildPlanTable, buildProcedureName, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
+import { buildGoogleCalendarUrl } from "@/lib/calendar";
 import { PlanTableView } from "@/components/plan-table";
 import { PlanEditForm } from "./plan-edit-form";
 
@@ -41,6 +42,36 @@ export default async function OpPlanPage({
           {plan.surgeryType.name} 수술 계획
         </h1>
       </div>
+
+      {plan.plannedDate && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-white p-3 text-sm">
+          <span className="text-slate-500">
+            수술 예정일: <span className="font-medium text-slate-900">{plan.plannedDate.toISOString().slice(0, 10)}</span>
+          </span>
+          <a
+            href={buildGoogleCalendarUrl({
+              title: `[수술] ${plan.patient.name} - ${
+                isBuiltInSurgeryCode(plan.surgeryType.code)
+                  ? buildProcedureName(plan.surgeryType.code, values, nameStyle)
+                  : plan.surgeryType.name
+              }`,
+              date: plan.plannedDate,
+              details: [plan.diagnosis, plan.side].filter(Boolean).join(" / "),
+            })}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-auto rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50"
+          >
+            Google 캘린더에 추가
+          </a>
+          <a
+            href={`/plans/${plan.id}/ics`}
+            className="rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50"
+          >
+            캘린더 파일(.ics) 다운로드
+          </a>
+        </div>
+      )}
 
       {table && (
         <div className="rounded-lg border border-slate-200 bg-white p-4">
