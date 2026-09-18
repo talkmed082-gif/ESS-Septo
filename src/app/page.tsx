@@ -32,9 +32,17 @@ export default async function HomePage() {
           </Link>
           <div className="flex items-center gap-3 text-sm">
             {session?.userId ? (
-              <Link href="/patients" className="text-slate-600 hover:text-slate-900">
-                환자 목록으로
-              </Link>
+              <>
+                <Link href="/patients" className="text-slate-600 hover:text-slate-900">
+                  환자 목록으로
+                </Link>
+                <Link href="/surgery-types" className="text-slate-600 hover:text-slate-900">
+                  수술 종류 관리
+                </Link>
+                <Link href="/settings" className="text-slate-600 hover:text-slate-900">
+                  설정
+                </Link>
+              </>
             ) : (
               <>
                 <Link href="/login" className="text-slate-600 hover:text-slate-900">
