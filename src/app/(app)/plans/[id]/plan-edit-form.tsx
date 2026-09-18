@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { updateOpPlan, type OpPlanFormState } from "@/app/actions/op-plans";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import { OpNoteGenerateButton } from "@/components/op-note-generate-button";
@@ -12,6 +12,7 @@ import {
   getSinusCoveredKeys,
 } from "@/components/anatomy-diagram";
 import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
+import { PresetBar, type PresetItem } from "@/components/preset-bar";
 import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 import type { NameStyle } from "@/lib/op-note-generator";
 import { isNasalFindingKey } from "@/lib/op-note-defs";
@@ -19,14 +20,17 @@ import type { RecentCombo } from "@/lib/recent-combos";
 
 export function PlanEditForm({
   planId,
+  surgeryTypeId,
   surgeryTypeCode,
   fields,
   values,
   defaultValues,
   nameStyle,
   recentCombos,
+  presets,
 }: {
   planId: string;
+  surgeryTypeId: string;
   surgeryTypeCode: string;
   fields: SurgeryFieldDef[];
   values: FieldValues;
@@ -38,12 +42,14 @@ export function PlanEditForm({
   };
   nameStyle?: NameStyle;
   recentCombos?: RecentCombo[];
+  presets?: PresetItem[];
 }) {
   const action = updateOpPlan.bind(null, planId);
   const [state, formAction, pending] = useActionState<
     OpPlanFormState | undefined,
     FormData
   >(action, undefined);
+  const formRef = useRef<HTMLFormElement>(null);
   const [templateValues, setTemplateValues] = useState<FieldValues | undefined>(undefined);
   const [templateKey, setTemplateKey] = useState(0);
   const [step, setStep] = useState<1 | 2>(1);
@@ -63,7 +69,7 @@ export function PlanEditForm({
   }
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form ref={formRef} action={formAction} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">
@@ -103,6 +109,14 @@ export function PlanEditForm({
           className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
         />
       </div>
+
+      <PresetBar
+        surgeryTypeId={surgeryTypeId}
+        fields={fields}
+        initialPresets={presets ?? []}
+        formRef={formRef}
+        onApply={applyCombo}
+      />
 
       {recentCombos && recentCombos.length > 0 && (
         <div className="rounded-md border border-slate-200 bg-slate-50 p-3">

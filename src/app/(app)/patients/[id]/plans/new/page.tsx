@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/dal";
 import { parseFieldDefs } from "@/lib/field-types";
 import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
 import { getRecentCombosForSurgeryType } from "@/lib/recent-combos";
+import { getPresetsForSurgeryType } from "@/lib/presets";
 import { getLatestNasalFindingsForPatient } from "@/lib/patient-nasal-findings";
 import { PlanForm } from "./plan-form";
 
@@ -73,6 +74,7 @@ export default async function NewOpPlanPage({
             selected.code,
             nameStyle,
           )}
+          presets={await getPresetsForSurgeryType(user.id, selected.id)}
           patientNasalFindings={await getLatestNasalFindingsForPatient(patientId)}
         />
       )}

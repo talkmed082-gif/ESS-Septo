@@ -24,6 +24,7 @@ model User {
   patients     Patient[]
   opPlans      OpPlan[]
   opRecords    OpRecord[]
+  surgeryPresets SurgeryPreset[]
 }
 
 // 수술 종류 (ESS, 비중격교정술, 기타 이비인후과 수술 등). fields 는 이 수술에 특화된
@@ -36,6 +37,20 @@ model SurgeryType {
   isBuiltIn Boolean  @default(false)
   createdAt DateTime @default(now())
   opPlans   OpPlan[]
+  presets   SurgeryPreset[]
+}
+
+// 자주 쓰는 필드 조합을 이름 붙여 저장해두는 세트 — 클릭 한 번으로 전체 항목을
+// 불러올 수 있게 해서 반복적인 수술의 계획/기록 작성 클릭 수를 줄인다.
+model SurgeryPreset {
+  id            String      @id @default(cuid())
+  name          String
+  surgeryTypeId String
+  surgeryType   SurgeryType @relation(fields: [surgeryTypeId], references: [id], onDelete: Cascade)
+  fieldValues   Json
+  createdById   String
+  createdBy     User        @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
 }
 
 model Patient {

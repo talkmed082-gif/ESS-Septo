@@ -14,6 +14,7 @@ import {
 } from "@/lib/op-note-generator";
 import { buildGoogleCalendarUrl } from "@/lib/calendar";
 import { getRecentCombosForSurgeryType } from "@/lib/recent-combos";
+import { getPresetsForSurgeryType } from "@/lib/presets";
 import { PlanTableView } from "@/components/plan-table";
 import { PlanEditForm } from "./plan-edit-form";
 
@@ -44,6 +45,7 @@ export default async function OpPlanPage({
     plan.surgeryType.code,
     nameStyle,
   );
+  const presets = await getPresetsForSurgeryType(user.id, plan.surgeryTypeId);
 
   return (
     <div className="max-w-lg space-y-6">
@@ -138,6 +140,7 @@ export default async function OpPlanPage({
 
       <PlanEditForm
         planId={plan.id}
+        surgeryTypeId={plan.surgeryTypeId}
         surgeryTypeCode={plan.surgeryType.code}
         fields={fields}
         values={values}
@@ -151,6 +154,7 @@ export default async function OpPlanPage({
         }}
         nameStyle={nameStyle}
         recentCombos={recentCombos}
+        presets={presets}
       />
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { createOpPlan, type OpPlanFormState } from "@/app/actions/op-plans";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import { OpNoteGenerateButton } from "@/components/op-note-generate-button";
@@ -12,6 +12,7 @@ import {
   getSinusCoveredKeys,
 } from "@/components/anatomy-diagram";
 import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
+import { PresetBar, type PresetItem } from "@/components/preset-bar";
 import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 import type { NameStyle } from "@/lib/op-note-generator";
 import { isNasalFindingKey } from "@/lib/op-note-defs";
@@ -25,6 +26,7 @@ export function PlanForm({
   fields,
   nameStyle,
   recentCombos,
+  presets,
   patientNasalFindings,
 }: {
   patientId: string;
@@ -34,6 +36,7 @@ export function PlanForm({
   fields: SurgeryFieldDef[];
   nameStyle?: NameStyle;
   recentCombos?: RecentCombo[];
+  presets?: PresetItem[];
   patientNasalFindings?: FieldValues;
 }) {
   const action = createOpPlan.bind(null, patientId);
@@ -41,6 +44,7 @@ export function PlanForm({
     OpPlanFormState | undefined,
     FormData
   >(action, undefined);
+  const formRef = useRef<HTMLFormElement>(null);
   const [templateValues, setTemplateValues] = useState<FieldValues | undefined>(undefined);
   const [templateKey, setTemplateKey] = useState(0);
   const [step, setStep] = useState<1 | 2>(1);
@@ -64,7 +68,7 @@ export function PlanForm({
   }
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form ref={formRef} action={formAction} className="space-y-4">
       <input type="hidden" name="surgeryTypeId" value={surgeryTypeId} />
       <p className="text-sm text-slate-500">
         수술 종류: <span className="font-medium text-slate-900">{surgeryTypeName}</span>
@@ -121,6 +125,14 @@ export function PlanForm({
           </button>
         </div>
       )}
+
+      <PresetBar
+        surgeryTypeId={surgeryTypeId}
+        fields={fields}
+        initialPresets={presets ?? []}
+        formRef={formRef}
+        onApply={applyCombo}
+      />
 
       {recentCombos && recentCombos.length > 0 && (
         <div className="rounded-md border border-slate-200 bg-slate-50 p-3">

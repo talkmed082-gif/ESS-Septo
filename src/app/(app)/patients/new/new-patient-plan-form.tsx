@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import {
   createPatientWithPlan,
   type PatientPlanFormState,
@@ -15,6 +15,7 @@ import {
   getSinusCoveredKeys,
 } from "@/components/anatomy-diagram";
 import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
+import { PresetBar, type PresetItem } from "@/components/preset-bar";
 import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 import type { NameStyle } from "@/lib/op-note-generator";
 import { isNasalFindingKey } from "@/lib/op-note-defs";
@@ -31,15 +32,18 @@ export function NewPatientPlanForm({
   surgeryTypes,
   nameStyle,
   recentCombosByType,
+  presetsByType,
 }: {
   surgeryTypes: SurgeryTypeOption[];
   nameStyle?: NameStyle;
   recentCombosByType?: Record<string, RecentCombo[]>;
+  presetsByType?: Record<string, PresetItem[]>;
 }) {
   const [state, formAction, pending] = useActionState<
     PatientPlanFormState | undefined,
     FormData
   >(createPatientWithPlan, undefined);
+  const formRef = useRef<HTMLFormElement>(null);
   const [surgeryTypeId, setSurgeryTypeId] = useState("");
   const [templateValues, setTemplateValues] = useState<FieldValues | undefined>(undefined);
   const [templateKey, setTemplateKey] = useState(0);
@@ -47,6 +51,7 @@ export function NewPatientPlanForm({
 
   const selected = surgeryTypes.find((st) => st.id === surgeryTypeId);
   const recentCombos = surgeryTypeId ? recentCombosByType?.[surgeryTypeId] ?? [] : [];
+  const presets = surgeryTypeId ? presetsByType?.[surgeryTypeId] ?? [] : [];
   const nasalFields = selected ? selected.fields.filter((f) => isNasalFindingKey(f.key)) : [];
   const procedureFields = selected ? selected.fields.filter((f) => !isNasalFindingKey(f.key)) : [];
   const { showSeptum, showSinus } = selected
@@ -63,7 +68,7 @@ export function NewPatientPlanForm({
   }
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form ref={formRef} action={formAction} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">
@@ -154,6 +159,14 @@ export function NewPatientPlanForm({
 
       {selected && (
         <div key={`${selected.id}-${templateKey}`} className="space-y-4 rounded-md border border-slate-200 p-4">
+          <PresetBar
+            surgeryTypeId={selected.id}
+            fields={selected.fields}
+            initialPresets={presets}
+            formRef={formRef}
+            onApply={applyCombo}
+          />
+
           {recentCombos.length > 0 && (
             <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
               <p className="mb-2 text-xs font-medium text-slate-500">최근 사용한 조합</p>

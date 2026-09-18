@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/dal";
 import { parseFieldDefs } from "@/lib/field-types";
 import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
 import { getRecentCombosForSurgeryTypes } from "@/lib/recent-combos";
+import { getPresetsForSurgeryTypes } from "@/lib/presets";
 import { NewPatientPlanForm } from "./new-patient-plan-form";
 
 export default async function NewPatientPage() {
@@ -20,6 +21,10 @@ export default async function NewPatientPage() {
     surgeryTypes.map((st) => ({ id: st.id, code: st.code })),
     nameStyle,
   );
+  const presetsByType = await getPresetsForSurgeryTypes(
+    user.id,
+    surgeryTypes.map((st) => st.id),
+  );
 
   return (
     <div className="max-w-lg">
@@ -36,6 +41,7 @@ export default async function NewPatientPage() {
         }))}
         nameStyle={nameStyle}
         recentCombosByType={recentCombosByType}
+        presetsByType={presetsByType}
       />
     </div>
   );
