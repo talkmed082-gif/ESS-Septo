@@ -7,6 +7,11 @@ import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
 import type { SurgeryFieldDef } from "@/lib/field-types";
 import type { Prisma } from "@/generated/prisma/client";
+import {
+  essFullFields,
+  septoplastyFullFields,
+  comboFullFields,
+} from "@/lib/op-note-defs";
 
 const FieldDefSchema = z.object({
   key: z.string().trim().min(1),
@@ -83,6 +88,30 @@ export async function createSurgeryType(
 
   revalidatePath("/surgery-types");
   redirect("/surgery-types");
+}
+
+// 기본 제공 수술 종류(ESS/SEPTOPLASTY/COMBO)의 입력 항목 정의는 코드
+// (op-note-defs.ts)에서 관리하지만, 실제 화면에는 DB에 저장된 SurgeryType.fields가
+// 쓰인다. 코드에 새 항목을 추가한 뒤 이 액션으로 DB 쪽 정의를 다시 맞춰준다
+// (기존 계획/기록지의 저장된 값에는 영향 없음 — 항목 "정의"만 갱신됨).
+export async function reseedBuiltInSurgeryTypes() {
+  await verifySession();
+
+  const builtIns: { code: string; name: string; fields: SurgeryFieldDef[] }[] = [
+    { code: "ESS", name: "부비동내시경수술 (FESS)", fields: essFullFields },
+    { code: "SEPTOPLASTY", name: "비중격교정술 (Septoplasty)", fields: septoplastyFullFields },
+    { code: "COMBO", name: "비중격교정술 + FESS 병행", fields: comboFullFields },
+  ];
+
+  for (const b of builtIns) {
+    await prisma.surgeryType.upsert({
+      where: { code: b.code },
+      update: { name: b.name, fields: b.fields as unknown as Prisma.InputJsonValue, isBuiltIn: true },
+      create: { code: b.code, name: b.name, fields: b.fields as unknown as Prisma.InputJsonValue, isBuiltIn: true },
+    });
+  }
+
+  revalidatePath("/surgery-types");
 }
 
 export async function deleteSurgeryType(surgeryTypeId: string) {
