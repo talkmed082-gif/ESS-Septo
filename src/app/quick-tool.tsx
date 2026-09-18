@@ -7,7 +7,7 @@ import { AnatomyPicker, getAnatomyCoveredKeys } from "@/components/anatomy-diagr
 import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
 import { fieldValuesFromFormData, type FieldValues, type SurgeryFieldDef } from "@/lib/field-types";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
-import { buildProcedureName, generateOpNote, generatePlanSummary } from "@/lib/op-note-generator";
+import { buildProcedureName, generateOpNote, generatePlanSummary, type NameStyle } from "@/lib/op-note-generator";
 
 export interface SurgeryTypeOption {
   id: string;
@@ -21,6 +21,7 @@ function buildTexts(
   fields: SurgeryFieldDef[],
   values: FieldValues,
   anesthesiaType: string,
+  nameStyle?: NameStyle,
 ): { planText: string; recordText: string } {
   if (!isBuiltInSurgeryCode(code)) {
     return {
@@ -28,9 +29,9 @@ function buildTexts(
       recordText: "이 수술 종류는 자동 작성을 지원하지 않습니다.",
     };
   }
-  const plan = generatePlanSummary(code, values);
+  const plan = generatePlanSummary(code, values, nameStyle);
   const record = generateOpNote(code, values, "record", anesthesiaType);
-  const procedureName = buildProcedureName(code, values);
+  const procedureName = buildProcedureName(code, values, nameStyle);
   return {
     planText: plan,
     recordText: `수술명: ${procedureName}\n\n[수술 소견]\n${record.findings}\n\n[수술 과정]\n${record.procedureDetail}`,
@@ -61,15 +62,17 @@ function CopyButton({ text }: { text: string }) {
 export function QuickTool({
   surgeryTypes,
   loggedIn,
+  nameStyle,
 }: {
   surgeryTypes: SurgeryTypeOption[];
   loggedIn: boolean;
+  nameStyle?: NameStyle;
 }) {
   const first = surgeryTypes[0];
   const [selectedId, setSelectedId] = useState(first?.id ?? "");
   const [anesthesiaType, setAnesthesiaType] = useState("General");
   const [{ planText, recordText }, setTexts] = useState(() =>
-    first ? buildTexts(first.code, first.fields, {}, "General") : { planText: "", recordText: "" },
+    first ? buildTexts(first.code, first.fields, {}, "General", nameStyle) : { planText: "", recordText: "" },
   );
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -78,20 +81,20 @@ export function QuickTool({
   function regenerateFromForm() {
     if (!selected || !formRef.current) return;
     const values = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
-    setTexts(buildTexts(selected.code, selected.fields, values, anesthesiaType));
+    setTexts(buildTexts(selected.code, selected.fields, values, anesthesiaType, nameStyle));
   }
 
   function handleSurgeryTypeChange(id: string) {
     setSelectedId(id);
     const next = surgeryTypes.find((st) => st.id === id);
-    if (next) setTexts(buildTexts(next.code, next.fields, {}, anesthesiaType));
+    if (next) setTexts(buildTexts(next.code, next.fields, {}, anesthesiaType, nameStyle));
   }
 
   function handleAnesthesiaChange(value: string) {
     setAnesthesiaType(value);
     if (selected && formRef.current) {
       const values = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
-      setTexts(buildTexts(selected.code, selected.fields, values, value));
+      setTexts(buildTexts(selected.code, selected.fields, values, value, nameStyle));
     }
   }
 

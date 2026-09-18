@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { parseFieldDefs } from "@/lib/field-types";
 import { getSessionPayload } from "@/lib/session";
+import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
 import { QuickTool } from "./quick-tool";
 
 export default async function HomePage() {
@@ -11,6 +12,16 @@ export default async function HomePage() {
     }),
     getSessionPayload(),
   ]);
+
+  const user = session?.userId
+    ? await prisma.user.findUnique({
+        where: { id: session.userId as string },
+        select: { sideNotation: true, abbreviateRegions: true },
+      })
+    : null;
+  const nameStyle: NameStyle | undefined = user
+    ? { sideNotation: user.sideNotation as SideNotation, abbreviateRegions: user.abbreviateRegions }
+    : undefined;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -51,6 +62,7 @@ export default async function HomePage() {
             fields: parseFieldDefs(st.fields),
           }))}
           loggedIn={!!session?.userId}
+          nameStyle={nameStyle}
         />
       </main>
     </div>
