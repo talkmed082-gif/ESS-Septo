@@ -26,6 +26,20 @@ export const nasalFindingFields: SurgeryFieldDef[] = [
   { key: "n_polyp_maxillary", label: "비용종 - 상악동 자연공", type: "checkbox" },
   { key: "n_polyp_sphenoid", label: "비용종 - 접형동", type: "checkbox" },
   { key: "n_polyp_choana", label: "비용종 - 후비공까지 연장", type: "checkbox" },
+  // Skull base 높이(Keros classification) — 술전 CT로 평가, FESS 시 사골동
+  // 천장 손상 위험도 판단에 참고. 좌우 비대칭 가능성이 있어 좌/우 각각 둠
+  {
+    key: "skull_base_left",
+    label: "Skull base 높이 - 좌측 (Keros)",
+    type: "select",
+    options: ["Type I (얕음, 저위험)", "Type II (중등도)", "Type III (깊음, 고위험)"],
+  },
+  {
+    key: "skull_base_right",
+    label: "Skull base 높이 - 우측 (Keros)",
+    type: "select",
+    options: ["Type I (얕음, 저위험)", "Type II (중등도)", "Type III (깊음, 고위험)"],
+  },
   // Turbinoplasty — 비중격교정술/FESS 어느 쪽에도 단독 또는 동반될 수 있어 공통 항목으로 둠
   { key: "turb_middle_left", label: "중비갑개 축소술 - 좌측", type: "checkbox" },
   { key: "turb_middle_right", label: "중비갑개 축소술 - 우측", type: "checkbox" },

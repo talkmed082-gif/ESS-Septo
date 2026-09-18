@@ -77,7 +77,7 @@ export default async function PatientDetailPage({
               <tr>
                 <th className="px-4 py-2 font-medium">수술 이름</th>
                 <th className="px-4 py-2 font-medium">예정일</th>
-                <th className="px-4 py-2 font-medium">내시경 소견</th>
+                <th className="px-4 py-2 font-medium">비강/영상 소견</th>
                 <th className="px-4 py-2 font-medium">Op Plan</th>
                 <th className="px-4 py-2 font-medium">수술 기록지</th>
               </tr>

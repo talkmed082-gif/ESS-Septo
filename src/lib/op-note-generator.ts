@@ -61,13 +61,28 @@ const polypLocNames: Record<string, string> = {
   n_polyp_choana: "후비공까지 연장되어",
 };
 
+function skullBaseSentence(values: FieldValues): string {
+  const left = str(values, "skull_base_left", "");
+  const right = str(values, "skull_base_right", "");
+  if (!left && !right) return "";
+
+  if (left && right && left === right) {
+    return ` 술전 CT상 skull base 높이는 양측 ${left} 소견.`;
+  }
+  const parts: string[] = [];
+  if (right) parts.push(`우측 ${right}`);
+  if (left) parts.push(`좌측 ${left}`);
+  return ` 술전 CT상 skull base 높이는 ${parts.join(", ")} 소견.`;
+}
+
+// 비강 소견 — 내시경 소견과 술전 CT 소견을 함께 서술함 (한쪽 검사로 국한하지 않음)
 export function nasalFindingsText(values: FieldValues): string {
   const side = str(values, "n_dev_side", "특이 만곡 없음");
   const dev = str(values, "n_deviation", "해당없음");
   const cb = str(values, "n_cb", "없음");
   const polypKeys = Object.keys(polypLocNames).filter((k) => bool(values, k));
 
-  let s = "비내시경 소견상 비중격은 ";
+  let s = "비강 소견상 비중격은 ";
   s +=
     side === "특이 만곡 없음" || dev === "해당없음"
       ? `${devSeverityText["해당없음"]}, `
@@ -84,6 +99,8 @@ export function nasalFindingsText(values: FieldValues): string {
     polypKeys.length > 0
       ? `비용종은 ${polypKeys.map((k) => polypLocNames[k]).join(", ")}에서 관찰됨.`
       : "비용종 소견은 관찰되지 않음.";
+
+  s += skullBaseSentence(values);
 
   return s;
 }
