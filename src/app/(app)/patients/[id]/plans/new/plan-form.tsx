@@ -1,12 +1,14 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { createOpPlan, type OpPlanFormState } from "@/app/actions/op-plans";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import { OpNoteGenerateButton } from "@/components/op-note-generate-button";
 import { AnatomyPicker, getAnatomyCoveredKeys } from "@/components/anatomy-diagram";
-import type { SurgeryFieldDef } from "@/lib/field-types";
+import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
+import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 import type { NameStyle } from "@/lib/op-note-generator";
+import type { RecentCombo } from "@/lib/recent-combos";
 
 export function PlanForm({
   patientId,
@@ -15,6 +17,7 @@ export function PlanForm({
   surgeryTypeName,
   fields,
   nameStyle,
+  recentCombos,
 }: {
   patientId: string;
   surgeryTypeId: string;
@@ -22,12 +25,20 @@ export function PlanForm({
   surgeryTypeName: string;
   fields: SurgeryFieldDef[];
   nameStyle?: NameStyle;
+  recentCombos?: RecentCombo[];
 }) {
   const action = createOpPlan.bind(null, patientId);
   const [state, formAction, pending] = useActionState<
     OpPlanFormState | undefined,
     FormData
   >(action, undefined);
+  const [templateValues, setTemplateValues] = useState<FieldValues | undefined>(undefined);
+  const [templateKey, setTemplateKey] = useState(0);
+
+  function applyCombo(values: FieldValues) {
+    setTemplateValues(values);
+    setTemplateKey((k) => k + 1);
+  }
 
   return (
     <form action={formAction} className="space-y-4">
@@ -73,11 +84,33 @@ export function PlanForm({
         />
       </div>
 
-      <AnatomyPicker surgeryTypeCode={surgeryTypeCode} />
-      <SurgeryFieldInputs
-        fields={fields}
-        excludeKeys={getAnatomyCoveredKeys(surgeryTypeCode)}
-      />
+      {recentCombos && recentCombos.length > 0 && (
+        <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
+          <p className="mb-2 text-xs font-medium text-slate-500">최근 사용한 조합</p>
+          <div className="flex flex-wrap gap-2">
+            {recentCombos.map((combo, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => applyCombo(combo.values)}
+                className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 hover:border-emerald-400 hover:bg-emerald-50"
+              >
+                {combo.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div key={templateKey} className="space-y-4">
+        <AnatomyPicker surgeryTypeCode={surgeryTypeCode} values={templateValues} />
+        <PolypPicker values={templateValues} />
+        <SurgeryFieldInputs
+          fields={fields}
+          values={templateValues}
+          excludeKeys={[...getAnatomyCoveredKeys(surgeryTypeCode), ...POLYP_FIELD_KEYS]}
+        />
+      </div>
 
       <OpNoteGenerateButton
         fields={fields}

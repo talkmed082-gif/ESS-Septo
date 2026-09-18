@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
 import { parseFieldDefs } from "@/lib/field-types";
-import type { SideNotation } from "@/lib/op-note-generator";
+import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
+import { getRecentCombosForSurgeryTypes } from "@/lib/recent-combos";
 import { NewPatientPlanForm } from "./new-patient-plan-form";
 
 export default async function NewPatientPage() {
@@ -10,6 +11,15 @@ export default async function NewPatientPage() {
   const surgeryTypes = await prisma.surgeryType.findMany({
     orderBy: [{ isBuiltIn: "desc" }, { createdAt: "asc" }],
   });
+  const nameStyle: NameStyle = {
+    sideNotation: user.sideNotation as SideNotation,
+    abbreviateRegions: user.abbreviateRegions,
+  };
+  const recentCombosByType = await getRecentCombosForSurgeryTypes(
+    user.id,
+    surgeryTypes.map((st) => ({ id: st.id, code: st.code })),
+    nameStyle,
+  );
 
   return (
     <div className="max-w-lg">
@@ -24,10 +34,8 @@ export default async function NewPatientPage() {
           name: st.name,
           fields: parseFieldDefs(st.fields),
         }))}
-        nameStyle={{
-          sideNotation: user.sideNotation as SideNotation,
-          abbreviateRegions: user.abbreviateRegions,
-        }}
+        nameStyle={nameStyle}
+        recentCombosByType={recentCombosByType}
       />
     </div>
   );

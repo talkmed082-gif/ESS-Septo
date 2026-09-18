@@ -6,7 +6,7 @@ export const nasalFindingFields: SurgeryFieldDef[] = [
     key: "n_dev_side",
     label: "비중격 편위 방향",
     type: "select",
-    options: ["특이 만곡 없음", "좌측", "우측", "양측(C자형)"],
+    options: ["특이 만곡 없음", "우측", "좌측", "양측(C자형)"],
   },
   {
     key: "n_deviation",
@@ -18,33 +18,41 @@ export const nasalFindingFields: SurgeryFieldDef[] = [
     key: "n_cb",
     label: "Concha bullosa",
     type: "select",
-    options: ["없음", "좌측", "우측", "양측"],
+    options: ["없음", "우측", "좌측", "양측"],
   },
-  { key: "n_polyp_mm_left", label: "비용종 - 중비도(좌)", type: "checkbox" },
-  { key: "n_polyp_mm_right", label: "비용종 - 중비도(우)", type: "checkbox" },
-  { key: "n_polyp_ethmoid", label: "비용종 - 사골동", type: "checkbox" },
-  { key: "n_polyp_maxillary", label: "비용종 - 상악동 자연공", type: "checkbox" },
-  { key: "n_polyp_sphenoid", label: "비용종 - 접형동", type: "checkbox" },
-  { key: "n_polyp_choana", label: "비용종 - 후비공까지 연장", type: "checkbox" },
+  // 비용종 — 방향을 먼저 고르고(없는 경우가 많아 기본값은 "없음"), 방향을
+  // 선택했을 때만 위치를 고르게 한다(PolypPicker 컴포넌트가 조건부로 노출).
+  {
+    key: "n_polyp_side",
+    label: "비용종 방향",
+    type: "select",
+    options: ["없음", "우측", "좌측", "양측"],
+    default: "없음",
+  },
+  { key: "n_polyp_site_mm", label: "비용종 위치 - 중비도", type: "checkbox" },
+  { key: "n_polyp_site_ethmoid", label: "비용종 위치 - 사골동", type: "checkbox" },
+  { key: "n_polyp_site_maxillary", label: "비용종 위치 - 상악동 자연공", type: "checkbox" },
+  { key: "n_polyp_site_sphenoid", label: "비용종 위치 - 접형동", type: "checkbox" },
+  { key: "n_polyp_site_choana", label: "비용종 위치 - 후비공까지 연장", type: "checkbox" },
   // Skull base 높이(Keros classification) — 술전 CT로 평가, FESS 시 사골동
   // 천장 손상 위험도 판단에 참고. 좌우 비대칭 가능성이 있어 좌/우 각각 둠
-  {
-    key: "skull_base_left",
-    label: "Skull base 높이 - 좌측 (Keros)",
-    type: "select",
-    options: ["Type I (얕음, 저위험)", "Type II (중등도)", "Type III (깊음, 고위험)"],
-  },
   {
     key: "skull_base_right",
     label: "Skull base 높이 - 우측 (Keros)",
     type: "select",
     options: ["Type I (얕음, 저위험)", "Type II (중등도)", "Type III (깊음, 고위험)"],
   },
+  {
+    key: "skull_base_left",
+    label: "Skull base 높이 - 좌측 (Keros)",
+    type: "select",
+    options: ["Type I (얕음, 저위험)", "Type II (중등도)", "Type III (깊음, 고위험)"],
+  },
   // Turbinoplasty — 비중격교정술/FESS 어느 쪽에도 단독 또는 동반될 수 있어 공통 항목으로 둠
-  { key: "turb_middle_left", label: "중비갑개 축소술 - 좌측", type: "checkbox" },
   { key: "turb_middle_right", label: "중비갑개 축소술 - 우측", type: "checkbox" },
-  { key: "turb_inferior_left", label: "하비갑개 축소술 - 좌측", type: "checkbox" },
+  { key: "turb_middle_left", label: "중비갑개 축소술 - 좌측", type: "checkbox" },
   { key: "turb_inferior_right", label: "하비갑개 축소술 - 우측", type: "checkbox" },
+  { key: "turb_inferior_left", label: "하비갑개 축소술 - 좌측", type: "checkbox" },
 ];
 
 // 비중격교정술 전용 항목
@@ -65,7 +73,7 @@ export const septoFields: SurgeryFieldDef[] = [
     key: "s_incision_side",
     label: "절개 방향 (시작 측)",
     type: "select",
-    options: ["좌측", "우측"],
+    options: ["우측", "좌측"],
   },
   { key: "s_caudal", label: "Caudal septum 편위 동반 교정", type: "checkbox" },
   { key: "s_spur", label: "Bony spur 제거", type: "checkbox" },
@@ -115,20 +123,20 @@ export const fessFields: SurgeryFieldDef[] = [
     key: "f_side_order",
     label: "시행 순서",
     type: "select",
-    options: ["좌측 먼저 → 우측", "우측 먼저 → 좌측"],
+    options: ["우측 먼저 → 좌측", "좌측 먼저 → 우측"],
   },
-  ...fessStepFieldKeys.map((k) => ({
-    key: `f_left_${k}`,
-    label: `좌측 - ${fessStepLabels[k]}`,
-    type: "checkbox" as const,
-  })),
   ...fessStepFieldKeys.map((k) => ({
     key: `f_right_${k}`,
     label: `우측 - ${fessStepLabels[k]}`,
     type: "checkbox" as const,
   })),
-  { key: "f_left_silastic_sheet", label: "좌측 - Silastic sheet 삽입 (유착 방지)", type: "checkbox" },
+  ...fessStepFieldKeys.map((k) => ({
+    key: `f_left_${k}`,
+    label: `좌측 - ${fessStepLabels[k]}`,
+    type: "checkbox" as const,
+  })),
   { key: "f_right_silastic_sheet", label: "우측 - Silastic sheet 삽입 (유착 방지)", type: "checkbox" },
+  { key: "f_left_silastic_sheet", label: "좌측 - Silastic sheet 삽입 (유착 방지)", type: "checkbox" },
   { key: "f_nav", label: "Navigation(항법장치) 병용", type: "checkbox" },
   { key: "f_debrider", label: "Microdebrider 사용", type: "checkbox" },
   {
@@ -146,12 +154,12 @@ export const comboOnlyFields: SurgeryFieldDef[] = [
     label: "시행 순서 (비중격 / 좌측 FESS / 우측 FESS)",
     type: "select",
     options: [
-      "비중격 → 좌 FESS → 우 FESS",
       "비중격 → 우 FESS → 좌 FESS",
-      "좌 FESS → 비중격 → 우 FESS",
+      "비중격 → 좌 FESS → 우 FESS",
       "우 FESS → 비중격 → 좌 FESS",
-      "좌 FESS → 우 FESS → 비중격",
+      "좌 FESS → 비중격 → 우 FESS",
       "우 FESS → 좌 FESS → 비중격",
+      "좌 FESS → 우 FESS → 비중격",
     ],
   },
   {

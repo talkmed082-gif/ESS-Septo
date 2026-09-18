@@ -52,14 +52,25 @@ const devSeverityText: Record<string, string> = {
   고도: "고도 편위되어 있었고",
 };
 
-const polypLocNames: Record<string, string> = {
-  n_polyp_mm_left: "좌측 중비도",
-  n_polyp_mm_right: "우측 중비도",
-  n_polyp_ethmoid: "사골동 내",
-  n_polyp_maxillary: "상악동 자연공 부위",
-  n_polyp_sphenoid: "접형동 내",
-  n_polyp_choana: "후비공까지 연장되어",
-};
+// 비용종 — 방향(n_polyp_side)을 먼저 고르고, 방향이 "없음"이 아닐 때만
+// 위치(n_polyp_site_*)를 고르는 2단계 구조. 위치는 방향에 상관없이 공통 목록으로 둠
+// (좌/우 위치를 각각 다르게 기록해야 하는 드문 경우는 자유 텍스트로 보정).
+const polypSiteFields: { key: string; label: string }[] = [
+  { key: "n_polyp_site_mm", label: "중비도" },
+  { key: "n_polyp_site_ethmoid", label: "사골동" },
+  { key: "n_polyp_site_maxillary", label: "상악동 자연공" },
+  { key: "n_polyp_site_sphenoid", label: "접형동" },
+  { key: "n_polyp_site_choana", label: "후비공까지 연장" },
+];
+
+function polypSites(values: FieldValues): string[] {
+  return polypSiteFields.filter((f) => bool(values, f.key)).map((f) => f.label);
+}
+
+function hasPolyp(values: FieldValues): boolean {
+  const side = str(values, "n_polyp_side", "없음");
+  return side !== "없음" && polypSites(values).length > 0;
+}
 
 function skullBaseSentence(values: FieldValues): string {
   const left = str(values, "skull_base_left", "");
@@ -80,7 +91,6 @@ export function nasalFindingsText(values: FieldValues): string {
   const side = str(values, "n_dev_side", "특이 만곡 없음");
   const dev = str(values, "n_deviation", "해당없음");
   const cb = str(values, "n_cb", "없음");
-  const polypKeys = Object.keys(polypLocNames).filter((k) => bool(values, k));
 
   let s = "비강 소견상 비중격은 ";
   s +=
@@ -95,10 +105,9 @@ export function nasalFindingsText(values: FieldValues): string {
         ? "양측 중비갑개에 concha bullosa 소견이 관찰됨. "
         : `${cb} 중비갑개에 concha bullosa 소견이 관찰됨. `;
 
-  s +=
-    polypKeys.length > 0
-      ? `비용종은 ${polypKeys.map((k) => polypLocNames[k]).join(", ")}에서 관찰됨.`
-      : "비용종 소견은 관찰되지 않음.";
+  s += hasPolyp(values)
+    ? `비용종은 ${str(values, "n_polyp_side")} ${polypSites(values).join(", ")}에서 관찰됨.`
+    : "비용종 소견은 관찰되지 않음.";
 
   s += skullBaseSentence(values);
 
@@ -106,18 +115,18 @@ export function nasalFindingsText(values: FieldValues): string {
 }
 
 function hasPolypAt(sideName: "좌측" | "우측", values: FieldValues): boolean {
-  const sideKey = sideName === "좌측" ? "n_polyp_mm_left" : "n_polyp_mm_right";
-  const centralKeys = ["n_polyp_ethmoid", "n_polyp_maxillary", "n_polyp_sphenoid", "n_polyp_choana"];
-  return bool(values, sideKey) || centralKeys.some((k) => bool(values, k));
+  if (!hasPolyp(values)) return false;
+  const side = str(values, "n_polyp_side", "없음");
+  return side === "양측" || side === sideName;
 }
 
 // ---------- Turbinoplasty (비중격교정술/FESS 공통) ----------
 
 const turbinateFields: { key: string; side: "좌측" | "우측"; label: string }[] = [
-  { key: "turb_middle_left", side: "좌측", label: "중비갑개" },
-  { key: "turb_inferior_left", side: "좌측", label: "하비갑개" },
   { key: "turb_middle_right", side: "우측", label: "중비갑개" },
   { key: "turb_inferior_right", side: "우측", label: "하비갑개" },
+  { key: "turb_middle_left", side: "좌측", label: "중비갑개" },
+  { key: "turb_inferior_left", side: "좌측", label: "하비갑개" },
 ];
 
 function turbinateLabelsForSide(side: "좌측" | "우측", values: FieldValues): string[] {
@@ -240,7 +249,7 @@ function fessSideBlock(
 }
 
 function fessCore(values: FieldValues): string[] {
-  const order = str(values, "f_side_order", "좌측 먼저 → 우측");
+  const order = str(values, "f_side_order", "우측 먼저 → 좌측");
   const nav = bool(values, "f_nav");
   const debrider = bool(values, "f_debrider");
 
@@ -291,7 +300,7 @@ function genCombo(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpN
   const pack = str(values, "c_pack", "Nasopore");
   const nav = bool(values, "f_nav");
   const debrider = bool(values, "f_debrider");
-  const order = str(values, "c_order", "비중격 → 좌 FESS → 우 FESS");
+  const order = str(values, "c_order", "비중격 → 우 FESS → 좌 FESS");
 
   const opening: string[] = [];
   if (mode === "record") {
@@ -382,7 +391,7 @@ function planItemsFor(surgeryCode: BuiltInSurgeryCode, values: FieldValues): str
   if (surgeryCode === "SEPTOPLASTY") return [...septoConciseItems(values, true), ...turbLine];
   if (surgeryCode === "ESS") return [...fessConciseItems(values, true), ...turbLine];
 
-  const order = str(values, "c_order", "비중격 → 좌 FESS → 우 FESS");
+  const order = str(values, "c_order", "비중격 → 우 FESS → 좌 FESS");
   return [
     `시행 순서: ${order}`,
     "[비중격교정술]",
@@ -567,7 +576,7 @@ export function buildPlanTable(
     procedureName,
     findings,
     keyValueRows: [
-      { label: "시행 순서", value: str(values, "c_order", "비중격 → 좌 FESS → 우 FESS") },
+      { label: "시행 순서", value: str(values, "c_order", "비중격 → 우 FESS → 좌 FESS") },
       { label: "절개(비중격)", value: incision },
       { label: "동반 술식(비중격)", value: rest.length > 0 ? rest.join(", ") : "-" },
       ...turbRow,

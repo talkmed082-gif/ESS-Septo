@@ -5,6 +5,7 @@ import type { OpRecordFormState } from "@/app/actions/op-records";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import { OpNoteGenerateButton } from "@/components/op-note-generate-button";
 import { AnatomyPicker, getAnatomyCoveredKeys } from "@/components/anatomy-diagram";
+import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
 import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 import type { NameStyle } from "@/lib/op-note-generator";
 
@@ -140,10 +141,11 @@ export function RecordForm({
 
       <p className="text-sm font-medium text-slate-700">수술 소견 / 시행 항목</p>
       <AnatomyPicker surgeryTypeCode={surgeryTypeCode} values={fieldValues} />
+      <PolypPicker values={fieldValues} />
       <SurgeryFieldInputs
         fields={fields}
         values={fieldValues}
-        excludeKeys={getAnatomyCoveredKeys(surgeryTypeCode)}
+        excludeKeys={[...getAnatomyCoveredKeys(surgeryTypeCode), ...POLYP_FIELD_KEYS]}
       />
 
       <OpNoteGenerateButton

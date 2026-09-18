@@ -7,7 +7,9 @@ import { deleteOpPlan } from "@/app/actions/op-plans";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
 import { buildPlanTable, buildProcedureName, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { buildGoogleCalendarUrl } from "@/lib/calendar";
+import { getRecentCombosForSurgeryType } from "@/lib/recent-combos";
 import { PlanTableView } from "@/components/plan-table";
+import { SurgeryChecklist } from "@/components/surgery-checklist";
 import { PlanEditForm } from "./plan-edit-form";
 
 export default async function OpPlanPage({
@@ -31,6 +33,12 @@ export default async function OpPlanPage({
   const table = isBuiltInSurgeryCode(plan.surgeryType.code)
     ? buildPlanTable(plan.surgeryType.code, values, nameStyle)
     : null;
+  const recentCombos = await getRecentCombosForSurgeryType(
+    user.id,
+    plan.surgeryTypeId,
+    plan.surgeryType.code,
+    nameStyle,
+  );
 
   return (
     <div className="max-w-lg space-y-6">
@@ -71,6 +79,13 @@ export default async function OpPlanPage({
             캘린더 파일(.ics) 다운로드
           </a>
         </div>
+      )}
+
+      {!plan.opRecord && (
+        <SurgeryChecklist
+          planId={plan.id}
+          checklist={(plan.checklist as Record<string, boolean> | null) ?? {}}
+        />
       )}
 
       {table && (
@@ -128,6 +143,7 @@ export default async function OpPlanPage({
           planNote: plan.planNote ?? "",
         }}
         nameStyle={nameStyle}
+        recentCombos={recentCombos}
       />
     </div>
   );

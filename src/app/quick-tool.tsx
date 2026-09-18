@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import { AnatomyPicker, getAnatomyCoveredKeys } from "@/components/anatomy-diagram";
+import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
 import { fieldValuesFromFormData, type FieldValues, type SurgeryFieldDef } from "@/lib/field-types";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
 import { buildProcedureName, generateOpNote, generatePlanSummary } from "@/lib/op-note-generator";
@@ -134,9 +135,10 @@ export function QuickTool({
         {selected && (
           <div key={selected.id} className="space-y-4">
             <AnatomyPicker surgeryTypeCode={selected.code} />
+            <PolypPicker />
             <SurgeryFieldInputs
               fields={selected.fields}
-              excludeKeys={getAnatomyCoveredKeys(selected.code)}
+              excludeKeys={[...getAnatomyCoveredKeys(selected.code), ...POLYP_FIELD_KEYS]}
             />
           </div>
         )}

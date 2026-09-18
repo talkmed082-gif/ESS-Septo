@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
 import { parseFieldDefs } from "@/lib/field-types";
-import type { SideNotation } from "@/lib/op-note-generator";
+import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
+import { getRecentCombosForSurgeryType } from "@/lib/recent-combos";
 import { PlanForm } from "./plan-form";
 
 export default async function NewOpPlanPage({
@@ -25,6 +26,10 @@ export default async function NewOpPlanPage({
   const selected = selectedId
     ? surgeryTypes.find((st) => st.id === selectedId)
     : undefined;
+  const nameStyle: NameStyle = {
+    sideNotation: user.sideNotation as SideNotation,
+    abbreviateRegions: user.abbreviateRegions,
+  };
 
   return (
     <div className="max-w-lg">
@@ -60,10 +65,13 @@ export default async function NewOpPlanPage({
           surgeryTypeCode={selected.code}
           surgeryTypeName={selected.name}
           fields={parseFieldDefs(selected.fields)}
-          nameStyle={{
-            sideNotation: user.sideNotation as SideNotation,
-            abbreviateRegions: user.abbreviateRegions,
-          }}
+          nameStyle={nameStyle}
+          recentCombos={await getRecentCombosForSurgeryType(
+            user.id,
+            selected.id,
+            selected.code,
+            nameStyle,
+          )}
         />
       )}
     </div>

@@ -65,6 +65,8 @@ model OpPlan {
   // surgeryType.fields 의 key 에 대응하는 계획 단계 입력값
   planData      Json?
   status        String       @default("PLANNED")
+  // 수술 당일 체크리스트 (항목 key -> 체크 여부)
+  checklist     Json?        @default("{}")
   createdById   String
   createdBy     User         @relation(fields: [createdById], references: [id])
   createdAt     DateTime     @default(now())

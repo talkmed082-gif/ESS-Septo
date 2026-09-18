@@ -8,8 +8,10 @@ import {
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import { OpNoteGenerateButton } from "@/components/op-note-generate-button";
 import { AnatomyPicker, getAnatomyCoveredKeys } from "@/components/anatomy-diagram";
-import type { SurgeryFieldDef } from "@/lib/field-types";
+import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
+import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 import type { NameStyle } from "@/lib/op-note-generator";
+import type { RecentCombo } from "@/lib/recent-combos";
 
 export interface SurgeryTypeOption {
   id: string;
@@ -21,17 +23,27 @@ export interface SurgeryTypeOption {
 export function NewPatientPlanForm({
   surgeryTypes,
   nameStyle,
+  recentCombosByType,
 }: {
   surgeryTypes: SurgeryTypeOption[];
   nameStyle?: NameStyle;
+  recentCombosByType?: Record<string, RecentCombo[]>;
 }) {
   const [state, formAction, pending] = useActionState<
     PatientPlanFormState | undefined,
     FormData
   >(createPatientWithPlan, undefined);
   const [surgeryTypeId, setSurgeryTypeId] = useState("");
+  const [templateValues, setTemplateValues] = useState<FieldValues | undefined>(undefined);
+  const [templateKey, setTemplateKey] = useState(0);
 
   const selected = surgeryTypes.find((st) => st.id === surgeryTypeId);
+  const recentCombos = surgeryTypeId ? recentCombosByType?.[surgeryTypeId] ?? [] : [];
+
+  function applyCombo(values: FieldValues) {
+    setTemplateValues(values);
+    setTemplateKey((k) => k + 1);
+  }
 
   return (
     <form action={formAction} className="space-y-4">
@@ -107,7 +119,11 @@ export function NewPatientPlanForm({
         <select
           name="surgeryTypeId"
           value={surgeryTypeId}
-          onChange={(e) => setSurgeryTypeId(e.target.value)}
+          onChange={(e) => {
+            setSurgeryTypeId(e.target.value);
+            setTemplateValues(undefined);
+            setTemplateKey((k) => k + 1);
+          }}
           className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
         >
           <option value="">계획은 나중에 작성 (환자만 등록)</option>
@@ -120,7 +136,24 @@ export function NewPatientPlanForm({
       </div>
 
       {selected && (
-        <div key={selected.id} className="space-y-4 rounded-md border border-slate-200 p-4">
+        <div key={`${selected.id}-${templateKey}`} className="space-y-4 rounded-md border border-slate-200 p-4">
+          {recentCombos.length > 0 && (
+            <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
+              <p className="mb-2 text-xs font-medium text-slate-500">최근 사용한 조합</p>
+              <div className="flex flex-wrap gap-2">
+                {recentCombos.map((combo, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => applyCombo(combo.values)}
+                    className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 hover:border-emerald-400 hover:bg-emerald-50"
+                  >
+                    {combo.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700">
@@ -159,10 +192,12 @@ export function NewPatientPlanForm({
             />
           </div>
 
-          <AnatomyPicker surgeryTypeCode={selected.code} />
+          <AnatomyPicker surgeryTypeCode={selected.code} values={templateValues} />
+          <PolypPicker values={templateValues} />
           <SurgeryFieldInputs
             fields={selected.fields}
-            excludeKeys={getAnatomyCoveredKeys(selected.code)}
+            values={templateValues}
+            excludeKeys={[...getAnatomyCoveredKeys(selected.code), ...POLYP_FIELD_KEYS]}
           />
           <OpNoteGenerateButton
             fields={selected.fields}
