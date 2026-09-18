@@ -110,15 +110,6 @@ export async function updateOpPlan(
   redirect(`/plans/${planId}`);
 }
 
-export async function updateOpPlanStatus(planId: string, status: string) {
-  await verifySession();
-  const plan = await prisma.opPlan.update({
-    where: { id: planId },
-    data: { status },
-  });
-  revalidatePath(`/plans/${planId}`);
-  revalidatePath(`/patients/${plan.patientId}`);
-}
 
 export async function deleteOpPlan(planId: string, patientId: string) {
   await verifySession();

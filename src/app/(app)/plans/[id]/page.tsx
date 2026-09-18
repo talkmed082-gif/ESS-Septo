@@ -3,17 +3,11 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
 import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
-import { updateOpPlanStatus, deleteOpPlan } from "@/app/actions/op-plans";
+import { deleteOpPlan } from "@/app/actions/op-plans";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
 import { buildPlanTable } from "@/lib/op-note-generator";
 import { PlanTableView } from "@/components/plan-table";
 import { PlanEditForm } from "./plan-edit-form";
-
-const STATUS_OPTIONS: { value: string; label: string }[] = [
-  { value: "PLANNED", label: "계획됨" },
-  { value: "DONE", label: "완료" },
-  { value: "CANCELLED", label: "취소됨" },
-];
 
 export default async function OpPlanPage({
   params,
@@ -42,24 +36,6 @@ export default async function OpPlanPage({
         <h1 className="mt-2 text-xl font-semibold">
           {plan.surgeryType.name} 수술 계획
         </h1>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm text-slate-500">상태:</span>
-        {STATUS_OPTIONS.map((opt) => (
-          <form key={opt.value} action={updateOpPlanStatus.bind(null, plan.id, opt.value)}>
-            <button
-              type="submit"
-              className={`rounded-full px-3 py-1 text-xs font-medium ${
-                plan.status === opt.value
-                  ? "bg-slate-900 text-white"
-                  : "border border-slate-300 text-slate-600 hover:bg-slate-50"
-              }`}
-            >
-              {opt.label}
-            </button>
-          </form>
-        ))}
       </div>
 
       {table && (

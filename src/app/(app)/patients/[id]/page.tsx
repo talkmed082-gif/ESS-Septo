@@ -2,12 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
-
-const STATUS_LABEL: Record<string, string> = {
-  PLANNED: "계획됨",
-  DONE: "완료",
-  CANCELLED: "취소됨",
-};
+import { parseFieldValues } from "@/lib/field-types";
+import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
+import { buildProcedureName, nasalFindingsText } from "@/lib/op-note-generator";
 
 export default async function PatientDetailPage({
   params,
@@ -69,45 +66,57 @@ export default async function PatientDetailPage({
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-left text-slate-500">
               <tr>
-                <th className="px-4 py-2 font-medium">수술 종류</th>
+                <th className="px-4 py-2 font-medium">수술 이름</th>
                 <th className="px-4 py-2 font-medium">예정일</th>
-                <th className="px-4 py-2 font-medium">상태</th>
-                <th className="px-4 py-2 font-medium">기록지</th>
+                <th className="px-4 py-2 font-medium">내시경 소견</th>
+                <th className="px-4 py-2 font-medium">Op Plan</th>
+                <th className="px-4 py-2 font-medium">수술 기록지</th>
               </tr>
             </thead>
             <tbody>
-              {patient.opPlans.map((plan) => (
-                <tr key={plan.id} className="border-t border-slate-100 hover:bg-slate-50">
-                  <td className="px-4 py-2">
-                    <Link href={`/plans/${plan.id}`} className="font-medium text-slate-900 hover:underline">
-                      {plan.surgeryType.name}
-                    </Link>
-                    {plan.side && (
-                      <span className="ml-1 text-slate-500">({plan.side})</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-2 text-slate-600">
-                    {plan.plannedDate ? plan.plannedDate.toISOString().slice(0, 10) : "-"}
-                  </td>
-                  <td className="px-4 py-2 text-slate-600">
-                    {STATUS_LABEL[plan.status] ?? plan.status}
-                  </td>
-                  <td className="px-4 py-2">
-                    {plan.opRecord ? (
-                      <Link href={`/records/${plan.opRecord.id}`} className="text-slate-900 underline">
-                        기록지 보기
+              {patient.opPlans.map((plan) => {
+                const code = plan.surgeryType.code;
+                const values = parseFieldValues(plan.planData);
+                const procedureName = isBuiltInSurgeryCode(code)
+                  ? buildProcedureName(code, values)
+                  : plan.surgeryType.name;
+                const findings = isBuiltInSurgeryCode(code)
+                  ? nasalFindingsText(values)
+                  : "-";
+                return (
+                  <tr key={plan.id} className="border-t border-slate-100 hover:bg-slate-50">
+                    <td className="px-4 py-2 font-medium text-slate-900">
+                      {procedureName}
+                      {plan.side && (
+                        <span className="ml-1 font-normal text-slate-500">({plan.side})</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2 text-slate-600">
+                      {plan.plannedDate ? plan.plannedDate.toISOString().slice(0, 10) : "-"}
+                    </td>
+                    <td className="max-w-xs px-4 py-2 text-slate-600">{findings}</td>
+                    <td className="px-4 py-2">
+                      <Link href={`/plans/${plan.id}`} className="text-slate-900 underline">
+                        계획 보기
                       </Link>
-                    ) : (
-                      <Link href={`/plans/${plan.id}/record`} className="text-slate-500 underline">
-                        기록지 작성
-                      </Link>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-4 py-2">
+                      {plan.opRecord ? (
+                        <Link href={`/records/${plan.opRecord.id}`} className="text-slate-900 underline">
+                          기록지 보기
+                        </Link>
+                      ) : (
+                        <Link href={`/plans/${plan.id}/record`} className="text-slate-500 underline">
+                          기록지 작성
+                        </Link>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
               {patient.opPlans.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-slate-400">
+                  <td colSpan={5} className="px-4 py-8 text-center text-slate-400">
                     아직 등록된 수술 계획이 없습니다.
                   </td>
                 </tr>
