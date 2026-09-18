@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
 import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
-import { PrintButton } from "./print-button";
+import { PrintButton } from "@/components/print-button";
 
 function Row({ label, value }: { label: string; value?: string | null }) {
   return (

@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
 import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
 import { updateOpPlanStatus, deleteOpPlan } from "@/app/actions/op-plans";
+import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
+import { buildPlanTable } from "@/lib/op-note-generator";
+import { PlanTableView } from "@/components/plan-table";
 import { PlanEditForm } from "./plan-edit-form";
 
 const STATUS_OPTIONS: { value: string; label: string }[] = [
@@ -26,6 +29,9 @@ export default async function OpPlanPage({
 
   const fields = parseFieldDefs(plan.surgeryType.fields);
   const values = parseFieldValues(plan.planData);
+  const table = isBuiltInSurgeryCode(plan.surgeryType.code)
+    ? buildPlanTable(plan.surgeryType.code, values)
+    : null;
 
   return (
     <div className="max-w-lg space-y-6">
@@ -55,6 +61,21 @@ export default async function OpPlanPage({
           </form>
         ))}
       </div>
+
+      {table && (
+        <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-slate-700">예정 술식 표</h2>
+            <Link
+              href={`/plans/${plan.id}/print`}
+              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50"
+            >
+              인쇄용 보기
+            </Link>
+          </div>
+          <PlanTableView table={table} />
+        </div>
+      )}
 
       <div className="flex gap-2">
         {plan.opRecord ? (

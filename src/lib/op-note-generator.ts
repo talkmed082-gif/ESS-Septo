@@ -333,3 +333,72 @@ export function generatePlanSummary(surgeryCode: BuiltInSurgeryCode, values: Fie
   const bulletList = items.map((i) => (i.startsWith("[") || i.startsWith("  -") ? i : `- ${i}`)).join("\n");
   return `[비강 소견]\n${findings}\n\n[예정 술식]\n${bulletList}`;
 }
+
+// ---------- Op Plan 표 형식 (인쇄용 — 내시경 앞에 붙여두고 한눈에 보는 용도) ----------
+
+export interface PlanKeyValueRow {
+  label: string;
+  value: string;
+}
+
+export interface PlanSideMatrixRow {
+  label: string;
+  left: boolean;
+  right: boolean;
+}
+
+export interface PlanTable {
+  findings: string;
+  keyValueRows: PlanKeyValueRow[];
+  sideMatrix?: { title: string; rows: PlanSideMatrixRow[] };
+}
+
+function fessSideMatrix(values: FieldValues): { title: string; rows: PlanSideMatrixRow[] } {
+  return {
+    title: "FESS 시행 부위",
+    rows: fessStepFieldKeys.map((k) => ({
+      label: fessStepLabels[k],
+      left: bool(values, `f_left_${k}`),
+      right: bool(values, `f_right_${k}`),
+    })),
+  };
+}
+
+export function buildPlanTable(surgeryCode: BuiltInSurgeryCode, values: FieldValues): PlanTable {
+  const findings = nasalFindingsText(values);
+
+  if (surgeryCode === "SEPTOPLASTY") {
+    const [incision, ...rest] = septoConciseItems(values, false);
+    return {
+      findings,
+      keyValueRows: [
+        { label: "절개", value: incision },
+        { label: "동반 술식", value: rest.length > 0 ? rest.join(", ") : "-" },
+        { label: "Packing", value: str(values, "s_pack", "Merocel") },
+      ],
+    };
+  }
+
+  if (surgeryCode === "ESS") {
+    return {
+      findings,
+      keyValueRows: [
+        { label: "Navigation", value: bool(values, "f_nav") ? "사용" : "미사용" },
+        { label: "Packing", value: str(values, "f_pack", "Nasopore") },
+      ],
+      sideMatrix: fessSideMatrix(values),
+    };
+  }
+
+  const [incision, ...rest] = septoConciseItems(values, false);
+  return {
+    findings,
+    keyValueRows: [
+      { label: "시행 순서", value: str(values, "c_order", "비중격 → 좌 FESS → 우 FESS") },
+      { label: "절개(비중격)", value: incision },
+      { label: "동반 술식(비중격)", value: rest.length > 0 ? rest.join(", ") : "-" },
+      { label: "Packing(공통)", value: str(values, "c_pack", "Nasopore") },
+    ],
+    sideMatrix: fessSideMatrix(values),
+  };
+}
