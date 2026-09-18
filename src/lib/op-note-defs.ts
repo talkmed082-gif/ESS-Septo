@@ -7,98 +7,115 @@ export const nasalFindingFields: SurgeryFieldDef[] = [
     label: "비중격 편위 방향",
     type: "select",
     options: ["특이 만곡 없음", "우측", "좌측", "양측(C자형)"],
+    default: "특이 만곡 없음",
   },
   {
     key: "n_deviation",
     label: "비중격 만곡 정도",
     type: "select",
     options: ["해당없음", "경도", "중등도", "고도"],
+    default: "해당없음",
   },
   {
     key: "n_cb",
     label: "Concha bullosa",
     type: "select",
     options: ["없음", "우측", "좌측", "양측"],
+    default: "없음",
   },
   {
     key: "n_chr",
     label: "하비갑개 비후 (CHR, Chronic Hypertrophic Rhinitis)",
     type: "select",
     options: ["없음", "우측", "좌측", "양측"],
-  },
-  // 비용종 — 방향을 먼저 고르고(없는 경우가 많아 기본값은 "없음"), 방향을
-  // 선택했을 때만 위치를 고르게 한다(PolypPicker 컴포넌트가 조건부로 노출).
-  {
-    key: "n_polyp_side",
-    label: "비용종 방향",
-    type: "select",
-    options: ["없음", "우측", "좌측", "양측"],
     default: "없음",
   },
-  { key: "n_polyp_site_mm", label: "비용종 위치 - 중비도", type: "checkbox" },
-  { key: "n_polyp_site_ethmoid", label: "비용종 위치 - 사골동", type: "checkbox" },
-  { key: "n_polyp_site_maxillary", label: "비용종 위치 - 상악동 자연공", type: "checkbox" },
-  { key: "n_polyp_site_sphenoid", label: "비용종 위치 - 접형동", type: "checkbox" },
-  { key: "n_polyp_site_choana", label: "비용종 위치 - 후비공까지 연장", type: "checkbox" },
+  // 비용종 — 좌/우 정도(위치)가 다른 경우가 많아, 공통 "방향" 선택 없이
+  // 측별로 위치 체크박스를 따로 둔다 (PolypPicker 컴포넌트가 우/좌 두 컬럼으로
+  // 노출 — 한쪽이라도 위치가 체크되어 있으면 그 측에 비용종이 있는 것으로 본다).
+  { key: "n_polyp_right_site_mm", label: "비용종 위치(우측) - 중비도", type: "checkbox" },
+  { key: "n_polyp_right_site_ethmoid", label: "비용종 위치(우측) - 사골동", type: "checkbox" },
+  { key: "n_polyp_right_site_maxillary", label: "비용종 위치(우측) - 상악동 자연공", type: "checkbox" },
+  { key: "n_polyp_right_site_sphenoid", label: "비용종 위치(우측) - 접형동", type: "checkbox" },
+  { key: "n_polyp_right_site_choana", label: "비용종 위치(우측) - 후비공까지 연장", type: "checkbox" },
+  { key: "n_polyp_left_site_mm", label: "비용종 위치(좌측) - 중비도", type: "checkbox" },
+  { key: "n_polyp_left_site_ethmoid", label: "비용종 위치(좌측) - 사골동", type: "checkbox" },
+  { key: "n_polyp_left_site_maxillary", label: "비용종 위치(좌측) - 상악동 자연공", type: "checkbox" },
+  { key: "n_polyp_left_site_sphenoid", label: "비용종 위치(좌측) - 접형동", type: "checkbox" },
+  { key: "n_polyp_left_site_choana", label: "비용종 위치(좌측) - 후비공까지 연장", type: "checkbox" },
   // Skull base 높이(Keros classification) — 술전 CT로 평가, FESS 시 사골동
-  // 천장 손상 위험도 판단에 참고. 좌우 비대칭 가능성이 있어 좌/우 각각 둠
+  // 천장 손상 위험도 판단에 참고. 좌우 비대칭 가능성이 있어 좌/우 각각 둠.
+  // 기본값은 Keros 분류 중 실제로 가장 빈도가 높은 Type II로 둔다.
   {
     key: "skull_base_right",
     label: "Skull base 높이 - 우측 (Keros)",
     type: "select",
     options: ["Type I (얕음, 저위험)", "Type II (중등도)", "Type III (깊음, 고위험)"],
+    default: "Type II (중등도)",
   },
   {
     key: "skull_base_left",
     label: "Skull base 높이 - 좌측 (Keros)",
     type: "select",
     options: ["Type I (얕음, 저위험)", "Type II (중등도)", "Type III (깊음, 고위험)"],
+    default: "Type II (중등도)",
   },
   // Uncinate process attachment — frontal recess 배출 경로를 결정하는 해부학적
-  // 변이로, FESS 시 frontal sinusotomy 접근 방향 계획에 참고
+  // 변이로, FESS 시 frontal sinusotomy 접근 방향 계획에 항상 참고되는 값이라
+  // 기록지 요약에서도 값과 무관하게 항상 표시한다. 기본값은 가장 흔한 부착 부위인
+  // Lamina papyracea.
   {
     key: "n_uncinate_right",
     label: "Uncinate process attachment - 우측",
     type: "select",
     options: ["Lamina papyracea", "Skull base", "중비갑개 (Middle turbinate)", "불명확/혼합"],
+    default: "Lamina papyracea",
   },
   {
     key: "n_uncinate_left",
     label: "Uncinate process attachment - 좌측",
     type: "select",
     options: ["Lamina papyracea", "Skull base", "중비갑개 (Middle turbinate)", "불명확/혼합"],
+    default: "Lamina papyracea",
   },
   // 아래 4개는 술전 CT에서 흔히 확인하는 해부학적 변이/위험 소견 — FESS 접근
-  // 경로 계획 및 안전(시신경·경동맥 손상 위험)에 직접 관련되어 함께 기록
+  // 경로 계획 및 안전(시신경·경동맥 손상 위험)에 직접 관련되어 함께 기록.
+  // Agger nasi cell은 실제로는 거의 모든 사람에게 있고 양측인 경우가 가장
+  // 흔해서(문헌상 90%대) 다른 항목과 달리 기본값을 "양측"으로 둔다.
   {
     key: "n_onodi",
     label: "Onodi cell (접형사골동)",
     type: "select",
     options: ["없음", "우측", "좌측", "양측"],
+    default: "없음",
   },
   {
     key: "n_haller",
     label: "Haller cell (안하사골봉소)",
     type: "select",
     options: ["없음", "우측", "좌측", "양측"],
+    default: "없음",
   },
   {
     key: "n_agger_nasi",
     label: "Agger nasi cell",
     type: "select",
     options: ["없음", "우측", "좌측", "양측"],
+    default: "양측",
   },
   {
     key: "n_paradoxical_mt",
     label: "Paradoxical middle turbinate",
     type: "select",
     options: ["없음", "우측", "좌측", "양측"],
+    default: "없음",
   },
   {
     key: "n_dehiscence",
     label: "시신경/경동맥 골 결손 (Optic nerve/ICA dehiscence)",
     type: "select",
     options: ["없음", "우측", "좌측", "양측"],
+    default: "없음",
   },
   // Turbinoplasty — 비중격교정술/FESS 어느 쪽에도 단독 또는 동반될 수 있어 공통 항목으로 둠
   { key: "turb_middle_right", label: "중비갑개 축소술 - 우측", type: "checkbox" },

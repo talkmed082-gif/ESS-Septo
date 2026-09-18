@@ -48,24 +48,43 @@ function septumSummaryLine(values: FieldValues): string {
     : `비중격: ${side} ${dev} 편위`;
 }
 
-// 비용종 — 방향(n_polyp_side)을 먼저 고르고, 방향이 "없음"이 아닐 때만
-// 위치(n_polyp_site_*)를 고르는 2단계 구조. 위치는 방향에 상관없이 공통 목록으로 둠
-// (좌/우 위치를 각각 다르게 기록해야 하는 드문 경우는 자유 텍스트로 보정).
+// 비용종 — 좌/우 정도(위치)가 다른 경우가 많아 위치를 측별로 각각 고른다.
+// 위치 체크박스가 하나라도 있으면 그 측에 비용종이 있는 것으로 본다
+// (별도의 "방향" 선택 없이 위치 선택만으로 존재 여부까지 표현).
 const polypSiteFields: { key: string; label: string }[] = [
-  { key: "n_polyp_site_mm", label: "중비도" },
-  { key: "n_polyp_site_ethmoid", label: "사골동" },
-  { key: "n_polyp_site_maxillary", label: "상악동 자연공" },
-  { key: "n_polyp_site_sphenoid", label: "접형동" },
-  { key: "n_polyp_site_choana", label: "후비공까지 연장" },
+  { key: "site_mm", label: "중비도" },
+  { key: "site_ethmoid", label: "사골동" },
+  { key: "site_maxillary", label: "상악동 자연공" },
+  { key: "site_sphenoid", label: "접형동" },
+  { key: "site_choana", label: "후비공까지 연장" },
 ];
 
-function polypSites(values: FieldValues): string[] {
-  return polypSiteFields.filter((f) => bool(values, f.key)).map((f) => f.label);
+function polypSideKeyPrefix(side: "좌측" | "우측"): string {
+  return side === "우측" ? "n_polyp_right_" : "n_polyp_left_";
+}
+
+function polypSitesAt(side: "좌측" | "우측", values: FieldValues): string[] {
+  const prefix = polypSideKeyPrefix(side);
+  return polypSiteFields.filter((f) => bool(values, `${prefix}${f.key}`)).map((f) => f.label);
+}
+
+function hasPolypAt(sideName: "좌측" | "우측", values: FieldValues): boolean {
+  return polypSitesAt(sideName, values).length > 0;
 }
 
 function hasPolyp(values: FieldValues): boolean {
-  const side = str(values, "n_polyp_side", "없음");
-  return side !== "없음" && polypSites(values).length > 0;
+  return hasPolypAt("우측", values) || hasPolypAt("좌측", values);
+}
+
+// 좌/우 위치가 다를 수 있어 측별로 괄호를 나눠 서술한다
+function polypFindingText(values: FieldValues): string {
+  const right = polypSitesAt("우측", values);
+  const left = polypSitesAt("좌측", values);
+  if (right.length === 0 && left.length === 0) return "비용종 없음";
+  const parts: string[] = [];
+  if (right.length > 0) parts.push(`우측(${right.join(", ")})`);
+  if (left.length > 0) parts.push(`좌측(${left.join(", ")})`);
+  return `비용종: ${parts.join(", ")}`;
 }
 
 function skullBaseSentence(values: FieldValues): string {
@@ -118,12 +137,8 @@ export function nasalFindingsText(values: FieldValues): string {
   const cb = str(values, "n_cb", "없음");
   const cbText =
     cb === "없음" ? "Concha bullosa 없음" : cb === "양측" ? "양측 concha bullosa" : `${cb} concha bullosa`;
-  const polypText = hasPolyp(values)
-    ? `비용종: ${str(values, "n_polyp_side")} ${polypSites(values).join(", ")}`
-    : "비용종 없음";
-
   return (
-    [septumSummaryLine(values), cbText, polypText].join(". ") +
+    [septumSummaryLine(values), cbText, polypFindingText(values)].join(". ") +
     "." +
     skullBaseSentence(values) +
     uncinateSentence(values) +
@@ -152,7 +167,7 @@ export function nasalFindingsSummary(values: FieldValues): string {
   if (cb !== "없음") items.push(`${cb} concha bullosa`);
 
   if (hasPolyp(values)) {
-    items.push(`비용종(${str(values, "n_polyp_side")}: ${polypSites(values).join(", ")})`);
+    items.push(polypFindingText(values));
   }
 
   const chr = str(values, "n_chr", "없음");
@@ -168,13 +183,15 @@ export function nasalFindingsSummary(values: FieldValues): string {
     items.push(`Skull base ${parts.join(", ")}`);
   }
 
-  const isNotableUncinate = (v: string) => v !== "" && v !== "Lamina papyracea";
+  // Uncinate attachment는 어떤 값이든 frontal sinusotomy 접근 계획에 항상 참고
+  // 되는 정보라, 다른 항목과 달리 "흔한 값(Lamina papyracea)"이어도 요약에서
+  // 빼지 않고 항상 넣는다.
   const uncLeft = str(values, "n_uncinate_left", "");
   const uncRight = str(values, "n_uncinate_right", "");
-  if (isNotableUncinate(uncLeft) || isNotableUncinate(uncRight)) {
+  if (uncLeft || uncRight) {
     const parts: string[] = [];
-    if (isNotableUncinate(uncRight)) parts.push(`우측 ${uncRight}`);
-    if (isNotableUncinate(uncLeft)) parts.push(`좌측 ${uncLeft}`);
+    if (uncRight) parts.push(`우측 ${uncRight}`);
+    if (uncLeft) parts.push(`좌측 ${uncLeft}`);
     items.push(`Uncinate attachment ${parts.join(", ")}`);
   }
 
@@ -194,12 +211,6 @@ export function nasalFindingsSummary(values: FieldValues): string {
   if (dehiscence !== "없음") items.push(`${dehiscence} 시신경/경동맥 골 결손(주의)`);
 
   return items.length > 0 ? items.join(", ") + "." : "특이 소견 없음";
-}
-
-function hasPolypAt(sideName: "좌측" | "우측", values: FieldValues): boolean {
-  if (!hasPolyp(values)) return false;
-  const side = str(values, "n_polyp_side", "없음");
-  return side === "양측" || side === sideName;
 }
 
 // ---------- Turbinoplasty (비중격교정술/FESS 공통) ----------
