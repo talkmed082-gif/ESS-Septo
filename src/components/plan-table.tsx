@@ -44,10 +44,10 @@ export function PlanTableView({
                 {table.sideMatrix.title}
               </th>
               <th className={`w-20 border border-slate-400 bg-slate-50 ${cellPad} font-medium`}>
-                좌측
+                우측
               </th>
               <th className={`w-20 border border-slate-400 bg-slate-50 ${cellPad} font-medium`}>
-                우측
+                좌측
               </th>
             </tr>
           </thead>
@@ -56,10 +56,10 @@ export function PlanTableView({
               <tr key={row.label}>
                 <td className={`border border-slate-400 ${cellPad}`}>{row.label}</td>
                 <td className={`border border-slate-400 ${cellPad} text-center`}>
-                  {row.left ? "✓" : ""}
+                  {row.right ? "✓" : ""}
                 </td>
                 <td className={`border border-slate-400 ${cellPad} text-center`}>
-                  {row.right ? "✓" : ""}
+                  {row.left ? "✓" : ""}
                 </td>
               </tr>
             ))}

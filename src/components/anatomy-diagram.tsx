@@ -94,9 +94,11 @@ export function SeptumDiagram({
     <div ref={rootRef} className="rounded-md border border-slate-200 p-3">
       <p className="mb-2 text-xs font-medium text-slate-600">
         비중격 편위 방향 (클릭해서 선택 · 다시 누르면 해제)
+        <br />
+        영상의학 기준: 왼쪽 = 환자 우측(Rt.), 오른쪽 = 환자 좌측(Lt.)
       </p>
       <svg viewBox="0 0 220 80" className="w-full max-w-xs">
-        {zone("좌측", "좌측", 5)}
+        {zone("우측", "우측", 5)}
         <rect x={80} y={10} width={60} height={60} rx={8} fill="#e2e8f0" stroke="#94a3b8" />
         <text x={110} y={40} textAnchor="middle" fontSize="10" fill="#64748b">
           비중격
@@ -104,7 +106,7 @@ export function SeptumDiagram({
         <text x={110} y={54} textAnchor="middle" fontSize="9" fill="#94a3b8">
           (Septum)
         </text>
-        {zone("우측", "우측", 145)}
+        {zone("좌측", "좌측", 145)}
       </svg>
       <button
         type="button"
@@ -178,10 +180,12 @@ export function SinusDiagram({
     <div ref={rootRef} className="rounded-md border border-slate-200 p-3">
       <p className="mb-2 text-xs font-medium text-slate-600">
         부비동 시행 부위 (좌/우 각각 클릭해서 선택)
+        <br />
+        영상의학 기준: 왼쪽 = 환자 우측(Rt.), 오른쪽 = 환자 좌측(Lt.)
       </p>
       <div className="flex items-start justify-center gap-8">
-        {column("f_left_", "좌측 (Lt.)")}
         {column("f_right_", "우측 (Rt.)")}
+        {column("f_left_", "좌측 (Lt.)")}
       </div>
     </div>
   );

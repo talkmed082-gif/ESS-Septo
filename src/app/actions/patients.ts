@@ -95,3 +95,13 @@ export async function deletePatient(patientId: string) {
   revalidatePath("/patients");
   redirect("/patients");
 }
+
+export async function deletePatients(_prevState: unknown, formData: FormData) {
+  await verifySession();
+  const ids = formData.getAll("ids").filter((v): v is string => typeof v === "string");
+  if (ids.length > 0) {
+    await prisma.patient.deleteMany({ where: { id: { in: ids } } });
+  }
+  revalidatePath("/patients");
+  redirect("/patients");
+}

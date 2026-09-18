@@ -1,13 +1,20 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
+import { PatientListTable, type PatientRow } from "./patient-list-table";
+
+function toDateStr(d: Date | null | undefined) {
+  return d ? d.toISOString().slice(0, 10) : null;
+}
 
 export default async function PatientsPage({
   searchParams,
 }: PageProps<"/patients">) {
   await verifySession();
-  const { q } = await searchParams;
+  const { q, sort: sortParam, dir: dirParam } = await searchParams;
   const query = typeof q === "string" ? q.trim() : "";
+  const sort = typeof sortParam === "string" ? sortParam : "createdAt";
+  const dir = dirParam === "asc" ? "asc" : dirParam === "desc" ? "desc" : "desc";
 
   const patients = await prisma.patient.findMany({
     where: query
@@ -19,7 +26,58 @@ export default async function PatientsPage({
         }
       : undefined,
     orderBy: { createdAt: "desc" },
-    include: { opPlans: { select: { id: true, status: true } } },
+    include: { opPlans: { select: { id: true, status: true, plannedDate: true } } },
+  });
+
+  const rows: PatientRow[] = patients.map((p) => {
+    const dates = p.opPlans.map((pl) => pl.plannedDate).filter((d): d is Date => d !== null);
+    const latest = dates.length > 0 ? new Date(Math.max(...dates.map((d) => d.getTime()))) : null;
+    return {
+      id: p.id,
+      name: p.name,
+      chartNo: p.chartNo,
+      sex: p.sex,
+      birthDate: toDateStr(p.birthDate),
+      surgeryDate: toDateStr(latest),
+      planCount: p.opPlans.length,
+    };
+  });
+
+  const dirMul = dir === "asc" ? 1 : -1;
+  const sortedRows = [...rows].sort((a, b) => {
+    let av: string | number = "";
+    let bv: string | number = "";
+    switch (sort) {
+      case "name":
+        av = a.name;
+        bv = b.name;
+        break;
+      case "chartNo":
+        av = a.chartNo ?? "";
+        bv = b.chartNo ?? "";
+        break;
+      case "sex":
+        av = a.sex ?? "";
+        bv = b.sex ?? "";
+        break;
+      case "birthDate":
+        av = a.birthDate ?? "";
+        bv = b.birthDate ?? "";
+        break;
+      case "surgeryDate":
+        av = a.surgeryDate ?? "";
+        bv = b.surgeryDate ?? "";
+        break;
+      case "planCount":
+        av = a.planCount;
+        bv = b.planCount;
+        break;
+      default:
+        return 0;
+    }
+    if (av < bv) return -1 * dirMul;
+    if (av > bv) return 1 * dirMul;
+    return 0;
   });
 
   return (
@@ -44,45 +102,7 @@ export default async function PatientsPage({
         />
       </form>
 
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-slate-500">
-            <tr>
-              <th className="px-4 py-2 font-medium">이름</th>
-              <th className="px-4 py-2 font-medium">차트번호</th>
-              <th className="px-4 py-2 font-medium">성별</th>
-              <th className="px-4 py-2 font-medium">생년월일</th>
-              <th className="px-4 py-2 font-medium">수술계획</th>
-            </tr>
-          </thead>
-          <tbody>
-            {patients.map((p) => (
-              <tr key={p.id} className="border-t border-slate-100 hover:bg-slate-50">
-                <td className="px-4 py-2">
-                  <Link href={`/patients/${p.id}`} className="font-medium text-slate-900 hover:underline">
-                    {p.name}
-                  </Link>
-                </td>
-                <td className="px-4 py-2 text-slate-600">{p.chartNo ?? "-"}</td>
-                <td className="px-4 py-2 text-slate-600">
-                  {p.sex === "M" ? "남" : p.sex === "F" ? "여" : "-"}
-                </td>
-                <td className="px-4 py-2 text-slate-600">
-                  {p.birthDate ? p.birthDate.toISOString().slice(0, 10) : "-"}
-                </td>
-                <td className="px-4 py-2 text-slate-600">{p.opPlans.length}건</td>
-              </tr>
-            ))}
-            {patients.length === 0 && (
-              <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-slate-400">
-                  등록된 환자가 없습니다.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <PatientListTable patients={sortedRows} query={query} sort={sort} dir={dir} />
     </div>
   );
 }
