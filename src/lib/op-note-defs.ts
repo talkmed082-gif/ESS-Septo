@@ -78,10 +78,8 @@ export const nasalFindingFields: SurgeryFieldDef[] = [
     options: ["Lamina papyracea", "Skull base", "중비갑개 (Middle turbinate)", "불명확/혼합"],
     default: "Lamina papyracea",
   },
-  // 아래 4개는 술전 CT에서 흔히 확인하는 해부학적 변이/위험 소견 — FESS 접근
-  // 경로 계획 및 안전(시신경·경동맥 손상 위험)에 직접 관련되어 함께 기록.
-  // Agger nasi cell은 실제로는 거의 모든 사람에게 있고 양측인 경우가 가장
-  // 흔해서(문헌상 90%대) 다른 항목과 달리 기본값을 "양측"으로 둔다.
+  // 아래 항목들은 술전 CT에서 확인하는 해부학적 변이/위험 소견 — FESS 접근
+  // 경로 계획 및 안전(안구·시신경·경동맥 손상 위험)에 직접 관련되어 함께 기록.
   {
     key: "n_onodi",
     label: "Onodi cell (접형사골동)",
@@ -96,16 +94,11 @@ export const nasalFindingFields: SurgeryFieldDef[] = [
     options: ["없음", "우측", "좌측", "양측"],
     default: "없음",
   },
+  // Lamina papyracea 결손 — ethmoidectomy 시 안구 손상과 직결되는, 가장
+  // 흔하고 실제로 중요한 골 결손 소견 (시신경/경동맥 결손과는 별도로 기록)
   {
-    key: "n_agger_nasi",
-    label: "Agger nasi cell",
-    type: "select",
-    options: ["없음", "우측", "좌측", "양측"],
-    default: "양측",
-  },
-  {
-    key: "n_paradoxical_mt",
-    label: "Paradoxical middle turbinate",
+    key: "n_lp_dehiscence",
+    label: "Lamina papyracea 결손",
     type: "select",
     options: ["없음", "우측", "좌측", "양측"],
     default: "없음",

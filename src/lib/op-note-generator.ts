@@ -116,19 +116,20 @@ function uncinateSentence(values: FieldValues): string {
   return ` Uncinate process attachment: ${parts.join(", ")}.`;
 }
 
-// CHR/Onodi/Haller/Agger nasi/Paradoxical MT처럼 "없음/우측/좌측/양측" 형태를
-// 공유하는 소견들의 공통 문장 생성기
+// CHR/Onodi/Haller처럼 "없음/우측/좌측/양측" 형태를 공유하는 소견들의 공통 문장 생성기
 function sidedFindingSentence(label: string, key: string, values: FieldValues): string {
   const v = str(values, key, "없음");
   if (!v || v === "없음") return "";
   return ` ${label}: ${v}.`;
 }
 
-// 시신경/경동맥 골 결손 — 수술 중 손상 위험과 직결되는 소견이라 주의 문구를 덧붙임
-function dehiscenceSentence(values: FieldValues): string {
-  const v = str(values, "n_dehiscence", "없음");
+// 골 결손(dehiscence) 소견 — 수술 중 손상 위험과 직결되는 소견이라 주의 문구를 덧붙임.
+// Lamina papyracea 결손(안구 손상 위험, ethmoidectomy 시 항상 관련)과
+// 시신경/경동맥 결손(sphenoid 수술 시 관련)을 각각 따로 기록한다.
+function dehiscenceSentence(label: string, key: string, values: FieldValues): string {
+  const v = str(values, key, "없음");
   if (!v || v === "없음") return "";
-  return ` 시신경/경동맥 골 결손(dehiscence): ${v} — 수술 중 주의 필요.`;
+  return ` ${label} 결손(dehiscence): ${v} — 수술 중 주의 필요.`;
 }
 
 // 비강 소견 — 내시경 소견과 술전 CT 소견을 함께 서술함 (한쪽 검사로 국한하지 않음)
@@ -145,9 +146,8 @@ export function nasalFindingsText(values: FieldValues): string {
     sidedFindingSentence("하비갑개 비후(CHR)", "n_chr", values) +
     sidedFindingSentence("Onodi cell", "n_onodi", values) +
     sidedFindingSentence("Haller cell", "n_haller", values) +
-    sidedFindingSentence("Agger nasi cell", "n_agger_nasi", values) +
-    sidedFindingSentence("Paradoxical middle turbinate", "n_paradoxical_mt", values) +
-    dehiscenceSentence(values)
+    dehiscenceSentence("Lamina papyracea", "n_lp_dehiscence", values) +
+    dehiscenceSentence("시신경/경동맥", "n_dehiscence", values)
   );
 }
 
@@ -201,11 +201,8 @@ export function nasalFindingsSummary(values: FieldValues): string {
   const haller = str(values, "n_haller", "없음");
   if (haller !== "없음") items.push(`${haller} Haller cell`);
 
-  const aggerNasi = str(values, "n_agger_nasi", "없음");
-  if (aggerNasi !== "없음") items.push(`${aggerNasi} Agger nasi cell`);
-
-  const paradoxicalMt = str(values, "n_paradoxical_mt", "없음");
-  if (paradoxicalMt !== "없음") items.push(`${paradoxicalMt} Paradoxical middle turbinate`);
+  const lpDehiscence = str(values, "n_lp_dehiscence", "없음");
+  if (lpDehiscence !== "없음") items.push(`${lpDehiscence} Lamina papyracea 결손(주의)`);
 
   const dehiscence = str(values, "n_dehiscence", "없음");
   if (dehiscence !== "없음") items.push(`${dehiscence} 시신경/경동맥 골 결손(주의)`);
