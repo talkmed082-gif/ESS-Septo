@@ -17,13 +17,13 @@ export interface SessionPayload {
 // 방문할 때마다(proxy.ts) 만료 시간을 다시 늘려서(sliding session)
 // 계속 쓰는 한 로그아웃되지 않게 한다.
 export const SESSION_COOKIE = "session";
-export const SESSION_DURATION_MS = 90 * 24 * 60 * 60 * 1000;
+export const SESSION_DURATION_MS = 365 * 24 * 60 * 60 * 1000;
 
 export async function encrypt(payload: SessionPayload) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("90d")
+    .setExpirationTime("365d")
     .sign(encodedKey);
 }
 
