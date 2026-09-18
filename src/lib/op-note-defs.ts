@@ -107,6 +107,8 @@ export const fessFields: SurgeryFieldDef[] = [
     label: `우측 - ${fessStepLabels[k]}`,
     type: "checkbox" as const,
   })),
+  { key: "f_left_silastic_sheet", label: "좌측 - Silastic sheet 삽입 (유착 방지)", type: "checkbox" },
+  { key: "f_right_silastic_sheet", label: "우측 - Silastic sheet 삽입 (유착 방지)", type: "checkbox" },
   { key: "f_nav", label: "Navigation(항법장치) 병용", type: "checkbox" },
   { key: "f_debrider", label: "Microdebrider 사용", type: "checkbox" },
   {

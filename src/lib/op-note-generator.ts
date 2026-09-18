@@ -202,6 +202,11 @@ function fessSideBlock(
         ` 제거함`,
     );
   }
+
+  if (bool(values, `${prefix}silastic_sheet`)) {
+    block.push(`[${sideName}] 유착 방지를 위해 middle meatus에 silastic sheet를 삽입함`);
+  }
+
   return block;
 }
 
@@ -325,6 +330,7 @@ function fessConciseSideLine(
   const picked = fessStepFieldKeys
     .filter((k) => bool(values, `${prefix}${k}`))
     .map((k) => fessStepLabels[k]);
+  if (bool(values, `${prefix}silastic_sheet`)) picked.push("Silastic sheet 삽입");
   return picked.length > 0 ? `${sideLabel}: ${picked.join(", ")}` : `${sideLabel}: 해당 없음`;
 }
 
@@ -435,11 +441,18 @@ export interface PlanTable {
 function fessSideMatrix(values: FieldValues): { title: string; rows: PlanSideMatrixRow[] } {
   return {
     title: "FESS 시행 부위",
-    rows: fessStepFieldKeys.map((k) => ({
-      label: fessStepLabels[k],
-      left: bool(values, `f_left_${k}`),
-      right: bool(values, `f_right_${k}`),
-    })),
+    rows: [
+      ...fessStepFieldKeys.map((k) => ({
+        label: fessStepLabels[k],
+        left: bool(values, `f_left_${k}`),
+        right: bool(values, `f_right_${k}`),
+      })),
+      {
+        label: "Silastic sheet 삽입",
+        left: bool(values, "f_left_silastic_sheet"),
+        right: bool(values, "f_right_silastic_sheet"),
+      },
+    ],
   };
 }
 
