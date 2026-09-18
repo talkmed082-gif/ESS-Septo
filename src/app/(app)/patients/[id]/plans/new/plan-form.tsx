@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { createOpPlan, type OpPlanFormState } from "@/app/actions/op-plans";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import { OpNoteGenerateButton } from "@/components/op-note-generate-button";
+import { AnatomyPicker } from "@/components/anatomy-diagram";
 import type { SurgeryFieldDef } from "@/lib/field-types";
 
 export function PlanForm({
@@ -69,6 +70,7 @@ export function PlanForm({
         />
       </div>
 
+      <AnatomyPicker surgeryTypeCode={surgeryTypeCode} />
       <SurgeryFieldInputs fields={fields} />
 
       <OpNoteGenerateButton fields={fields} surgeryTypeCode={surgeryTypeCode} mode="plan" />

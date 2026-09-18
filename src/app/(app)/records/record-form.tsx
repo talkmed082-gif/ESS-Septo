@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import type { OpRecordFormState } from "@/app/actions/op-records";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import { OpNoteGenerateButton } from "@/components/op-note-generate-button";
+import { AnatomyPicker } from "@/components/anatomy-diagram";
 import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 
 type Action = (
@@ -135,6 +136,7 @@ export function RecordForm({
       </div>
 
       <p className="text-sm font-medium text-slate-700">수술 소견 / 시행 항목</p>
+      <AnatomyPicker surgeryTypeCode={surgeryTypeCode} values={fieldValues} />
       <SurgeryFieldInputs fields={fields} values={fieldValues} />
 
       <OpNoteGenerateButton fields={fields} surgeryTypeCode={surgeryTypeCode} mode="record" />
