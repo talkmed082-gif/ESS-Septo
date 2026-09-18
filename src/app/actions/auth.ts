@@ -50,7 +50,7 @@ export async function signup(
   });
 
   await createSession(user.id);
-  redirect("/patients");
+  redirect("/");
 }
 
 const LoginSchema = z.object({
@@ -83,7 +83,7 @@ export async function login(
   }
 
   await createSession(user.id);
-  redirect("/patients");
+  redirect("/");
 }
 
 export async function logout() {

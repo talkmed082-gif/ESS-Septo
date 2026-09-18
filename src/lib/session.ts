@@ -13,14 +13,17 @@ export interface SessionPayload {
   [key: string]: unknown;
 }
 
-const SESSION_COOKIE = "session";
-const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+// 자동 로그인: 개인/소수 사용자용 도구라 세션을 길게 유지하고,
+// 방문할 때마다(proxy.ts) 만료 시간을 다시 늘려서(sliding session)
+// 계속 쓰는 한 로그아웃되지 않게 한다.
+export const SESSION_COOKIE = "session";
+export const SESSION_DURATION_MS = 90 * 24 * 60 * 60 * 1000;
 
 export async function encrypt(payload: SessionPayload) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("7d")
+    .setExpirationTime("90d")
     .sign(encodedKey);
 }
 
@@ -38,18 +41,22 @@ export async function decrypt(
   }
 }
 
+export function sessionCookieOptions(expiresAt: Date) {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    expires: expiresAt,
+    sameSite: "lax" as const,
+    path: "/",
+  };
+}
+
 export async function createSession(userId: string) {
   const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
   const session = await encrypt({ userId });
   const cookieStore = await cookies();
 
-  cookieStore.set(SESSION_COOKIE, session, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    expires: expiresAt,
-    sameSite: "lax",
-    path: "/",
-  });
+  cookieStore.set(SESSION_COOKIE, session, sessionCookieOptions(expiresAt));
 }
 
 export async function deleteSession() {
