@@ -32,16 +32,16 @@ export async function createPatientWithPlan(
   const session = await verifySession();
 
   const validated = PatientPlanSchema.safeParse({
-    name: formData.get("name"),
-    chartNo: formData.get("chartNo"),
-    sex: formData.get("sex"),
-    birthDate: formData.get("birthDate"),
-    memo: formData.get("memo"),
-    surgeryTypeId: formData.get("surgeryTypeId"),
-    plannedDate: formData.get("plannedDate"),
-    side: formData.get("side"),
-    diagnosis: formData.get("diagnosis"),
-    planNote: formData.get("planNote"),
+    name: formData.get("name") ?? "",
+    chartNo: formData.get("chartNo") ?? "",
+    sex: formData.get("sex") ?? "",
+    birthDate: formData.get("birthDate") ?? "",
+    memo: formData.get("memo") ?? "",
+    surgeryTypeId: formData.get("surgeryTypeId") ?? "",
+    plannedDate: formData.get("plannedDate") ?? "",
+    side: formData.get("side") ?? "",
+    diagnosis: formData.get("diagnosis") ?? "",
+    planNote: formData.get("planNote") ?? "",
   });
   if (!validated.success) {
     return { errors: z.flattenError(validated.error).fieldErrors };
