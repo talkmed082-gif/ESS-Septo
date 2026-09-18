@@ -1,0 +1,58 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { verifySession } from "@/lib/dal";
+import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
+import { updateOpRecord } from "@/app/actions/op-records";
+import { RecordForm } from "../../record-form";
+
+export default async function EditOpRecordPage({
+  params,
+}: PageProps<"/records/[id]/edit">) {
+  await verifySession();
+  const { id } = await params;
+
+  const record = await prisma.opRecord.findUnique({
+    where: { id },
+    include: { opPlan: { include: { patient: true, surgeryType: true } } },
+  });
+  if (!record) notFound();
+
+  const fields = parseFieldDefs(record.opPlan.surgeryType.fields);
+  const values = parseFieldValues(record.recordData);
+  const action = updateOpRecord.bind(null, record.id);
+
+  return (
+    <div className="max-w-lg">
+      <Link href={`/records/${record.id}`} className="text-sm text-slate-500 hover:underline">
+        ← 기록지로 돌아가기
+      </Link>
+      <h1 className="mt-2 mb-1 text-xl font-semibold">수술기록지 수정</h1>
+      <p className="mb-6 text-sm text-slate-500">
+        환자: {record.opPlan.patient.name} · {record.opPlan.surgeryType.name}
+      </p>
+
+      <RecordForm
+        action={action}
+        fields={fields}
+        fieldValues={values}
+        submitLabel="저장"
+        defaultValues={{
+          operationDate: record.operationDate.toISOString().slice(0, 10),
+          surgeonName: record.surgeonName,
+          assistantName: record.assistantName ?? "",
+          anesthesiaType: record.anesthesiaType ?? "",
+          preOpDiagnosis: record.preOpDiagnosis ?? "",
+          postOpDiagnosis: record.postOpDiagnosis ?? "",
+          procedureName: record.procedureName ?? "",
+          findings: record.findings ?? "",
+          procedureDetail: record.procedureDetail ?? "",
+          complication: record.complication ?? "",
+          estimatedBloodLoss: record.estimatedBloodLoss ?? "",
+          specimen: record.specimen ?? "",
+          postOpPlan: record.postOpPlan ?? "",
+        }}
+      />
+    </div>
+  );
+}

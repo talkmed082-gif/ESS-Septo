@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime   @default(now())
+  patients     Patient[]
+  opPlans      OpPlan[]
+  opRecords    OpRecord[]
+}
+
+// 수술 종류 (ESS, 비중격교정술, 기타 이비인후과 수술 등). fields 는 이 수술에 특화된
+// 입력 항목 정의를 JSON 배열로 저장해서, 새 수술 종류를 코드 수정 없이 추가할 수 있게 한다.
+model SurgeryType {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  fields    Json
+  isBuiltIn Boolean  @default(false)
+  createdAt DateTime @default(now())
+  opPlans   OpPlan[]
+}
+
+model Patient {
+  id          String   @id @default(cuid())
+  chartNo     String?
+  name        String
+  sex         String?
+  birthDate   DateTime?
+  memo        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  opPlans     OpPlan[]
+}
+
+model OpPlan {
+  id            String       @id @default(cuid())
+  patientId     String
+  patient       Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  surgeryTypeId String
+  surgeryType   SurgeryType  @relation(fields: [surgeryTypeId], references: [id])
+  plannedDate   DateTime?
+  side          String?
+  diagnosis     String?
+  planNote      String?
+  // surgeryType.fields 의 key 에 대응하는 계획 단계 입력값
+  planData      Json?
+  status        String       @default("PLANNED")
+  createdById   String
+  createdBy     User         @relation(fields: [createdById], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  opRecord      OpRecord?
+}
+
+model OpRecord {
+  id                String   @id @default(cuid())
+  opPlanId          String   @unique
+  opPlan            OpPlan   @relation(fields: [opPlanId], references: [id], onDelete: Cascade)
+  operationDate     DateTime
+  surgeonName       String
+  assistantName     String?
+  anesthesiaType    String?
+  preOpDiagnosis    String?
+  postOpDiagnosis   String?
+  procedureName     String?
+  findings          String?
+  procedureDetail   String?
+  // surgeryType.fields 의 key 에 대응하는 실제 시행 결과값
+  recordData        Json?
+  complication      String?
+  estimatedBloodLoss String?
+  specimen          String?
+  postOpPlan        String?
+  createdById       String
+  createdBy         User     @relation(fields: [createdById], references: [id])
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
