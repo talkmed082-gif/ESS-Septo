@@ -376,17 +376,11 @@ export function SurgeryPlanner({
         </div>
 
 
-        {selected && (
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">수술 예정일</label>
-            <input
-              type="date"
-              name="plannedDate"
-              defaultValue={editPlan?.plannedDate ?? new Date().toISOString().slice(0, 10)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-            />
-          </div>
-        )}
+        {/* 수술 예정일은 병원 EMR 스케줄과 겹치는 행정 항목이라 화면에서 입력
+            받지 않는다. 이미 저장된 계획을 수정할 때는(editPlan) 기존 값을
+            그대로 숨겨서 다시 제출해 값이 지워지지 않게 하고, 새로 만드는
+            계획은 날짜 없이 생성된다. */}
+        {editPlan && <input type="hidden" name="plannedDate" defaultValue={editPlan.plannedDate} />}
 
         {selected && (
           <div key={`${selected.id}-${templateKey}`} className="space-y-4">

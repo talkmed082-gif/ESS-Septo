@@ -96,7 +96,10 @@ export default async function OpPlanPage({
         fixedPatient={{ id: plan.patient.id, name: plan.patient.name }}
         editPlan={{
           surgeryTypeId: plan.surgeryTypeId,
-          plannedDate: safeDateStr(plan.plannedDate) ?? new Date().toISOString().slice(0, 10),
+          // 화면에 더 이상 날짜 입력란이 없으므로, 없던 날짜를 오늘 날짜로
+          // 지어내지 않고 있는 그대로("" = 없음)를 넘겨서 수정 시 값이
+          // 유지되게 한다.
+          plannedDate: safeDateStr(plan.plannedDate) ?? "",
           values,
         }}
         action={updateOpPlan.bind(null, plan.id)}
