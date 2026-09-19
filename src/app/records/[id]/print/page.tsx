@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
@@ -44,13 +45,18 @@ export default async function OpRecordPrintPage({
 
   return (
     <div className="mx-auto w-full max-w-3xl bg-white p-3 text-slate-900 sm:p-8 print:max-w-none print:p-0">
-      <div className="mb-4 flex flex-wrap justify-end gap-2 print:hidden">
-        <SaveImageButton
-          targetId="op-record-print-content"
-          fileName={`${patient.name}_수술기록지.jpg`}
-          shareTitle={`${patient.name} 수술기록지`}
-        />
-        <PrintButton />
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 print:hidden">
+        <Link href={`/records/${record.id}`} className="text-sm text-slate-500 hover:underline">
+          ← 기록지로 돌아가기
+        </Link>
+        <div className="flex flex-wrap gap-2">
+          <SaveImageButton
+            targetId="op-record-print-content"
+            fileName={`${patient.name}_수술기록지.jpg`}
+            shareTitle={`${patient.name} 수술기록지`}
+          />
+          <PrintButton />
+        </div>
       </div>
 
       <div id="op-record-print-content" className="bg-white p-3 sm:p-0">

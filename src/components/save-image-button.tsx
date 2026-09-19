@@ -6,6 +6,11 @@ import { useState } from "react";
 // Share) 시트를 띄워서 메일/카카오톡 등 원하는 앱으로 바로 보낼 수 있게
 // 하고, 공유하기를 지원하지 않는 환경(PC 브라우저 등)에서는 대신 파일로
 // 다운로드한다.
+//
+// html2canvas(원조 패키지)는 Tailwind CSS 4가 기본으로 쓰는 oklch() 색상
+// 함수를 못 읽어서 캡처 중 조용히 실패한다(버튼이 "생성 중..."으로 잠깐
+// 바뀌었다가 아무 일도 없었던 것처럼 끝남) — 그래서 oklch/lab 등 최신 색상
+// 함수를 지원하는 fork인 html2canvas-pro를 대신 쓴다.
 export function SaveImageButton({
   targetId,
   fileName,
@@ -16,13 +21,15 @@ export function SaveImageButton({
   shareTitle: string;
 }) {
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleClick() {
     const el = document.getElementById(targetId);
     if (!el) return;
     setBusy(true);
+    setError(null);
     try {
-      const { default: html2canvas } = await import("html2canvas");
+      const { default: html2canvas } = await import("html2canvas-pro");
       const canvas = await html2canvas(el, {
         scale: 2,
         backgroundColor: "#ffffff",
@@ -67,19 +74,27 @@ export function SaveImageButton({
         a.click();
       }
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (err) {
+      // 예전엔 실패가 조용히 묻혀서 "안 눌리는 것처럼" 보였다 — 원인을 바로
+      // 알 수 있게 화면에도 띄운다.
+      console.error("이미지 생성/공유 실패", err);
+      setError("이미지 생성에 실패했습니다. 다시 시도해 주세요.");
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      disabled={busy}
-      className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-    >
-      {busy ? "이미지 생성 중..." : "이미지 공유/저장 (JPG)"}
-    </button>
+    <div className="flex flex-col items-end gap-1">
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={busy}
+        className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+      >
+        {busy ? "이미지 생성 중..." : "이미지 공유/저장 (JPG)"}
+      </button>
+      {error && <p className="text-xs text-red-600">{error}</p>}
+    </div>
   );
 }
