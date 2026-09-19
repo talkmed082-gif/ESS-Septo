@@ -12,6 +12,7 @@ import {
   getSinusCoveredKeys,
 } from "@/components/anatomy-diagram";
 import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
+import { EssFindingsPicker, ESS_FINDINGS_FIELD_KEYS } from "@/components/ess-findings-picker";
 import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 import type { NameStyle } from "@/lib/op-note-generator";
 import { isNasalFindingKey } from "@/lib/op-note-defs";
@@ -176,11 +177,20 @@ export function RecordForm({
       <div className={step === 1 ? "space-y-4" : "hidden"}>
         <p className="text-sm font-medium text-slate-700">비강/영상 소견</p>
         {showSeptum && <SeptumDiagram values={fieldValues} />}
-        <PolypPicker values={fieldValues} />
+        {showSinus && (
+          <>
+            <EssFindingsPicker values={fieldValues} />
+            <PolypPicker values={fieldValues} />
+          </>
+        )}
         <SurgeryFieldInputs
           fields={nasalFields}
           values={fieldValues}
-          excludeKeys={[...getSeptumCoveredKeys(surgeryTypeCode), ...POLYP_FIELD_KEYS]}
+          excludeKeys={[
+            ...getSeptumCoveredKeys(surgeryTypeCode),
+            ...POLYP_FIELD_KEYS,
+            ...ESS_FINDINGS_FIELD_KEYS,
+          ]}
         />
 
         <div>

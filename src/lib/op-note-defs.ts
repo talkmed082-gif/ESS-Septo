@@ -1,7 +1,9 @@
 import type { SurgeryFieldDef } from "./field-types";
 
-// 비강 소견(공통) — 비중격교정술 / FESS / 병행 모두에서 공유되는 항목
-export const nasalFindingFields: SurgeryFieldDef[] = [
+// 비강 소견 - 비중격/하비갑개 그룹 (Septoturbinoplasty용) — 비중격교정술
+// 단독 시행 시에는 이 그룹만 있으면 충분하고, ESS/FESS 관련 CT 소견은
+// 필요 없어서 별도 그룹으로 분리한다.
+export const septumTurbinateFindingFields: SurgeryFieldDef[] = [
   {
     key: "n_dev_side",
     label: "비중격 편위 방향",
@@ -16,19 +18,76 @@ export const nasalFindingFields: SurgeryFieldDef[] = [
     options: ["해당없음", "경도", "중등도", "고도"],
     default: "해당없음",
   },
+  // 비중격 특이사항 — 편위/만곡 정도와는 별개로 있는지 없는지가 중요한 소견
+  // (천공 등). 위 두 항목 바로 옆에 둬서 비중격 관련 소견끼리 모아둔다.
   {
-    key: "n_cb",
-    label: "Concha bullosa",
+    key: "n_septal_perforation",
+    label: "비중격 천공 (Septal perforation)",
     type: "select",
-    options: ["없음", "우측", "좌측", "양측"],
+    options: ["없음", "있음"],
     default: "없음",
   },
+  {
+    key: "n_septum_note",
+    label: "비중격 기타 특이사항 (예: 천공 크기/위치, 연골괴사 등)",
+    type: "text",
+  },
+  // 하비갑개 비후 — 비중격교정술과 흔히 같이 시행되는 turbinoplasty의
+  // 적응증이라 비중격 소견과 한 그룹으로 묶는다.
   {
     key: "n_chr",
     label: "하비갑개 비후 (CHR, Chronic Hypertrophic Rhinitis)",
     type: "select",
     options: ["없음", "우측", "좌측", "양측"],
     default: "없음",
+  },
+];
+
+// 비강 소견 - ESS(FESS)용 그룹 — 부비동 내시경수술 접근/안전 계획에 필요한
+// 내시경·CT 소견. 비중격교정술 단독 시행 시에는 필요 없다.
+export const essFindingFields: SurgeryFieldDef[] = [
+  // 문제(이상 소견)가 있는지부터 체크하고, 있을 때만 좌/우/양측을 고르는
+  // 2단계 구조 — 기본이 "정상/없음"인 항목을 매번 드롭다운에서 고르게
+  // 하지 않고 체크 안 하면 그대로 넘어가게 해서 입력을 줄인다. Keros
+  // Type을 좌우 각각 재는 대신 "위험한(깊은) skull base 있는지"만 체크한다.
+  { key: "n_cb_present", label: "Concha bullosa 있음", type: "checkbox" },
+  { key: "n_cb_side", label: "Concha bullosa - 방향", type: "select", options: ["좌측", "우측", "양측"] },
+  {
+    key: "n_skull_base_risk_present",
+    label: "위험한(깊은) skull base 있음 (Keros II/III 의심)",
+    type: "checkbox",
+  },
+  {
+    key: "n_skull_base_risk_side",
+    label: "위험한 skull base - 방향",
+    type: "select",
+    options: ["좌측", "우측", "양측"],
+  },
+  { key: "n_onodi_present", label: "Onodi cell 있음 (접형사골동)", type: "checkbox" },
+  { key: "n_onodi_side", label: "Onodi cell - 방향", type: "select", options: ["좌측", "우측", "양측"] },
+  { key: "n_haller_present", label: "Haller cell 있음 (안하사골봉소)", type: "checkbox" },
+  { key: "n_haller_side", label: "Haller cell - 방향", type: "select", options: ["좌측", "우측", "양측"] },
+  {
+    key: "n_lp_dehiscence_present",
+    label: "Lamina papyracea 결손 있음",
+    type: "checkbox",
+  },
+  {
+    key: "n_lp_dehiscence_side",
+    label: "Lamina papyracea 결손 - 방향",
+    type: "select",
+    options: ["좌측", "우측", "양측"],
+  },
+  {
+    key: "n_dehiscence_present",
+    label: "시신경/경동맥 골 결손 있음 (Optic nerve/ICA dehiscence)",
+    type: "checkbox",
+  },
+  {
+    key: "n_dehiscence_side",
+    label: "시신경/경동맥 골 결손 - 방향",
+    type: "select",
+    options: ["좌측", "우측", "양측"],
   },
   // 비용종 — 좌/우 정도(위치)가 다른 경우가 많아, 공통 "방향" 선택 없이
   // 측별로 위치 체크박스를 따로 둔다 (PolypPicker 컴포넌트가 우/좌 두 컬럼으로
@@ -43,23 +102,6 @@ export const nasalFindingFields: SurgeryFieldDef[] = [
   { key: "n_polyp_left_site_maxillary", label: "비용종 위치(좌측) - 상악동 자연공", type: "checkbox" },
   { key: "n_polyp_left_site_sphenoid", label: "비용종 위치(좌측) - 접형동", type: "checkbox" },
   { key: "n_polyp_left_site_choana", label: "비용종 위치(좌측) - 후비공까지 연장", type: "checkbox" },
-  // Skull base 높이(Keros classification) — 술전 CT로 평가, FESS 시 사골동
-  // 천장 손상 위험도 판단에 참고. 좌우 비대칭 가능성이 있어 좌/우 각각 둠.
-  // 기본값은 Keros 분류 중 실제로 가장 빈도가 높은 Type II로 둔다.
-  {
-    key: "skull_base_right",
-    label: "Skull base 높이 - 우측 (Keros)",
-    type: "select",
-    options: ["Type I (얕음, 저위험)", "Type II (중등도)", "Type III (깊음, 고위험)"],
-    default: "Type II (중등도)",
-  },
-  {
-    key: "skull_base_left",
-    label: "Skull base 높이 - 좌측 (Keros)",
-    type: "select",
-    options: ["Type I (얕음, 저위험)", "Type II (중등도)", "Type III (깊음, 고위험)"],
-    default: "Type II (중등도)",
-  },
   // Uncinate process attachment — frontal recess 배출 경로를 결정하는 해부학적
   // 변이로, FESS 시 frontal sinusotomy 접근 방향 계획에 항상 참고되는 값이라
   // 기록지 요약에서도 값과 무관하게 항상 표시한다. 기본값은 가장 흔한 부착 부위인
@@ -78,54 +120,17 @@ export const nasalFindingFields: SurgeryFieldDef[] = [
     options: ["Lamina papyracea", "Skull base", "중비갑개 (Middle turbinate)", "불명확/혼합"],
     default: "Lamina papyracea",
   },
-  // 아래 항목들은 술전 CT에서 확인하는 해부학적 변이/위험 소견 — FESS 접근
-  // 경로 계획 및 안전(안구·시신경·경동맥 손상 위험)에 직접 관련되어 함께 기록.
-  {
-    key: "n_onodi",
-    label: "Onodi cell (접형사골동)",
-    type: "select",
-    options: ["없음", "우측", "좌측", "양측"],
-    default: "없음",
-  },
-  {
-    key: "n_haller",
-    label: "Haller cell (안하사골봉소)",
-    type: "select",
-    options: ["없음", "우측", "좌측", "양측"],
-    default: "없음",
-  },
-  // 골 결손(dehiscence) 소견 — 좌/우가 독립적으로 있을 수 있어 측별로 따로
-  // 기록한다. Lamina papyracea 결손은 ethmoidectomy 시 안구 손상과 직결되는,
-  // 가장 흔하고 실제로 중요한 골 결손 소견 (시신경/경동맥 결손과는 별도로 기록)
-  {
-    key: "n_lp_dehiscence_right",
-    label: "Lamina papyracea 결손 - 우측",
-    type: "select",
-    options: ["없음", "있음"],
-    default: "없음",
-  },
-  {
-    key: "n_lp_dehiscence_left",
-    label: "Lamina papyracea 결손 - 좌측",
-    type: "select",
-    options: ["없음", "있음"],
-    default: "없음",
-  },
-  {
-    key: "n_dehiscence_right",
-    label: "시신경/경동맥 골 결손 - 우측 (Optic nerve/ICA dehiscence)",
-    type: "select",
-    options: ["없음", "있음"],
-    default: "없음",
-  },
-  {
-    key: "n_dehiscence_left",
-    label: "시신경/경동맥 골 결손 - 좌측 (Optic nerve/ICA dehiscence)",
-    type: "select",
-    options: ["없음", "있음"],
-    default: "없음",
-  },
-  // Turbinoplasty — 비중격교정술/FESS 어느 쪽에도 단독 또는 동반될 수 있어 공통 항목으로 둠
+];
+
+// 비강 소견(공통, ESS/병행용) — 비중격/하비갑개 그룹 + ESS 그룹을 모두 포함
+export const nasalFindingFields: SurgeryFieldDef[] = [
+  ...septumTurbinateFindingFields,
+  ...essFindingFields,
+];
+
+// Turbinoplasty(실제 시행 여부) — 소견이 아니라 술식이라 "수술 방법" 페이지로 감.
+// 비중격교정술/FESS 어느 쪽에도 단독 또는 동반될 수 있어 공통 항목으로 둠
+export const turbinoplastyFields: SurgeryFieldDef[] = [
   { key: "turb_middle_right", label: "중비갑개 축소술 - 우측", type: "checkbox" },
   { key: "turb_middle_left", label: "중비갑개 축소술 - 좌측", type: "checkbox" },
   { key: "turb_inferior_right", label: "하비갑개 축소술 - 우측", type: "checkbox" },
@@ -250,10 +255,21 @@ export const comboOnlyFields: SurgeryFieldDef[] = [
 const septoFieldsForCombo = septoFields.filter((f) => f.key !== "s_pack");
 const fessFieldsForCombo = fessFields.filter((f) => f.key !== "f_pack");
 
-export const essFullFields: SurgeryFieldDef[] = [...nasalFindingFields, ...fessFields];
-export const septoplastyFullFields: SurgeryFieldDef[] = [...nasalFindingFields, ...septoFields];
+// ESS/병행은 비강소견 두 그룹(비중격/하비갑개 + ESS)을 모두 보여주고,
+// 비중격교정술 단독은 비중격/하비갑개 그룹만 보여준다(ESS 전용 CT 소견 불필요).
+export const essFullFields: SurgeryFieldDef[] = [
+  ...nasalFindingFields,
+  ...turbinoplastyFields,
+  ...fessFields,
+];
+export const septoplastyFullFields: SurgeryFieldDef[] = [
+  ...septumTurbinateFindingFields,
+  ...turbinoplastyFields,
+  ...septoFields,
+];
 export const comboFullFields: SurgeryFieldDef[] = [
   ...nasalFindingFields,
+  ...turbinoplastyFields,
   ...septoFieldsForCombo,
   ...fessFieldsForCombo,
   ...comboOnlyFields,

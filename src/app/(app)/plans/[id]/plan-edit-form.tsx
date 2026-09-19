@@ -12,6 +12,7 @@ import {
   getSinusCoveredKeys,
 } from "@/components/anatomy-diagram";
 import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
+import { EssFindingsPicker, ESS_FINDINGS_FIELD_KEYS } from "@/components/ess-findings-picker";
 import { PresetBar, type PresetItem } from "@/components/preset-bar";
 import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 import type { NameStyle } from "@/lib/op-note-generator";
@@ -148,11 +149,20 @@ export function PlanEditForm({
       <div key={templateKey}>
         <div className={step === 1 ? "space-y-4" : "hidden"}>
           {showSeptum && <SeptumDiagram values={activeValues} />}
-          <PolypPicker values={activeValues} />
+          {showSinus && (
+            <>
+              <EssFindingsPicker values={activeValues} />
+              <PolypPicker values={activeValues} />
+            </>
+          )}
           <SurgeryFieldInputs
             fields={nasalFields}
             values={activeValues}
-            excludeKeys={[...getSeptumCoveredKeys(surgeryTypeCode), ...POLYP_FIELD_KEYS]}
+            excludeKeys={[
+              ...getSeptumCoveredKeys(surgeryTypeCode),
+              ...POLYP_FIELD_KEYS,
+              ...ESS_FINDINGS_FIELD_KEYS,
+            ]}
           />
         </div>
         <div className={step === 2 ? "space-y-4" : "hidden"}>

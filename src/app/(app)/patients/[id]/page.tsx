@@ -90,7 +90,7 @@ export default async function PatientDetailPage({
                   ? buildProcedureName(code, values, nameStyle)
                   : plan.surgeryType.name;
                 const findings = isBuiltInSurgeryCode(code)
-                  ? nasalFindingsText(values)
+                  ? nasalFindingsText(values, code !== "SEPTOPLASTY")
                   : "-";
                 return (
                   <tr key={plan.id} className="border-t border-slate-100 hover:bg-slate-50">
