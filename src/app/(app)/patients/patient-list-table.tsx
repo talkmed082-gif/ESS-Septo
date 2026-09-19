@@ -19,8 +19,7 @@ export interface PatientRow {
 
 const SORT_COLUMNS: { key: string; label: string }[] = [
   { key: "name", label: "이름" },
-  { key: "sex", label: "성별" },
-  { key: "age", label: "나이" },
+  { key: "age", label: "성별/나이" },
   { key: "chartNo", label: "차트번호" },
   { key: "surgeryDate", label: "수술 일자" },
 ];
@@ -31,6 +30,17 @@ function buildSortHref(query: string, sort: string, dir: string, column: string)
   params.set("sort", column);
   params.set("dir", sort === column && dir === "asc" ? "desc" : "asc");
   return `/patients?${params.toString()}`;
+}
+
+// "2026-09-19" -> "26-09-19" — 연도 앞 두 자리를 빼서 열 폭을 줄인다.
+function shortDate(d: string | null): string | null {
+  if (!d) return null;
+  return d.length === 10 ? d.slice(2) : d;
+}
+
+function sexAgeLabel(sex: string | null, age: number | null): string {
+  if (!sex && age == null) return "-";
+  return `${sex ?? "-"}/${age ?? "-"}`;
 }
 
 export function PatientListTable({
@@ -86,20 +96,20 @@ export function PatientListTable({
               <th className="w-10 px-4 py-2">
                 <input type="checkbox" onChange={toggleAll} className="h-4 w-4 rounded border-slate-300" />
               </th>
-              <th className="w-12 px-2 py-2 font-medium">순번</th>
+              <th className="w-12 px-2 py-2 font-medium whitespace-nowrap">순번</th>
               {SORT_COLUMNS.map((col) => (
-                <th key={col.key} className="px-4 py-2 font-medium">
+                <th key={col.key} className="px-4 py-2 font-medium whitespace-nowrap">
                   <Link href={buildSortHref(query, sort, dir, col.key)} className="hover:underline">
                     {col.label}
                     {sort === col.key && <span className="ml-1">{dir === "asc" ? "▲" : "▼"}</span>}
                   </Link>
                 </th>
               ))}
-              {/* 계획과 기록지 두 가지를 이 목록의 핵심 기능으로 삼아, 비강 소견 -
-                  계획 - 기록지 순서로 나란히 배치한다 (기록지는 맨 오른쪽). */}
-              <th className="px-4 py-2 font-medium">비강 소견</th>
-              <th className="px-4 py-2 font-medium">계획</th>
-              <th className="px-4 py-2 font-medium">기록지</th>
+              <th className="px-4 py-2 font-medium whitespace-nowrap">수술명</th>
+              {/* 비강 소견/기록지는 열 대신 오른쪽 끝 버튼 두 개로 뺐다 — 표가
+                  너무 넓어지는 걸 막고, 계획과 기록지 확인을 핵심 동작으로
+                  강조하기 위함. */}
+              <th className="px-4 py-2 font-medium whitespace-nowrap" colSpan={2} />
             </tr>
           </thead>
           <tbody>
@@ -114,51 +124,57 @@ export function PatientListTable({
                   />
                 </td>
                 <td className="px-2 py-2 text-slate-400">{idx + 1}</td>
-                <td className="px-4 py-2">
+                <td className="px-4 py-2 whitespace-nowrap">
                   <Link href={`/patients/${p.id}`} className="font-medium text-slate-900 hover:underline">
                     {p.name}
                   </Link>
                 </td>
-                <td className="px-4 py-2 text-slate-600">
-                  {p.sex === "M" ? "남" : p.sex === "F" ? "여" : "-"}
-                </td>
-                <td className="px-4 py-2 text-slate-600">{p.age ?? "-"}</td>
-                <td className="px-4 py-2 text-slate-600">{p.chartNo ?? "-"}</td>
-                <td className="px-4 py-2 text-slate-600">
+                <td className="px-4 py-2 text-slate-600 whitespace-nowrap">{sexAgeLabel(p.sex, p.age)}</td>
+                <td className="px-4 py-2 text-slate-600 whitespace-nowrap">{p.chartNo ?? "-"}</td>
+                <td className="px-4 py-2 text-slate-600 whitespace-nowrap">
                   {p.surgeryPlanId ? (
                     <Link href={`/plans/${p.surgeryPlanId}`} className="hover:underline">
-                      {p.surgeryDate ?? "입력"}
+                      {shortDate(p.surgeryDate) ?? "입력"}
                     </Link>
                   ) : (
-                    (p.surgeryDate ?? "-")
-                  )}
-                </td>
-                <td className="max-w-xs truncate px-4 py-2 text-slate-600" title={p.nasalFindings ?? undefined}>
-                  {p.surgeryPlanId ? (
-                    <Link href={`/plans/${p.surgeryPlanId}`} className="hover:underline">
-                      {p.nasalFindings ?? "입력"}
-                    </Link>
-                  ) : (
-                    (p.nasalFindings ?? "-")
+                    (shortDate(p.surgeryDate) ?? "-")
                   )}
                 </td>
                 <td className="px-4 py-2 text-slate-600">
                   {p.surgeryPlanId ? (
                     <Link href={`/plans/${p.surgeryPlanId}`} className="font-medium text-slate-900 hover:underline">
-                      {p.procedureName ?? "계획 보기"}
+                      {p.procedureName ? (p.recordId ? p.procedureName : `예정) ${p.procedureName}`) : "계획 보기"}
                     </Link>
                   ) : (
                     "-"
                   )}
                 </td>
-                <td className="px-4 py-2 text-slate-600">
+                <td className="px-2 py-2 whitespace-nowrap">
+                  {p.surgeryPlanId ? (
+                    <Link
+                      href={`/plans/${p.surgeryPlanId}`}
+                      className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                    >
+                      비강 소견 확인
+                    </Link>
+                  ) : (
+                    "-"
+                  )}
+                </td>
+                <td className="px-2 py-2 whitespace-nowrap">
                   {p.recordId ? (
-                    <Link href={`/records/${p.recordId}`} className="font-medium text-slate-900 hover:underline">
-                      기록지 보기
+                    <Link
+                      href={`/records/${p.recordId}`}
+                      className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                    >
+                      수술기록 확인
                     </Link>
                   ) : p.surgeryPlanId ? (
-                    <Link href={`/plans/${p.surgeryPlanId}/record`} className="text-emerald-700 hover:underline">
-                      기록지 작성
+                    <Link
+                      href={`/plans/${p.surgeryPlanId}/record`}
+                      className="rounded-md border border-emerald-600 px-2 py-1 text-xs text-emerald-700 hover:bg-emerald-50"
+                    >
+                      수술기록 확인
                     </Link>
                   ) : (
                     "-"

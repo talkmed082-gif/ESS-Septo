@@ -6,6 +6,7 @@ import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
 import { buildPlanTable, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { PlanTableView } from "@/components/plan-table";
 import { PrintButton } from "@/components/print-button";
+import { SaveImageButton } from "@/components/save-image-button";
 import { safeDateStr } from "@/lib/date-format";
 
 export default async function OpPlanPrintPage({
@@ -30,47 +31,54 @@ export default async function OpPlanPrintPage({
     : null;
 
   return (
-    <div className="mx-auto max-w-2xl bg-white p-8 text-slate-900 print:p-0">
-      <div className="mb-4 flex justify-end print:hidden">
+    <div className="mx-auto w-full max-w-2xl bg-white p-3 text-slate-900 sm:p-8 print:max-w-none print:p-0">
+      <div className="mb-4 flex flex-wrap justify-end gap-2 print:hidden">
+        <SaveImageButton targetId="op-plan-print-content" fileName={`${plan.patient.name}_수술계획표.jpg`} />
         <PrintButton />
       </div>
 
-      <h1 className="mb-1 text-center text-2xl font-bold">수 술 계 획 표</h1>
-      <p className="mb-6 text-center text-base text-slate-500">
-        ({plan.surgeryType.name})
-      </p>
+      <div id="op-plan-print-content" className="bg-white p-3 sm:p-0">
+        <h1 className="mb-1 text-center text-lg font-bold sm:text-2xl">수 술 계 획 표</h1>
+        <p className="mb-6 text-center text-sm text-slate-500 sm:text-base">
+          ({plan.surgeryType.name})
+        </p>
 
-      <table className="mb-6 w-full border-collapse text-lg">
-        <tbody>
-          <tr>
-            <th className="w-32 border border-slate-400 bg-slate-50 px-3 py-2.5 text-left font-medium">
-              환자명
-            </th>
-            <td className="border border-slate-400 px-3 py-2.5 font-semibold">
-              {plan.patient.name}
-            </td>
-          </tr>
-          <tr>
-            <th className="border border-slate-400 bg-slate-50 px-3 py-2.5 text-left font-medium">
-              수술일
-            </th>
-            <td className="border border-slate-400 px-3 py-2.5">{safeDateStr(plan.plannedDate) ?? "-"}</td>
-          </tr>
-        </tbody>
-      </table>
-
-      {table ? (
-        <PlanTableView table={table} size="large" />
-      ) : (
-        <p className="whitespace-pre-wrap text-lg">{plan.planNote}</p>
-      )}
-
-      {plan.planNote && table && (
-        <div className="mt-4 rounded-md border border-slate-300 p-3 text-base whitespace-pre-wrap">
-          <span className="font-semibold">메모: </span>
-          {plan.planNote}
+        <div className="mb-6 overflow-x-auto">
+          <table className="w-full border-collapse text-sm sm:text-lg">
+            <tbody>
+              <tr>
+                <th className="w-24 border border-slate-400 bg-slate-50 px-2 py-2 text-left font-medium sm:w-32 sm:px-3 sm:py-2.5">
+                  환자명
+                </th>
+                <td className="border border-slate-400 px-2 py-2 font-semibold sm:px-3 sm:py-2.5">
+                  {plan.patient.name}
+                </td>
+              </tr>
+              <tr>
+                <th className="border border-slate-400 bg-slate-50 px-2 py-2 text-left font-medium sm:px-3 sm:py-2.5">
+                  수술일
+                </th>
+                <td className="border border-slate-400 px-2 py-2 sm:px-3 sm:py-2.5">
+                  {safeDateStr(plan.plannedDate) ?? "-"}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      )}
+
+        {table ? (
+          <PlanTableView table={table} />
+        ) : (
+          <p className="whitespace-pre-wrap text-sm sm:text-lg">{plan.planNote}</p>
+        )}
+
+        {plan.planNote && table && (
+          <div className="mt-4 rounded-md border border-slate-300 p-3 text-sm whitespace-pre-wrap sm:text-base">
+            <span className="font-semibold">메모: </span>
+            {plan.planNote}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

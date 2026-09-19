@@ -38,22 +38,25 @@ export function PlanTableView({
         </div>
       )}
 
-      <table className={`w-full border-collapse ${textSize}`}>
-        <tbody>
-          {table.keyValueRows.map((row) => (
-            <tr key={row.label}>
-              <th
-                className={`w-32 border border-slate-400 bg-slate-50 ${cellPad} text-left align-top font-medium`}
-              >
-                {row.label}
-              </th>
-              <td className={`border border-slate-400 ${cellPad} align-top`}>{row.value}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="overflow-x-auto">
+        <table className={`w-full border-collapse ${textSize}`}>
+          <tbody>
+            {table.keyValueRows.map((row) => (
+              <tr key={row.label}>
+                <th
+                  className={`w-24 border border-slate-400 bg-slate-50 sm:w-32 ${cellPad} text-left align-top font-medium`}
+                >
+                  {row.label}
+                </th>
+                <td className={`border border-slate-400 ${cellPad} align-top`}>{row.value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {table.sideMatrix && (
+        <div className="overflow-x-auto">
         <table className={`w-full border-collapse ${textSize}`}>
           <thead>
             <tr>
@@ -109,6 +112,7 @@ export function PlanTableView({
             ))}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   );

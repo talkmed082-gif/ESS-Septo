@@ -96,10 +96,6 @@ export default async function PatientsPage({
         av = a.chartNo ?? "";
         bv = b.chartNo ?? "";
         break;
-      case "sex":
-        av = a.sex ?? "";
-        bv = b.sex ?? "";
-        break;
       case "age":
         av = a.age ?? -1;
         bv = b.age ?? -1;
