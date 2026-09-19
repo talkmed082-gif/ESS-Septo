@@ -113,19 +113,19 @@ function polypFindingText(values: FieldValues): string {
   return `비용종: ${parts.join(", ")}`;
 }
 
-// Uncinate process attachment — skull base/CT 소견과 같은 좌우 비교 문장 형식
+// UP(Uncinate process) attachment — skull base/CT 소견과 같은 좌우 비교 문장 형식
 function uncinateLine(values: FieldValues): string {
   const left = str(values, "n_uncinate_left", "");
   const right = str(values, "n_uncinate_right", "");
   if (!left && !right) return "";
 
   if (left && right && left === right) {
-    return `Uncinate process attachment: 양측 ${left}`;
+    return `UP attach: 양측 ${left}`;
   }
   const parts: string[] = [];
   if (right) parts.push(`우측 ${right}`);
   if (left) parts.push(`좌측 ${left}`);
-  return `Uncinate process attachment: ${parts.join(", ")}`;
+  return `UP attach: ${parts.join(", ")}`;
 }
 
 // CHR처럼 "없음/우측/좌측/양측" 단일 선택 형태인 소견의 한 줄 서술
@@ -231,16 +231,15 @@ export function nasalFindingsSummary(values: FieldValues): string {
     items.push(`${str(values, "n_skull_base_risk_side", "양측")} Low skull base`);
   }
 
-  // Uncinate attachment는 어떤 값이든 frontal sinusotomy 접근 계획에 항상 참고
-  // 되는 정보라, 다른 항목과 달리 "흔한 값(Lamina papyracea)"이어도 요약에서
-  // 빼지 않고 항상 넣는다.
+  // UP attach는 어떤 값이든 frontal sinusotomy 접근 계획에 항상 참고되는
+  // 정보라, 다른 항목과 달리 "흔한 값(LP)"이어도 요약에서 빼지 않고 항상 넣는다.
   const uncLeft = str(values, "n_uncinate_left", "");
   const uncRight = str(values, "n_uncinate_right", "");
   if (uncLeft || uncRight) {
     const parts: string[] = [];
     if (uncRight) parts.push(`우측 ${uncRight}`);
     if (uncLeft) parts.push(`좌측 ${uncLeft}`);
-    items.push(`Uncinate attachment ${parts.join(", ")}`);
+    items.push(`UP attach ${parts.join(", ")}`);
   }
 
   if (bool(values, "n_onodi_present")) {

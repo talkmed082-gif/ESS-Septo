@@ -15,7 +15,7 @@ export const septumTurbinateFindingFields: SurgeryFieldDef[] = [
     key: "n_dev_side",
     label: "비중격 편위 방향",
     type: "select",
-    options: ["특이 만곡 없음", "우측", "좌측", "양측(C자형)"],
+    options: ["특이 만곡 없음", "우측", "양측(C자형)", "좌측"],
     default: "특이 만곡 없음",
   },
   {
@@ -45,7 +45,7 @@ export const septumTurbinateFindingFields: SurgeryFieldDef[] = [
     key: "n_chr",
     label: "하비갑개 비후 (CHR, Chronic Hypertrophic Rhinitis)",
     type: "select",
-    options: ["없음", "우측", "좌측", "양측"],
+    options: ["없음", "우측", "양측", "좌측"],
     default: "없음",
   },
 ];
@@ -63,30 +63,31 @@ export const UNCINATE_FIELD_KEYS = ["n_uncinate_right", "n_uncinate_left"];
 // 내시경·CT 소견. 비중격교정술 단독 시행 시에는 필요 없다.
 export const essFindingFields: SurgeryFieldDef[] = [
   { key: ESS_PE_DONE_KEY, label: "ESS P/E 시행", type: "checkbox" },
-  // Uncinate process attachment — frontal recess 배출 경로를 결정하는 해부학적
-  // 변이로, FESS 시 frontal sinusotomy 접근 방향 계획에 항상 참고되는 값이라
-  // 기록지 요약에서도 값과 무관하게 항상 표시한다. 기본값은 가장 흔한 부착 부위인
-  // Lamina papyracea.
+  // Uncinate process(UP) attachment — frontal recess 배출 경로를 결정하는
+  // 해부학적 변이로, FESS 시 frontal sinusotomy 접근 방향 계획에 항상 참고되는
+  // 값이라 기록지 요약에서도 값과 무관하게 항상 표시한다. 기본값은 가장 흔한
+  // 부착 부위인 LP(Lamina papyracea). 약어: LP=Lamina papyracea,
+  // SB=Skull base, MT=Middle turbinate, Mixed=불명확/혼합.
   {
     key: "n_uncinate_right",
-    label: "Uncinate process attachment - 우측",
+    label: "UP attach - 우측",
     type: "select",
-    options: ["Lamina papyracea", "Skull base", "중비갑개 (Middle turbinate)", "불명확/혼합"],
-    default: "Lamina papyracea",
+    options: ["LP", "SB", "MT", "Mixed"],
+    default: "LP",
   },
   {
     key: "n_uncinate_left",
-    label: "Uncinate process attachment - 좌측",
+    label: "UP attach - 좌측",
     type: "select",
-    options: ["Lamina papyracea", "Skull base", "중비갑개 (Middle turbinate)", "불명확/혼합"],
-    default: "Lamina papyracea",
+    options: ["LP", "SB", "MT", "Mixed"],
+    default: "LP",
   },
   // 문제(이상 소견)가 있는지부터 체크하고, 있을 때만 좌/우/양측을 고르는
   // 2단계 구조 — 기본이 "정상/없음"인 항목을 매번 드롭다운에서 고르게
   // 하지 않고 체크 안 하면 그대로 넘어가게 해서 입력을 줄인다. Keros
   // Type을 좌우 각각 재는 대신 "Low skull base 있는지"만 체크한다.
   { key: "n_cb_present", label: "Concha bullosa 있음", type: "checkbox" },
-  { key: "n_cb_side", label: "Concha bullosa - 방향", type: "select", options: ["좌측", "우측", "양측"] },
+  { key: "n_cb_side", label: "Concha bullosa - 방향", type: "select", options: ["우측", "양측", "좌측"] },
   {
     key: "n_skull_base_risk_present",
     label: "Low skull base 있음 (Keros II/III 의심)",
@@ -96,12 +97,12 @@ export const essFindingFields: SurgeryFieldDef[] = [
     key: "n_skull_base_risk_side",
     label: "Low skull base - 방향",
     type: "select",
-    options: ["좌측", "우측", "양측"],
+    options: ["우측", "양측", "좌측"],
   },
   { key: "n_onodi_present", label: "Onodi's cell 있음 (접형사골동)", type: "checkbox" },
-  { key: "n_onodi_side", label: "Onodi's cell - 방향", type: "select", options: ["좌측", "우측", "양측"] },
+  { key: "n_onodi_side", label: "Onodi's cell - 방향", type: "select", options: ["우측", "양측", "좌측"] },
   { key: "n_haller_present", label: "Haller's cell 있음 (안하사골봉소)", type: "checkbox" },
-  { key: "n_haller_side", label: "Haller's cell - 방향", type: "select", options: ["좌측", "우측", "양측"] },
+  { key: "n_haller_side", label: "Haller's cell - 방향", type: "select", options: ["우측", "양측", "좌측"] },
   {
     key: "n_lp_dehiscence_present",
     label: "Lamina papyracea 결손 있음",
@@ -111,7 +112,7 @@ export const essFindingFields: SurgeryFieldDef[] = [
     key: "n_lp_dehiscence_side",
     label: "Lamina papyracea 결손 - 방향",
     type: "select",
-    options: ["좌측", "우측", "양측"],
+    options: ["우측", "양측", "좌측"],
   },
   {
     key: "n_dehiscence_present",
@@ -122,7 +123,7 @@ export const essFindingFields: SurgeryFieldDef[] = [
     key: "n_dehiscence_side",
     label: "시신경/경동맥 골 결손 - 방향",
     type: "select",
-    options: ["좌측", "우측", "양측"],
+    options: ["우측", "양측", "좌측"],
   },
   // 비용종 — 좌/우 정도(위치)가 다른 경우가 많아, 공통 "방향" 선택 없이
   // 측별로 위치 체크박스를 따로 둔다 (PolypPicker 컴포넌트가 우/좌 두 컬럼으로
