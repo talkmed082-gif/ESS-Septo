@@ -17,6 +17,7 @@ import { CollapsibleFindingSection } from "@/components/collapsible-finding-sect
 import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 import type { NameStyle } from "@/lib/op-note-generator";
 import {
+  isBuiltInSurgeryCode,
   isNasalFindingKey,
   SEPTUM_DETAIL_FIELD_KEYS,
   UNCINATE_FIELD_KEYS,
@@ -64,6 +65,9 @@ export function RecordForm({
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
   const [step, setStep] = useState<1 | 2>(1);
+  // 자동 생성을 지원하지 않는 커스텀 수술 종류는 검토할 초안 문구 자체가
+  // 없으므로 세부 항목을 접어둘 이유가 없다 — 처음부터 펼쳐둔다.
+  const [showDetails, setShowDetails] = useState(!isBuiltInSurgeryCode(surgeryTypeCode));
 
   const { showSeptum, showSinus } = getAnatomyVisibility(surgeryTypeCode);
   const nasalFields = fields.filter((f) => isNasalFindingKey(f.key));
@@ -164,83 +168,105 @@ export function RecordForm({
         />
       </div>
 
-      <div className="flex gap-2 border-b border-slate-200 pb-3">
-        <button
-          type="button"
-          onClick={() => setStep(1)}
-          className={stepButtonClass(step === 1)}
-        >
-          1. 비강/영상 소견
-        </button>
-        <button
-          type="button"
-          onClick={() => setStep(2)}
-          className={stepButtonClass(step === 2)}
-        >
-          2. 수술 방법
-        </button>
+      <div>
+        <label className="mb-1 block text-sm font-medium text-slate-700">
+          비강/영상 소견 (Findings)
+        </label>
+        <textarea
+          name="findings"
+          defaultValue={defaultValues.findings}
+          rows={3}
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+        />
       </div>
 
-      <div className={step === 1 ? "space-y-4" : "hidden"}>
-        <p className="text-sm font-medium text-slate-700">비강/영상 소견</p>
-        {showSeptum && (
-          <CollapsibleFindingSection
-            doneKey={SEPTO_PE_DONE_KEY}
-            label="Septoturbinoplasty P/E"
-            values={fieldValues}
-          >
-            <SeptumDiagram values={fieldValues} />
-            <SurgeryFieldInputs
-              fields={nasalFields.filter((f) => SEPTUM_DETAIL_FIELD_KEYS.includes(f.key))}
-              values={fieldValues}
-            />
-          </CollapsibleFindingSection>
-        )}
-        {showSinus && (
-          <CollapsibleFindingSection doneKey={ESS_PE_DONE_KEY} label="ESS P/E" values={fieldValues}>
-            <SurgeryFieldInputs
-              fields={nasalFields.filter((f) => UNCINATE_FIELD_KEYS.includes(f.key))}
-              values={fieldValues}
-            />
-            <EssFindingsPicker values={fieldValues} />
-            <PolypPicker values={fieldValues} />
-          </CollapsibleFindingSection>
-        )}
-        <SurgeryFieldInputs
-          fields={nasalFields}
-          values={fieldValues}
-          excludeKeys={[
-            ...getSeptumCoveredKeys(surgeryTypeCode),
-            SEPTO_PE_DONE_KEY,
-            ESS_PE_DONE_KEY,
-            ...SEPTUM_DETAIL_FIELD_KEYS,
-            ...UNCINATE_FIELD_KEYS,
-            ...POLYP_FIELD_KEYS,
-            ...ESS_FINDINGS_FIELD_KEYS,
-          ]}
+      <div>
+        <label className="mb-1 block text-sm font-medium text-slate-700">
+          수술 과정 상세 (Operative procedure)
+        </label>
+        <textarea
+          name="procedureDetail"
+          defaultValue={defaultValues.procedureDetail}
+          rows={6}
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
         />
+      </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            비강/영상 소견 (Findings)
-          </label>
-          <textarea
-            name="findings"
-            defaultValue={defaultValues.findings}
-            rows={3}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+      <button
+        type="button"
+        onClick={() => setShowDetails((s) => !s)}
+        className="text-sm font-medium text-emerald-700 hover:underline"
+      >
+        {showDetails
+          ? "▲ 세부 항목 접기"
+          : "▼ 세부 항목 펼치기 (모식도/체크리스트로 다시 자동 작성하려면)"}
+      </button>
+
+      <div className={showDetails ? "space-y-4" : "hidden"}>
+        <div className="flex gap-2 border-b border-slate-200 pb-3">
+          <button
+            type="button"
+            onClick={() => setStep(1)}
+            className={stepButtonClass(step === 1)}
+          >
+            1. 비강/영상 소견
+          </button>
+          <button
+            type="button"
+            onClick={() => setStep(2)}
+            className={stepButtonClass(step === 2)}
+          >
+            2. 수술 방법
+          </button>
+        </div>
+
+        <div className={step === 1 ? "space-y-4" : "hidden"}>
+          {showSeptum && (
+            <CollapsibleFindingSection
+              doneKey={SEPTO_PE_DONE_KEY}
+              label="Septoturbinoplasty P/E"
+              values={fieldValues}
+            >
+              <SeptumDiagram values={fieldValues} />
+              <SurgeryFieldInputs
+                fields={nasalFields.filter((f) => SEPTUM_DETAIL_FIELD_KEYS.includes(f.key))}
+                values={fieldValues}
+              />
+            </CollapsibleFindingSection>
+          )}
+          {showSinus && (
+            <CollapsibleFindingSection doneKey={ESS_PE_DONE_KEY} label="ESS P/E" values={fieldValues}>
+              <SurgeryFieldInputs
+                fields={nasalFields.filter((f) => UNCINATE_FIELD_KEYS.includes(f.key))}
+                values={fieldValues}
+              />
+              <EssFindingsPicker values={fieldValues} />
+              <PolypPicker values={fieldValues} />
+            </CollapsibleFindingSection>
+          )}
+          <SurgeryFieldInputs
+            fields={nasalFields}
+            values={fieldValues}
+            excludeKeys={[
+              ...getSeptumCoveredKeys(surgeryTypeCode),
+              SEPTO_PE_DONE_KEY,
+              ESS_PE_DONE_KEY,
+              ...SEPTUM_DETAIL_FIELD_KEYS,
+              ...UNCINATE_FIELD_KEYS,
+              ...POLYP_FIELD_KEYS,
+              ...ESS_FINDINGS_FIELD_KEYS,
+            ]}
           />
         </div>
-      </div>
 
-      <div className={step === 2 ? "space-y-4" : "hidden"}>
-        <p className="text-sm font-medium text-slate-700">수술 방법 / 시행 항목</p>
-        {showSinus && <SinusDiagram values={fieldValues} />}
-        <SurgeryFieldInputs
-          fields={procedureFields}
-          values={fieldValues}
-          excludeKeys={getSinusCoveredKeys(surgeryTypeCode)}
-        />
+        <div className={step === 2 ? "space-y-4" : "hidden"}>
+          {showSinus && <SinusDiagram values={fieldValues} />}
+          <SurgeryFieldInputs
+            fields={procedureFields}
+            values={fieldValues}
+            excludeKeys={getSinusCoveredKeys(surgeryTypeCode)}
+          />
+        </div>
 
         <OpNoteGenerateButton
           fields={fields}
@@ -248,18 +274,6 @@ export function RecordForm({
           mode="record"
           nameStyle={nameStyle}
         />
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            수술 과정 상세 (Operative procedure)
-          </label>
-          <textarea
-            name="procedureDetail"
-            defaultValue={defaultValues.procedureDetail}
-            rows={6}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-          />
-        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
