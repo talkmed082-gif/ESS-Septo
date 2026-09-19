@@ -43,6 +43,14 @@ function sexAgeLabel(sex: string | null, age: number | null): string {
   return `${sex ?? "-"}/${age ?? "-"}`;
 }
 
+// 이름을 누르면 이력 화면 대신 바로 인쇄용 화면으로 간다 — 기록지가 있으면
+// 기록지 인쇄용, 없으면 계획 인쇄용, 계획조차 없으면 환자 상세로 보낸다.
+function patientPrintHref(p: PatientRow): string {
+  if (p.recordId) return `/records/${p.recordId}/print`;
+  if (p.surgeryPlanId) return `/plans/${p.surgeryPlanId}/print`;
+  return `/patients/${p.id}`;
+}
+
 export function PatientListTable({
   patients,
   query,
@@ -102,7 +110,7 @@ export function PatientListTable({
                   value={p.id}
                   className="h-4 w-4 rounded border-slate-300"
                 />
-                <Link href={`/patients/${p.id}`} className="font-medium text-slate-900 hover:underline">
+                <Link href={patientPrintHref(p)} className="font-medium text-slate-900 hover:underline">
                   {p.name}
                 </Link>
                 <span className="text-xs text-slate-500">
@@ -190,7 +198,7 @@ export function PatientListTable({
                 </td>
                 <td className="px-2 py-2 text-slate-400">{idx + 1}</td>
                 <td className="px-4 py-2 whitespace-nowrap">
-                  <Link href={`/patients/${p.id}`} className="font-medium text-slate-900 hover:underline">
+                  <Link href={patientPrintHref(p)} className="font-medium text-slate-900 hover:underline">
                     {p.name}
                   </Link>
                 </td>
