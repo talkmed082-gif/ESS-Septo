@@ -57,17 +57,10 @@ export default async function NewOpRecordPage({
         defaultValues={{
           operationDate: safeDateStr(plan.plannedDate) ?? new Date().toISOString().slice(0, 10),
           surgeonName: currentUser.name,
-          assistantName: currentUser.defaultAssistantName ?? "",
           anesthesiaType: "General",
-          preOpDiagnosis: plan.diagnosis ?? "",
-          postOpDiagnosis: plan.diagnosis ?? "",
           procedureName: auto.procedureName,
           findings: auto.findings,
           procedureDetail: auto.procedureDetail,
-          complication: "없음",
-          estimatedBloodLoss: "Minimal",
-          specimen: "없음",
-          postOpPlan: "특이 출혈 소견 없음 확인 후 종료. 익일 퇴원 예정, 술후 2주 뒤 외래 F/U 예정.",
         }}
         nameStyle={nameStyle}
       />

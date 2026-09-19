@@ -137,17 +137,11 @@ function sidedFindingLine(label: string, key: string, values: FieldValues): stri
 
 // Concha bullosa/skull base 위험/Onodi/Haller/골 결손처럼 "문제 있는지
 // 체크 → 있으면 방향만 선택" 2단계 입력을 공유하는 소견들의 공통 한 줄 서술.
-// note는 위험 소견에 붙이는 주의 문구(예: 결손 — 수술 중 주의 필요)에 쓴다.
-function presentSidedLine(
-  label: string,
-  presentKey: string,
-  sideKey: string,
-  values: FieldValues,
-  note = "",
-): string {
+// 임상적 주의 문구는 넣지 않는다 — 실제 기록지 작성 시 의사가 직접 판단해서 쓴다.
+function presentSidedLine(label: string, presentKey: string, sideKey: string, values: FieldValues): string {
   if (!bool(values, presentKey)) return "";
   const side = str(values, sideKey, "양측");
-  return `${label}: ${side}${note}`;
+  return `${label}: ${side}`;
 }
 
 // 비강 소견 — 내시경 소견과 술전 CT 소견을 함께 서술함 (한쪽 검사로 국한하지 않음)
@@ -171,13 +165,7 @@ export function nasalFindingsText(values: FieldValues): string {
         : "Concha bullosa 없음",
     );
     lines.push(polypFindingText(values));
-    const skullBase = presentSidedLine(
-      "Low skull base",
-      "n_skull_base_risk_present",
-      "n_skull_base_risk_side",
-      values,
-      " — 사골동 천장 손상 주의",
-    );
+    const skullBase = presentSidedLine("Low skull base", "n_skull_base_risk_present", "n_skull_base_risk_side", values);
     if (skullBase) lines.push(skullBase);
     const uncinate = uncinateLine(values);
     if (uncinate) lines.push(uncinate);
@@ -190,7 +178,6 @@ export function nasalFindingsText(values: FieldValues): string {
       "n_lp_dehiscence_present",
       "n_lp_dehiscence_side",
       values,
-      " — 수술 중 주의 필요",
     );
     if (lpDehiscence) lines.push(lpDehiscence);
     const dehiscence = presentSidedLine(
@@ -198,7 +185,6 @@ export function nasalFindingsText(values: FieldValues): string {
       "n_dehiscence_present",
       "n_dehiscence_side",
       values,
-      " — 수술 중 주의 필요",
     );
     if (dehiscence) lines.push(dehiscence);
   }
@@ -266,14 +252,16 @@ export function nasalFindingsSummary(values: FieldValues): string {
   }
 
   if (bool(values, "n_lp_dehiscence_present")) {
-    items.push(`${str(values, "n_lp_dehiscence_side", "양측")} Lamina papyracea 결손(주의)`);
+    items.push(`${str(values, "n_lp_dehiscence_side", "양측")} Lamina papyracea 결손`);
   }
 
   if (bool(values, "n_dehiscence_present")) {
-    items.push(`${str(values, "n_dehiscence_side", "양측")} 시신경/경동맥 골 결손(주의)`);
+    items.push(`${str(values, "n_dehiscence_side", "양측")} 시신경/경동맥 골 결손`);
   }
 
-  return items.length > 0 ? items.join(", ") + "." : "특이 소견 없음";
+  // 요약도 항목을 쉼표로 이어붙인 한 줄짜리 문단이면 읽기 어려워서, 소견
+  // 하나당 한 줄씩 나눠 보여준다(위 whitespace-pre-wrap 표시 영역과 짝).
+  return items.length > 0 ? items.join("\n") : "특이 소견 없음";
 }
 
 // ---------- Turbinoplasty (비중격교정술/FESS 공통) ----------

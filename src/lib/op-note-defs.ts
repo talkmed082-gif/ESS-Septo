@@ -177,7 +177,7 @@ export const septoFields: SurgeryFieldDef[] = [
   { key: "s_caudal", label: "Caudal septum 편위 동반 교정", type: "checkbox" },
   { key: "s_spur", label: "Bony spur 제거", type: "checkbox" },
   { key: "s_splint", label: "Silastic splint 삽입", type: "checkbox" },
-  { key: "dermacol", label: "Dermacol 도포", type: "checkbox" },
+  { key: "dermacol", label: "Dermacol 도포", type: "checkbox", default: "true" },
   {
     key: "s_local_anesthetic",
     label: "비중격 국소마취제 (종류/용량)",
@@ -236,7 +236,7 @@ export const fessFields: SurgeryFieldDef[] = [
   })),
   { key: "f_silastic_sheet", label: "Silastic sheet 삽입 (유착 방지)", type: "checkbox" },
   { key: "f_nav", label: "Navigation 병용", type: "checkbox" },
-  { key: "dermacol", label: "Dermacol 도포", type: "checkbox" },
+  { key: "dermacol", label: "Dermacol 도포", type: "checkbox", default: "true" },
 ];
 
 // 병행(비중격교정술 + FESS) 전용 항목 — 순서 및 최종 packing만 별도로 결정

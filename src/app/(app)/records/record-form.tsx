@@ -30,20 +30,16 @@ type Action = (
   formData: FormData,
 ) => Promise<OpRecordFormState>;
 
+// 집도의/보조의/진단명/합병증/출혈량/검체/술후계획 등 병원 EMR에 이미
+// 저장되는 행정적 항목은 여기서 다시 받지 않는다 — 이 앱은 수술명/소견/
+// 수술 과정처럼 자동 생성이 필요한 부분만 다룬다.
 export interface RecordDefaultValues {
   operationDate: string;
   surgeonName: string;
-  assistantName: string;
   anesthesiaType: string;
-  preOpDiagnosis: string;
-  postOpDiagnosis: string;
   procedureName: string;
   findings: string;
   procedureDetail: string;
-  complication: string;
-  estimatedBloodLoss: string;
-  specimen: string;
-  postOpPlan: string;
 }
 
 export function RecordForm({
@@ -92,55 +88,11 @@ export function RecordForm({
           className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
         />
       </div>
-      {/* 마취는 항상 전신마취(General)가 기본이라 선택 없이 고정값으로 저장한다. */}
+      {/* 마취는 항상 전신마취(General)가 기본이라 선택 없이 고정값으로 저장한다.
+          집도의도 병원 EMR에 이미 있고 대부분 로그인한 본인이라 굳이 다시
+          입력받지 않고 기본값을 그대로 숨겨서 저장한다. */}
       <input type="hidden" name="anesthesiaType" defaultValue={defaultValues.anesthesiaType || "General"} />
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            집도의 *
-          </label>
-          <input
-            name="surgeonName"
-            defaultValue={defaultValues.surgeonName}
-            required
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            보조의
-          </label>
-          <input
-            name="assistantName"
-            defaultValue={defaultValues.assistantName}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            술전 진단명
-          </label>
-          <input
-            name="preOpDiagnosis"
-            defaultValue={defaultValues.preOpDiagnosis}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            술후 진단명
-          </label>
-          <input
-            name="postOpDiagnosis"
-            defaultValue={defaultValues.postOpDiagnosis}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-          />
-        </div>
-      </div>
+      <input type="hidden" name="surgeonName" defaultValue={defaultValues.surgeonName} />
 
       <div>
         <label className="mb-1 block text-sm font-medium text-slate-700">
@@ -258,52 +210,6 @@ export function RecordForm({
           surgeryTypeCode={surgeryTypeCode}
           mode="record"
           nameStyle={nameStyle}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            합병증 (Complication)
-          </label>
-          <input
-            name="complication"
-            defaultValue={defaultValues.complication}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            추정 출혈량 (EBL)
-          </label>
-          <input
-            name="estimatedBloodLoss"
-            defaultValue={defaultValues.estimatedBloodLoss}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">
-          검체 (Specimen)
-        </label>
-        <input
-          name="specimen"
-          defaultValue={defaultValues.specimen}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-        />
-      </div>
-
-      <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">
-          술후 계획 (Post-op plan)
-        </label>
-        <textarea
-          name="postOpPlan"
-          defaultValue={defaultValues.postOpPlan}
-          rows={2}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
         />
       </div>
 

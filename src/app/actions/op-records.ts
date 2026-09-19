@@ -10,17 +10,10 @@ import { parseFieldDefs, fieldValuesFromFormData } from "@/lib/field-types";
 const OpRecordSchema = z.object({
   operationDate: z.string().trim().min(1, { error: "수술일을 입력하세요." }),
   surgeonName: z.string().trim().min(1, { error: "집도의를 입력하세요." }),
-  assistantName: z.string().trim().optional(),
   anesthesiaType: z.string().trim().optional(),
-  preOpDiagnosis: z.string().trim().optional(),
-  postOpDiagnosis: z.string().trim().optional(),
   procedureName: z.string().trim().optional(),
   findings: z.string().trim().optional(),
   procedureDetail: z.string().trim().optional(),
-  complication: z.string().trim().optional(),
-  estimatedBloodLoss: z.string().trim().optional(),
-  specimen: z.string().trim().optional(),
-  postOpPlan: z.string().trim().optional(),
 });
 
 export interface OpRecordFormState {
@@ -32,17 +25,10 @@ function parseRecordFormData(formData: FormData) {
   return OpRecordSchema.safeParse({
     operationDate: formData.get("operationDate"),
     surgeonName: formData.get("surgeonName"),
-    assistantName: formData.get("assistantName"),
     anesthesiaType: formData.get("anesthesiaType"),
-    preOpDiagnosis: formData.get("preOpDiagnosis"),
-    postOpDiagnosis: formData.get("postOpDiagnosis"),
     procedureName: formData.get("procedureName"),
     findings: formData.get("findings"),
     procedureDetail: formData.get("procedureDetail"),
-    complication: formData.get("complication"),
-    estimatedBloodLoss: formData.get("estimatedBloodLoss"),
-    specimen: formData.get("specimen"),
-    postOpPlan: formData.get("postOpPlan"),
   });
 }
 
@@ -78,18 +64,11 @@ export async function createOpRecord(
       opPlanId: planId,
       operationDate: new Date(data.operationDate),
       surgeonName: data.surgeonName,
-      assistantName: data.assistantName || null,
       anesthesiaType: data.anesthesiaType || null,
-      preOpDiagnosis: data.preOpDiagnosis || null,
-      postOpDiagnosis: data.postOpDiagnosis || null,
       procedureName: data.procedureName || null,
       findings: data.findings || null,
       procedureDetail: data.procedureDetail || null,
       recordData,
-      complication: data.complication || null,
-      estimatedBloodLoss: data.estimatedBloodLoss || null,
-      specimen: data.specimen || null,
-      postOpPlan: data.postOpPlan || null,
       createdById: session.userId,
     },
   });
@@ -128,18 +107,11 @@ export async function updateOpRecord(
     data: {
       operationDate: new Date(data.operationDate),
       surgeonName: data.surgeonName,
-      assistantName: data.assistantName || null,
       anesthesiaType: data.anesthesiaType || null,
-      preOpDiagnosis: data.preOpDiagnosis || null,
-      postOpDiagnosis: data.postOpDiagnosis || null,
       procedureName: data.procedureName || null,
       findings: data.findings || null,
       procedureDetail: data.procedureDetail || null,
       recordData,
-      complication: data.complication || null,
-      estimatedBloodLoss: data.estimatedBloodLoss || null,
-      specimen: data.specimen || null,
-      postOpPlan: data.postOpPlan || null,
     },
   });
 

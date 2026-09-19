@@ -47,17 +47,10 @@ export default async function EditOpRecordPage({
         defaultValues={{
           operationDate: safeDateStr(record.operationDate) ?? new Date().toISOString().slice(0, 10),
           surgeonName: record.surgeonName,
-          assistantName: record.assistantName ?? "",
           anesthesiaType: record.anesthesiaType ?? "",
-          preOpDiagnosis: record.preOpDiagnosis ?? "",
-          postOpDiagnosis: record.postOpDiagnosis ?? "",
           procedureName: record.procedureName ?? "",
           findings: record.findings ?? "",
           procedureDetail: record.procedureDetail ?? "",
-          complication: record.complication ?? "",
-          estimatedBloodLoss: record.estimatedBloodLoss ?? "",
-          specimen: record.specimen ?? "",
-          postOpPlan: record.postOpPlan ?? "",
         }}
         nameStyle={nameStyle}
       />

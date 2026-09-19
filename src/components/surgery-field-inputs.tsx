@@ -13,7 +13,7 @@ function HiddenFieldInput({
       <input
         type="checkbox"
         name={name}
-        defaultChecked={value === true}
+        defaultChecked={typeof value === "boolean" ? value : field.default === "true"}
         className="hidden"
         aria-hidden="true"
         tabIndex={-1}
@@ -79,7 +79,7 @@ export function SurgeryFieldInputs({
                   <input
                     type="checkbox"
                     name={name}
-                    defaultChecked={value === true}
+                    defaultChecked={typeof value === "boolean" ? value : field.default === "true"}
                     className="h-4 w-4 rounded border-slate-300"
                   />
                   {field.label}
