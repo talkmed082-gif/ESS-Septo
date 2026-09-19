@@ -218,6 +218,12 @@ export const fessFields: SurgeryFieldDef[] = [
     type: "select",
     options: ["우측 먼저 → 좌측", "좌측 먼저 → 우측"],
   },
+  // Revision case(재수술)에서는 uncinectomy가 이전 수술에서 이미 되어 있을
+  // 수도 있어서, 평소처럼(다른 부위 시행 시 자동 포함) 넘길 수 없다 —
+  // 체크 여부를 직접 선택하게 한다(모식도에서 맨 위에, 기본 체크된 채로 노출).
+  { key: "f_revision", label: "Revision case (재수술)", type: "checkbox" },
+  { key: "f_right_uncinectomy", label: "우측 - Uncinectomy", type: "checkbox" },
+  { key: "f_left_uncinectomy", label: "좌측 - Uncinectomy", type: "checkbox" },
   ...fessStepFieldKeys.map((k) => ({
     key: `f_right_${k}`,
     label: `우측 - ${fessStepLabels[k]}`,

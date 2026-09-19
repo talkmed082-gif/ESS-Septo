@@ -48,6 +48,13 @@ function dermacolSentence(values: FieldValues): string {
   return bool(values, "dermacol") ? "Dermacol을 수술 부위에 도포함" : "";
 }
 
+// Revision case(재수술)라는 사실을 기록지에도 남긴다.
+function revisionSentence(values: FieldValues): string {
+  return bool(values, "f_revision")
+    ? "본 수술은 이전 수술 부위에 대한 Revision case로, 기존 수술 부위를 재평가하며 진행함"
+    : "";
+}
+
 // ---------- 비강 소견 (공통) ----------
 
 // 비중격 편위 방향/정도 — 예전엔 아래 nasalFindingsText 문장 속에 녹여서 길게
@@ -426,9 +433,18 @@ function fessSideBlock(sideName: "좌측" | "우측", prefix: "f_left_" | "f_rig
   const block: string[] = [`[${sideName}] 내시경(0°/30°)을 이용하여 수술을 진행함`];
 
   if (selectedSteps.length > 0) {
-    // Uncinectomy는 FESS 진행 시 당연히 선행되는 조작이라 선택 항목에는 없지만
-    // 기록지에는 항상 포함시킨다.
-    block.push(`[${sideName}] Uncinectomy 시행`);
+    // Uncinectomy는 MMA/Ant.&Post. ethmoidectomy/Frontal sinusotomy를 할 때는
+    // 선행되는 조작이라 자동으로 포함시키지만, Sphenoidotomy만 단독으로 할
+    // 때는 uncinectomy 없이도 접근 가능해서 자동으로 넣지 않는다. Revision
+    // case(재수술)에서는 이전 수술에서 이미 uncinectomy가 되어 있을 수 있어
+    // 자동 판단 대신 직접 체크한 값을 그대로 따른다.
+    const isRevision = bool(values, "f_revision");
+    const needsUncinectomy = isRevision
+      ? bool(values, `${prefix}uncinectomy`)
+      : selectedSteps.some((key) => key !== "sphenoid");
+    if (needsUncinectomy) {
+      block.push(`[${sideName}] Uncinectomy 시행`);
+    }
     for (const key of selectedSteps) {
       block.push(`[${sideName}] ${fessStepSentences[key]}`);
     }
@@ -488,6 +504,7 @@ function genFess(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpNo
   const steps: (string | false)[] = [];
   if (mode === "record") {
     steps.push(`환자를 앙와위로 눕히고 ${anesLabel} 하에 수술을 시작함`);
+    steps.push(revisionSentence(values) || false);
     steps.push("Epinephrine을 적신 patty로 양측 비강 점막을 수축시킴");
     steps.push(sphenopalatineBlockSentence(fessOperativeSideLabel(values)));
   }
@@ -524,6 +541,8 @@ function genCombo(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpN
   const opening: string[] = [];
   if (mode === "record") {
     opening.push(`환자를 앙와위로 눕히고 ${anesLabel} 하에 수술을 시작함`);
+    const revision = revisionSentence(values);
+    if (revision) opening.push(revision);
     opening.push("Epinephrine을 적신 patty로 비중격 및 비강 점막을 수축시킴");
     opening.push(sphenopalatineBlockSentence("양측"));
   }
@@ -729,10 +748,13 @@ export function buildProcedureName(
     surgeryCode !== "SEPTOPLASTY" &&
     (fessRegionsForSide("f_left_", values).length > 0 || fessRegionsForSide("f_right_", values).length > 0);
   const turbSuffix = turbinoplastyGlobalSuffix(values, style, hasFessRegions);
+  // Revision case(재수술)는 수술명 맨 앞에 표기한다 (FESS가 포함된 경우만
+  // 해당 — f_revision은 fessFields에만 있는 필드).
+  const revisionPrefix = surgeryCode !== "SEPTOPLASTY" && bool(values, "f_revision") ? "Revision " : "";
 
   if (surgeryCode === "SEPTOPLASTY") return `Septoplasty${turbSuffix}`;
-  if (surgeryCode === "ESS") return `${buildFessProcedureName(values, "ESS", style)}${turbSuffix}`;
-  return `Septoplasty + ${buildFessProcedureName(values, "ESS", style)}${turbSuffix}`;
+  if (surgeryCode === "ESS") return `${revisionPrefix}${buildFessProcedureName(values, "ESS", style)}${turbSuffix}`;
+  return `${revisionPrefix}Septoplasty + ${buildFessProcedureName(values, "ESS", style)}${turbSuffix}`;
 }
 
 // ---------- Op Plan 표 형식 (인쇄용 — 내시경 앞에 붙여두고 한눈에 보는 용도) ----------
@@ -757,15 +779,26 @@ export interface PlanTable {
 }
 
 function fessSideMatrix(values: FieldValues): { title: string; rows: PlanSideMatrixRow[] } {
-  return {
-    title: "FESS 시행 부위",
-    rows: fessStepFieldKeys.map((k) => ({
+  const rows: PlanSideMatrixRow[] = [];
+  // Revision case(재수술)에서는 uncinectomy가 이전 수술에서 이미 됐을 수
+  // 있어 자동 판단 대신 직접 체크하게 하므로, 표에서도 맨 위에 보여준다.
+  if (bool(values, "f_revision")) {
+    rows.push({
+      key: "uncinectomy",
+      label: "Uncinectomy",
+      left: bool(values, "f_left_uncinectomy"),
+      right: bool(values, "f_right_uncinectomy"),
+    });
+  }
+  rows.push(
+    ...fessStepFieldKeys.map((k) => ({
       key: k,
       label: fessStepLabels[k],
       left: bool(values, `f_left_${k}`),
       right: bool(values, `f_right_${k}`),
     })),
-  };
+  );
+  return { title: "FESS 시행 부위", rows };
 }
 
 // 패킹 재료는 항상 Nasocel + Rhinocel 병용이 기본이고, Dermacol은 packing

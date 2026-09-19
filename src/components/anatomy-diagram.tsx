@@ -42,7 +42,9 @@ export function getAnatomyCoveredKeys(surgeryTypeCode: string): string[] {
 
   if (showSeptum) keys.push("n_dev_side");
   if (showSinus) {
+    keys.push("f_revision");
     for (const prefix of ["f_left_", "f_right_"] as const) {
+      keys.push(`${prefix}uncinectomy`);
       for (const step of SINUS_STEPS) keys.push(`${prefix}${step.key}`);
     }
   }
@@ -165,9 +167,11 @@ export function SinusDiagram({
   onChange?: () => void;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const [revision, setRevision] = useState<boolean>(() => values?.f_revision === true);
   const [checked, setChecked] = useState<Record<string, boolean>>(() => {
     const next: Record<string, boolean> = {};
     for (const prefix of ["f_left_", "f_right_"] as const) {
+      next[`${prefix}uncinectomy`] = values?.[`${prefix}uncinectomy`] === true;
       for (const step of SINUS_STEPS) {
         next[`${prefix}${step.key}`] = values?.[`${prefix}${step.key}`] === true;
       }
@@ -189,10 +193,42 @@ export function SinusDiagram({
     onChange?.();
   }
 
+  // Revision case(재수술)에서는 uncinectomy가 이전 수술 때 이미 됐을 수 있어서
+  // 자동으로 넣지 않고 직접 체크하게 한다 — 처음 켤 때는 보통 다시 확인/완료가
+  // 필요한 경우가 많아 기본으로 체크해서 맨 위에 보여준다.
+  function toggleRevision() {
+    const form = findForm(rootRef.current);
+    const el = getInput(form, "field_f_revision");
+    const nextVal = el instanceof HTMLInputElement ? !el.checked : !revision;
+    if (el instanceof HTMLInputElement) el.checked = nextVal;
+    setRevision(nextVal);
+    if (nextVal) {
+      for (const key of ["f_right_uncinectomy", "f_left_uncinectomy"]) {
+        const uEl = getInput(form, `field_${key}`);
+        if (uEl instanceof HTMLInputElement) uEl.checked = true;
+      }
+      setChecked((c) => ({ ...c, f_right_uncinectomy: true, f_left_uncinectomy: true }));
+    }
+    onChange?.();
+  }
+
   const column = (prefix: "f_left_" | "f_right_", label: string) => (
     <div className="flex flex-col items-center gap-2">
       <span className="text-xs font-medium text-slate-600">{label}</span>
       <div className="flex flex-col gap-2">
+        {revision && (
+          <button
+            type="button"
+            onClick={() => toggle(prefix, "uncinectomy")}
+            className={`min-h-[44px] w-28 touch-manipulation rounded-md border px-3 py-2.5 text-xs leading-tight select-none active:scale-95 ${
+              checked[`${prefix}uncinectomy`]
+                ? "border-emerald-600 bg-emerald-600 text-white"
+                : "border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            Uncinectomy
+          </button>
+        )}
         {SINUS_STEPS.map((s) => {
           const active = checked[`${prefix}${s.key}`];
           return (
@@ -221,6 +257,15 @@ export function SinusDiagram({
         <br />
         영상의학 기준: 왼쪽 = 환자 우측(Rt.), 오른쪽 = 환자 좌측(Lt.)
       </p>
+      <label className="mb-3 flex items-center gap-2 text-xs font-medium text-slate-600">
+        <input
+          type="checkbox"
+          checked={revision}
+          onChange={toggleRevision}
+          className="h-4 w-4 rounded border-slate-300"
+        />
+        Revision case (재수술)
+      </label>
       <div className="flex items-start justify-center gap-8">
         {column("f_right_", "우측 (Rt.)")}
         {column("f_left_", "좌측 (Lt.)")}
