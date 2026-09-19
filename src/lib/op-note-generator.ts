@@ -672,18 +672,11 @@ export interface PlanTable {
 function fessSideMatrix(values: FieldValues): { title: string; rows: PlanSideMatrixRow[] } {
   return {
     title: "FESS 시행 부위",
-    rows: [
-      ...fessStepFieldKeys.map((k) => ({
-        label: fessStepLabels[k],
-        left: bool(values, `f_left_${k}`),
-        right: bool(values, `f_right_${k}`),
-      })),
-      {
-        label: "Silastic sheet 삽입",
-        left: bool(values, "f_left_silastic_sheet"),
-        right: bool(values, "f_right_silastic_sheet"),
-      },
-    ],
+    rows: fessStepFieldKeys.map((k) => ({
+      label: fessStepLabels[k],
+      left: bool(values, `f_left_${k}`),
+      right: bool(values, `f_right_${k}`),
+    })),
   };
 }
 

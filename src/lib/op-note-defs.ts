@@ -182,7 +182,7 @@ export const septoFields: SurgeryFieldDef[] = [
     key: "s_pack",
     label: "비강 Packing",
     type: "select",
-    options: ["Merocel", "Nasopore", "Vaseline gauze"],
+    options: ["Merocel", "Nasopore", "Vaseline gauze", "Nasocel", "Rhinocel"],
   },
   {
     key: "s_local_anesthetic",
@@ -242,7 +242,7 @@ export const fessFields: SurgeryFieldDef[] = [
     key: "f_pack",
     label: "비강 Packing",
     type: "select",
-    options: ["Nasopore", "Merocel", "Gelfoam"],
+    options: ["Nasopore", "Merocel", "Gelfoam", "Nasocel", "Rhinocel"],
   },
 ];
 
@@ -265,7 +265,7 @@ export const comboOnlyFields: SurgeryFieldDef[] = [
     key: "c_pack",
     label: "마지막 비강 Packing (양측 공통, 종료 시 1회)",
     type: "select",
-    options: ["Nasopore", "Merocel", "Gelfoam"],
+    options: ["Nasopore", "Merocel", "Gelfoam", "Nasocel", "Rhinocel"],
   },
 ];
 
