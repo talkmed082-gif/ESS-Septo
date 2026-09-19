@@ -49,10 +49,13 @@ export function SurgeryFieldInputs({
   fields,
   values,
   excludeKeys,
+  layout = "stack",
 }: {
   fields: SurgeryFieldDef[];
   values?: FieldValues;
   excludeKeys?: string[];
+  // "grid-2"는 좌/우처럼 짝을 이루는 필드 두 개를 한 줄에 반반 나눠서 보여줄 때 쓴다.
+  layout?: "stack" | "grid-2";
 }) {
   const visibleFields = excludeKeys
     ? fields.filter((f) => !excludeKeys.includes(f.key))
@@ -68,7 +71,11 @@ export function SurgeryFieldInputs({
       ))}
 
       {visibleFields.length > 0 && (
-        <div className="space-y-3 rounded-md border border-slate-200 p-4">
+        <div
+          className={`rounded-md border border-slate-200 p-4 ${
+            layout === "grid-2" ? "grid grid-cols-2 gap-3" : "space-y-3"
+          }`}
+        >
           {visibleFields.map((field) => {
             const name = `field_${field.key}`;
             const value = values?.[field.key];

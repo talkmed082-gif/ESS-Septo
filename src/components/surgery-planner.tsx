@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useRef, useState, type ChangeEvent } from "react";
 import Link from "next/link";
 import { createPatientWithPlan } from "@/app/actions/patient-plan";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
@@ -211,7 +211,15 @@ export function SurgeryPlanner({
   // 수 있게 한다. 켤 때는 uncinectomy도 기본으로 체크해준다(모식도의
   // 기존 동작과 동일) — applyCombo로 다시 마운트시켜 모식도가 새 값을
   // 그대로 반영하게 한다.
-  function toggleRevisionCase() {
+  function toggleRevisionCase(e?: ChangeEvent<HTMLInputElement>) {
+    // 이 체크박스가 <form onChange={regenerateFromForm}> 안에 있어서, 클릭하면
+    // change 이벤트가 폼까지 버블링되어 regenerateFromForm도 같이 실행된다.
+    // 문제는 그게 이 함수보다 "나중에" 실행되는데, 이 함수가 이미 리마운트를
+    // 예약(setTemplateKey)한 뒤라서 — regenerateFromForm은 아직 리마운트 전의
+    // 옛 DOM 값을 읽어 미리보기를 옛 상태로 덮어써 버린다. 그 결과 Revision을
+    // 해제해도 미리보기에는 여전히 켜져 있던 것처럼 보이는 버그가 났다.
+    // 버블링을 막아 regenerateFromForm이 중복 실행되지 않게 한다.
+    e?.stopPropagation();
     if (!selected || !formRef.current) return;
     const current = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
     const next = !(current.f_revision === true);
