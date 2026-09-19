@@ -270,13 +270,43 @@ function allTurbinateItems(values: FieldValues): string[] {
 }
 
 // 중비갑개 축소술은 하비갑개 축소술과 임상적 의미가 달라 수술명에도 별개로
-// 표기한다 (Turbinoplasty = 하비갑개, Mturbinoplasty = 중비갑개).
-function turbinoplastyNameSuffix(values: FieldValues): string {
-  const hasInferior = bool(values, "turb_inferior_right") || bool(values, "turb_inferior_left");
-  const hasMiddle = bool(values, "turb_middle_right") || bool(values, "turb_middle_left");
+// 표기한다 (Turbinoplasty = 하비갑개, Mturbinoplasty = 중비갑개). 양쪽 다
+// 같은 turbinoplasty를 했으면 수술명 맨 뒤에 "Both Turbinoplasty"처럼 따로
+// 빼서 붙이고, 한쪽만 했으면 그 side의 ESS 표기 바로 뒤에 붙인다(그래서
+// ESS가 대칭이라 "Both ESS(...)"로 합쳐지는 경우에도 turbinoplasty가
+// 비대칭이면 그 병합을 깨고 side별로 다시 나눠 보여준다).
+type TurbType = "inferior" | "middle";
+const turbTypeWord: Record<TurbType, string> = { inferior: "Turbinoplasty", middle: "Mturbinoplasty" };
+const turbTypes: TurbType[] = ["inferior", "middle"];
+
+function turbSideFlags(type: TurbType, values: FieldValues): { right: boolean; left: boolean } {
+  return { right: bool(values, `turb_${type}_right`), left: bool(values, `turb_${type}_left`) };
+}
+
+// ESS 부위 표기 옆에 붙일, 그 side에서만 시행한(비대칭인) turbinoplasty 단어들
+function turbinoplastyWordsForSide(side: "right" | "left", values: FieldValues): string[] {
+  return turbTypes
+    .filter((type) => {
+      const flags = turbSideFlags(type, values);
+      return flags.right !== flags.left && flags[side];
+    })
+    .map((type) => turbTypeWord[type]);
+}
+
+// 양쪽 다 같은 turbinoplasty를 했으면 여기서 전역 접미사로 처리하고,
+// ESS 쪽에 붙일 side segment가 아예 없는 경우(비중격교정술 단독 등)는
+// 한쪽만 했더라도 여기서 방향 표기와 함께 접미사로 처리한다.
+function turbinoplastyGlobalSuffix(values: FieldValues, style: NameStyle, hasSideSegments: boolean): string {
   const parts: string[] = [];
-  if (hasInferior) parts.push("Turbinoplasty");
-  if (hasMiddle) parts.push("Mturbinoplasty");
+  for (const type of turbTypes) {
+    const flags = turbSideFlags(type, values);
+    if (!flags.right && !flags.left) continue;
+    if (flags.right && flags.left) {
+      parts.push(`${formatSideLabel("B", style)} ${turbTypeWord[type]}`);
+    } else if (!hasSideSegments) {
+      parts.push(`${formatSideLabel(flags.right ? "R" : "L", style)} ${turbTypeWord[type]}`);
+    }
+  }
   return parts.length > 0 ? ` + ${parts.join(" + ")}` : "";
 }
 
@@ -623,17 +653,29 @@ function fessRegionsForSide(prefix: "f_left_" | "f_right_", values: FieldValues)
 function buildFessProcedureName(values: FieldValues, label: string, style: NameStyle): string {
   const left = fessRegionsForSide("f_left_", values);
   const right = fessRegionsForSide("f_right_", values);
+  const leftTurb = turbinoplastyWordsForSide("left", values);
+  const rightTurb = turbinoplastyWordsForSide("right", values);
 
   if (left.length === 0 && right.length === 0) return label;
 
   const sameSet = left.length === right.length && left.every((r, i) => r === right[i]);
-  if (left.length > 0 && right.length > 0 && sameSet) {
+  if (left.length > 0 && right.length > 0 && sameSet && leftTurb.length === 0 && rightTurb.length === 0) {
     return `${formatSideLabel("B", style)} ${label}(${formatRegionList(left, style)})`;
   }
 
   const parts: string[] = [];
-  if (right.length > 0) parts.push(`${formatSideLabel("R", style)} ${label}(${formatRegionList(right, style)})`);
-  if (left.length > 0) parts.push(`${formatSideLabel("L", style)} ${label}(${formatRegionList(left, style)})`);
+  if (right.length > 0) {
+    const turbText = rightTurb.length > 0 ? ` ${rightTurb.join(" ")}` : "";
+    parts.push(`${formatSideLabel("R", style)} ${label}(${formatRegionList(right, style)})${turbText}`);
+  } else if (rightTurb.length > 0) {
+    parts.push(`${formatSideLabel("R", style)} ${rightTurb.join(" ")}`);
+  }
+  if (left.length > 0) {
+    const turbText = leftTurb.length > 0 ? ` ${leftTurb.join(" ")}` : "";
+    parts.push(`${formatSideLabel("L", style)} ${label}(${formatRegionList(left, style)})${turbText}`);
+  } else if (leftTurb.length > 0) {
+    parts.push(`${formatSideLabel("L", style)} ${leftTurb.join(" ")}`);
+  }
   return parts.join(", ");
 }
 
@@ -642,7 +684,10 @@ export function buildProcedureName(
   values: FieldValues,
   style: NameStyle = DEFAULT_NAME_STYLE,
 ): string {
-  const turbSuffix = turbinoplastyNameSuffix(values);
+  const hasFessRegions =
+    surgeryCode !== "SEPTOPLASTY" &&
+    (fessRegionsForSide("f_left_", values).length > 0 || fessRegionsForSide("f_right_", values).length > 0);
+  const turbSuffix = turbinoplastyGlobalSuffix(values, style, hasFessRegions);
 
   if (surgeryCode === "SEPTOPLASTY") return `Septoplasty${turbSuffix}`;
   if (surgeryCode === "ESS") return `${buildFessProcedureName(values, "ESS", style)}${turbSuffix}`;

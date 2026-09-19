@@ -54,16 +54,14 @@ export function PolypPicker({
   const [present, setPresent] = useState<boolean>(() => Object.values(sites).some(Boolean));
 
   function clearAllSites() {
+    const form = findForm(rootRef.current);
     setSites((s) => {
       const next: Record<string, boolean> = {};
-      for (const key of Object.keys(s)) next[key] = false;
-      requestAnimationFrame(() => {
-        const form = findForm(rootRef.current);
-        for (const key of Object.keys(s)) {
-          const el = getInput(form, `field_${key}`);
-          if (el) el.checked = false;
-        }
-      });
+      for (const key of Object.keys(s)) {
+        next[key] = false;
+        const el = getInput(form, `field_${key}`);
+        if (el) el.checked = false;
+      }
       return next;
     });
   }
@@ -77,16 +75,16 @@ export function PolypPicker({
     onChange?.();
   }
 
+  // DOM의 실제 checkbox 값을 기준으로 다음 값을 정하고 동기적으로 바로
+  // 반영한 다음 onChange를 부른다 — 다음 페인트까지 미루면 onChange(라이브
+  // 미리보기 갱신)가 그보다 먼저 실행되어 방금 누른 값이 반영 안 된 채로
+  // 읽히는 문제가 있었다.
   function toggleSite(fullKey: string) {
-    setSites((s) => {
-      const nextVal = !s[fullKey];
-      requestAnimationFrame(() => {
-        const form = findForm(rootRef.current);
-        const el = getInput(form, `field_${fullKey}`);
-        if (el) el.checked = nextVal;
-      });
-      return { ...s, [fullKey]: nextVal };
-    });
+    const form = findForm(rootRef.current);
+    const el = getInput(form, `field_${fullKey}`);
+    const nextVal = el ? !el.checked : !sites[fullKey];
+    if (el) el.checked = nextVal;
+    setSites((s) => ({ ...s, [fullKey]: nextVal }));
     onChange?.();
   }
 

@@ -74,15 +74,15 @@ export function SeptumDiagram({
   );
 
   function pick(value: string) {
+    // 실제 제출용 select 값을 먼저 동기적으로 맞춰둔 다음 onChange를 불러야
+    // (라이브 미리보기가) 지금 클릭한 값을 바로 읽어갈 수 있다. 예전에
+    // requestAnimationFrame으로 다음 페인트 이후에 미뤘더니, onChange가
+    // 그보다 먼저 실행되어 미리보기가 한 클릭씩 뒤처지는 문제가 있었다.
+    const form = findForm(rootRef.current);
+    const el = getInput(form, "field_n_dev_side");
+    if (el) el.value = value;
     setSide(value);
     onChange?.();
-    // 실제 제출용 select 값은 다음 페인트 이후에 맞춰서 React state와
-    // 항상 같은 값이 되도록 함 (state가 유일한 출처, DOM은 그 결과를 따라감)
-    requestAnimationFrame(() => {
-      const form = findForm(rootRef.current);
-      const el = getInput(form, "field_n_dev_side");
-      if (el) el.value = value;
-    });
   }
 
   const zone = (label: string, value: string, x: number) => {
@@ -168,17 +168,15 @@ export function SinusDiagram({
 
   function toggle(prefix: "f_left_" | "f_right_", key: string) {
     const fullKey = `${prefix}${key}`;
-    setChecked((c) => {
-      const nextVal = !c[fullKey];
-      // 실제 제출용 checkbox도 React state와 항상 같은 값이 되도록 다음
-      // 페인트 이후에 맞춰준다 (state가 유일한 출처, DOM은 그 결과를 따라감)
-      requestAnimationFrame(() => {
-        const form = findForm(rootRef.current);
-        const el = getInput(form, `field_${fullKey}`);
-        if (el instanceof HTMLInputElement) el.checked = nextVal;
-      });
-      return { ...c, [fullKey]: nextVal };
-    });
+    // DOM의 실제 checkbox 값을 기준으로 다음 값을 정하고 동기적으로 바로
+    // 반영한 다음 onChange를 부른다 — rAF로 다음 페인트까지 미루면 onChange
+    // (라이브 미리보기 갱신)가 그보다 먼저 실행되어 방금 누른 값이 아직
+    // 반영 안 된 상태로 읽혀서, 연달아 누를 때 한 클릭씩 뒤처지는 문제가 있었다.
+    const form = findForm(rootRef.current);
+    const el = getInput(form, `field_${fullKey}`);
+    const nextVal = el instanceof HTMLInputElement ? !el.checked : !checked[fullKey];
+    if (el instanceof HTMLInputElement) el.checked = nextVal;
+    setChecked((c) => ({ ...c, [fullKey]: nextVal }));
     onChange?.();
   }
 

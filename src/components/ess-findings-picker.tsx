@@ -60,28 +60,23 @@ export function EssFindingsPicker({
     return init;
   });
 
+  // DOM의 실제 입력값을 동기적으로 먼저 맞춘 다음 onChange를 불러야 라이브
+  // 미리보기가 방금 누른 값을 바로 읽어간다 — 다음 페인트까지 미루면
+  // onChange가 그보다 먼저 실행되어 한 클릭씩 뒤처지는 문제가 있었다.
   function togglePresent(presentKey: string) {
-    setState((s) => {
-      const nextPresent = !s[presentKey].present;
-      requestAnimationFrame(() => {
-        const form = findForm(rootRef.current);
-        const el = getInput(form, `field_${presentKey}`);
-        if (el instanceof HTMLInputElement) el.checked = nextPresent;
-      });
-      return { ...s, [presentKey]: { ...s[presentKey], present: nextPresent } };
-    });
+    const form = findForm(rootRef.current);
+    const el = getInput(form, `field_${presentKey}`);
+    const nextPresent = el instanceof HTMLInputElement ? !el.checked : !state[presentKey].present;
+    if (el instanceof HTMLInputElement) el.checked = nextPresent;
+    setState((s) => ({ ...s, [presentKey]: { ...s[presentKey], present: nextPresent } }));
     onChange?.();
   }
 
   function pickSide(presentKey: string, sideKey: string, side: string) {
-    setState((s) => {
-      requestAnimationFrame(() => {
-        const form = findForm(rootRef.current);
-        const el = getInput(form, `field_${sideKey}`);
-        if (el) el.value = side;
-      });
-      return { ...s, [presentKey]: { ...s[presentKey], side } };
-    });
+    const form = findForm(rootRef.current);
+    const el = getInput(form, `field_${sideKey}`);
+    if (el) el.value = side;
+    setState((s) => ({ ...s, [presentKey]: { ...s[presentKey], side } }));
     onChange?.();
   }
 
