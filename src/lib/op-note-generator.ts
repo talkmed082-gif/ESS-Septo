@@ -36,9 +36,11 @@ export function anesthesiaLabel(anesthesiaType: string | undefined): string {
   return anesthesiaLabels[anesthesiaType] ?? anesthesiaType;
 }
 
-// 마취 유도 직후 항상 시행하는 국소 처치라 선택 항목 없이 기록지에 기본으로 포함시킨다.
-const SPHENOPALATINE_BLOCK_SENTENCE =
-  "Sphenopalatine foramen 부위에 epinephrine/lidocaine mixture를 주입하여 국소마취를 추가 시행함";
+// 마취 유도 직후 항상 시행하는 국소 처치라 선택 항목 없이 기록지에 기본으로
+// 포함시킨다. 주입 방향은 실제 수술 범위(편측/양측)에 맞춰 표기한다.
+function sphenopalatineBlockSentence(sideLabel: string): string {
+  return `${sideLabel} sphenopalatine foramen 부위에 epinephrine/lidocaine mixture를 주입하여 국소마취를 추가 시행함`;
+}
 
 // Dermacol은 packing 재료가 아니라 창상 회복을 돕는 보조제라, packing 시행
 // 직후(기록지 맨 끝 직전)에 별도 문장으로 추가한다.
@@ -303,6 +305,23 @@ function turbinoplastyWordsForSide(side: "right" | "left", values: FieldValues):
     .map((type) => turbTypeWord[type]);
 }
 
+// 축소술 기본 술기 — 중비갑개는 MES 절개 후 cutting forceps로 lateral side를
+// 제거하는 방식, 하비갑개는 coblator를 이용하는 것을 기본값으로 서술한다.
+function turbinoplastyTechniqueSentence(type: TurbType): string {
+  if (type === "middle") {
+    return "중비갑개에 대해 MES 절개 후 cutting forceps로 lateral side를 제거하는 방식으로 축소술(Mturbinoplasty)을 시행함";
+  }
+  return "하비갑개에 대해 coblator를 이용하여 축소술(Turbinoplasty)을 시행함";
+}
+
+function turbTypeSideLabel(type: TurbType, values: FieldValues): string {
+  const flags = turbSideFlags(type, values);
+  if (flags.right && flags.left) return "양측";
+  if (flags.right) return "우측";
+  if (flags.left) return "좌측";
+  return "";
+}
+
 // 양쪽 다 같은 turbinoplasty를 했으면 여기서 전역 접미사로 처리하고,
 // ESS 쪽에 붙일 side segment가 아예 없는 경우(비중격교정술 단독 등)는
 // 한쪽만 했더라도 여기서 방향 표기와 함께 접미사로 처리한다.
@@ -343,7 +362,8 @@ function incisionSentence(values: FieldValues): string {
 function septoCore(values: FieldValues): string[] {
   const caudal = bool(values, "s_caudal");
   const spur = bool(values, "s_spur");
-  const turbItems = allTurbinateItems(values);
+  const turbMiddleSide = turbTypeSideLabel("middle", values);
+  const turbInferiorSide = turbTypeSideLabel("inferior", values);
   const splint = bool(values, "s_splint");
   const quiltingSuture = str(values, "s_quilting_suture", "4-0 chromic catgut");
   const splintSuture = str(values, "s_splint_suture", "4-0 nylon");
@@ -354,7 +374,8 @@ function septoCore(values: FieldValues): string[] {
     spur && "골성 비중격(perpendicular plate of ethmoid, vomer)에서 bony spur를 확인하고 제거함",
     "확인된 편위 부위의 변형된 septal cartilage 및 골성 비중격 일부를 절제 및 교정하여 straightening 후 정중앙에 위치시킴",
     "Microdebrider를 이용하여 골성 및 연골성 비중격 조작을 보조적으로 시행함",
-    turbItems.length > 0 && `${turbItems.join(", ")}에 대해 축소술(turbinoplasty)을 함께 시행함`,
+    turbMiddleSide && `${turbMiddleSide} ${turbinoplastyTechniqueSentence("middle")}`,
+    turbInferiorSide && `${turbInferiorSide} ${turbinoplastyTechniqueSentence("inferior")}`,
     `Flap을 원위치로 정복한 후 ${quiltingSuture}를 사용하여 quilting suture 시행`,
     splint && `양측 비강에 silastic splint를 삽입하고 ${splintSuture}로 관통 봉합하여 고정함`,
   ];
@@ -362,18 +383,18 @@ function septoCore(values: FieldValues): string[] {
 }
 
 function genSeptoplasty(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpNoteResult {
-  const pack = str(values, "s_pack", "Nasocel");
   const localAnesthetic = str(values, "s_local_anesthetic", "1% lidocaine with epinephrine, 총 5cc");
 
   const steps: (string | false)[] = [];
   if (mode === "record") {
     steps.push(`환자를 앙와위로 눕히고 ${anesLabel} 하에 수술을 시작함`);
-    steps.push(SPHENOPALATINE_BLOCK_SENTENCE);
+    steps.push(sphenopalatineBlockSentence("양측"));
     steps.push(`${localAnesthetic}를 비중격 점막에 국소 침윤 마취함`);
   }
   steps.push(...septoCore(values));
-  steps.push(`양측 비강에 ${pack} packing을 시행하고 출혈 소견 없음을 확인한 후 수술을 종료함`);
+  steps.push("양측 비강에 Nasocel로 1차 packing을 시행함");
   steps.push(dermacolSentence(values) || false);
+  steps.push("이어서 Rhinocel로 마무리 packing을 시행하고 출혈 소견 없음을 확인한 후 수술을 종료함");
 
   return { findings: nasalFindingsText(values), procedureDetail: numberSteps(steps) };
 }
@@ -385,7 +406,7 @@ const fessStepSentences: Record<(typeof fessStepFieldKeys)[number], string> = {
   ant_eth: "Anterior ethmoidectomy 시행",
   post_eth: "Posterior ethmoidectomy 시행",
   sphenoid: "Sphenoidotomy 시행",
-  frontal: "Frontal sinusotomy(Draf procedure) 시행",
+  frontal: "Frontal sinusotomy 시행함",
 };
 
 function fessSideBlock(sideName: "좌측" | "우측", prefix: "f_left_" | "f_right_", values: FieldValues): string[] {
@@ -411,8 +432,12 @@ function fessSideBlock(sideName: "좌측" | "우측", prefix: "f_left_" | "f_rig
     }
   }
 
-  if (turbLabels.length > 0) {
-    block.push(`[${sideName}] ${turbLabels.join(", ")} 축소술(turbinoplasty) 시행`);
+  const turbSuffix = prefix === "f_left_" ? "left" : "right";
+  if (bool(values, `turb_middle_${turbSuffix}`)) {
+    block.push(`[${sideName}] ${turbinoplastyTechniqueSentence("middle")}`);
+  }
+  if (bool(values, `turb_inferior_${turbSuffix}`)) {
+    block.push(`[${sideName}] ${turbinoplastyTechniqueSentence("inferior")}`);
   }
 
   return block;
@@ -441,19 +466,31 @@ function fessCore(values: FieldValues): string[] {
   return steps;
 }
 
-function genFess(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpNoteResult {
-  const pack = str(values, "f_pack", "Nasocel");
+// 국소마취(sphenopalatine block) 주입 방향은 실제 수술 범위에 맞춰
+// 편측/양측을 판단한다 — turbinoplasty만 시행한 side도 수술 범위에 포함시킨다.
+function fessOperativeSideLabel(values: FieldValues): string {
+  const rightActive =
+    fessRegionsForSide("f_right_", values).length > 0 || turbinateLabelsForSide("우측", values).length > 0;
+  const leftActive =
+    fessRegionsForSide("f_left_", values).length > 0 || turbinateLabelsForSide("좌측", values).length > 0;
+  if (rightActive && leftActive) return "양측";
+  if (rightActive) return "우측";
+  if (leftActive) return "좌측";
+  return "양측";
+}
 
+function genFess(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpNoteResult {
   const steps: (string | false)[] = [];
   if (mode === "record") {
     steps.push(`환자를 앙와위로 눕히고 ${anesLabel} 하에 수술을 시작함`);
-    steps.push(SPHENOPALATINE_BLOCK_SENTENCE);
     steps.push("Epinephrine을 적신 patty로 양측 비강 점막을 수축시킴");
+    steps.push(sphenopalatineBlockSentence(fessOperativeSideLabel(values)));
   }
   steps.push(...fessCore(values));
   steps.push(silasticSheetSentence(values) || false);
-  steps.push(`양측 수술 부위 지혈 상태를 확인한 후 ${pack} packing을 시행하고 수술을 종료함`);
+  steps.push("양측 수술 부위 지혈 상태를 확인한 후 Nasocel로 1차 packing을 시행함");
   steps.push(dermacolSentence(values) || false);
+  steps.push("이어서 Rhinocel로 마무리 packing을 시행하고 수술을 종료함");
 
   return { findings: nasalFindingsText(values), procedureDetail: numberSteps(steps) };
 }
@@ -476,15 +513,14 @@ const comboBlockLabels: Record<"septo" | "left" | "right", string> = {
 };
 
 function genCombo(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpNoteResult {
-  const pack = str(values, "c_pack", "Nasocel");
   const nav = bool(values, "f_nav");
   const order = str(values, "c_order", "비중격 → 우 FESS → 좌 FESS");
 
   const opening: string[] = [];
   if (mode === "record") {
     opening.push(`환자를 앙와위로 눕히고 ${anesLabel} 하에 수술을 시작함`);
-    opening.push(SPHENOPALATINE_BLOCK_SENTENCE);
-    opening.push("Epinephrine을 함유한 국소마취제 및 patty를 이용하여 비중격 및 비강 점막에 국소 처치를 시행함");
+    opening.push("Epinephrine을 적신 patty로 비중격 및 비강 점막을 수축시킴");
+    opening.push(sphenopalatineBlockSentence("양측"));
   }
   if (nav) opening.push("Image-guided navigation system을 병용하여 해부학적 구조물을 확인함");
 
@@ -510,8 +546,9 @@ function genCombo(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpN
   parts.push("--- 종료 ---");
   const closingSteps: (string | false)[] = [
     silasticSheetSentence(values) || false,
-    `양측 비강에 ${pack} packing을 시행하고 출혈 소견 없음을 확인한 후 수술을 종료함`,
+    "양측 비강에 Nasocel로 1차 packing을 시행함",
     dermacolSentence(values) || false,
+    "이어서 Rhinocel로 마무리 packing을 시행하고 출혈 소견 없음을 확인한 후 수술을 종료함",
   ];
   parts.push(numberSteps(closingSteps, n));
 
@@ -541,7 +578,7 @@ function septoConciseItems(values: FieldValues, includePacking: boolean): string
     bool(values, "s_spur") && "Bony spur 제거",
     bool(values, "s_splint") && "Silastic splint 삽입",
   ];
-  if (includePacking) items.push(`${str(values, "s_pack", "Nasocel")} packing 예정`);
+  if (includePacking) items.push("Nasocel + Rhinocel packing 예정");
   return items.filter((s): s is string => Boolean(s));
 }
 
@@ -562,8 +599,8 @@ function fessConciseItems(values: FieldValues, includePacking: boolean): string[
     fessConciseSideLine("우측", "f_right_", values),
   ];
   if (bool(values, "f_silastic_sheet")) items.push("Silastic sheet 삽입 (양측)");
-  if (bool(values, "f_nav")) items.push("Navigation(항법장치) 병용");
-  if (includePacking) items.push(`${str(values, "f_pack", "Nasocel")} packing 예정`);
+  if (bool(values, "f_nav")) items.push("Navigation 병용");
+  if (includePacking) items.push("Nasocel + Rhinocel packing 예정");
   return items;
 }
 
@@ -582,7 +619,7 @@ function planItemsFor(surgeryCode: BuiltInSurgeryCode, values: FieldValues): str
     "[FESS]",
     ...fessConciseItems(values, false).map((i) => `  - ${i}`),
     ...turbLine,
-    `공통 packing: ${str(values, "c_pack", "Nasocel")} 예정`,
+    "공통 packing: Nasocel + Rhinocel 예정",
   ];
 }
 
@@ -701,6 +738,7 @@ export interface PlanKeyValueRow {
 }
 
 export interface PlanSideMatrixRow {
+  key: string;
   label: string;
   left: boolean;
   right: boolean;
@@ -717,6 +755,7 @@ function fessSideMatrix(values: FieldValues): { title: string; rows: PlanSideMat
   return {
     title: "FESS 시행 부위",
     rows: fessStepFieldKeys.map((k) => ({
+      key: k,
       label: fessStepLabels[k],
       left: bool(values, `f_left_${k}`),
       right: bool(values, `f_right_${k}`),
@@ -744,7 +783,7 @@ export function buildPlanTable(
         { label: "절개", value: incision },
         { label: "동반 술식", value: rest.length > 0 ? rest.join(", ") : "-" },
         ...turbRow,
-        { label: "Packing", value: str(values, "s_pack", "Nasocel") },
+        { label: "Packing", value: "Nasocel + Rhinocel" },
       ],
     };
   }
@@ -756,7 +795,7 @@ export function buildPlanTable(
       keyValueRows: [
         ...turbRow,
         { label: "Navigation", value: bool(values, "f_nav") ? "사용" : "미사용" },
-        { label: "Packing", value: str(values, "f_pack", "Nasocel") },
+        { label: "Packing", value: "Nasocel + Rhinocel" },
       ],
       sideMatrix: fessSideMatrix(values),
     };
@@ -771,7 +810,7 @@ export function buildPlanTable(
       { label: "절개(비중격)", value: incision },
       { label: "동반 술식(비중격)", value: rest.length > 0 ? rest.join(", ") : "-" },
       ...turbRow,
-      { label: "Packing(공통)", value: str(values, "c_pack", "Nasocel") },
+      { label: "Packing(공통)", value: "Nasocel + Rhinocel" },
     ],
     sideMatrix: fessSideMatrix(values),
   };

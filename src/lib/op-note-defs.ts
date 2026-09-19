@@ -177,14 +177,7 @@ export const septoFields: SurgeryFieldDef[] = [
   { key: "s_caudal", label: "Caudal septum 편위 동반 교정", type: "checkbox" },
   { key: "s_spur", label: "Bony spur 제거", type: "checkbox" },
   { key: "s_splint", label: "Silastic splint 삽입", type: "checkbox" },
-  {
-    key: "s_pack",
-    label: "비강 Packing",
-    type: "select",
-    options: ["Nasocel", "Rhinocel"],
-    default: "Nasocel",
-  },
-  { key: "dermacol", label: "Dermacol 도포 (창상 회복 보조제, packing 아님)", type: "checkbox" },
+  { key: "dermacol", label: "Dermacol 도포", type: "checkbox" },
   {
     key: "s_local_anesthetic",
     label: "비중격 국소마취제 (종류/용량)",
@@ -236,15 +229,8 @@ export const fessFields: SurgeryFieldDef[] = [
     type: "checkbox" as const,
   })),
   { key: "f_silastic_sheet", label: "Silastic sheet 삽입 (유착 방지)", type: "checkbox" },
-  { key: "f_nav", label: "Navigation(항법장치) 병용", type: "checkbox" },
-  {
-    key: "f_pack",
-    label: "비강 Packing",
-    type: "select",
-    options: ["Nasocel", "Rhinocel"],
-    default: "Nasocel",
-  },
-  { key: "dermacol", label: "Dermacol 도포 (창상 회복 보조제, packing 아님)", type: "checkbox" },
+  { key: "f_nav", label: "Navigation 병용", type: "checkbox" },
+  { key: "dermacol", label: "Dermacol 도포", type: "checkbox" },
 ];
 
 // 병행(비중격교정술 + FESS) 전용 항목 — 순서 및 최종 packing만 별도로 결정
@@ -262,18 +248,11 @@ export const comboOnlyFields: SurgeryFieldDef[] = [
       "좌 FESS → 우 FESS → 비중격",
     ],
   },
-  {
-    key: "c_pack",
-    label: "마지막 비강 Packing (양측 공통, 종료 시 1회)",
-    type: "select",
-    options: ["Nasocel", "Rhinocel"],
-    default: "Nasocel",
-  },
 ];
 
-const septoFieldsForCombo = septoFields.filter((f) => f.key !== "s_pack");
-// dermacol은 septoFieldsForCombo 쪽에 이미 포함되어 있으므로 중복 방지를 위해 여기서는 뺀다.
-const fessFieldsForCombo = fessFields.filter((f) => f.key !== "f_pack" && f.key !== "dermacol");
+// dermacol은 septoFieldsForCombo 쪽에 이미 포함되어 있으므로 중복 방지를 위해 fessFieldsForCombo에서는 뺀다.
+const septoFieldsForCombo = septoFields;
+const fessFieldsForCombo = fessFields.filter((f) => f.key !== "dermacol");
 
 // ESS/병행은 비강소견 두 그룹(비중격/하비갑개 + ESS)을 모두 보여주고,
 // 비중격교정술 단독은 비중격/하비갑개 그룹만 보여준다(ESS 전용 CT 소견 불필요).

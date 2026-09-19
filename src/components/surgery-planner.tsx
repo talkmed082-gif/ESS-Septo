@@ -170,6 +170,15 @@ export function SurgeryPlanner({
     applyCombo({ ...templateValues, ...patientNasalFindings });
   }
 
+  // Op Plan 표의 FESS 시행 부위 체크마크를 직접 클릭했을 때 — 현재 폼 값을
+  // 읽어서 그 필드만 뒤집고, applyCombo와 같은 방식으로 모식도 등 다른 입력
+  // 컴포넌트도 새 값으로 다시 마운트시켜 상태가 어긋나지 않게 한다.
+  function toggleFessField(fieldKey: string) {
+    if (!selected || !formRef.current) return;
+    const current = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
+    applyCombo({ ...current, [fieldKey]: !current[fieldKey] });
+  }
+
   function handleSurgeryTypeChange(id: string) {
     setSelectedId(id);
     setTemplateValues(undefined);
@@ -308,31 +317,14 @@ export function SurgeryPlanner({
         </div>
 
         {selected && (
-          <div className={loggedIn ? "grid grid-cols-2 gap-4" : ""}>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">수술 예정일</label>
-              <input
-                type="date"
-                name="plannedDate"
-                defaultValue={new Date().toISOString().slice(0, 10)}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-              />
-            </div>
-            {loggedIn && (
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">수술측</label>
-                <select
-                  name="side"
-                  defaultValue=""
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-                >
-                  <option value="">선택 안 함</option>
-                  <option value="Rt.">우측 (Rt.)</option>
-                  <option value="Lt.">좌측 (Lt.)</option>
-                  <option value="Both">양측 (Both)</option>
-                </select>
-              </div>
-            )}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">수술 예정일</label>
+            <input
+              type="date"
+              name="plannedDate"
+              defaultValue={new Date().toISOString().slice(0, 10)}
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            />
           </div>
         )}
 
@@ -493,7 +485,7 @@ export function SurgeryPlanner({
             {planTable && <CopyButton text={planTableToText(planTable)} />}
           </div>
           {planTable ? (
-            <PlanTableView table={planTable} />
+            <PlanTableView table={planTable} interactive onToggle={toggleFessField} />
           ) : (
             <p className="text-sm text-slate-500">수술 종류를 선택하면 여기에 요약이 표시됩니다.</p>
           )}

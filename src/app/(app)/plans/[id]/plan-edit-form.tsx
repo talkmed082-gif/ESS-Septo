@@ -78,34 +78,19 @@ export function PlanEditForm({
 
   return (
     <form ref={formRef} action={formAction} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            수술 예정일
-          </label>
-          <input
-            type="date"
-            name="plannedDate"
-            defaultValue={defaultValues.plannedDate}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            수술측
-          </label>
-          <select
-            name="side"
-            defaultValue={defaultValues.side}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-          >
-            <option value="">선택 안 함</option>
-            <option value="Rt.">우측 (Rt.)</option>
-            <option value="Lt.">좌측 (Lt.)</option>
-            <option value="Both">양측 (Both)</option>
-          </select>
-        </div>
+      <div>
+        <label className="mb-1 block text-sm font-medium text-slate-700">
+          수술 예정일
+        </label>
+        <input
+          type="date"
+          name="plannedDate"
+          defaultValue={defaultValues.plannedDate}
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+        />
       </div>
+      {/* 수술측은 무의미한 입력이라 선택 UI를 없앴다 — 과거 값이 있으면 그대로 보존만 한다. */}
+      <input type="hidden" name="side" defaultValue={defaultValues.side} />
 
       <div>
         <label className="mb-1 block text-sm font-medium text-slate-700">
