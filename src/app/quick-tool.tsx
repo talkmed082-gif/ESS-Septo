@@ -11,6 +11,7 @@ import {
   getSinusCoveredKeys,
 } from "@/components/anatomy-diagram";
 import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
+import { PresetBar, type PresetItem } from "@/components/preset-bar";
 import { fieldValuesFromFormData, type FieldValues, type SurgeryFieldDef } from "@/lib/field-types";
 import { isBuiltInSurgeryCode, isNasalFindingKey } from "@/lib/op-note-defs";
 import { buildProcedureName, generateOpNote, generatePlanSummary, type NameStyle } from "@/lib/op-note-generator";
@@ -69,10 +70,12 @@ export function QuickTool({
   surgeryTypes,
   loggedIn,
   nameStyle,
+  presetsByType,
 }: {
   surgeryTypes: SurgeryTypeOption[];
   loggedIn: boolean;
   nameStyle?: NameStyle;
+  presetsByType?: Record<string, PresetItem[]>;
 }) {
   const first = surgeryTypes[0];
   const [selectedId, setSelectedId] = useState(first?.id ?? "");
@@ -82,8 +85,11 @@ export function QuickTool({
   );
   const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState<1 | 2>(1);
+  const [templateValues, setTemplateValues] = useState<FieldValues | undefined>(undefined);
+  const [templateKey, setTemplateKey] = useState(0);
 
   const selected = surgeryTypes.find((st) => st.id === selectedId);
+  const presets = selected ? presetsByType?.[selected.id] ?? [] : [];
   const nasalFields = selected ? selected.fields.filter((f) => isNasalFindingKey(f.key)) : [];
   const procedureFields = selected ? selected.fields.filter((f) => !isNasalFindingKey(f.key)) : [];
   const { showSeptum, showSinus } = selected
@@ -94,6 +100,11 @@ export function QuickTool({
       active ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
     }`;
 
+  function applyCombo(values: FieldValues) {
+    setTemplateValues(values);
+    setTemplateKey((k) => k + 1);
+  }
+
   function regenerateFromForm() {
     if (!selected || !formRef.current) return;
     const values = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
@@ -102,6 +113,8 @@ export function QuickTool({
 
   function handleSurgeryTypeChange(id: string) {
     setSelectedId(id);
+    setTemplateValues(undefined);
+    setTemplateKey((k) => k + 1);
     const next = surgeryTypes.find((st) => st.id === id);
     if (next) setTexts(buildTexts(next.code, next.fields, {}, anesthesiaType, nameStyle));
   }
@@ -152,7 +165,16 @@ export function QuickTool({
         </div>
 
         {selected && (
-          <div key={selected.id} className="space-y-4">
+          <div key={`${selected.id}-${templateKey}`} className="space-y-4">
+            {loggedIn && (
+              <PresetBar
+                surgeryTypeId={selected.id}
+                fields={selected.fields}
+                initialPresets={presets}
+                formRef={formRef}
+                onApply={applyCombo}
+              />
+            )}
             <div className="flex gap-2 border-b border-slate-200 pb-3">
               <button type="button" onClick={() => setStep(1)} className={stepButtonClass(step === 1)}>
                 1. 비강/영상 소견
@@ -162,17 +184,19 @@ export function QuickTool({
               </button>
             </div>
             <div className={step === 1 ? "space-y-4" : "hidden"}>
-              {showSeptum && <SeptumDiagram />}
-              <PolypPicker />
+              {showSeptum && <SeptumDiagram values={templateValues} />}
+              <PolypPicker values={templateValues} />
               <SurgeryFieldInputs
                 fields={nasalFields}
+                values={templateValues}
                 excludeKeys={[...getSeptumCoveredKeys(selected.code), ...POLYP_FIELD_KEYS]}
               />
             </div>
             <div className={step === 2 ? "space-y-4" : "hidden"}>
-              {showSinus && <SinusDiagram />}
+              {showSinus && <SinusDiagram values={templateValues} />}
               <SurgeryFieldInputs
                 fields={procedureFields}
+                values={templateValues}
                 excludeKeys={getSinusCoveredKeys(selected.code)}
               />
             </div>

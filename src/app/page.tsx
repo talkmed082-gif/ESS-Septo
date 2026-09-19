@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { parseFieldDefs } from "@/lib/field-types";
 import { getSessionPayload } from "@/lib/session";
 import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
+import { getPresetsForSurgeryTypes, type PresetItem } from "@/lib/presets";
 import { QuickTool } from "./quick-tool";
 
 export default async function HomePage() {
@@ -16,11 +17,14 @@ export default async function HomePage() {
   const user = session?.userId
     ? await prisma.user.findUnique({
         where: { id: session.userId as string },
-        select: { sideNotation: true, abbreviateRegions: true },
+        select: { id: true, sideNotation: true, abbreviateRegions: true },
       })
     : null;
   const nameStyle: NameStyle | undefined = user
     ? { sideNotation: user.sideNotation as SideNotation, abbreviateRegions: user.abbreviateRegions }
+    : undefined;
+  const presetsByType: Record<string, PresetItem[]> | undefined = user
+    ? await getPresetsForSurgeryTypes(user.id, surgeryTypes.map((st) => st.id))
     : undefined;
 
   return (
@@ -73,6 +77,7 @@ export default async function HomePage() {
           }))}
           loggedIn={!!session?.userId}
           nameStyle={nameStyle}
+          presetsByType={presetsByType}
         />
       </main>
     </div>
