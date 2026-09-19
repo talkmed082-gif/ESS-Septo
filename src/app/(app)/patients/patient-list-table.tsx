@@ -89,7 +89,72 @@ export function PatientListTable({
         </button>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+      {/* 모바일에서는 표가 옆으로 길어져 스크롤해야 하는 문제가 있어서, 한
+          화면 안에 다 들어오는 카드형 목록으로 대신 보여준다. */}
+      <div className="space-y-2 sm:hidden">
+        {patients.map((p) => (
+          <div key={p.id} className="rounded-lg border border-slate-200 bg-white p-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="ids"
+                  value={p.id}
+                  className="h-4 w-4 rounded border-slate-300"
+                />
+                <Link href={`/patients/${p.id}`} className="font-medium text-slate-900 hover:underline">
+                  {p.name}
+                </Link>
+                <span className="text-xs text-slate-500">
+                  {sexAgeLabel(p.sex, p.age)} · {p.chartNo ?? "-"}
+                </span>
+              </div>
+              <span className="shrink-0 text-xs text-slate-400">{shortDate(p.surgeryDate) ?? "-"}</span>
+            </div>
+            <div className="mt-1.5 text-sm">
+              {p.surgeryPlanId ? (
+                <Link href={`/plans/${p.surgeryPlanId}`} className="font-medium text-slate-900 hover:underline">
+                  {p.procedureName ? (p.recordId ? p.procedureName : `예정) ${p.procedureName}`) : "계획 보기"}
+                </Link>
+              ) : (
+                <span className="text-slate-400">-</span>
+              )}
+            </div>
+            <div className="mt-2 flex gap-2">
+              {p.surgeryPlanId ? (
+                <Link
+                  href={`/plans/${p.surgeryPlanId}`}
+                  className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                >
+                  비강 소견 확인
+                </Link>
+              ) : null}
+              {p.recordId ? (
+                <Link
+                  href={`/records/${p.recordId}`}
+                  className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                >
+                  수술기록 확인
+                </Link>
+              ) : p.surgeryPlanId ? (
+                <Link
+                  href={`/plans/${p.surgeryPlanId}/record`}
+                  className="rounded-md border border-emerald-600 px-2 py-1 text-xs text-emerald-700 hover:bg-emerald-50"
+                >
+                  수술기록 확인
+                </Link>
+              ) : null}
+            </div>
+          </div>
+        ))}
+        {patients.length === 0 && (
+          <p className="rounded-lg border border-slate-200 bg-white px-4 py-8 text-center text-slate-400">
+            등록된 환자가 없습니다.
+          </p>
+        )}
+      </div>
+
+      <div className="hidden overflow-x-auto rounded-lg border border-slate-200 bg-white sm:block">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-slate-500">
             <tr>
