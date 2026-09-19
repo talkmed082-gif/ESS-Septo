@@ -7,6 +7,7 @@ export function PlanTableView({
   size = "normal",
   interactive = false,
   onToggle,
+  onCopySide,
 }: {
   table: PlanTable;
   size?: "normal" | "large";
@@ -16,6 +17,8 @@ export function PlanTableView({
   // 클릭된 필드 키(예: "f_right_frontal")를 그대로 넘겨준다 — 실제 값 반영은
   // 상위(SurgeryPlanner)가 담당해 모식도 등 다른 입력 방식과 상태를 맞춘다.
   onToggle?: (fieldKey: string) => void;
+  // 우측/좌측 중 어느 쪽 값을 반대쪽에 그대로 복사할지 상위에 알려준다.
+  onCopySide?: (from: "f_left_" | "f_right_") => void;
 }) {
   const textSize = size === "large" ? "text-lg" : "text-sm";
   const cellPad = size === "large" ? "px-3 py-2.5" : "px-2 py-1.5";
@@ -57,6 +60,24 @@ export function PlanTableView({
 
       {table.sideMatrix && (
         <div className="overflow-x-auto">
+        {interactive && onCopySide && (
+          <div className="mb-2 flex gap-2">
+            <button
+              type="button"
+              onClick={() => onCopySide("f_right_")}
+              className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
+            >
+              우→좌 동일
+            </button>
+            <button
+              type="button"
+              onClick={() => onCopySide("f_left_")}
+              className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
+            >
+              좌→우 동일
+            </button>
+          </div>
+        )}
         <table className={`w-full border-collapse ${textSize}`}>
           <thead>
             <tr>

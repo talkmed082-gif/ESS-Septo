@@ -208,6 +208,19 @@ export function SurgeryPlanner({
     applyCombo({ ...current, [fieldKey]: !current[fieldKey] });
   }
 
+  // Op Plan 표에서도 한쪽 값을 반대쪽에 그대로 복사할 수 있게 한다 —
+  // 표에 보이는 부위(sideMatrix 행)만 대상으로 한다.
+  function copySideInTable(from: "f_left_" | "f_right_") {
+    if (!selected || !formRef.current || !planTable?.sideMatrix) return;
+    const to = from === "f_left_" ? "f_right_" : "f_left_";
+    const current = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
+    const updated: FieldValues = { ...current };
+    for (const row of planTable.sideMatrix.rows) {
+      updated[`${to}${row.key}`] = current[`${from}${row.key}`];
+    }
+    applyCombo(updated);
+  }
+
   // Revision case(재수술)를 "수술 방법" 탭 안 모식도까지 들어가야만 보이던
   // 것을 탭과 무관하게 항상 보이는 곳으로 빼서 계획 화면에서 바로 설정할
   // 수 있게 한다. 켤 때는 uncinectomy도 기본으로 체크해준다(모식도의
@@ -552,7 +565,12 @@ export function SurgeryPlanner({
             {planTable && <CopyButton text={planTableToText(planTable)} />}
           </div>
           {planTable ? (
-            <PlanTableView table={planTable} interactive onToggle={toggleFessField} />
+            <PlanTableView
+              table={planTable}
+              interactive
+              onToggle={toggleFessField}
+              onCopySide={copySideInTable}
+            />
           ) : (
             <p className="text-sm text-slate-500">수술 종류를 선택하면 여기에 요약이 표시됩니다.</p>
           )}
