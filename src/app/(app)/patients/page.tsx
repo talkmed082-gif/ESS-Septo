@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
 import { parseFieldValues } from "@/lib/field-types";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
-import { buildProcedureName, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
+import { buildProcedureName, nasalFindingsSummary, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
 import { PatientListTable, type PatientRow } from "./patient-list-table";
 
@@ -41,7 +41,13 @@ export default async function PatientsPage({
     orderBy: { createdAt: "desc" },
     include: {
       opPlans: {
-        select: { id: true, plannedDate: true, planData: true, surgeryType: true },
+        select: {
+          id: true,
+          plannedDate: true,
+          planData: true,
+          surgeryType: true,
+          opRecord: { select: { id: true } },
+        },
       },
     },
   });
@@ -54,10 +60,14 @@ export default async function PatientsPage({
       withDates.length > 0
         ? withDates.reduce((a, b) => (a.plannedDate > b.plannedDate ? a : b))
         : (p.opPlans[0] ?? null);
+    const latestValues = latestPlan ? parseFieldValues(latestPlan.planData) : {};
     const procedureName = latestPlan
       ? isBuiltInSurgeryCode(latestPlan.surgeryType.code)
-        ? buildProcedureName(latestPlan.surgeryType.code, parseFieldValues(latestPlan.planData), nameStyle)
+        ? buildProcedureName(latestPlan.surgeryType.code, latestValues, nameStyle)
         : latestPlan.surgeryType.name
+      : null;
+    const nasalFindings = latestPlan && isBuiltInSurgeryCode(latestPlan.surgeryType.code)
+      ? nasalFindingsSummary(latestValues) || null
       : null;
     return {
       id: p.id,
@@ -68,6 +78,8 @@ export default async function PatientsPage({
       surgeryDate: safeDateStr(latestPlan?.plannedDate),
       surgeryPlanId: latestPlan?.id ?? null,
       procedureName,
+      nasalFindings,
+      recordId: latestPlan?.opRecord?.id ?? null,
     };
   });
 

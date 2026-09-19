@@ -3,21 +3,14 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
 import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
-import { deleteOpPlan } from "@/app/actions/op-plans";
+import { deleteOpPlan, updateOpPlan } from "@/app/actions/op-plans";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
-import {
-  buildPlanTable,
-  buildProcedureName,
-  nasalFindingsText,
-  type NameStyle,
-  type SideNotation,
-} from "@/lib/op-note-generator";
+import { buildProcedureName, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { buildGoogleCalendarUrl } from "@/lib/calendar";
 import { safeDateStr } from "@/lib/date-format";
 import { getRecentCombosForSurgeryType } from "@/lib/recent-combos";
 import { getPresetsForSurgeryType } from "@/lib/presets";
-import { PlanTableView } from "@/components/plan-table";
-import { PlanEditForm } from "./plan-edit-form";
+import { SurgeryPlanner } from "@/components/surgery-planner";
 
 export default async function OpPlanPage({
   params,
@@ -37,9 +30,6 @@ export default async function OpPlanPage({
   };
   const fields = parseFieldDefs(plan.surgeryType.fields);
   const values = parseFieldValues(plan.planData);
-  const table = isBuiltInSurgeryCode(plan.surgeryType.code)
-    ? buildPlanTable(plan.surgeryType.code, values, nameStyle)
-    : null;
   const recentCombos = await getRecentCombosForSurgeryType(
     user.id,
     plan.surgeryTypeId,
@@ -49,14 +39,47 @@ export default async function OpPlanPage({
   const presets = await getPresetsForSurgeryType(user.id, plan.surgeryTypeId);
 
   return (
-    <div className="max-w-3xl space-y-6">
-      <div>
-        <Link href={`/patients/${plan.patientId}`} className="text-sm text-slate-500 hover:underline">
-          ← {plan.patient.name} 환자로 돌아가기
-        </Link>
-        <h1 className="mt-2 text-xl font-semibold">
-          {plan.surgeryType.name} 수술 계획
-        </h1>
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <Link href={`/patients/${plan.patientId}`} className="text-sm text-slate-500 hover:underline">
+            ← {plan.patient.name} 환자로 돌아가기
+          </Link>
+          <h1 className="mt-2 text-xl font-semibold">
+            {plan.surgeryType.name} 수술 계획
+          </h1>
+        </div>
+        <div className="flex gap-2">
+          <Link
+            href={`/plans/${plan.id}/print`}
+            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50"
+          >
+            인쇄용 보기
+          </Link>
+          {plan.opRecord ? (
+            <Link
+              href={`/records/${plan.opRecord.id}`}
+              className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700"
+            >
+              기록지 보기
+            </Link>
+          ) : (
+            <Link
+              href={`/plans/${plan.id}/record`}
+              className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700"
+            >
+              기록지 작성
+            </Link>
+          )}
+          <form action={deleteOpPlan.bind(null, plan.id, plan.patientId)}>
+            <button
+              type="submit"
+              className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+            >
+              계획 삭제
+            </button>
+          </form>
+        </div>
       </div>
 
       {plan.plannedDate && safeDateStr(plan.plannedDate) && (
@@ -89,71 +112,28 @@ export default async function OpPlanPage({
         </div>
       )}
 
-      {isBuiltInSurgeryCode(plan.surgeryType.code) && nasalFindingsText(values) && (
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="mb-2 text-sm font-semibold text-slate-700">비강/영상 소견</h2>
-          <p className="whitespace-pre-wrap text-sm text-slate-600">
-            {nasalFindingsText(values)}
-          </p>
-        </div>
-      )}
-
-      {table && (
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-700">예정 술식 표</h2>
-            <Link
-              href={`/plans/${plan.id}/print`}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50"
-            >
-              인쇄용 보기
-            </Link>
-          </div>
-          <PlanTableView table={table} />
-        </div>
-      )}
-
-      <div className="flex gap-2">
-        {plan.opRecord ? (
-          <Link
-            href={`/records/${plan.opRecord.id}`}
-            className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700"
-          >
-            기록지 보기
-          </Link>
-        ) : (
-          <Link
-            href={`/plans/${plan.id}/record`}
-            className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700"
-          >
-            기록지 작성
-          </Link>
-        )}
-        <form action={deleteOpPlan.bind(null, plan.id, plan.patientId)}>
-          <button
-            type="submit"
-            className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
-          >
-            계획 삭제
-          </button>
-        </form>
-      </div>
-
-      <PlanEditForm
-        planId={plan.id}
-        surgeryTypeId={plan.surgeryTypeId}
-        surgeryTypeCode={plan.surgeryType.code}
-        fields={fields}
-        values={values}
-        defaultValues={{
-          plannedDate: safeDateStr(plan.plannedDate) ?? "",
+      <SurgeryPlanner
+        surgeryTypes={[
+          {
+            id: plan.surgeryTypeId,
+            code: plan.surgeryType.code,
+            name: plan.surgeryType.name,
+            fields,
+          },
+        ]}
+        loggedIn
+        nameStyle={nameStyle}
+        recentCombosByType={{ [plan.surgeryTypeId]: recentCombos }}
+        presetsByType={{ [plan.surgeryTypeId]: presets }}
+        fixedPatient={{ id: plan.patient.id, name: plan.patient.name }}
+        editPlan={{
+          surgeryTypeId: plan.surgeryTypeId,
+          plannedDate: safeDateStr(plan.plannedDate) ?? new Date().toISOString().slice(0, 10),
           side: plan.side ?? "",
           diagnosis: plan.diagnosis ?? "",
-          planNote: plan.planNote ?? "",
+          values,
         }}
-        nameStyle={nameStyle}
-        recentCombos={recentCombos}
-        presets={presets}
+        action={updateOpPlan.bind(null, plan.id)}
       />
     </div>
   );

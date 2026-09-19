@@ -2,10 +2,7 @@
 
 import { useActionState, useRef, useState } from "react";
 import Link from "next/link";
-import {
-  createPatientWithPlan,
-  type PatientPlanFormState,
-} from "@/app/actions/patient-plan";
+import { createPatientWithPlan } from "@/app/actions/patient-plan";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import {
   SeptumDiagram,
@@ -50,6 +47,26 @@ export interface ExistingPatientOption {
   name: string;
   chartNo: string | null;
 }
+
+// 기존 수술 계획을 수정할 때 넘겨주는 초기 상태 — 넘기면 수술 종류는
+// 고정 표시(변경 불가)되고, 저장은 action prop(예: updateOpPlan)으로 처리된다.
+export interface EditPlanContext {
+  surgeryTypeId: string;
+  plannedDate: string;
+  side: string;
+  diagnosis: string;
+  values: FieldValues;
+}
+
+export interface SurgeryPlannerFormState {
+  errors?: Record<string, string[]>;
+  message?: string;
+}
+
+type SurgeryPlannerAction = (
+  state: SurgeryPlannerFormState | undefined,
+  formData: FormData,
+) => Promise<SurgeryPlannerFormState>;
 
 function buildTexts(
   code: string,
@@ -108,6 +125,8 @@ export function SurgeryPlanner({
   existingPatients,
   fixedPatient,
   patientNasalFindings,
+  editPlan,
+  action,
 }: {
   surgeryTypes: SurgeryTypeOption[];
   loggedIn: boolean;
@@ -117,23 +136,33 @@ export function SurgeryPlanner({
   existingPatients?: ExistingPatientOption[];
   fixedPatient?: { id: string; name: string };
   patientNasalFindings?: FieldValues;
+  // 기존 계획 수정 모드 — 넘기면 수술 종류가 고정되고 값들이 미리 채워진다.
+  editPlan?: EditPlanContext;
+  // 저장 시 호출할 서버 액션 — 생략하면 새 환자+계획 생성(createPatientWithPlan).
+  // 계획 수정 시엔 updateOpPlan.bind(null, planId)처럼 넘긴다.
+  action?: SurgeryPlannerAction;
 }) {
   const [state, formAction, pending] = useActionState<
-    PatientPlanFormState | undefined,
+    SurgeryPlannerFormState | undefined,
     FormData
-  >(createPatientWithPlan, undefined);
+  >(action ?? createPatientWithPlan, undefined);
 
   const first = surgeryTypes[0];
-  const [selectedId, setSelectedId] = useState(first?.id ?? "");
+  const initialSelected = editPlan
+    ? surgeryTypes.find((st) => st.id === editPlan.surgeryTypeId)
+    : first;
+  const [selectedId, setSelectedId] = useState(initialSelected?.id ?? first?.id ?? "");
   // 마취는 항상 전신마취(General)가 기본이라 별도 선택 없이 고정한다.
   const anesthesiaType = "General";
   const [patientMode, setPatientMode] = useState<"new" | "existing">("new");
   const [{ planTable, recordText }, setTexts] = useState(() =>
-    first ? buildTexts(first.code, {}, "General", nameStyle) : { planTable: null, recordText: "" },
+    initialSelected
+      ? buildTexts(initialSelected.code, editPlan?.values ?? {}, "General", nameStyle)
+      : { planTable: null, recordText: "" },
   );
   const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState<1 | 2>(1);
-  const [templateValues, setTemplateValues] = useState<FieldValues | undefined>(undefined);
+  const [templateValues, setTemplateValues] = useState<FieldValues | undefined>(editPlan?.values);
   const [templateKey, setTemplateKey] = useState(0);
 
   if (!first) {
@@ -302,20 +331,33 @@ export function SurgeryPlanner({
 
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">수술 종류</label>
-          <select
-            name="surgeryTypeId"
-            value={selectedId}
-            onChange={(e) => handleSurgeryTypeChange(e.target.value)}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-          >
-            {!fixedPatient && <option value="">계획은 나중에 작성 (환자만 등록)</option>}
-            {surgeryTypes.map((st) => (
-              <option key={st.id} value={st.id}>
-                {st.name}
-              </option>
-            ))}
-          </select>
+          {editPlan ? (
+            <p className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              {selected?.name ?? "-"}
+            </p>
+          ) : (
+            <select
+              name="surgeryTypeId"
+              value={selectedId}
+              onChange={(e) => handleSurgeryTypeChange(e.target.value)}
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            >
+              {!fixedPatient && <option value="">계획은 나중에 작성 (환자만 등록)</option>}
+              {surgeryTypes.map((st) => (
+                <option key={st.id} value={st.id}>
+                  {st.name}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
+
+        {editPlan && (
+          <>
+            <input type="hidden" name="side" defaultValue={editPlan.side} />
+            <input type="hidden" name="diagnosis" defaultValue={editPlan.diagnosis} />
+          </>
+        )}
 
         {selected && (
           <div>
@@ -323,7 +365,7 @@ export function SurgeryPlanner({
             <input
               type="date"
               name="plannedDate"
-              defaultValue={new Date().toISOString().slice(0, 10)}
+              defaultValue={editPlan?.plannedDate ?? new Date().toISOString().slice(0, 10)}
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
             />
           </div>
@@ -456,7 +498,13 @@ export function SurgeryPlanner({
             disabled={pending}
             className="w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
           >
-            {pending ? "저장 중..." : fixedPatient || patientMode === "existing" ? "계획 저장" : "환자 등록 + 계획 저장"}
+            {pending
+              ? "저장 중..."
+              : editPlan
+                ? "계획 수정"
+                : fixedPatient || patientMode === "existing"
+                  ? "계획 저장"
+                  : "환자 등록 + 계획 저장"}
           </button>
         ) : (
           <button

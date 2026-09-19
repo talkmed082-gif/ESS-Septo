@@ -13,6 +13,8 @@ export interface PatientRow {
   surgeryDate: string | null;
   surgeryPlanId: string | null;
   procedureName: string | null;
+  nasalFindings: string | null;
+  recordId: string | null;
 }
 
 const SORT_COLUMNS: { key: string; label: string }[] = [
@@ -21,7 +23,6 @@ const SORT_COLUMNS: { key: string; label: string }[] = [
   { key: "age", label: "나이" },
   { key: "chartNo", label: "차트번호" },
   { key: "surgeryDate", label: "수술 일자" },
-  { key: "procedureName", label: "수술 계획" },
 ];
 
 function buildSortHref(query: string, sort: string, dir: string, column: string) {
@@ -78,7 +79,7 @@ export function PatientListTable({
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-slate-500">
             <tr>
@@ -94,6 +95,11 @@ export function PatientListTable({
                   </Link>
                 </th>
               ))}
+              {/* 계획과 기록지 두 가지를 이 목록의 핵심 기능으로 삼아, 비강 소견 -
+                  계획 - 기록지 순서로 나란히 배치한다 (기록지는 맨 오른쪽). */}
+              <th className="px-4 py-2 font-medium">비강 소견</th>
+              <th className="px-4 py-2 font-medium">계획</th>
+              <th className="px-4 py-2 font-medium">기록지</th>
             </tr>
           </thead>
           <tbody>
@@ -127,20 +133,36 @@ export function PatientListTable({
                     (p.surgeryDate ?? "-")
                   )}
                 </td>
+                <td className="max-w-xs truncate px-4 py-2 text-slate-600" title={p.nasalFindings ?? undefined}>
+                  {p.nasalFindings ?? "-"}
+                </td>
                 <td className="px-4 py-2 text-slate-600">
                   {p.surgeryPlanId ? (
-                    <Link href={`/plans/${p.surgeryPlanId}`} className="hover:underline">
-                      {p.procedureName ?? "-"}
+                    <Link href={`/plans/${p.surgeryPlanId}`} className="font-medium text-slate-900 hover:underline">
+                      {p.procedureName ?? "계획 보기"}
                     </Link>
                   ) : (
-                    (p.procedureName ?? "-")
+                    "-"
+                  )}
+                </td>
+                <td className="px-4 py-2 text-slate-600">
+                  {p.recordId ? (
+                    <Link href={`/records/${p.recordId}`} className="font-medium text-slate-900 hover:underline">
+                      기록지 보기
+                    </Link>
+                  ) : p.surgeryPlanId ? (
+                    <Link href={`/plans/${p.surgeryPlanId}/record`} className="text-emerald-700 hover:underline">
+                      기록지 작성
+                    </Link>
+                  ) : (
+                    "-"
                   )}
                 </td>
               </tr>
             ))}
             {patients.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-slate-400">
+                <td colSpan={10} className="px-4 py-8 text-center text-slate-400">
                   등록된 환자가 없습니다.
                 </td>
               </tr>
