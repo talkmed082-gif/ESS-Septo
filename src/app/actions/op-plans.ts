@@ -9,8 +9,6 @@ import { parseFieldDefs, fieldValuesFromFormData } from "@/lib/field-types";
 
 const OpPlanSchema = z.object({
   plannedDate: z.string().trim().optional(),
-  side: z.enum(["Rt.", "Lt.", "Both", ""]).optional(),
-  diagnosis: z.string().trim().optional(),
   planNote: z.string().trim().optional(),
 });
 
@@ -35,14 +33,12 @@ export async function updateOpPlan(
 
   const validated = OpPlanSchema.safeParse({
     plannedDate: formData.get("plannedDate"),
-    side: formData.get("side"),
-    diagnosis: formData.get("diagnosis"),
     planNote: formData.get("planNote"),
   });
   if (!validated.success) {
     return { message: "입력값을 확인하세요." };
   }
-  const { plannedDate, side, diagnosis, planNote } = validated.data;
+  const { plannedDate, planNote } = validated.data;
 
   const fields = parseFieldDefs(plan.surgeryType.fields);
   const planData = fieldValuesFromFormData(formData, fields);
@@ -51,8 +47,6 @@ export async function updateOpPlan(
     where: { id: planId },
     data: {
       plannedDate: plannedDate ? new Date(plannedDate) : null,
-      side: side || null,
-      diagnosis: diagnosis || null,
       planNote: planNote || null,
       planData,
     },

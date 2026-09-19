@@ -95,7 +95,6 @@ export default async function OpPlanPage({
                   : plan.surgeryType.name
               }`,
               date: plan.plannedDate,
-              details: [plan.diagnosis, plan.side].filter(Boolean).join(" / "),
             })}
             target="_blank"
             rel="noopener noreferrer"
@@ -129,8 +128,6 @@ export default async function OpPlanPage({
         editPlan={{
           surgeryTypeId: plan.surgeryTypeId,
           plannedDate: safeDateStr(plan.plannedDate) ?? new Date().toISOString().slice(0, 10),
-          side: plan.side ?? "",
-          diagnosis: plan.diagnosis ?? "",
           values,
         }}
         action={updateOpPlan.bind(null, plan.id)}

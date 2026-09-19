@@ -63,12 +63,8 @@ export default async function OpRecordPrintPage({
             }`}
           />
           <Row label="수술일" value={safeDateStr(record.operationDate) ?? "-"} />
-          <Row label="수술측" value={record.opPlan.side} />
           <Row label="마취 종류" value={record.anesthesiaType} />
           <Row label="집도의" value={record.surgeonName} />
-          <Row label="보조의" value={record.assistantName} />
-          <Row label="술전 진단명" value={record.preOpDiagnosis} />
-          <Row label="술후 진단명" value={record.postOpDiagnosis} />
           <Row label="시행 수술명" value={record.procedureName} />
           <Row
             label="시행 항목"
@@ -79,10 +75,6 @@ export default async function OpRecordPrintPage({
           ))}
           <Row label="수술 소견" value={record.findings} />
           <Row label="수술 과정" value={record.procedureDetail} />
-          <Row label="합병증" value={record.complication} />
-          <Row label="추정 출혈량" value={record.estimatedBloodLoss} />
-          <Row label="검체" value={record.specimen} />
-          <Row label="술후 계획" value={record.postOpPlan} />
         </tbody>
       </table>
 

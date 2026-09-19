@@ -53,8 +53,6 @@ export interface ExistingPatientOption {
 export interface EditPlanContext {
   surgeryTypeId: string;
   plannedDate: string;
-  side: string;
-  diagnosis: string;
   values: FieldValues;
 }
 
@@ -352,12 +350,6 @@ export function SurgeryPlanner({
           )}
         </div>
 
-        {editPlan && (
-          <>
-            <input type="hidden" name="side" defaultValue={editPlan.side} />
-            <input type="hidden" name="diagnosis" defaultValue={editPlan.diagnosis} />
-          </>
-        )}
 
         {selected && (
           <div>

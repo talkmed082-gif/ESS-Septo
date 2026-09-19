@@ -30,7 +30,6 @@ export async function GET(
     uid: `op-plan-${plan.id}@ess-septo`,
     title: `[수술] ${plan.patient.name} - ${procedureName}`,
     date: plan.plannedDate,
-    description: [plan.diagnosis, plan.side].filter(Boolean).join(" / "),
   });
 
   return new NextResponse(ics, {

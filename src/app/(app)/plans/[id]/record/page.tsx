@@ -45,7 +45,6 @@ export default async function NewOpRecordPage({
       <h1 className="mt-2 mb-1 text-xl font-semibold">수술기록지 작성</h1>
       <p className="mb-6 text-sm text-slate-500">
         환자: {plan.patient.name} · {plan.surgeryType.name}
-        {plan.side ? ` (${plan.side})` : ""}
       </p>
 
       <RecordForm

@@ -52,18 +52,9 @@ export default async function OpPlanPrintPage({
           </tr>
           <tr>
             <th className="border border-slate-400 bg-slate-50 px-3 py-2.5 text-left font-medium">
-              수술일 / 수술측
+              수술일
             </th>
-            <td className="border border-slate-400 px-3 py-2.5">
-              {safeDateStr(plan.plannedDate) ?? "-"} /{" "}
-              <span className="font-semibold">{plan.side ?? "-"}</span>
-            </td>
-          </tr>
-          <tr>
-            <th className="border border-slate-400 bg-slate-50 px-3 py-2.5 text-left font-medium">
-              진단명
-            </th>
-            <td className="border border-slate-400 px-3 py-2.5">{plan.diagnosis ?? "-"}</td>
+            <td className="border border-slate-400 px-3 py-2.5">{safeDateStr(plan.plannedDate) ?? "-"}</td>
           </tr>
         </tbody>
       </table>
