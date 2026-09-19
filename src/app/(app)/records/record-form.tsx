@@ -14,6 +14,8 @@ import {
 import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
 import { EssFindingsPicker, ESS_FINDINGS_FIELD_KEYS } from "@/components/ess-findings-picker";
 import { CollapsibleFindingSection } from "@/components/collapsible-finding-section";
+import { UncinateAttachmentFields } from "@/components/uncinate-attachment-fields";
+import { TurbinoplastyTypePicker, TURBINOPLASTY_FIELD_KEYS } from "@/components/turbinoplasty-type-picker";
 import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 import type { NameStyle } from "@/lib/op-note-generator";
 import {
@@ -174,10 +176,9 @@ export function RecordForm({
           )}
           {showSinus && (
             <CollapsibleFindingSection doneKey={ESS_PE_DONE_KEY} label="ESS P/E" values={fieldValues}>
-              <SurgeryFieldInputs
+              <UncinateAttachmentFields
                 fields={nasalFields.filter((f) => UNCINATE_FIELD_KEYS.includes(f.key))}
                 values={fieldValues}
-                layout="grid-2"
               />
               <EssFindingsPicker values={fieldValues} />
               <PolypPicker values={fieldValues} />
@@ -200,10 +201,11 @@ export function RecordForm({
 
         <div className={step === 2 ? "space-y-4" : "hidden"}>
           {showSinus && <SinusDiagram values={fieldValues} />}
+          <TurbinoplastyTypePicker values={fieldValues} />
           <SurgeryFieldInputs
             fields={procedureFields}
             values={fieldValues}
-            excludeKeys={getSinusCoveredKeys(surgeryTypeCode)}
+            excludeKeys={[...getSinusCoveredKeys(surgeryTypeCode), ...TURBINOPLASTY_FIELD_KEYS]}
           />
         </div>
 

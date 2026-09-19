@@ -217,6 +217,27 @@ export function SinusDiagram({
     onChange?.();
   }
 
+  // 좌우가 대칭인 경우가 많아, 한쪽만 눌러두고 반대쪽에 그대로 복사할 수
+  // 있게 한다 — 매번 양쪽을 각각 누르지 않아도 되게.
+  function copyToOtherSide(from: "f_left_" | "f_right_") {
+    const to = from === "f_left_" ? "f_right_" : "f_left_";
+    const form = findForm(rootRef.current);
+    setChecked((c) => {
+      const next = { ...c };
+      for (const key of Object.keys(c)) {
+        if (!key.startsWith(from)) continue;
+        const suffix = key.slice(from.length);
+        const val = c[key];
+        const toKey = `${to}${suffix}`;
+        next[toKey] = val;
+        const el = getInput(form, `field_${toKey}`);
+        if (el instanceof HTMLInputElement) el.checked = val;
+      }
+      return next;
+    });
+    onChange?.();
+  }
+
   const column = (prefix: "f_left_" | "f_right_", label: string) => (
     <div className="flex flex-col items-center gap-2">
       <span className="text-xs font-medium text-slate-600">{label}</span>
@@ -273,6 +294,22 @@ export function SinusDiagram({
           Revision case (재수술)
         </label>
       )}
+      <div className="mb-2 flex justify-center gap-2">
+        <button
+          type="button"
+          onClick={() => copyToOtherSide("f_right_")}
+          className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
+        >
+          우→좌 동일
+        </button>
+        <button
+          type="button"
+          onClick={() => copyToOtherSide("f_left_")}
+          className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
+        >
+          좌→우 동일
+        </button>
+      </div>
       <div className="flex items-start justify-center gap-8">
         {column("f_right_", "우측 (Rt.)")}
         {column("f_left_", "좌측 (Lt.)")}

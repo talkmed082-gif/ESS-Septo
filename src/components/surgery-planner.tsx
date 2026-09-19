@@ -14,6 +14,8 @@ import {
 import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
 import { EssFindingsPicker, ESS_FINDINGS_FIELD_KEYS } from "@/components/ess-findings-picker";
 import { CollapsibleFindingSection } from "@/components/collapsible-finding-section";
+import { UncinateAttachmentFields } from "@/components/uncinate-attachment-fields";
+import { TurbinoplastyTypePicker, TURBINOPLASTY_FIELD_KEYS } from "@/components/turbinoplasty-type-picker";
 import { PresetBar, type PresetItem } from "@/components/preset-bar";
 import type { RecentCombo } from "@/lib/recent-combos";
 import { PlanTableView } from "@/components/plan-table";
@@ -465,9 +467,10 @@ export function SurgeryPlanner({
                   values={templateValues}
                   onChange={regenerateFromForm}
                 >
-                  <SurgeryFieldInputs
+                  <UncinateAttachmentFields
                     fields={nasalFields.filter((f) => UNCINATE_FIELD_KEYS.includes(f.key))}
                     values={templateValues}
+                    onChange={regenerateFromForm}
                   />
                   <EssFindingsPicker values={templateValues} onChange={regenerateFromForm} />
                   <PolypPicker values={templateValues} onChange={regenerateFromForm} />
@@ -491,10 +494,11 @@ export function SurgeryPlanner({
               {showSinus && (
                 <SinusDiagram values={templateValues} onChange={regenerateFromForm} hideRevisionToggle />
               )}
+              <TurbinoplastyTypePicker values={templateValues} onChange={regenerateFromForm} />
               <SurgeryFieldInputs
                 fields={procedureFields}
                 values={templateValues}
-                excludeKeys={getSinusCoveredKeys(selected.code)}
+                excludeKeys={[...getSinusCoveredKeys(selected.code), ...TURBINOPLASTY_FIELD_KEYS]}
               />
             </div>
           </div>

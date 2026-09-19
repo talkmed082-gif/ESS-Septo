@@ -88,6 +88,24 @@ export function PolypPicker({
     onChange?.();
   }
 
+  // 좌우 위치가 같은 경우가 많아, 한쪽 체크한 걸 반대쪽에 그대로 복사할 수 있게 한다.
+  function copyToOtherSide(fromPrefix: (typeof SIDES)[number]["prefix"]) {
+    const toPrefix = SIDES.find((s) => s.prefix !== fromPrefix)!.prefix;
+    const form = findForm(rootRef.current);
+    setSites((s) => {
+      const next = { ...s };
+      for (const f of POLYP_SITE_FIELDS) {
+        const val = s[`${fromPrefix}${f.key}`];
+        const toKey = `${toPrefix}${f.key}`;
+        next[toKey] = val;
+        const el = getInput(form, `field_${toKey}`);
+        if (el) el.checked = val;
+      }
+      return next;
+    });
+    onChange?.();
+  }
+
   return (
     <div ref={rootRef} className="rounded-md border border-slate-200 p-3">
       <label className="flex items-center gap-2 text-sm">
@@ -100,7 +118,24 @@ export function PolypPicker({
         비용종(Polyp) 있음
       </label>
       {present && (
-        <div className="mt-3 flex flex-wrap gap-6 border-t border-slate-100 pt-3">
+        <div className="mt-3 border-t border-slate-100 pt-3">
+          <div className="mb-2 flex gap-2">
+            <button
+              type="button"
+              onClick={() => copyToOtherSide("n_polyp_right_")}
+              className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
+            >
+              우→좌 동일
+            </button>
+            <button
+              type="button"
+              onClick={() => copyToOtherSide("n_polyp_left_")}
+              className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
+            >
+              좌→우 동일
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-6">
           {SIDES.map((side) => (
             <div key={side.prefix} className="flex flex-col items-start gap-2">
               <span className="text-xs font-medium text-slate-600">{side.label}</span>
@@ -125,6 +160,7 @@ export function PolypPicker({
               </div>
             </div>
           ))}
+          </div>
         </div>
       )}
     </div>
