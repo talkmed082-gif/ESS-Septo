@@ -45,7 +45,11 @@ export default async function OpRecordPrintPage({
   return (
     <div className="mx-auto w-full max-w-3xl bg-white p-3 text-slate-900 sm:p-8 print:max-w-none print:p-0">
       <div className="mb-4 flex flex-wrap justify-end gap-2 print:hidden">
-        <SaveImageButton targetId="op-record-print-content" fileName={`${patient.name}_수술기록지.jpg`} />
+        <SaveImageButton
+          targetId="op-record-print-content"
+          fileName={`${patient.name}_수술기록지.jpg`}
+          shareTitle={`${patient.name} 수술기록지`}
+        />
         <PrintButton />
       </div>
 

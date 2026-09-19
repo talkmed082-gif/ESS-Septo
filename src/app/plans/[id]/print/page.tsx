@@ -33,7 +33,11 @@ export default async function OpPlanPrintPage({
   return (
     <div className="mx-auto w-full max-w-2xl bg-white p-3 text-slate-900 sm:p-8 print:max-w-none print:p-0">
       <div className="mb-4 flex flex-wrap justify-end gap-2 print:hidden">
-        <SaveImageButton targetId="op-plan-print-content" fileName={`${plan.patient.name}_수술계획표.jpg`} />
+        <SaveImageButton
+          targetId="op-plan-print-content"
+          fileName={`${plan.patient.name}_수술계획표.jpg`}
+          shareTitle={`${plan.patient.name} 수술계획표`}
+        />
         <PrintButton />
       </div>
 
