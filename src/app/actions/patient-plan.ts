@@ -7,24 +7,33 @@ import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
 import { parseFieldDefs, fieldValuesFromFormData } from "@/lib/field-types";
 
-const PatientPlanSchema = z.object({
-  name: z.string().trim().min(1, { error: "환자 이름을 입력하세요." }),
-  chartNo: z.string().trim().optional(),
-  sex: z.enum(["M", "F", ""]).optional(),
-  birthDate: z.string().trim().optional(),
-  memo: z.string().trim().optional(),
-  surgeryTypeId: z.string().trim().optional(),
-  plannedDate: z.string().trim().optional(),
-  side: z.enum(["Rt.", "Lt.", "Both", ""]).optional(),
-  diagnosis: z.string().trim().optional(),
-  planNote: z.string().trim().optional(),
-});
+const PatientPlanSchema = z
+  .object({
+    existingPatientId: z.string().trim().optional(),
+    name: z.string().trim().optional(),
+    chartNo: z.string().trim().optional(),
+    sex: z.enum(["M", "F", ""]).optional(),
+    birthDate: z.string().trim().optional(),
+    memo: z.string().trim().optional(),
+    surgeryTypeId: z.string().trim().optional(),
+    plannedDate: z.string().trim().optional(),
+    side: z.enum(["Rt.", "Lt.", "Both", ""]).optional(),
+    diagnosis: z.string().trim().optional(),
+    planNote: z.string().trim().optional(),
+  })
+  .refine((data) => data.existingPatientId || (data.name && data.name.length > 0), {
+    error: "환자를 선택하거나 이름을 입력하세요.",
+    path: ["name"],
+  });
 
 export interface PatientPlanFormState {
   errors?: Record<string, string[]>;
   message?: string;
 }
 
+// 새 환자를 등록하거나(기존 환자 선택 안 함) 기존 환자를 그대로 쓰거나
+// (existingPatientId) 한 화면에서 처리한다 — 퀵 도구/새 환자 등록/기존
+// 환자의 새 계획 작성을 같은 컴포넌트·같은 액션으로 통일하기 위함.
 export async function createPatientWithPlan(
   _prevState: PatientPlanFormState | undefined,
   formData: FormData,
@@ -32,6 +41,7 @@ export async function createPatientWithPlan(
   const session = await verifySession();
 
   const validated = PatientPlanSchema.safeParse({
+    existingPatientId: formData.get("existingPatientId") ?? "",
     name: formData.get("name") ?? "",
     chartNo: formData.get("chartNo") ?? "",
     sex: formData.get("sex") ?? "",
@@ -55,20 +65,28 @@ export async function createPatientWithPlan(
     return { message: "수술 종류를 다시 선택하세요." };
   }
 
-  const patient = await prisma.patient.create({
-    data: {
-      name: data.name,
-      chartNo: data.chartNo || null,
-      sex: data.sex || null,
-      birthDate: data.birthDate ? new Date(data.birthDate) : null,
-      memo: data.memo || null,
-      createdById: session.userId,
-    },
-  });
+  let patientId: string;
+  if (data.existingPatientId) {
+    const existing = await prisma.patient.findUnique({ where: { id: data.existingPatientId } });
+    if (!existing) return { message: "환자를 다시 선택하세요." };
+    patientId = existing.id;
+  } else {
+    const patient = await prisma.patient.create({
+      data: {
+        name: data.name as string,
+        chartNo: data.chartNo || null,
+        sex: data.sex || null,
+        birthDate: data.birthDate ? new Date(data.birthDate) : null,
+        memo: data.memo || null,
+        createdById: session.userId,
+      },
+    });
+    patientId = patient.id;
+  }
 
   if (!surgeryType) {
     revalidatePath("/patients");
-    redirect(`/patients/${patient.id}`);
+    redirect(`/patients/${patientId}`);
   }
 
   const fields = parseFieldDefs(surgeryType.fields);
@@ -76,7 +94,7 @@ export async function createPatientWithPlan(
 
   const plan = await prisma.opPlan.create({
     data: {
-      patientId: patient.id,
+      patientId,
       surgeryTypeId: surgeryType.id,
       plannedDate: data.plannedDate ? new Date(data.plannedDate) : null,
       side: data.side || null,

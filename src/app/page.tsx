@@ -4,7 +4,7 @@ import { parseFieldDefs } from "@/lib/field-types";
 import { getSessionPayload } from "@/lib/session";
 import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
 import { getPresetsForSurgeryTypes, type PresetItem } from "@/lib/presets";
-import { QuickTool } from "./quick-tool";
+import { SurgeryPlanner, type ExistingPatientOption } from "@/components/surgery-planner";
 
 export default async function HomePage() {
   const [surgeryTypes, session] = await Promise.all([
@@ -25,6 +25,12 @@ export default async function HomePage() {
     : undefined;
   const presetsByType: Record<string, PresetItem[]> | undefined = user
     ? await getPresetsForSurgeryTypes(user.id, surgeryTypes.map((st) => st.id))
+    : undefined;
+  const existingPatients: ExistingPatientOption[] | undefined = user
+    ? await prisma.patient.findMany({
+        orderBy: { createdAt: "desc" },
+        select: { id: true, name: true, chartNo: true },
+      })
     : undefined;
 
   return (
@@ -68,7 +74,7 @@ export default async function HomePage() {
         <p className="mb-6 text-sm text-slate-500">
           로그인 없이 바로 작성해볼 수 있습니다. 환자 기록으로 저장하려면 로그인 후 이용해주세요.
         </p>
-        <QuickTool
+        <SurgeryPlanner
           surgeryTypes={surgeryTypes.map((st) => ({
             id: st.id,
             code: st.code,
@@ -78,6 +84,7 @@ export default async function HomePage() {
           loggedIn={!!session?.userId}
           nameStyle={nameStyle}
           presetsByType={presetsByType}
+          existingPatients={existingPatients}
         />
       </main>
     </div>
