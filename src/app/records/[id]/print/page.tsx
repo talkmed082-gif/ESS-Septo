@@ -81,8 +81,10 @@ export default async function OpRecordPrintPage({
               {otherFields.map((f) => (
                 <Row key={f.key} label={f.label} value={String(values[f.key])} />
               ))}
-              <Row label="수술 소견" value={record.findings} />
-              <Row label="수술 과정" value={record.procedureDetail} />
+              <Row
+                label="수술 소견 및 과정"
+                value={[record.findings, record.procedureDetail].filter(Boolean).join("\n\n")}
+              />
             </tbody>
           </table>
         </div>

@@ -40,8 +40,12 @@ export function OpNoteGenerateButton({
       typeof anesthesiaType === "string" ? anesthesiaType : undefined,
     );
     setFieldValue(form, "procedureName", buildProcedureName(code, values, nameStyle));
-    setFieldValue(form, "findings", result.findings);
-    setFieldValue(form, "procedureDetail", result.procedureDetail);
+    // 소견/과정을 한 칸에 이어서 보여주므로 두 텍스트를 합쳐서 한 필드에 채운다.
+    setFieldValue(
+      form,
+      "procedureDetail",
+      [result.findings, result.procedureDetail].filter(Boolean).join("\n\n"),
+    );
 
     setJustGenerated(true);
     setTimeout(() => setJustGenerated(false), 1500);

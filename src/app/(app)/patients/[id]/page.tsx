@@ -126,14 +126,8 @@ export default async function PatientDetailPage({
                 <p className="mb-2 text-base font-bold text-slate-900">
                   {plan.opRecord.procedureName || "-"}
                 </p>
-                {plan.opRecord.findings && (
-                  <div className="mb-2 rounded-md border border-slate-300 bg-slate-50 p-3 text-sm whitespace-pre-wrap">
-                    <span className="font-semibold">비강/영상 소견: </span>
-                    {plan.opRecord.findings}
-                  </div>
-                )}
                 <div className="rounded-md border border-slate-200 p-3 text-sm whitespace-pre-wrap text-slate-700">
-                  {plan.opRecord.procedureDetail || "-"}
+                  {[plan.opRecord.findings, plan.opRecord.procedureDetail].filter(Boolean).join("\n\n") || "-"}
                 </div>
               </div>
             )}

@@ -100,8 +100,10 @@ export default async function OpRecordPage({
 
       <div className="rounded-lg border border-slate-200 bg-white p-5">
         <dl>
-          <Row label="수술 소견" value={record.findings} />
-          <Row label="수술 과정" value={record.procedureDetail} />
+          <Row
+            label="수술 소견 및 과정"
+            value={[record.findings, record.procedureDetail].filter(Boolean).join("\n\n")}
+          />
         </dl>
       </div>
     </div>

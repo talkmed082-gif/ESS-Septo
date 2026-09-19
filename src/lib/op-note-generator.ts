@@ -420,6 +420,9 @@ function fessSideBlock(sideName: "좌측" | "우측", prefix: "f_left_" | "f_rig
   const block: string[] = [`[${sideName}] 내시경(0°/30°)을 이용하여 수술을 진행함`];
 
   if (selectedSteps.length > 0) {
+    // Microdebrider는 비용종이 있을 때만 쓰는 게 아니라 ESS 전반의 점막/조직
+    // 정리에 기본적으로 쓰이므로, 비용종 유무와 무관하게 기본 문구로 넣는다.
+    block.push(`[${sideName}] Microdebrider를 이용하여 점막 및 병변 조직을 정리하며 수술을 진행함`);
     // Uncinectomy는 MMA/Ant.&Post. ethmoidectomy/Frontal sinusotomy를 할 때는
     // 선행되는 조작이라 자동으로 포함시키지만, Sphenoidotomy만 단독으로 할
     // 때는 uncinectomy 없이도 접근 가능해서 자동으로 넣지 않는다. Revision
@@ -434,9 +437,6 @@ function fessSideBlock(sideName: "좌측" | "우측", prefix: "f_left_" | "f_rig
     }
     for (const key of selectedSteps) {
       block.push(`[${sideName}] ${fessStepSentences[key]}`);
-    }
-    if (hasPolypAt(sideName, values)) {
-      block.push(`[${sideName}] 관찰된 비용종은 microdebrider를 이용하여 제거함`);
     }
   }
 
