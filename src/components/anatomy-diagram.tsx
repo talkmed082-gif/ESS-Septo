@@ -2,14 +2,23 @@
 
 import { useRef, useState } from "react";
 import type { FieldValues } from "@/lib/field-types";
+import { fessStepFieldKeys } from "@/lib/op-note-defs";
 
-const SINUS_STEPS: { key: string; label: string }[] = [
-  { key: "frontal", label: "Frontal" },
-  { key: "ant_eth", label: "Ant. Ethmoid" },
-  { key: "post_eth", label: "Post. Ethmoid" },
-  { key: "sphenoid", label: "Sphenoid" },
-  { key: "mma", label: "Maxillary" },
-];
+// 모식도의 순서를 Op Plan 표/기록지 서술 순서(fessStepFieldKeys)와 똑같이
+// 맞춘다 — 예전엔 이 컴포넌트가 별도의 순서(Frontal이 맨 위)를 갖고 있어서
+// 모식도에서 누르는 순서와 표/기록지에 나오는 순서(Maxillary가 먼저,
+// Frontal이 마지막인 실제 수술 순서)가 서로 달라 "뒤죽박죽"으로 보였다.
+const SINUS_STEP_LABELS: Record<(typeof fessStepFieldKeys)[number], string> = {
+  mma: "Maxillary",
+  ant_eth: "Ant. Ethmoid",
+  post_eth: "Post. Ethmoid",
+  sphenoid: "Sphenoid",
+  frontal: "Frontal",
+};
+const SINUS_STEPS: { key: string; label: string }[] = fessStepFieldKeys.map((key) => ({
+  key,
+  label: SINUS_STEP_LABELS[key],
+}));
 
 // 수술 종류별로 SeptumDiagram(비강 소견 페이지용)과 SinusDiagram(수술 방법
 // 페이지용)을 각각 보여줄지 판단하는 공통 기준
