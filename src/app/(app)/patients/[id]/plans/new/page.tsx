@@ -36,7 +36,7 @@ export default async function NewOpPlanPage({
   const patientNasalFindings = await getLatestNasalFindingsForPatient(patientId);
 
   return (
-    <div className="max-w-lg">
+    <div>
       <h1 className="mb-1 text-xl font-semibold">수술 계획 작성</h1>
       <p className="mb-6 text-sm text-slate-500">환자: {patient.name}</p>
 

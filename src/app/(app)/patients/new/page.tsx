@@ -31,7 +31,7 @@ export default async function NewPatientPage() {
   });
 
   return (
-    <div className="max-w-lg">
+    <div>
       <h1 className="mb-1 text-xl font-semibold">새 환자 등록</h1>
       <p className="mb-6 text-sm text-slate-500">
         환자 정보와 수술 계획을 한 번에 작성할 수 있습니다.

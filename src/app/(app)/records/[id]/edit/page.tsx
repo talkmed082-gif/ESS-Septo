@@ -29,7 +29,7 @@ export default async function EditOpRecordPage({
   const action = updateOpRecord.bind(null, record.id);
 
   return (
-    <div className="max-w-lg">
+    <div className="max-w-3xl">
       <Link href={`/records/${record.id}`} className="text-sm text-slate-500 hover:underline">
         ← 기록지로 돌아가기
       </Link>

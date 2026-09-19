@@ -38,7 +38,7 @@ export default async function NewOpRecordPage({
     : { procedureName: "", findings: "", procedureDetail: "" };
 
   return (
-    <div className="max-w-lg">
+    <div className="max-w-3xl">
       <Link href={`/plans/${plan.id}`} className="text-sm text-slate-500 hover:underline">
         ← 수술 계획으로 돌아가기
       </Link>

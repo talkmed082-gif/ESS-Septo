@@ -49,7 +49,7 @@ export default async function OpPlanPage({
   const presets = await getPresetsForSurgeryType(user.id, plan.surgeryTypeId);
 
   return (
-    <div className="max-w-lg space-y-6">
+    <div className="max-w-3xl space-y-6">
       <div>
         <Link href={`/patients/${plan.patientId}`} className="text-sm text-slate-500 hover:underline">
           ← {plan.patient.name} 환자로 돌아가기
