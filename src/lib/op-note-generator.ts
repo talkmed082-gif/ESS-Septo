@@ -107,31 +107,31 @@ function polypFindingText(values: FieldValues): string {
 }
 
 // Uncinate process attachment — skull base/CT 소견과 같은 좌우 비교 문장 형식
-function uncinateSentence(values: FieldValues): string {
+function uncinateLine(values: FieldValues): string {
   const left = str(values, "n_uncinate_left", "");
   const right = str(values, "n_uncinate_right", "");
   if (!left && !right) return "";
 
   if (left && right && left === right) {
-    return ` Uncinate process attachment: 양측 ${left}.`;
+    return `Uncinate process attachment: 양측 ${left}`;
   }
   const parts: string[] = [];
   if (right) parts.push(`우측 ${right}`);
   if (left) parts.push(`좌측 ${left}`);
-  return ` Uncinate process attachment: ${parts.join(", ")}.`;
+  return `Uncinate process attachment: ${parts.join(", ")}`;
 }
 
-// CHR처럼 "없음/우측/좌측/양측" 단일 선택 형태인 소견의 문장 생성기
-function sidedFindingSentence(label: string, key: string, values: FieldValues): string {
+// CHR처럼 "없음/우측/좌측/양측" 단일 선택 형태인 소견의 한 줄 서술
+function sidedFindingLine(label: string, key: string, values: FieldValues): string {
   const v = str(values, key, "없음");
   if (!v || v === "없음") return "";
-  return ` ${label}: ${v}.`;
+  return `${label}: ${v}`;
 }
 
 // Concha bullosa/skull base 위험/Onodi/Haller/골 결손처럼 "문제 있는지
-// 체크 → 있으면 방향만 선택" 2단계 입력을 공유하는 소견들의 공통 문장 생성기.
+// 체크 → 있으면 방향만 선택" 2단계 입력을 공유하는 소견들의 공통 한 줄 서술.
 // note는 위험 소견에 붙이는 주의 문구(예: 결손 — 수술 중 주의 필요)에 쓴다.
-function presentSidedSentence(
+function presentSidedLine(
   label: string,
   presentKey: string,
   sideKey: string,
@@ -140,58 +140,63 @@ function presentSidedSentence(
 ): string {
   if (!bool(values, presentKey)) return "";
   const side = str(values, sideKey, "양측");
-  return ` ${label}: ${side}${note}.`;
+  return `${label}: ${side}${note}`;
 }
 
 // 비강 소견 — 내시경 소견과 술전 CT 소견을 함께 서술함 (한쪽 검사로 국한하지 않음)
 // Septoturbinoplasty P/E(n_septo_pe_done)와 ESS P/E(n_ess_pe_done) 체크
 // 여부에 따라 각 그룹 내용을 포함할지 결정한다 — 체크 안 한 그룹은 값이
 // 남아있어도 아예 서술하지 않는다(그 진찰을 기록하지 않았다는 뜻이므로).
+// 소견을 한 문단에 몰아 쓰면 읽기 어려워서 소견 하나당 한 줄씩 나눠 보여준다.
 export function nasalFindingsText(values: FieldValues): string {
-  const parts: string[] = [];
+  const lines: string[] = [];
 
   if (bool(values, "n_septo_pe_done")) {
-    parts.push(
-      `${septumSummaryLine(values)}.${sidedFindingSentence("하비갑개 비후(CHR)", "n_chr", values)}`.trim(),
-    );
+    lines.push(septumSummaryLine(values));
+    const chr = sidedFindingLine("하비갑개 비후(CHR)", "n_chr", values);
+    if (chr) lines.push(chr);
   }
 
   if (bool(values, "n_ess_pe_done")) {
-    const cbText = bool(values, "n_cb_present")
-      ? `Concha bullosa: ${str(values, "n_cb_side", "양측")}`
-      : "Concha bullosa 없음";
-    parts.push(
-      (
-        `${cbText}. ${polypFindingText(values)}.` +
-        presentSidedSentence(
-          "Low skull base",
-          "n_skull_base_risk_present",
-          "n_skull_base_risk_side",
-          values,
-          " — 사골동 천장 손상 주의",
-        ) +
-        uncinateSentence(values) +
-        presentSidedSentence("Onodi's cell", "n_onodi_present", "n_onodi_side", values) +
-        presentSidedSentence("Haller's cell", "n_haller_present", "n_haller_side", values) +
-        presentSidedSentence(
-          "Lamina papyracea 결손",
-          "n_lp_dehiscence_present",
-          "n_lp_dehiscence_side",
-          values,
-          " — 수술 중 주의 필요",
-        ) +
-        presentSidedSentence(
-          "시신경/경동맥 골 결손",
-          "n_dehiscence_present",
-          "n_dehiscence_side",
-          values,
-          " — 수술 중 주의 필요",
-        )
-      ).trim(),
+    lines.push(
+      bool(values, "n_cb_present")
+        ? `Concha bullosa: ${str(values, "n_cb_side", "양측")}`
+        : "Concha bullosa 없음",
     );
+    lines.push(polypFindingText(values));
+    const skullBase = presentSidedLine(
+      "Low skull base",
+      "n_skull_base_risk_present",
+      "n_skull_base_risk_side",
+      values,
+      " — 사골동 천장 손상 주의",
+    );
+    if (skullBase) lines.push(skullBase);
+    const uncinate = uncinateLine(values);
+    if (uncinate) lines.push(uncinate);
+    const onodi = presentSidedLine("Onodi's cell", "n_onodi_present", "n_onodi_side", values);
+    if (onodi) lines.push(onodi);
+    const haller = presentSidedLine("Haller's cell", "n_haller_present", "n_haller_side", values);
+    if (haller) lines.push(haller);
+    const lpDehiscence = presentSidedLine(
+      "Lamina papyracea 결손",
+      "n_lp_dehiscence_present",
+      "n_lp_dehiscence_side",
+      values,
+      " — 수술 중 주의 필요",
+    );
+    if (lpDehiscence) lines.push(lpDehiscence);
+    const dehiscence = presentSidedLine(
+      "시신경/경동맥 골 결손",
+      "n_dehiscence_present",
+      "n_dehiscence_side",
+      values,
+      " — 수술 중 주의 필요",
+    );
+    if (dehiscence) lines.push(dehiscence);
   }
 
-  return parts.join(" ");
+  return lines.join("\n");
 }
 
 // 예정 술식 표는 한눈에 보는 용도라 "없음/정상" 항목까지 다 나열하면 오히려
@@ -763,6 +768,12 @@ function fessSideMatrix(values: FieldValues): { title: string; rows: PlanSideMat
   };
 }
 
+// 패킹 재료는 항상 Nasocel + Rhinocel 병용이 기본이고, Dermacol은 packing
+// 재료는 아니지만 같이 도포하는 경우가 많아 표에서는 한 칸에 묶어 보여준다.
+function packingCellValue(values: FieldValues): string {
+  return bool(values, "dermacol") ? "Nasocel + Rhinocel + Dermacol" : "Nasocel + Rhinocel";
+}
+
 export function buildPlanTable(
   surgeryCode: BuiltInSurgeryCode,
   values: FieldValues,
@@ -783,7 +794,7 @@ export function buildPlanTable(
         { label: "절개", value: incision },
         { label: "동반 술식", value: rest.length > 0 ? rest.join(", ") : "-" },
         ...turbRow,
-        { label: "Packing", value: "Nasocel + Rhinocel" },
+        { label: "Packing / Material", value: packingCellValue(values) },
       ],
     };
   }
@@ -795,7 +806,7 @@ export function buildPlanTable(
       keyValueRows: [
         ...turbRow,
         { label: "Navigation", value: bool(values, "f_nav") ? "사용" : "미사용" },
-        { label: "Packing", value: "Nasocel + Rhinocel" },
+        { label: "Packing / Material", value: packingCellValue(values) },
       ],
       sideMatrix: fessSideMatrix(values),
     };
@@ -810,7 +821,7 @@ export function buildPlanTable(
       { label: "절개(비중격)", value: incision },
       { label: "동반 술식(비중격)", value: rest.length > 0 ? rest.join(", ") : "-" },
       ...turbRow,
-      { label: "Packing(공통)", value: "Nasocel + Rhinocel" },
+      { label: "Packing / Material(공통)", value: packingCellValue(values) },
     ],
     sideMatrix: fessSideMatrix(values),
   };
