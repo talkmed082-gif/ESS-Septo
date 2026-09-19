@@ -87,7 +87,13 @@ export const essFindingFields: SurgeryFieldDef[] = [
   // 하지 않고 체크 안 하면 그대로 넘어가게 해서 입력을 줄인다. Keros
   // Type을 좌우 각각 재는 대신 "Low skull base 있는지"만 체크한다.
   { key: "n_cb_present", label: "Concha bullosa 있음", type: "checkbox" },
-  { key: "n_cb_side", label: "Concha bullosa - 방향", type: "select", options: ["우측", "양측", "좌측"] },
+  {
+    key: "n_cb_side",
+    label: "Concha bullosa - 방향",
+    type: "select",
+    options: ["우측", "양측", "좌측"],
+    default: "양측",
+  },
   {
     key: "n_skull_base_risk_present",
     label: "Low skull base 있음 (Keros II/III 의심)",
@@ -98,6 +104,7 @@ export const essFindingFields: SurgeryFieldDef[] = [
     label: "Low skull base - 방향",
     type: "select",
     options: ["우측", "양측", "좌측"],
+    default: "양측",
   },
   { key: "n_onodi_present", label: "Onodi's cell 있음 (접형사골동)", type: "checkbox" },
   { key: "n_onodi_side", label: "Onodi's cell - 방향", type: "select", options: ["우측", "양측", "좌측"] },

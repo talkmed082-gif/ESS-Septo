@@ -627,6 +627,24 @@ function formatRegionList(regions: string[], style: NameStyle): string {
   return regions.join(", ");
 }
 
+// Frontal/Sphenoid/Maxillary는 그 자체로 하나의 독립된 수술 술식이라,
+// 그 부위 딱 하나만 시행했을 때는 "ESS(Frontal)"처럼 뭉뚱그리지 않고
+// 실제 술식명을 그대로 쓴다. Ethmoid는 전/후방을 나눠 시행할 수 있어
+// 하나의 고정된 술식명으로 보기 어려워서 여기서는 제외한다.
+const SINGLE_REGION_PROCEDURE_NAMES: Partial<Record<(typeof fessRegionOrder)[number], string>> = {
+  Frontal: "Frontal sinusotomy",
+  Sphenoid: "Sphenoidotomy",
+  Maxillary: "MMA",
+};
+
+function regionSegment(label: string, regions: string[], style: NameStyle): string {
+  if (regions.length === 1) {
+    const single = SINGLE_REGION_PROCEDURE_NAMES[regions[0] as (typeof fessRegionOrder)[number]];
+    if (single) return single;
+  }
+  return `${label}(${formatRegionList(regions, style)})`;
+}
+
 function formatSideLabel(side: "R" | "L" | "B", style: NameStyle): string {
   if (style.sideNotation === "paren") return `${side})`;
   if (style.sideNotation === "bracket") return `${side}]`;
@@ -654,19 +672,19 @@ function buildFessProcedureName(values: FieldValues, label: string, style: NameS
 
   const sameSet = left.length === right.length && left.every((r, i) => r === right[i]);
   if (left.length > 0 && right.length > 0 && sameSet && leftTurb.length === 0 && rightTurb.length === 0) {
-    return `${formatSideLabel("B", style)} ${label}(${formatRegionList(left, style)})`;
+    return `${formatSideLabel("B", style)} ${regionSegment(label, left, style)}`;
   }
 
   const parts: string[] = [];
   if (right.length > 0) {
     const turbText = rightTurb.length > 0 ? ` ${rightTurb.join(" ")}` : "";
-    parts.push(`${formatSideLabel("R", style)} ${label}(${formatRegionList(right, style)})${turbText}`);
+    parts.push(`${formatSideLabel("R", style)} ${regionSegment(label, right, style)}${turbText}`);
   } else if (rightTurb.length > 0) {
     parts.push(`${formatSideLabel("R", style)} ${rightTurb.join(" ")}`);
   }
   if (left.length > 0) {
     const turbText = leftTurb.length > 0 ? ` ${leftTurb.join(" ")}` : "";
-    parts.push(`${formatSideLabel("L", style)} ${label}(${formatRegionList(left, style)})${turbText}`);
+    parts.push(`${formatSideLabel("L", style)} ${regionSegment(label, left, style)}${turbText}`);
   } else if (leftTurb.length > 0) {
     parts.push(`${formatSideLabel("L", style)} ${leftTurb.join(" ")}`);
   }

@@ -5,24 +5,30 @@ import type { FieldValues } from "@/lib/field-types";
 
 const SIDE_OPTIONS = ["우측", "양측", "좌측"] as const;
 
+// Concha bullosa/Low skull base는 대부분 양측 소견이라 defaultSide로
+// "양측"을 미리 골라두고, 나머지(비대칭인 경우가 많은 소견)는 방향을
+// 직접 고르게 defaultSide 없이 둔다.
 const ESS_RISK_FINDINGS = [
-  { presentKey: "n_cb_present", sideKey: "n_cb_side", label: "Concha bullosa" },
+  { presentKey: "n_cb_present", sideKey: "n_cb_side", label: "Concha bullosa", defaultSide: "양측" },
   {
     presentKey: "n_skull_base_risk_present",
     sideKey: "n_skull_base_risk_side",
     label: "Low skull base",
+    defaultSide: "양측",
   },
-  { presentKey: "n_onodi_present", sideKey: "n_onodi_side", label: "Onodi's cell" },
-  { presentKey: "n_haller_present", sideKey: "n_haller_side", label: "Haller's cell" },
+  { presentKey: "n_onodi_present", sideKey: "n_onodi_side", label: "Onodi's cell", defaultSide: "" },
+  { presentKey: "n_haller_present", sideKey: "n_haller_side", label: "Haller's cell", defaultSide: "" },
   {
     presentKey: "n_lp_dehiscence_present",
     sideKey: "n_lp_dehiscence_side",
     label: "Lamina papyracea 결손",
+    defaultSide: "",
   },
   {
     presentKey: "n_dehiscence_present",
     sideKey: "n_dehiscence_side",
     label: "시신경/경동맥 골 결손",
+    defaultSide: "",
   },
 ] as const;
 
@@ -54,10 +60,10 @@ export function EssFindingsPicker({
     for (const f of ESS_RISK_FINDINGS) {
       init[f.presentKey] = {
         present: values?.[f.presentKey] === true,
-        // 방향을 미리 "양측"으로 골라둔 것처럼 보이면 실제로는 아무것도
-        // 선택 안 된 채 저장될 수 있어서(클릭해야만 실제 값이 채워짐)
-        // 헷갈렸다 — 기본은 아무 버튼도 활성화되지 않은 상태로 둔다.
-        side: typeof values?.[f.sideKey] === "string" ? (values[f.sideKey] as string) : "",
+        side:
+          typeof values?.[f.sideKey] === "string" && values[f.sideKey]
+            ? (values[f.sideKey] as string)
+            : f.defaultSide,
       };
     }
     return init;
