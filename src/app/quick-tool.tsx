@@ -14,6 +14,7 @@ import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
 import { EssFindingsPicker, ESS_FINDINGS_FIELD_KEYS } from "@/components/ess-findings-picker";
 import { CollapsibleFindingSection } from "@/components/collapsible-finding-section";
 import { PresetBar, type PresetItem } from "@/components/preset-bar";
+import { PlanTableView } from "@/components/plan-table";
 import { fieldValuesFromFormData, type FieldValues, type SurgeryFieldDef } from "@/lib/field-types";
 import {
   isBuiltInSurgeryCode,
@@ -23,7 +24,14 @@ import {
   SEPTO_PE_DONE_KEY,
   ESS_PE_DONE_KEY,
 } from "@/lib/op-note-defs";
-import { buildProcedureName, generateOpNote, generatePlanSummary, type NameStyle } from "@/lib/op-note-generator";
+import {
+  buildProcedureName,
+  buildPlanTable,
+  planTableToText,
+  generateOpNote,
+  type NameStyle,
+  type PlanTable,
+} from "@/lib/op-note-generator";
 
 export interface SurgeryTypeOption {
   id: string;
@@ -38,19 +46,20 @@ function buildTexts(
   values: FieldValues,
   anesthesiaType: string,
   nameStyle?: NameStyle,
-): { planText: string; recordText: string } {
+): { planTable: PlanTable | null; recordText: string } {
   if (!isBuiltInSurgeryCode(code)) {
     return {
-      planText: "이 수술 종류는 자동 작성을 지원하지 않습니다.",
+      planTable: null,
       recordText: "이 수술 종류는 자동 작성을 지원하지 않습니다.",
     };
   }
-  const plan = generatePlanSummary(code, values, nameStyle);
+  const planTable = buildPlanTable(code, values, nameStyle);
   const record = generateOpNote(code, values, "record", anesthesiaType);
   const procedureName = buildProcedureName(code, values, nameStyle);
+  const findingsSection = record.findings ? `[수술 소견]\n${record.findings}\n\n` : "";
   return {
-    planText: plan,
-    recordText: `수술명: ${procedureName}\n\n[수술 소견]\n${record.findings}\n\n[수술 과정]\n${record.procedureDetail}`,
+    planTable,
+    recordText: `수술명: ${procedureName}\n\n${findingsSection}[수술 과정]\n${record.procedureDetail}`,
   };
 }
 
@@ -89,8 +98,8 @@ export function QuickTool({
   const first = surgeryTypes[0];
   const [selectedId, setSelectedId] = useState(first?.id ?? "");
   const [anesthesiaType, setAnesthesiaType] = useState("General");
-  const [{ planText, recordText }, setTexts] = useState(() =>
-    first ? buildTexts(first.code, first.fields, {}, "General", nameStyle) : { planText: "", recordText: "" },
+  const [{ planTable, recordText }, setTexts] = useState(() =>
+    first ? buildTexts(first.code, first.fields, {}, "General", nameStyle) : { planTable: null, recordText: "" },
   );
   const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState<1 | 2>(1);
@@ -254,9 +263,13 @@ export function QuickTool({
         <div className="rounded-lg border border-slate-200 bg-white p-4">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-slate-700">Op Plan 요약</h2>
-            <CopyButton text={planText} />
+            {planTable && <CopyButton text={planTableToText(planTable)} />}
           </div>
-          <pre className="whitespace-pre-wrap font-sans text-sm text-slate-800">{planText}</pre>
+          {planTable ? (
+            <PlanTableView table={planTable} />
+          ) : (
+            <p className="text-sm text-slate-500">이 수술 종류는 자동 작성을 지원하지 않습니다.</p>
+          )}
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-4">
           <div className="mb-2 flex items-center justify-between">

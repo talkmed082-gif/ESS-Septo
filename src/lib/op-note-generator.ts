@@ -179,13 +179,15 @@ export function nasalFindingsText(values: FieldValues): string {
     );
   }
 
-  return parts.length > 0 ? parts.join(" ") : "비강/영상 소견 미기재";
+  return parts.join(" ");
 }
 
 // 예정 술식 표는 한눈에 보는 용도라 "없음/정상" 항목까지 다 나열하면 오히려
 // 읽기 어려워진다. 실제로 임상적 의미가 있는(정상/기본값이 아닌) 소견만 짧게
 // 추려서 보여준다 — 전체 서술문(nasalFindingsText)과는 별도로 둔다.
 export function nasalFindingsSummary(values: FieldValues): string {
+  if (!bool(values, "n_septo_pe_done") && !bool(values, "n_ess_pe_done")) return "";
+
   const items: string[] = [];
 
   if (bool(values, "n_septo_pe_done")) {
@@ -267,6 +269,17 @@ function allTurbinateItems(values: FieldValues): string[] {
   return turbinateFields.filter((f) => bool(values, f.key)).map((f) => `${f.side} ${f.label}`);
 }
 
+// 중비갑개 축소술은 하비갑개 축소술과 임상적 의미가 달라 수술명에도 별개로
+// 표기한다 (Turbinoplasty = 하비갑개, Mturbinoplasty = 중비갑개).
+function turbinoplastyNameSuffix(values: FieldValues): string {
+  const hasInferior = bool(values, "turb_inferior_right") || bool(values, "turb_inferior_left");
+  const hasMiddle = bool(values, "turb_middle_right") || bool(values, "turb_middle_left");
+  const parts: string[] = [];
+  if (hasInferior) parts.push("Turbinoplasty");
+  if (hasMiddle) parts.push("Mturbinoplasty");
+  return parts.length > 0 ? ` + ${parts.join(" + ")}` : "";
+}
+
 // ---------- 비중격교정술 ----------
 
 const incisionNames: Record<string, string> = {
@@ -342,10 +355,9 @@ function fessSideBlock(
 ): string[] {
   const selectedSteps = fessStepFieldKeys.filter((key) => bool(values, `${prefix}${key}`));
   const turbLabels = turbinateLabelsForSide(sideName, values);
-  const silasticSheet = bool(values, `${prefix}silastic_sheet`);
   // 해당 측에 실제로 시행한 것이 하나도 없으면(반대측만 시행한 편측 FESS 등)
   // "수술을 진행함"이나 "비용종 제거함" 같은 문장이 생기지 않도록 블록 자체를 건너뜀
-  if (selectedSteps.length === 0 && turbLabels.length === 0 && !silasticSheet) {
+  if (selectedSteps.length === 0 && turbLabels.length === 0) {
     return [];
   }
 
@@ -371,11 +383,18 @@ function fessSideBlock(
     block.push(`[${sideName}] ${turbLabels.join(", ")} 축소술(turbinoplasty) 시행`);
   }
 
-  if (silasticSheet) {
-    block.push(`[${sideName}] 유착 방지를 위해 middle meatus에 silastic sheet를 삽입함`);
-  }
-
   return block;
+}
+
+// Silastic sheet 삽입 — 좌/우 각 블록 안에서 언급하지 않고, packing 직전에
+// 한 문장으로 모아서 서술한다. 양쪽 다 넣었으면 "양측"이라고만 쓰고
+// 좌/우를 따로 나열하지 않는다.
+function silasticSheetSentence(values: FieldValues): string {
+  const right = bool(values, "f_right_silastic_sheet");
+  const left = bool(values, "f_left_silastic_sheet");
+  if (!right && !left) return "";
+  const side = right && left ? "양측" : right ? "우측" : "좌측";
+  return `유착 방지를 위해 ${side} middle meatus에 silastic sheet를 삽입함`;
 }
 
 function fessCore(values: FieldValues): string[] {
@@ -404,6 +423,7 @@ function genFess(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpNo
     steps.push("Epinephrine을 적신 patty로 양측 비강 점막을 수축시킴");
   }
   steps.push(...fessCore(values));
+  steps.push(silasticSheetSentence(values) || false);
   steps.push(`양측 수술 부위 지혈 상태를 확인한 후 ${pack} packing을 시행하고 수술을 종료함`);
 
   return { findings: nasalFindingsText(values), procedureDetail: numberSteps(steps) };
@@ -459,7 +479,11 @@ function genCombo(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpN
     n += blocks[key].length;
   }
   parts.push("--- 종료 ---");
-  parts.push(numberSteps([`양측 비강에 ${pack} packing을 시행하고 출혈 소견 없음을 확인한 후 수술을 종료함`], n));
+  const closingSteps: (string | false)[] = [
+    silasticSheetSentence(values) || false,
+    `양측 비강에 ${pack} packing을 시행하고 출혈 소견 없음을 확인한 후 수술을 종료함`,
+  ];
+  parts.push(numberSteps(closingSteps, n));
 
   return { findings: nasalFindingsText(values), procedureDetail: parts.join("\n") };
 }
@@ -618,7 +642,7 @@ export function buildProcedureName(
   values: FieldValues,
   style: NameStyle = DEFAULT_NAME_STYLE,
 ): string {
-  const turbSuffix = allTurbinateItems(values).length > 0 ? " + Turbinoplasty" : "";
+  const turbSuffix = turbinoplastyNameSuffix(values);
 
   if (surgeryCode === "SEPTOPLASTY") return `Septoplasty${turbSuffix}`;
   if (surgeryCode === "ESS") return `${buildFessProcedureName(values, "ESS", style)}${turbSuffix}`;
@@ -714,4 +738,17 @@ export function buildPlanTable(
     ],
     sideMatrix: fessSideMatrix(values),
   };
+}
+
+// 복사(클립보드)용 — 표를 일반 텍스트로 풀어서 준다
+export function planTableToText(table: PlanTable): string {
+  const lines: string[] = [`수술명: ${table.procedureName}`, "", `[비강 소견] ${table.findings}`, ""];
+  for (const row of table.keyValueRows) lines.push(`${row.label}: ${row.value}`);
+  if (table.sideMatrix) {
+    lines.push("", table.sideMatrix.title);
+    for (const row of table.sideMatrix.rows) {
+      lines.push(`  ${row.label} - 우측: ${row.right ? "O" : "-"} / 좌측: ${row.left ? "O" : "-"}`);
+    }
+  }
+  return lines.join("\n");
 }

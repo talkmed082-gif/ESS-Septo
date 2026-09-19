@@ -16,10 +16,12 @@ export function PlanTableView({
     <div className="space-y-4">
       <p className={`${nameSize} font-bold`}>{table.procedureName}</p>
 
-      <div className={`${textSize} whitespace-pre-wrap rounded-md border border-slate-300 bg-slate-50 p-3`}>
-        <span className="font-semibold">비강/영상 소견 (요약): </span>
-        {table.findings}
-      </div>
+      {table.findings && (
+        <div className={`${textSize} whitespace-pre-wrap rounded-md border border-slate-300 bg-slate-50 p-3`}>
+          <span className="font-semibold">비강/영상 소견 (요약): </span>
+          {table.findings}
+        </div>
+      )}
 
       <table className={`w-full border-collapse ${textSize}`}>
         <tbody>
