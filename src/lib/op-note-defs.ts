@@ -43,9 +43,36 @@ export const septumTurbinateFindingFields: SurgeryFieldDef[] = [
   },
 ];
 
+// SeptumDiagram과 한 화면에 묶어서 보여줄 비중격 상세 필드 — 방향(n_dev_side)은
+// 모식도가 담당하고, 나머지는 모식도 바로 아래 이어서 보여준다.
+export const SEPTUM_DETAIL_FIELD_KEYS = ["n_deviation", "n_septal_perforation", "n_septum_note", "n_chr"];
+
+// Uncinate process attachment는 "이상 소견"이 아니라 frontal sinusotomy 접근
+// 계획에 항상 참고하는 해부학적 변이라, ESS 이상소견(EssFindingsPicker) 위에
+// 먼저 보여준다.
+export const UNCINATE_FIELD_KEYS = ["n_uncinate_right", "n_uncinate_left"];
+
 // 비강 소견 - ESS(FESS)용 그룹 — 부비동 내시경수술 접근/안전 계획에 필요한
 // 내시경·CT 소견. 비중격교정술 단독 시행 시에는 필요 없다.
 export const essFindingFields: SurgeryFieldDef[] = [
+  // Uncinate process attachment — frontal recess 배출 경로를 결정하는 해부학적
+  // 변이로, FESS 시 frontal sinusotomy 접근 방향 계획에 항상 참고되는 값이라
+  // 기록지 요약에서도 값과 무관하게 항상 표시한다. 기본값은 가장 흔한 부착 부위인
+  // Lamina papyracea.
+  {
+    key: "n_uncinate_right",
+    label: "Uncinate process attachment - 우측",
+    type: "select",
+    options: ["Lamina papyracea", "Skull base", "중비갑개 (Middle turbinate)", "불명확/혼합"],
+    default: "Lamina papyracea",
+  },
+  {
+    key: "n_uncinate_left",
+    label: "Uncinate process attachment - 좌측",
+    type: "select",
+    options: ["Lamina papyracea", "Skull base", "중비갑개 (Middle turbinate)", "불명확/혼합"],
+    default: "Lamina papyracea",
+  },
   // 문제(이상 소견)가 있는지부터 체크하고, 있을 때만 좌/우/양측을 고르는
   // 2단계 구조 — 기본이 "정상/없음"인 항목을 매번 드롭다운에서 고르게
   // 하지 않고 체크 안 하면 그대로 넘어가게 해서 입력을 줄인다. Keros
@@ -102,24 +129,6 @@ export const essFindingFields: SurgeryFieldDef[] = [
   { key: "n_polyp_left_site_maxillary", label: "비용종 위치(좌측) - 상악동 자연공", type: "checkbox" },
   { key: "n_polyp_left_site_sphenoid", label: "비용종 위치(좌측) - 접형동", type: "checkbox" },
   { key: "n_polyp_left_site_choana", label: "비용종 위치(좌측) - 후비공까지 연장", type: "checkbox" },
-  // Uncinate process attachment — frontal recess 배출 경로를 결정하는 해부학적
-  // 변이로, FESS 시 frontal sinusotomy 접근 방향 계획에 항상 참고되는 값이라
-  // 기록지 요약에서도 값과 무관하게 항상 표시한다. 기본값은 가장 흔한 부착 부위인
-  // Lamina papyracea.
-  {
-    key: "n_uncinate_right",
-    label: "Uncinate process attachment - 우측",
-    type: "select",
-    options: ["Lamina papyracea", "Skull base", "중비갑개 (Middle turbinate)", "불명확/혼합"],
-    default: "Lamina papyracea",
-  },
-  {
-    key: "n_uncinate_left",
-    label: "Uncinate process attachment - 좌측",
-    type: "select",
-    options: ["Lamina papyracea", "Skull base", "중비갑개 (Middle turbinate)", "불명확/혼합"],
-    default: "Lamina papyracea",
-  },
 ];
 
 // 비강 소견(공통, ESS/병행용) — 비중격/하비갑개 그룹 + ESS 그룹을 모두 포함

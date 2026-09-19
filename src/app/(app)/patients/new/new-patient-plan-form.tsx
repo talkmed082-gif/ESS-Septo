@@ -19,7 +19,7 @@ import { EssFindingsPicker, ESS_FINDINGS_FIELD_KEYS } from "@/components/ess-fin
 import { PresetBar, type PresetItem } from "@/components/preset-bar";
 import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 import type { NameStyle } from "@/lib/op-note-generator";
-import { isNasalFindingKey } from "@/lib/op-note-defs";
+import { isNasalFindingKey, SEPTUM_DETAIL_FIELD_KEYS, UNCINATE_FIELD_KEYS } from "@/lib/op-note-defs";
 import type { RecentCombo } from "@/lib/recent-combos";
 
 export interface SurgeryTypeOption {
@@ -233,9 +233,21 @@ export function NewPatientPlanForm({
           </div>
 
           <div className={step === 1 ? "space-y-4" : "hidden"}>
-            {showSeptum && <SeptumDiagram values={templateValues} />}
+            {showSeptum && (
+              <>
+                <SeptumDiagram values={templateValues} />
+                <SurgeryFieldInputs
+                  fields={nasalFields.filter((f) => SEPTUM_DETAIL_FIELD_KEYS.includes(f.key))}
+                  values={templateValues}
+                />
+              </>
+            )}
             {showSinus && (
               <>
+                <SurgeryFieldInputs
+                  fields={nasalFields.filter((f) => UNCINATE_FIELD_KEYS.includes(f.key))}
+                  values={templateValues}
+                />
                 <EssFindingsPicker values={templateValues} />
                 <PolypPicker values={templateValues} />
               </>
@@ -245,6 +257,8 @@ export function NewPatientPlanForm({
               values={templateValues}
               excludeKeys={[
                 ...getSeptumCoveredKeys(selected.code),
+                ...SEPTUM_DETAIL_FIELD_KEYS,
+                ...UNCINATE_FIELD_KEYS,
                 ...POLYP_FIELD_KEYS,
                 ...ESS_FINDINGS_FIELD_KEYS,
               ]}

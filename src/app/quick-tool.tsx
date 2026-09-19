@@ -14,7 +14,12 @@ import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
 import { EssFindingsPicker, ESS_FINDINGS_FIELD_KEYS } from "@/components/ess-findings-picker";
 import { PresetBar, type PresetItem } from "@/components/preset-bar";
 import { fieldValuesFromFormData, type FieldValues, type SurgeryFieldDef } from "@/lib/field-types";
-import { isBuiltInSurgeryCode, isNasalFindingKey } from "@/lib/op-note-defs";
+import {
+  isBuiltInSurgeryCode,
+  isNasalFindingKey,
+  SEPTUM_DETAIL_FIELD_KEYS,
+  UNCINATE_FIELD_KEYS,
+} from "@/lib/op-note-defs";
 import { buildProcedureName, generateOpNote, generatePlanSummary, type NameStyle } from "@/lib/op-note-generator";
 
 export interface SurgeryTypeOption {
@@ -185,9 +190,21 @@ export function QuickTool({
               </button>
             </div>
             <div className={step === 1 ? "space-y-4" : "hidden"}>
-              {showSeptum && <SeptumDiagram values={templateValues} />}
+              {showSeptum && (
+                <>
+                  <SeptumDiagram values={templateValues} />
+                  <SurgeryFieldInputs
+                    fields={nasalFields.filter((f) => SEPTUM_DETAIL_FIELD_KEYS.includes(f.key))}
+                    values={templateValues}
+                  />
+                </>
+              )}
               {showSinus && (
                 <>
+                  <SurgeryFieldInputs
+                    fields={nasalFields.filter((f) => UNCINATE_FIELD_KEYS.includes(f.key))}
+                    values={templateValues}
+                  />
                   <EssFindingsPicker values={templateValues} />
                   <PolypPicker values={templateValues} />
                 </>
@@ -197,6 +214,8 @@ export function QuickTool({
                 values={templateValues}
                 excludeKeys={[
                   ...getSeptumCoveredKeys(selected.code),
+                  ...SEPTUM_DETAIL_FIELD_KEYS,
+                  ...UNCINATE_FIELD_KEYS,
                   ...POLYP_FIELD_KEYS,
                   ...ESS_FINDINGS_FIELD_KEYS,
                 ]}

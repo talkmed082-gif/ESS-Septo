@@ -15,7 +15,7 @@ import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
 import { EssFindingsPicker, ESS_FINDINGS_FIELD_KEYS } from "@/components/ess-findings-picker";
 import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 import type { NameStyle } from "@/lib/op-note-generator";
-import { isNasalFindingKey } from "@/lib/op-note-defs";
+import { isNasalFindingKey, SEPTUM_DETAIL_FIELD_KEYS, UNCINATE_FIELD_KEYS } from "@/lib/op-note-defs";
 
 type Action = (
   state: OpRecordFormState | undefined,
@@ -176,9 +176,21 @@ export function RecordForm({
 
       <div className={step === 1 ? "space-y-4" : "hidden"}>
         <p className="text-sm font-medium text-slate-700">비강/영상 소견</p>
-        {showSeptum && <SeptumDiagram values={fieldValues} />}
+        {showSeptum && (
+          <>
+            <SeptumDiagram values={fieldValues} />
+            <SurgeryFieldInputs
+              fields={nasalFields.filter((f) => SEPTUM_DETAIL_FIELD_KEYS.includes(f.key))}
+              values={fieldValues}
+            />
+          </>
+        )}
         {showSinus && (
           <>
+            <SurgeryFieldInputs
+              fields={nasalFields.filter((f) => UNCINATE_FIELD_KEYS.includes(f.key))}
+              values={fieldValues}
+            />
             <EssFindingsPicker values={fieldValues} />
             <PolypPicker values={fieldValues} />
           </>
@@ -188,6 +200,8 @@ export function RecordForm({
           values={fieldValues}
           excludeKeys={[
             ...getSeptumCoveredKeys(surgeryTypeCode),
+            ...SEPTUM_DETAIL_FIELD_KEYS,
+            ...UNCINATE_FIELD_KEYS,
             ...POLYP_FIELD_KEYS,
             ...ESS_FINDINGS_FIELD_KEYS,
           ]}

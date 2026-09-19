@@ -32,9 +32,10 @@ function getInput(form: HTMLFormElement | null, name: string) {
   return el instanceof HTMLInputElement ? el : null;
 }
 
-// 좌/우 비용종 소견의 정도(위치)가 서로 다른 경우가 많아, 공통 "방향" 선택
-// 없이 측별로 위치를 각각 고르게 한다 — 위치가 하나라도 체크된 측에 비용종이
-// 있는 것으로 본다.
+// 비용종이 없는 경우가 더 많아, "있음" 체크부터 하고 체크했을 때만 좌/우
+// 위치 선택 UI가 나타나게 한다 (ESS 이상소견과 같은 체크 → 상세 패턴).
+// 좌/우 정도(위치)가 서로 다른 경우가 많아 공통 "방향" 선택 없이 측별로
+// 위치를 각각 고르게 한다 — 위치가 하나라도 체크된 측에 비용종이 있는 것으로 본다.
 export function PolypPicker({
   values,
   onChange,
@@ -50,6 +51,31 @@ export function PolypPicker({
     }
     return next;
   });
+  const [present, setPresent] = useState<boolean>(() => Object.values(sites).some(Boolean));
+
+  function clearAllSites() {
+    setSites((s) => {
+      const next: Record<string, boolean> = {};
+      for (const key of Object.keys(s)) next[key] = false;
+      requestAnimationFrame(() => {
+        const form = findForm(rootRef.current);
+        for (const key of Object.keys(s)) {
+          const el = getInput(form, `field_${key}`);
+          if (el) el.checked = false;
+        }
+      });
+      return next;
+    });
+  }
+
+  function togglePresent() {
+    setPresent((p) => {
+      const next = !p;
+      if (!next) clearAllSites();
+      return next;
+    });
+    onChange?.();
+  }
 
   function toggleSite(fullKey: string) {
     setSites((s) => {
@@ -66,35 +92,43 @@ export function PolypPicker({
 
   return (
     <div ref={rootRef} className="rounded-md border border-slate-200 p-3">
-      <p className="mb-2 text-xs font-medium text-slate-600">
-        비용종(Polyp) 소견 — 좌/우 위치를 각각 선택
-      </p>
-      <div className="flex flex-wrap gap-6">
-        {SIDES.map((side) => (
-          <div key={side.prefix} className="flex flex-col items-start gap-2">
-            <span className="text-xs font-medium text-slate-600">{side.label}</span>
-            <div className="flex flex-wrap gap-2">
-              {POLYP_SITE_FIELDS.map((f) => {
-                const fullKey = `${side.prefix}${f.key}`;
-                return (
-                  <button
-                    key={fullKey}
-                    type="button"
-                    onClick={() => toggleSite(fullKey)}
-                    className={`min-h-[36px] touch-manipulation rounded-md border px-3 py-1.5 text-xs active:scale-95 ${
-                      sites[fullKey]
-                        ? "border-emerald-600 bg-emerald-600 text-white"
-                        : "border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100"
-                    }`}
-                  >
-                    {f.label}
-                  </button>
-                );
-              })}
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={present}
+          onChange={togglePresent}
+          className="h-4 w-4 rounded border-slate-300"
+        />
+        비용종(Polyp) 있음
+      </label>
+      {present && (
+        <div className="mt-3 flex flex-wrap gap-6 border-t border-slate-100 pt-3">
+          {SIDES.map((side) => (
+            <div key={side.prefix} className="flex flex-col items-start gap-2">
+              <span className="text-xs font-medium text-slate-600">{side.label}</span>
+              <div className="flex flex-wrap gap-2">
+                {POLYP_SITE_FIELDS.map((f) => {
+                  const fullKey = `${side.prefix}${f.key}`;
+                  return (
+                    <button
+                      key={fullKey}
+                      type="button"
+                      onClick={() => toggleSite(fullKey)}
+                      className={`min-h-[36px] touch-manipulation rounded-md border px-3 py-1.5 text-xs active:scale-95 ${
+                        sites[fullKey]
+                          ? "border-emerald-600 bg-emerald-600 text-white"
+                          : "border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100"
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
