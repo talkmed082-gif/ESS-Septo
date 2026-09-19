@@ -13,6 +13,7 @@ import {
   type SideNotation,
 } from "@/lib/op-note-generator";
 import { buildGoogleCalendarUrl } from "@/lib/calendar";
+import { safeDateStr } from "@/lib/date-format";
 import { getRecentCombosForSurgeryType } from "@/lib/recent-combos";
 import { getPresetsForSurgeryType } from "@/lib/presets";
 import { PlanTableView } from "@/components/plan-table";
@@ -58,10 +59,10 @@ export default async function OpPlanPage({
         </h1>
       </div>
 
-      {plan.plannedDate && (
+      {plan.plannedDate && safeDateStr(plan.plannedDate) && (
         <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-white p-3 text-sm">
           <span className="text-slate-500">
-            수술 예정일: <span className="font-medium text-slate-900">{plan.plannedDate.toISOString().slice(0, 10)}</span>
+            수술 예정일: <span className="font-medium text-slate-900">{safeDateStr(plan.plannedDate)}</span>
           </span>
           <a
             href={buildGoogleCalendarUrl({
@@ -145,9 +146,7 @@ export default async function OpPlanPage({
         fields={fields}
         values={values}
         defaultValues={{
-          plannedDate: plan.plannedDate
-            ? plan.plannedDate.toISOString().slice(0, 10)
-            : "",
+          plannedDate: safeDateStr(plan.plannedDate) ?? "",
           side: plan.side ?? "",
           diagnosis: plan.diagnosis ?? "",
           planNote: plan.planNote ?? "",

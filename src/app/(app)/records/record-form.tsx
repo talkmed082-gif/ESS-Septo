@@ -80,35 +80,20 @@ export function RecordForm({
 
   return (
     <form action={formAction} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            수술일 *
-          </label>
-          <input
-            type="date"
-            name="operationDate"
-            defaultValue={defaultValues.operationDate}
-            required
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            마취 종류
-          </label>
-          <select
-            name="anesthesiaType"
-            defaultValue={defaultValues.anesthesiaType}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-          >
-            <option value="">선택 안 함</option>
-            <option value="General">전신마취 (General)</option>
-            <option value="Local">국소마취 (Local)</option>
-            <option value="MAC">MAC</option>
-          </select>
-        </div>
+      <div>
+        <label className="mb-1 block text-sm font-medium text-slate-700">
+          수술일 *
+        </label>
+        <input
+          type="date"
+          name="operationDate"
+          defaultValue={defaultValues.operationDate}
+          required
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+        />
       </div>
+      {/* 마취는 항상 전신마취(General)가 기본이라 선택 없이 고정값으로 저장한다. */}
+      <input type="hidden" name="anesthesiaType" defaultValue={defaultValues.anesthesiaType || "General"} />
 
       <div className="grid grid-cols-2 gap-4">
         <div>

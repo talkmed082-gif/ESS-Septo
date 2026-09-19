@@ -4,11 +4,8 @@ import { getCurrentUser } from "@/lib/dal";
 import { parseFieldValues } from "@/lib/field-types";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
 import { buildProcedureName, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
+import { safeDateStr } from "@/lib/date-format";
 import { PatientListTable, type PatientRow } from "./patient-list-table";
-
-function toDateStr(d: Date | null | undefined) {
-  return d ? d.toISOString().slice(0, 10) : null;
-}
 
 export default async function PatientsPage({
   searchParams,
@@ -58,8 +55,8 @@ export default async function PatientsPage({
       name: p.name,
       chartNo: p.chartNo,
       sex: p.sex,
-      birthDate: toDateStr(p.birthDate),
-      surgeryDate: toDateStr(latestPlan?.plannedDate),
+      birthDate: safeDateStr(p.birthDate),
+      surgeryDate: safeDateStr(latestPlan?.plannedDate),
       surgeryPlanId: latestPlan?.id ?? null,
       planCount: p.opPlans.length,
     };
@@ -130,7 +127,7 @@ export default async function PatientsPage({
                 <li key={plan.id} className="flex items-center justify-between text-sm">
                   <Link href={`/plans/${plan.id}`} className="hover:underline">
                     <span className="font-medium text-slate-900">
-                      {plan.plannedDate?.toISOString().slice(0, 10)}
+                      {safeDateStr(plan.plannedDate)}
                     </span>
                     <span className="mx-2 text-slate-400">·</span>
                     <span className="text-slate-900">{plan.patient.name}</span>

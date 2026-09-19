@@ -125,7 +125,8 @@ export function SurgeryPlanner({
 
   const first = surgeryTypes[0];
   const [selectedId, setSelectedId] = useState(first?.id ?? "");
-  const [anesthesiaType, setAnesthesiaType] = useState("General");
+  // 마취는 항상 전신마취(General)가 기본이라 별도 선택 없이 고정한다.
+  const anesthesiaType = "General";
   const [patientMode, setPatientMode] = useState<"new" | "existing">("new");
   const [{ planTable, recordText }, setTexts] = useState(() =>
     first ? buildTexts(first.code, {}, "General", nameStyle) : { planTable: null, recordText: "" },
@@ -175,14 +176,6 @@ export function SurgeryPlanner({
     setTemplateKey((k) => k + 1);
     const next = surgeryTypes.find((st) => st.id === id);
     setTexts(next ? buildTexts(next.code, {}, anesthesiaType, nameStyle) : { planTable: null, recordText: "" });
-  }
-
-  function handleAnesthesiaChange(value: string) {
-    setAnesthesiaType(value);
-    if (selected && formRef.current) {
-      const values = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
-      setTexts(buildTexts(selected.code, values, value, nameStyle));
-    }
   }
 
   const showPatientSection = loggedIn && !fixedPatient;
@@ -315,7 +308,7 @@ export function SurgeryPlanner({
         </div>
 
         {selected && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className={loggedIn ? "grid grid-cols-2 gap-4" : ""}>
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700">수술 예정일</label>
               <input
@@ -325,23 +318,25 @@ export function SurgeryPlanner({
                 className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
               />
             </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">수술측</label>
-              <select
-                name="side"
-                defaultValue=""
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-              >
-                <option value="">선택 안 함</option>
-                <option value="Rt.">우측 (Rt.)</option>
-                <option value="Lt.">좌측 (Lt.)</option>
-                <option value="Both">양측 (Both)</option>
-              </select>
-            </div>
+            {loggedIn && (
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">수술측</label>
+                <select
+                  name="side"
+                  defaultValue=""
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+                >
+                  <option value="">선택 안 함</option>
+                  <option value="Rt.">우측 (Rt.)</option>
+                  <option value="Lt.">좌측 (Lt.)</option>
+                  <option value="Both">양측 (Both)</option>
+                </select>
+              </div>
+            )}
           </div>
         )}
 
-        {selected && (
+        {selected && loggedIn && (
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">술전 진단명</label>
             <input
@@ -350,21 +345,6 @@ export function SurgeryPlanner({
             />
           </div>
         )}
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            마취 방법 (기록지용)
-          </label>
-          <select
-            value={anesthesiaType}
-            onChange={(e) => handleAnesthesiaChange(e.target.value)}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-          >
-            <option value="General">전신마취 (General)</option>
-            <option value="Local">국소마취 (Local)</option>
-            <option value="MAC">MAC</option>
-          </select>
-        </div>
 
         {selected && (
           <div key={`${selected.id}-${templateKey}`} className="space-y-4">

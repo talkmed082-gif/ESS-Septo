@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
 import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
+import { safeDateStr } from "@/lib/date-format";
 
 function Row({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
@@ -66,7 +67,7 @@ export default async function OpRecordPage({
           <Row label="환자" value={record.opPlan.patient.name} />
           <Row
             label="수술일"
-            value={record.operationDate.toISOString().slice(0, 10)}
+            value={safeDateStr(record.operationDate)}
           />
           <Row label="수술측" value={record.opPlan.side} />
           <Row label="집도의" value={record.surgeonName} />

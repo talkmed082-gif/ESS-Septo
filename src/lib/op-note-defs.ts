@@ -84,24 +84,24 @@ export const essFindingFields: SurgeryFieldDef[] = [
   // 문제(이상 소견)가 있는지부터 체크하고, 있을 때만 좌/우/양측을 고르는
   // 2단계 구조 — 기본이 "정상/없음"인 항목을 매번 드롭다운에서 고르게
   // 하지 않고 체크 안 하면 그대로 넘어가게 해서 입력을 줄인다. Keros
-  // Type을 좌우 각각 재는 대신 "위험한(깊은) skull base 있는지"만 체크한다.
+  // Type을 좌우 각각 재는 대신 "Low skull base 있는지"만 체크한다.
   { key: "n_cb_present", label: "Concha bullosa 있음", type: "checkbox" },
   { key: "n_cb_side", label: "Concha bullosa - 방향", type: "select", options: ["좌측", "우측", "양측"] },
   {
     key: "n_skull_base_risk_present",
-    label: "위험한(깊은) skull base 있음 (Keros II/III 의심)",
+    label: "Low skull base 있음 (Keros II/III 의심)",
     type: "checkbox",
   },
   {
     key: "n_skull_base_risk_side",
-    label: "위험한 skull base - 방향",
+    label: "Low skull base - 방향",
     type: "select",
     options: ["좌측", "우측", "양측"],
   },
-  { key: "n_onodi_present", label: "Onodi cell 있음 (접형사골동)", type: "checkbox" },
-  { key: "n_onodi_side", label: "Onodi cell - 방향", type: "select", options: ["좌측", "우측", "양측"] },
-  { key: "n_haller_present", label: "Haller cell 있음 (안하사골봉소)", type: "checkbox" },
-  { key: "n_haller_side", label: "Haller cell - 방향", type: "select", options: ["좌측", "우측", "양측"] },
+  { key: "n_onodi_present", label: "Onodi's cell 있음 (접형사골동)", type: "checkbox" },
+  { key: "n_onodi_side", label: "Onodi's cell - 방향", type: "select", options: ["좌측", "우측", "양측"] },
+  { key: "n_haller_present", label: "Haller's cell 있음 (안하사골봉소)", type: "checkbox" },
+  { key: "n_haller_side", label: "Haller's cell - 방향", type: "select", options: ["좌측", "우측", "양측"] },
   {
     key: "n_lp_dehiscence_present",
     label: "Lamina papyracea 결손 있음",
@@ -176,14 +176,15 @@ export const septoFields: SurgeryFieldDef[] = [
   },
   { key: "s_caudal", label: "Caudal septum 편위 동반 교정", type: "checkbox" },
   { key: "s_spur", label: "Bony spur 제거", type: "checkbox" },
-  { key: "s_debrider", label: "Microdebrider 사용", type: "checkbox" },
   { key: "s_splint", label: "Silastic splint 삽입", type: "checkbox" },
   {
     key: "s_pack",
     label: "비강 Packing",
     type: "select",
-    options: ["Merocel", "Nasopore", "Vaseline gauze", "Nasocel", "Rhinocel"],
+    options: ["Nasocel", "Rhinocel"],
+    default: "Nasocel",
   },
+  { key: "dermacol", label: "Dermacol 도포 (창상 회복 보조제, packing 아님)", type: "checkbox" },
   {
     key: "s_local_anesthetic",
     label: "비중격 국소마취제 (종류/용량)",
@@ -234,16 +235,16 @@ export const fessFields: SurgeryFieldDef[] = [
     label: `좌측 - ${fessStepLabels[k]}`,
     type: "checkbox" as const,
   })),
-  { key: "f_right_silastic_sheet", label: "우측 - Silastic sheet 삽입 (유착 방지)", type: "checkbox" },
-  { key: "f_left_silastic_sheet", label: "좌측 - Silastic sheet 삽입 (유착 방지)", type: "checkbox" },
+  { key: "f_silastic_sheet", label: "Silastic sheet 삽입 (유착 방지)", type: "checkbox" },
   { key: "f_nav", label: "Navigation(항법장치) 병용", type: "checkbox" },
-  { key: "f_debrider", label: "Microdebrider 사용", type: "checkbox" },
   {
     key: "f_pack",
     label: "비강 Packing",
     type: "select",
-    options: ["Nasopore", "Merocel", "Gelfoam", "Nasocel", "Rhinocel"],
+    options: ["Nasocel", "Rhinocel"],
+    default: "Nasocel",
   },
+  { key: "dermacol", label: "Dermacol 도포 (창상 회복 보조제, packing 아님)", type: "checkbox" },
 ];
 
 // 병행(비중격교정술 + FESS) 전용 항목 — 순서 및 최종 packing만 별도로 결정
@@ -265,12 +266,14 @@ export const comboOnlyFields: SurgeryFieldDef[] = [
     key: "c_pack",
     label: "마지막 비강 Packing (양측 공통, 종료 시 1회)",
     type: "select",
-    options: ["Nasopore", "Merocel", "Gelfoam", "Nasocel", "Rhinocel"],
+    options: ["Nasocel", "Rhinocel"],
+    default: "Nasocel",
   },
 ];
 
 const septoFieldsForCombo = septoFields.filter((f) => f.key !== "s_pack");
-const fessFieldsForCombo = fessFields.filter((f) => f.key !== "f_pack");
+// dermacol은 septoFieldsForCombo 쪽에 이미 포함되어 있으므로 중복 방지를 위해 여기서는 뺀다.
+const fessFieldsForCombo = fessFields.filter((f) => f.key !== "f_pack" && f.key !== "dermacol");
 
 // ESS/병행은 비강소견 두 그룹(비중격/하비갑개 + ESS)을 모두 보여주고,
 // 비중격교정술 단독은 비중격/하비갑개 그룹만 보여준다(ESS 전용 CT 소견 불필요).

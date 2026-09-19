@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/dal";
 import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
 import { updateOpRecord } from "@/app/actions/op-records";
 import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
+import { safeDateStr } from "@/lib/date-format";
 import { RecordForm } from "../../record-form";
 
 export default async function EditOpRecordPage({
@@ -44,7 +45,7 @@ export default async function EditOpRecordPage({
         fieldValues={values}
         submitLabel="저장"
         defaultValues={{
-          operationDate: record.operationDate.toISOString().slice(0, 10),
+          operationDate: safeDateStr(record.operationDate) ?? new Date().toISOString().slice(0, 10),
           surgeonName: record.surgeonName,
           assistantName: record.assistantName ?? "",
           anesthesiaType: record.anesthesiaType ?? "",

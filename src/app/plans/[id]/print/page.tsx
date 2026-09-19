@@ -6,6 +6,7 @@ import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
 import { buildPlanTable, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { PlanTableView } from "@/components/plan-table";
 import { PrintButton } from "@/components/print-button";
+import { safeDateStr } from "@/lib/date-format";
 
 export default async function OpPlanPrintPage({
   params,
@@ -54,7 +55,7 @@ export default async function OpPlanPrintPage({
               수술일 / 수술측
             </th>
             <td className="border border-slate-400 px-3 py-2.5">
-              {plan.plannedDate ? plan.plannedDate.toISOString().slice(0, 10) : "-"} /{" "}
+              {safeDateStr(plan.plannedDate) ?? "-"} /{" "}
               <span className="font-semibold">{plan.side ?? "-"}</span>
             </td>
           </tr>

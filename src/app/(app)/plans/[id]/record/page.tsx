@@ -6,6 +6,7 @@ import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
 import { createOpRecord } from "@/app/actions/op-records";
 import { buildProcedureName, generateOpNote, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
+import { safeDateStr } from "@/lib/date-format";
 import { RecordForm } from "../../../records/record-form";
 
 export default async function NewOpRecordPage({
@@ -54,9 +55,7 @@ export default async function NewOpRecordPage({
         fieldValues={planValues}
         submitLabel="기록지 저장"
         defaultValues={{
-          operationDate: plan.plannedDate
-            ? plan.plannedDate.toISOString().slice(0, 10)
-            : new Date().toISOString().slice(0, 10),
+          operationDate: safeDateStr(plan.plannedDate) ?? new Date().toISOString().slice(0, 10),
           surgeonName: currentUser.name,
           assistantName: currentUser.defaultAssistantName ?? "",
           anesthesiaType: "General",

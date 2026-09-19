@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
 import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
 import { PrintButton } from "@/components/print-button";
+import { safeDateStr } from "@/lib/date-format";
 
 function Row({ label, value }: { label: string; value?: string | null }) {
   return (
@@ -58,10 +59,10 @@ export default async function OpRecordPrintPage({
           <Row
             label="성별 / 생년월일"
             value={`${patient.sex === "M" ? "남" : patient.sex === "F" ? "여" : "-"} / ${
-              patient.birthDate ? patient.birthDate.toISOString().slice(0, 10) : "-"
+              safeDateStr(patient.birthDate) ?? "-"
             }`}
           />
-          <Row label="수술일" value={record.operationDate.toISOString().slice(0, 10)} />
+          <Row label="수술일" value={safeDateStr(record.operationDate) ?? "-"} />
           <Row label="수술측" value={record.opPlan.side} />
           <Row label="마취 종류" value={record.anesthesiaType} />
           <Row label="집도의" value={record.surgeonName} />

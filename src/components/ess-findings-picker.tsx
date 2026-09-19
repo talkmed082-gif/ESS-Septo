@@ -10,10 +10,10 @@ const ESS_RISK_FINDINGS = [
   {
     presentKey: "n_skull_base_risk_present",
     sideKey: "n_skull_base_risk_side",
-    label: "위험한(깊은) skull base",
+    label: "Low skull base",
   },
-  { presentKey: "n_onodi_present", sideKey: "n_onodi_side", label: "Onodi cell" },
-  { presentKey: "n_haller_present", sideKey: "n_haller_side", label: "Haller cell" },
+  { presentKey: "n_onodi_present", sideKey: "n_onodi_side", label: "Onodi's cell" },
+  { presentKey: "n_haller_present", sideKey: "n_haller_side", label: "Haller's cell" },
   {
     presentKey: "n_lp_dehiscence_present",
     sideKey: "n_lp_dehiscence_side",

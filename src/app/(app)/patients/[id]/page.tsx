@@ -10,6 +10,7 @@ import {
   type NameStyle,
   type SideNotation,
 } from "@/lib/op-note-generator";
+import { safeDateStr } from "@/lib/date-format";
 
 export default async function PatientDetailPage({
   params,
@@ -41,9 +42,7 @@ export default async function PatientDetailPage({
           <p className="mt-1 text-sm text-slate-500">
             {patient.chartNo ? `차트번호 ${patient.chartNo} · ` : ""}
             {patient.sex === "M" ? "남" : patient.sex === "F" ? "여" : "성별 미상"}
-            {patient.birthDate
-              ? ` · ${patient.birthDate.toISOString().slice(0, 10)} 생`
-              : ""}
+            {safeDateStr(patient.birthDate) ? ` · ${safeDateStr(patient.birthDate)} 생` : ""}
           </p>
           {patient.memo && (
             <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600">
@@ -104,7 +103,7 @@ export default async function PatientDetailPage({
                     </td>
                     <td className="truncate px-4 py-2 text-slate-600">
                       <Link href={`/plans/${plan.id}`} className="hover:underline">
-                        {plan.plannedDate ? plan.plannedDate.toISOString().slice(0, 10) : "입력"}
+                        {safeDateStr(plan.plannedDate) ?? "입력"}
                       </Link>
                     </td>
                     <td className="hidden truncate px-4 py-2 text-slate-600 sm:table-cell">
