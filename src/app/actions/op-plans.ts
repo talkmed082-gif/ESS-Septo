@@ -8,7 +8,6 @@ import { verifySession } from "@/lib/dal";
 import { parseFieldDefs, fieldValuesFromFormData } from "@/lib/field-types";
 
 const OpPlanSchema = z.object({
-  surgeryTypeId: z.string().trim().min(1),
   plannedDate: z.string().trim().optional(),
   side: z.enum(["Rt.", "Lt.", "Both", ""]).optional(),
   diagnosis: z.string().trim().optional(),
@@ -17,52 +16,6 @@ const OpPlanSchema = z.object({
 
 export interface OpPlanFormState {
   message?: string;
-}
-
-export async function createOpPlan(
-  patientId: string,
-  _prevState: OpPlanFormState | undefined,
-  formData: FormData,
-): Promise<OpPlanFormState> {
-  const session = await verifySession();
-
-  const validated = OpPlanSchema.safeParse({
-    surgeryTypeId: formData.get("surgeryTypeId"),
-    plannedDate: formData.get("plannedDate"),
-    side: formData.get("side"),
-    diagnosis: formData.get("diagnosis"),
-    planNote: formData.get("planNote"),
-  });
-  if (!validated.success) {
-    return { message: "입력값을 확인하세요." };
-  }
-  const { surgeryTypeId, plannedDate, side, diagnosis, planNote } =
-    validated.data;
-
-  const surgeryType = await prisma.surgeryType.findUnique({
-    where: { id: surgeryTypeId },
-  });
-  if (!surgeryType) {
-    return { message: "수술 종류를 선택하세요." };
-  }
-  const fields = parseFieldDefs(surgeryType.fields);
-  const planData = fieldValuesFromFormData(formData, fields);
-
-  const plan = await prisma.opPlan.create({
-    data: {
-      patientId,
-      surgeryTypeId,
-      plannedDate: plannedDate ? new Date(plannedDate) : null,
-      side: side || null,
-      diagnosis: diagnosis || null,
-      planNote: planNote || null,
-      planData,
-      createdById: session.userId,
-    },
-  });
-
-  revalidatePath(`/patients/${patientId}`);
-  redirect(`/plans/${plan.id}`);
 }
 
 export async function updateOpPlan(
@@ -80,7 +33,7 @@ export async function updateOpPlan(
     return { message: "수술 계획을 찾을 수 없습니다." };
   }
 
-  const validated = OpPlanSchema.omit({ surgeryTypeId: true }).safeParse({
+  const validated = OpPlanSchema.safeParse({
     plannedDate: formData.get("plannedDate"),
     side: formData.get("side"),
     diagnosis: formData.get("diagnosis"),

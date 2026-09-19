@@ -594,59 +594,6 @@ function septoConciseItems(values: FieldValues, includePacking: boolean): string
   return items.filter((s): s is string => Boolean(s));
 }
 
-function fessConciseSideLine(
-  sideLabel: "좌측" | "우측",
-  prefix: "f_left_" | "f_right_",
-  values: FieldValues,
-): string {
-  const picked = fessStepFieldKeys
-    .filter((k) => bool(values, `${prefix}${k}`))
-    .map((k) => fessStepLabels[k]);
-  return picked.length > 0 ? `${sideLabel}: ${picked.join(", ")}` : `${sideLabel}: 해당 없음`;
-}
-
-function fessConciseItems(values: FieldValues, includePacking: boolean): string[] {
-  const items: string[] = [
-    fessConciseSideLine("좌측", "f_left_", values),
-    fessConciseSideLine("우측", "f_right_", values),
-  ];
-  if (bool(values, "f_silastic_sheet")) items.push("Silastic sheet 삽입 (양측)");
-  if (bool(values, "f_nav")) items.push("Navigation 병용");
-  if (includePacking) items.push("Nasocel + Rhinocel packing 예정");
-  return items;
-}
-
-function planItemsFor(surgeryCode: BuiltInSurgeryCode, values: FieldValues): string[] {
-  const turbItems = allTurbinateItems(values);
-  const turbLine = turbItems.length > 0 ? [`Turbinoplasty: ${turbItems.join(", ")}`] : [];
-
-  if (surgeryCode === "SEPTOPLASTY") return [...septoConciseItems(values, true), ...turbLine];
-  if (surgeryCode === "ESS") return [...fessConciseItems(values, true), ...turbLine];
-
-  const order = str(values, "c_order", "비중격 → 우 FESS → 좌 FESS");
-  return [
-    `시행 순서: ${order}`,
-    "[비중격교정술]",
-    ...septoConciseItems(values, false).map((i) => `  - ${i}`),
-    "[FESS]",
-    ...fessConciseItems(values, false).map((i) => `  - ${i}`),
-    ...turbLine,
-    "공통 packing: Nasocel + Rhinocel 예정",
-  ];
-}
-
-export function generatePlanSummary(
-  surgeryCode: BuiltInSurgeryCode,
-  values: FieldValues,
-  style: NameStyle = DEFAULT_NAME_STYLE,
-): string {
-  const procedureName = buildProcedureName(surgeryCode, values, style);
-  const findings = nasalFindingsText(values);
-  const items = planItemsFor(surgeryCode, values);
-  const bulletList = items.map((i) => (i.startsWith("[") || i.startsWith("  -") ? i : `- ${i}`)).join("\n");
-  return `수술명: ${procedureName}\n\n[비강 소견]\n${findings}\n\n[예정 술식]\n${bulletList}`;
-}
-
 // ---------- 수술명(Procedure name) 자동 생성 ----------
 
 export type SideNotation = "full" | "paren" | "bracket";

@@ -205,12 +205,7 @@ export function RecordForm({
           />
         </div>
 
-        <OpNoteGenerateButton
-          fields={fields}
-          surgeryTypeCode={surgeryTypeCode}
-          mode="record"
-          nameStyle={nameStyle}
-        />
+        <OpNoteGenerateButton fields={fields} surgeryTypeCode={surgeryTypeCode} nameStyle={nameStyle} />
       </div>
 
       {state?.message && <p className="text-sm text-red-600">{state.message}</p>}

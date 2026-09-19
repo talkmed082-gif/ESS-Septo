@@ -23,11 +23,9 @@ const SIDE_OPTIONS: { value: SideNotation; label: string; example: string }[] = 
 export function SettingsForm({
   initialSideNotation,
   initialAbbreviate,
-  initialDefaultAssistantName,
 }: {
   initialSideNotation: SideNotation;
   initialAbbreviate: boolean;
-  initialDefaultAssistantName: string;
 }) {
   const [state, formAction, pending] = useActionState<
     SettingsFormState | undefined,
@@ -92,18 +90,6 @@ export function SettingsForm({
       <div className="rounded-md border border-slate-300 bg-slate-50 p-3">
         <p className="mb-1 text-xs font-medium text-slate-500">미리보기 (예시)</p>
         <p className="font-mono text-sm text-slate-900">{preview}</p>
-      </div>
-
-      <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">
-          기본 보조의 (기록지 작성 시 자동으로 채워짐)
-        </label>
-        <input
-          name="defaultAssistantName"
-          defaultValue={initialDefaultAssistantName}
-          placeholder="예: 김OO"
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-        />
       </div>
 
       {state?.message && <p className="text-sm text-emerald-600">{state.message}</p>}

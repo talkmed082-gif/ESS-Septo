@@ -134,7 +134,13 @@ export function PatientListTable({
                   )}
                 </td>
                 <td className="max-w-xs truncate px-4 py-2 text-slate-600" title={p.nasalFindings ?? undefined}>
-                  {p.nasalFindings ?? "-"}
+                  {p.surgeryPlanId ? (
+                    <Link href={`/plans/${p.surgeryPlanId}`} className="hover:underline">
+                      {p.nasalFindings ?? "입력"}
+                    </Link>
+                  ) : (
+                    (p.nasalFindings ?? "-")
+                  )}
                 </td>
                 <td className="px-4 py-2 text-slate-600">
                   {p.surgeryPlanId ? (
