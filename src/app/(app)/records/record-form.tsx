@@ -85,21 +85,12 @@ export function RecordForm({
         </button>
       </div>
 
-      <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">
-          수술일 *
-        </label>
-        <input
-          type="date"
-          name="operationDate"
-          defaultValue={defaultValues.operationDate}
-          required
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-        />
-      </div>
-      {/* 마취는 항상 전신마취(General)가 기본이라 선택 없이 고정값으로 저장한다.
-          집도의도 병원 EMR에 이미 있고 대부분 로그인한 본인이라 굳이 다시
-          입력받지 않고 기본값을 그대로 숨겨서 저장한다. */}
+      {/* 수술일은 환자 등록/수술 계획 단계에서 이미 입력받으므로 기록지에서
+          다시 받지 않는다. 마취는 항상 전신마취(General)가 기본이라 선택
+          없이 고정값으로 저장한다. 집도의도 병원 EMR에 이미 있고 대부분
+          로그인한 본인이라 굳이 다시 입력받지 않고 기본값을 그대로 숨겨서
+          저장한다. */}
+      <input type="hidden" name="operationDate" defaultValue={defaultValues.operationDate} />
       <input type="hidden" name="anesthesiaType" defaultValue={defaultValues.anesthesiaType || "General"} />
       <input type="hidden" name="surgeonName" defaultValue={defaultValues.surgeonName} />
 

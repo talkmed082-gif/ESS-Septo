@@ -4,9 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
 import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
 import { deleteOpPlan, updateOpPlan } from "@/app/actions/op-plans";
-import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
-import { buildProcedureName, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
-import { buildGoogleCalendarUrl } from "@/lib/calendar";
+import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
 import { getRecentCombosForSurgeryType } from "@/lib/recent-combos";
 import { getPresetsForSurgeryType } from "@/lib/presets";
@@ -81,35 +79,6 @@ export default async function OpPlanPage({
           </form>
         </div>
       </div>
-
-      {plan.plannedDate && safeDateStr(plan.plannedDate) && (
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-white p-3 text-sm">
-          <span className="text-slate-500">
-            수술 예정일: <span className="font-medium text-slate-900">{safeDateStr(plan.plannedDate)}</span>
-          </span>
-          <a
-            href={buildGoogleCalendarUrl({
-              title: `[수술] ${plan.patient.name} - ${
-                isBuiltInSurgeryCode(plan.surgeryType.code)
-                  ? buildProcedureName(plan.surgeryType.code, values, nameStyle)
-                  : plan.surgeryType.name
-              }`,
-              date: plan.plannedDate,
-            })}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="ml-auto rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50"
-          >
-            Google 캘린더에 추가
-          </a>
-          <a
-            href={`/plans/${plan.id}/ics`}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50"
-          >
-            캘린더 파일(.ics) 다운로드
-          </a>
-        </div>
-      )}
 
       <SurgeryPlanner
         surgeryTypes={[

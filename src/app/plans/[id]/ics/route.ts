@@ -28,7 +28,8 @@ export async function GET(
 
   const ics = buildIcsContent({
     uid: `op-plan-${plan.id}@ess-septo`,
-    title: `[수술] ${plan.patient.name} - ${procedureName}`,
+    // 캘린더 앱 알림/잠금화면 등 외부에 노출될 수 있어 환자 이름은 넣지 않는다.
+    title: `[수술] ${procedureName}`,
     date: plan.plannedDate,
   });
 
