@@ -48,7 +48,6 @@ export function RecordForm({
   fields,
   fieldValues,
   defaultValues,
-  submitLabel,
   nameStyle,
 }: {
   action: Action;
@@ -56,7 +55,6 @@ export function RecordForm({
   fields: SurgeryFieldDef[];
   fieldValues: FieldValues;
   defaultValues: RecordDefaultValues;
-  submitLabel: string;
   nameStyle?: NameStyle;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
@@ -76,6 +74,17 @@ export function RecordForm({
 
   return (
     <form action={formAction} className="space-y-4">
+      <div className="flex items-start justify-end gap-3">
+        {state?.message && <p className="mt-2 text-sm text-red-600">{state.message}</p>}
+        <button
+          type="submit"
+          disabled={pending}
+          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+        >
+          {pending ? "저장 중..." : "기록 저장"}
+        </button>
+      </div>
+
       <div>
         <label className="mb-1 block text-sm font-medium text-slate-700">
           수술일 *
@@ -207,15 +216,6 @@ export function RecordForm({
 
         <OpNoteGenerateButton fields={fields} surgeryTypeCode={surgeryTypeCode} nameStyle={nameStyle} />
       </div>
-
-      {state?.message && <p className="text-sm text-red-600">{state.message}</p>}
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
-      >
-        {pending ? "저장 중..." : submitLabel}
-      </button>
     </form>
   );
 }

@@ -206,6 +206,23 @@ export function SurgeryPlanner({
     applyCombo({ ...current, [fieldKey]: !current[fieldKey] });
   }
 
+  // Revision case(재수술)를 "수술 방법" 탭 안 모식도까지 들어가야만 보이던
+  // 것을 탭과 무관하게 항상 보이는 곳으로 빼서 계획 화면에서 바로 설정할
+  // 수 있게 한다. 켤 때는 uncinectomy도 기본으로 체크해준다(모식도의
+  // 기존 동작과 동일) — applyCombo로 다시 마운트시켜 모식도가 새 값을
+  // 그대로 반영하게 한다.
+  function toggleRevisionCase() {
+    if (!selected || !formRef.current) return;
+    const current = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
+    const next = !(current.f_revision === true);
+    const updated: FieldValues = { ...current, f_revision: next };
+    if (next) {
+      updated.f_right_uncinectomy = true;
+      updated.f_left_uncinectomy = true;
+    }
+    applyCombo(updated);
+  }
+
   function handleSurgeryTypeChange(id: string) {
     setSelectedId(id);
     setTemplateValues(undefined);
@@ -405,6 +422,17 @@ export function SurgeryPlanner({
                 </button>
               </div>
             )}
+            {showSinus && (
+              <label className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={templateValues?.f_revision === true}
+                  onChange={toggleRevisionCase}
+                  className="h-4 w-4 rounded border-slate-300"
+                />
+                Revision case (재수술)
+              </label>
+            )}
             <div className="flex gap-2 border-b border-slate-200 pb-3">
               <button type="button" onClick={() => setStep(1)} className={stepButtonClass(step === 1)}>
                 1. 비강/영상 소견
@@ -458,7 +486,9 @@ export function SurgeryPlanner({
               />
             </div>
             <div className={step === 2 ? "space-y-4" : "hidden"}>
-              {showSinus && <SinusDiagram values={templateValues} onChange={regenerateFromForm} />}
+              {showSinus && (
+                <SinusDiagram values={templateValues} onChange={regenerateFromForm} hideRevisionToggle />
+              )}
               <SurgeryFieldInputs
                 fields={procedureFields}
                 values={templateValues}

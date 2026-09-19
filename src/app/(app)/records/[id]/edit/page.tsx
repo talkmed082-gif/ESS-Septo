@@ -43,7 +43,6 @@ export default async function EditOpRecordPage({
         surgeryTypeCode={record.opPlan.surgeryType.code}
         fields={fields}
         fieldValues={values}
-        submitLabel="저장"
         defaultValues={{
           operationDate: safeDateStr(record.operationDate) ?? new Date().toISOString().slice(0, 10),
           surgeonName: record.surgeonName,

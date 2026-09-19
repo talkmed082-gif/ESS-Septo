@@ -162,9 +162,14 @@ export function SeptumDiagram({
 export function SinusDiagram({
   values,
   onChange,
+  hideRevisionToggle,
 }: {
   values?: FieldValues;
   onChange?: () => void;
+  // 계획 작성 화면(SurgeryPlanner)에서는 Revision case 체크박스를 탭과
+  // 무관하게 항상 보이는 곳에 따로 두므로, 여기서는 중복으로 보이지
+  // 않게 숨긴다 — revision 상태 자체(Uncinectomy 행 노출 여부)는 그대로 쓴다.
+  hideRevisionToggle?: boolean;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [revision, setRevision] = useState<boolean>(() => values?.f_revision === true);
@@ -257,15 +262,17 @@ export function SinusDiagram({
         <br />
         영상의학 기준: 왼쪽 = 환자 우측(Rt.), 오른쪽 = 환자 좌측(Lt.)
       </p>
-      <label className="mb-3 flex items-center gap-2 text-xs font-medium text-slate-600">
-        <input
-          type="checkbox"
-          checked={revision}
-          onChange={toggleRevision}
-          className="h-4 w-4 rounded border-slate-300"
-        />
-        Revision case (재수술)
-      </label>
+      {!hideRevisionToggle && (
+        <label className="mb-3 flex items-center gap-2 text-xs font-medium text-slate-600">
+          <input
+            type="checkbox"
+            checked={revision}
+            onChange={toggleRevision}
+            className="h-4 w-4 rounded border-slate-300"
+          />
+          Revision case (재수술)
+        </label>
+      )}
       <div className="flex items-start justify-center gap-8">
         {column("f_right_", "우측 (Rt.)")}
         {column("f_left_", "좌측 (Lt.)")}

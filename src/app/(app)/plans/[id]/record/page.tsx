@@ -52,7 +52,6 @@ export default async function NewOpRecordPage({
         surgeryTypeCode={plan.surgeryType.code}
         fields={fields}
         fieldValues={planValues}
-        submitLabel="기록지 저장"
         defaultValues={{
           operationDate: safeDateStr(plan.plannedDate) ?? new Date().toISOString().slice(0, 10),
           surgeonName: currentUser.name,
