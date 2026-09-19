@@ -92,7 +92,7 @@ export default async function OpPlanPage({
         <div className="rounded-lg border border-slate-200 bg-white p-4">
           <h2 className="mb-2 text-sm font-semibold text-slate-700">비강/영상 소견</h2>
           <p className="whitespace-pre-wrap text-sm text-slate-600">
-            {nasalFindingsText(values, plan.surgeryType.code !== "SEPTOPLASTY")}
+            {nasalFindingsText(values)}
           </p>
         </div>
       )}

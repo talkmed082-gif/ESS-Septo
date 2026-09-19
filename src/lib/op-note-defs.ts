@@ -1,9 +1,16 @@
 import type { SurgeryFieldDef } from "./field-types";
 
+// 두 비강 소견 그룹(Septoturbinoplasty용/ESS용)을 각각 접어두고, 실제로
+// 그 진찰을 기록할 때만 체크해서 펼치는 스위치. 이 체크 여부가 기록지
+// 자동 생성 시 해당 그룹 내용을 포함할지 그대로 결정한다.
+export const SEPTO_PE_DONE_KEY = "n_septo_pe_done";
+export const ESS_PE_DONE_KEY = "n_ess_pe_done";
+
 // 비강 소견 - 비중격/하비갑개 그룹 (Septoturbinoplasty용) — 비중격교정술
 // 단독 시행 시에는 이 그룹만 있으면 충분하고, ESS/FESS 관련 CT 소견은
 // 필요 없어서 별도 그룹으로 분리한다.
 export const septumTurbinateFindingFields: SurgeryFieldDef[] = [
+  { key: SEPTO_PE_DONE_KEY, label: "Septoturbinoplasty P/E 시행", type: "checkbox" },
   {
     key: "n_dev_side",
     label: "비중격 편위 방향",
@@ -55,6 +62,7 @@ export const UNCINATE_FIELD_KEYS = ["n_uncinate_right", "n_uncinate_left"];
 // 비강 소견 - ESS(FESS)용 그룹 — 부비동 내시경수술 접근/안전 계획에 필요한
 // 내시경·CT 소견. 비중격교정술 단독 시행 시에는 필요 없다.
 export const essFindingFields: SurgeryFieldDef[] = [
+  { key: ESS_PE_DONE_KEY, label: "ESS P/E 시행", type: "checkbox" },
   // Uncinate process attachment — frontal recess 배출 경로를 결정하는 해부학적
   // 변이로, FESS 시 frontal sinusotomy 접근 방향 계획에 항상 참고되는 값이라
   // 기록지 요약에서도 값과 무관하게 항상 표시한다. 기본값은 가장 흔한 부착 부위인

@@ -132,65 +132,78 @@ function presentSidedSentence(
 }
 
 // 비강 소견 — 내시경 소견과 술전 CT 소견을 함께 서술함 (한쪽 검사로 국한하지 않음)
-// 맨 앞에 비중격/하비갑개 소견(Septoturbinoplasty용)을 모아 요약하고, 그 뒤에
-// ESS(FESS) 계획에 필요한 CT 소견을 붙인다. includeEssFindings=false면(비중격교정술
-// 단독) ESS 전용 소견은 아예 생략한다.
-export function nasalFindingsText(values: FieldValues, includeEssFindings = true): string {
-  const septumGroup = `${septumSummaryLine(values)}.${sidedFindingSentence("하비갑개 비후(CHR)", "n_chr", values)}`;
-  if (!includeEssFindings) return septumGroup;
+// Septoturbinoplasty P/E(n_septo_pe_done)와 ESS P/E(n_ess_pe_done) 체크
+// 여부에 따라 각 그룹 내용을 포함할지 결정한다 — 체크 안 한 그룹은 값이
+// 남아있어도 아예 서술하지 않는다(그 진찰을 기록하지 않았다는 뜻이므로).
+export function nasalFindingsText(values: FieldValues): string {
+  const parts: string[] = [];
 
-  const cbText = bool(values, "n_cb_present")
-    ? `Concha bullosa: ${str(values, "n_cb_side", "양측")}`
-    : "Concha bullosa 없음";
-  return (
-    `${septumGroup} ${cbText}. ${polypFindingText(values)}.` +
-    presentSidedSentence(
-      "위험한(깊은) skull base",
-      "n_skull_base_risk_present",
-      "n_skull_base_risk_side",
-      values,
-      " — 사골동 천장 손상 주의",
-    ) +
-    uncinateSentence(values) +
-    presentSidedSentence("Onodi cell", "n_onodi_present", "n_onodi_side", values) +
-    presentSidedSentence("Haller cell", "n_haller_present", "n_haller_side", values) +
-    presentSidedSentence(
-      "Lamina papyracea 결손",
-      "n_lp_dehiscence_present",
-      "n_lp_dehiscence_side",
-      values,
-      " — 수술 중 주의 필요",
-    ) +
-    presentSidedSentence(
-      "시신경/경동맥 골 결손",
-      "n_dehiscence_present",
-      "n_dehiscence_side",
-      values,
-      " — 수술 중 주의 필요",
-    )
-  );
+  if (bool(values, "n_septo_pe_done")) {
+    parts.push(
+      `${septumSummaryLine(values)}.${sidedFindingSentence("하비갑개 비후(CHR)", "n_chr", values)}`.trim(),
+    );
+  }
+
+  if (bool(values, "n_ess_pe_done")) {
+    const cbText = bool(values, "n_cb_present")
+      ? `Concha bullosa: ${str(values, "n_cb_side", "양측")}`
+      : "Concha bullosa 없음";
+    parts.push(
+      (
+        `${cbText}. ${polypFindingText(values)}.` +
+        presentSidedSentence(
+          "위험한(깊은) skull base",
+          "n_skull_base_risk_present",
+          "n_skull_base_risk_side",
+          values,
+          " — 사골동 천장 손상 주의",
+        ) +
+        uncinateSentence(values) +
+        presentSidedSentence("Onodi cell", "n_onodi_present", "n_onodi_side", values) +
+        presentSidedSentence("Haller cell", "n_haller_present", "n_haller_side", values) +
+        presentSidedSentence(
+          "Lamina papyracea 결손",
+          "n_lp_dehiscence_present",
+          "n_lp_dehiscence_side",
+          values,
+          " — 수술 중 주의 필요",
+        ) +
+        presentSidedSentence(
+          "시신경/경동맥 골 결손",
+          "n_dehiscence_present",
+          "n_dehiscence_side",
+          values,
+          " — 수술 중 주의 필요",
+        )
+      ).trim(),
+    );
+  }
+
+  return parts.length > 0 ? parts.join(" ") : "비강/영상 소견 미기재";
 }
 
 // 예정 술식 표는 한눈에 보는 용도라 "없음/정상" 항목까지 다 나열하면 오히려
 // 읽기 어려워진다. 실제로 임상적 의미가 있는(정상/기본값이 아닌) 소견만 짧게
 // 추려서 보여준다 — 전체 서술문(nasalFindingsText)과는 별도로 둔다.
-export function nasalFindingsSummary(values: FieldValues, includeEssFindings = true): string {
+export function nasalFindingsSummary(values: FieldValues): string {
   const items: string[] = [];
 
-  const devSide = str(values, "n_dev_side", "특이 만곡 없음");
-  const devDegree = str(values, "n_deviation", "해당없음");
-  if (devSide !== "특이 만곡 없음" && devDegree !== "해당없음") {
-    items.push(`비중격 ${devSide} ${devDegree} 편위`);
+  if (bool(values, "n_septo_pe_done")) {
+    const devSide = str(values, "n_dev_side", "특이 만곡 없음");
+    const devDegree = str(values, "n_deviation", "해당없음");
+    if (devSide !== "특이 만곡 없음" && devDegree !== "해당없음") {
+      items.push(`비중격 ${devSide} ${devDegree} 편위`);
+    }
+
+    if (str(values, "n_septal_perforation", "없음") === "있음") items.push("비중격 천공");
+    const septumNote = str(values, "n_septum_note", "");
+    if (septumNote) items.push(septumNote);
+
+    const chr = str(values, "n_chr", "없음");
+    if (chr !== "없음") items.push(`${chr} 하비갑개 비후(CHR)`);
   }
 
-  if (str(values, "n_septal_perforation", "없음") === "있음") items.push("비중격 천공");
-  const septumNote = str(values, "n_septum_note", "");
-  if (septumNote) items.push(septumNote);
-
-  const chr = str(values, "n_chr", "없음");
-  if (chr !== "없음") items.push(`${chr} 하비갑개 비후(CHR)`);
-
-  if (!includeEssFindings) {
+  if (!bool(values, "n_ess_pe_done")) {
     return items.length > 0 ? items.join(", ") + "." : "특이 소견 없음";
   }
 
@@ -308,7 +321,7 @@ function genSeptoplasty(values: FieldValues, mode: OpNoteMode, anesLabel: string
   steps.push(...septoCore(values));
   steps.push(`양측 비강에 ${pack} packing을 시행하고 출혈 소견 없음을 확인한 후 수술을 종료함`);
 
-  return { findings: nasalFindingsText(values, false), procedureDetail: numberSteps(steps) };
+  return { findings: nasalFindingsText(values), procedureDetail: numberSteps(steps) };
 }
 
 // ---------- FESS ----------
@@ -526,7 +539,7 @@ export function generatePlanSummary(
   style: NameStyle = DEFAULT_NAME_STYLE,
 ): string {
   const procedureName = buildProcedureName(surgeryCode, values, style);
-  const findings = nasalFindingsText(values, surgeryCode !== "SEPTOPLASTY");
+  const findings = nasalFindingsText(values);
   const items = planItemsFor(surgeryCode, values);
   const bulletList = items.map((i) => (i.startsWith("[") || i.startsWith("  -") ? i : `- ${i}`)).join("\n");
   return `수술명: ${procedureName}\n\n[비강 소견]\n${findings}\n\n[예정 술식]\n${bulletList}`;
@@ -656,7 +669,7 @@ export function buildPlanTable(
   style: NameStyle = DEFAULT_NAME_STYLE,
 ): PlanTable {
   const procedureName = buildProcedureName(surgeryCode, values, style);
-  const findings = nasalFindingsSummary(values, surgeryCode !== "SEPTOPLASTY");
+  const findings = nasalFindingsSummary(values);
   const turbItems = allTurbinateItems(values);
   const turbRow: PlanKeyValueRow[] =
     turbItems.length > 0 ? [{ label: "Turbinoplasty", value: turbItems.join(", ") }] : [];
