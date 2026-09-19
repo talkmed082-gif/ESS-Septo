@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
 import { updatePatient } from "@/app/actions/patients";
-import { safeDateStr } from "@/lib/date-format";
 import { PatientForm } from "../../patient-form";
 
 export default async function EditPatientPage({
@@ -26,7 +25,7 @@ export default async function EditPatientPage({
           name: patient.name,
           chartNo: patient.chartNo ?? "",
           sex: patient.sex ?? "",
-          birthDate: safeDateStr(patient.birthDate) ?? "",
+          age: patient.age != null ? String(patient.age) : "",
           memo: patient.memo ?? "",
         }}
       />

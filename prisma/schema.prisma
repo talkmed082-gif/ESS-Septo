@@ -59,6 +59,8 @@ model Patient {
   name        String
   sex         String?
   birthDate   DateTime?
+  // 생년월일 대신 나이를 직접 입력받는다 (더 간단하고 실제로 쓰는 값이라).
+  age         Int?
   memo        String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

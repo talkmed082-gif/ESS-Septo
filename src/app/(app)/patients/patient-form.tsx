@@ -18,7 +18,7 @@ export function PatientForm({
     name?: string;
     chartNo?: string;
     sex?: string;
-    birthDate?: string;
+    age?: string;
     memo?: string;
   };
   submitLabel: string;
@@ -70,12 +70,13 @@ export function PatientForm({
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">
-            생년월일
+            나이
           </label>
           <input
-            type="date"
-            name="birthDate"
-            defaultValue={defaultValues?.birthDate}
+            type="number"
+            name="age"
+            min="0"
+            defaultValue={defaultValues?.age}
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
           />
         </div>

@@ -13,12 +13,10 @@ const PatientPlanSchema = z
     name: z.string().trim().optional(),
     chartNo: z.string().trim().optional(),
     sex: z.enum(["M", "F", ""]).optional(),
-    birthDate: z.string().trim().optional(),
+    age: z.string().trim().optional(),
     memo: z.string().trim().optional(),
     surgeryTypeId: z.string().trim().optional(),
     plannedDate: z.string().trim().optional(),
-    side: z.enum(["Rt.", "Lt.", "Both", ""]).optional(),
-    diagnosis: z.string().trim().optional(),
     planNote: z.string().trim().optional(),
   })
   .refine((data) => data.existingPatientId || (data.name && data.name.length > 0), {
@@ -29,6 +27,12 @@ const PatientPlanSchema = z
 export interface PatientPlanFormState {
   errors?: Record<string, string[]>;
   message?: string;
+}
+
+function parseAge(age: string | undefined): number | null {
+  if (!age) return null;
+  const n = Number(age);
+  return Number.isInteger(n) && n >= 0 ? n : null;
 }
 
 // 새 환자를 등록하거나(기존 환자 선택 안 함) 기존 환자를 그대로 쓰거나
@@ -45,12 +49,10 @@ export async function createPatientWithPlan(
     name: formData.get("name") ?? "",
     chartNo: formData.get("chartNo") ?? "",
     sex: formData.get("sex") ?? "",
-    birthDate: formData.get("birthDate") ?? "",
+    age: formData.get("age") ?? "",
     memo: formData.get("memo") ?? "",
     surgeryTypeId: formData.get("surgeryTypeId") ?? "",
     plannedDate: formData.get("plannedDate") ?? "",
-    side: formData.get("side") ?? "",
-    diagnosis: formData.get("diagnosis") ?? "",
     planNote: formData.get("planNote") ?? "",
   });
   if (!validated.success) {
@@ -76,7 +78,7 @@ export async function createPatientWithPlan(
         name: data.name as string,
         chartNo: data.chartNo || null,
         sex: data.sex || null,
-        birthDate: data.birthDate ? new Date(data.birthDate) : null,
+        age: parseAge(data.age),
         memo: data.memo || null,
         createdById: session.userId,
       },
@@ -97,8 +99,6 @@ export async function createPatientWithPlan(
       patientId,
       surgeryTypeId: surgeryType.id,
       plannedDate: data.plannedDate ? new Date(data.plannedDate) : null,
-      side: data.side || null,
-      diagnosis: data.diagnosis || null,
       planNote: data.planNote || null,
       planData,
       createdById: session.userId,

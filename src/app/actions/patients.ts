@@ -10,7 +10,7 @@ const PatientSchema = z.object({
   name: z.string().trim().min(1, { error: "환자 이름을 입력하세요." }),
   chartNo: z.string().trim().optional(),
   sex: z.enum(["M", "F", ""]).optional(),
-  birthDate: z.string().trim().optional(),
+  age: z.string().trim().optional(),
   memo: z.string().trim().optional(),
 });
 
@@ -19,7 +19,7 @@ export interface PatientFormState {
     name?: string[];
     chartNo?: string[];
     sex?: string[];
-    birthDate?: string[];
+    age?: string[];
     memo?: string[];
   };
   message?: string;
@@ -30,9 +30,15 @@ function parsePatientFormData(formData: FormData) {
     name: formData.get("name"),
     chartNo: formData.get("chartNo"),
     sex: formData.get("sex"),
-    birthDate: formData.get("birthDate"),
+    age: formData.get("age"),
     memo: formData.get("memo"),
   });
+}
+
+function parseAge(age: string | undefined): number | null {
+  if (!age) return null;
+  const n = Number(age);
+  return Number.isInteger(n) && n >= 0 ? n : null;
 }
 
 export async function createPatient(
@@ -44,14 +50,14 @@ export async function createPatient(
   if (!validated.success) {
     return { errors: z.flattenError(validated.error).fieldErrors };
   }
-  const { name, chartNo, sex, birthDate, memo } = validated.data;
+  const { name, chartNo, sex, age, memo } = validated.data;
 
   const patient = await prisma.patient.create({
     data: {
       name,
       chartNo: chartNo || null,
       sex: sex || null,
-      birthDate: birthDate ? new Date(birthDate) : null,
+      age: parseAge(age),
       memo: memo || null,
       createdById: session.userId,
     },
@@ -71,7 +77,7 @@ export async function updatePatient(
   if (!validated.success) {
     return { errors: z.flattenError(validated.error).fieldErrors };
   }
-  const { name, chartNo, sex, birthDate, memo } = validated.data;
+  const { name, chartNo, sex, age, memo } = validated.data;
 
   await prisma.patient.update({
     where: { id: patientId },
@@ -79,7 +85,7 @@ export async function updatePatient(
       name,
       chartNo: chartNo || null,
       sex: sex || null,
-      birthDate: birthDate ? new Date(birthDate) : null,
+      age: parseAge(age),
       memo: memo || null,
     },
   });

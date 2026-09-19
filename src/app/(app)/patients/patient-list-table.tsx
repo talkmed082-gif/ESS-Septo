@@ -9,19 +9,19 @@ export interface PatientRow {
   name: string;
   chartNo: string | null;
   sex: string | null;
-  birthDate: string | null;
+  age: number | null;
   surgeryDate: string | null;
   surgeryPlanId: string | null;
-  planCount: number;
+  procedureName: string | null;
 }
 
 const SORT_COLUMNS: { key: string; label: string }[] = [
   { key: "name", label: "이름" },
-  { key: "chartNo", label: "차트번호" },
   { key: "sex", label: "성별" },
-  { key: "birthDate", label: "생년월일" },
+  { key: "age", label: "나이" },
+  { key: "chartNo", label: "차트번호" },
   { key: "surgeryDate", label: "수술 일자" },
-  { key: "planCount", label: "수술계획" },
+  { key: "procedureName", label: "수술 계획" },
 ];
 
 function buildSortHref(query: string, sort: string, dir: string, column: string) {
@@ -113,11 +113,11 @@ export function PatientListTable({
                     {p.name}
                   </Link>
                 </td>
-                <td className="px-4 py-2 text-slate-600">{p.chartNo ?? "-"}</td>
                 <td className="px-4 py-2 text-slate-600">
                   {p.sex === "M" ? "남" : p.sex === "F" ? "여" : "-"}
                 </td>
-                <td className="px-4 py-2 text-slate-600">{p.birthDate ?? "-"}</td>
+                <td className="px-4 py-2 text-slate-600">{p.age ?? "-"}</td>
+                <td className="px-4 py-2 text-slate-600">{p.chartNo ?? "-"}</td>
                 <td className="px-4 py-2 text-slate-600">
                   {p.surgeryPlanId ? (
                     <Link href={`/plans/${p.surgeryPlanId}`} className="hover:underline">
@@ -127,7 +127,15 @@ export function PatientListTable({
                     (p.surgeryDate ?? "-")
                   )}
                 </td>
-                <td className="px-4 py-2 text-slate-600">{p.planCount}건</td>
+                <td className="px-4 py-2 text-slate-600">
+                  {p.surgeryPlanId ? (
+                    <Link href={`/plans/${p.surgeryPlanId}`} className="hover:underline">
+                      {p.procedureName ?? "-"}
+                    </Link>
+                  ) : (
+                    (p.procedureName ?? "-")
+                  )}
+                </td>
               </tr>
             ))}
             {patients.length === 0 && (

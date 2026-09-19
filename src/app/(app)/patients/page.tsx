@@ -39,7 +39,11 @@ export default async function PatientsPage({
         }
       : undefined,
     orderBy: { createdAt: "desc" },
-    include: { opPlans: { select: { id: true, plannedDate: true } } },
+    include: {
+      opPlans: {
+        select: { id: true, plannedDate: true, planData: true, surgeryType: true },
+      },
+    },
   });
 
   const rows: PatientRow[] = patients.map((p) => {
@@ -49,16 +53,21 @@ export default async function PatientsPage({
     const latestPlan =
       withDates.length > 0
         ? withDates.reduce((a, b) => (a.plannedDate > b.plannedDate ? a : b))
-        : null;
+        : (p.opPlans[0] ?? null);
+    const procedureName = latestPlan
+      ? isBuiltInSurgeryCode(latestPlan.surgeryType.code)
+        ? buildProcedureName(latestPlan.surgeryType.code, parseFieldValues(latestPlan.planData), nameStyle)
+        : latestPlan.surgeryType.name
+      : null;
     return {
       id: p.id,
       name: p.name,
       chartNo: p.chartNo,
       sex: p.sex,
-      birthDate: safeDateStr(p.birthDate),
+      age: p.age,
       surgeryDate: safeDateStr(latestPlan?.plannedDate),
       surgeryPlanId: latestPlan?.id ?? null,
-      planCount: p.opPlans.length,
+      procedureName,
     };
   });
 
@@ -79,17 +88,17 @@ export default async function PatientsPage({
         av = a.sex ?? "";
         bv = b.sex ?? "";
         break;
-      case "birthDate":
-        av = a.birthDate ?? "";
-        bv = b.birthDate ?? "";
+      case "age":
+        av = a.age ?? -1;
+        bv = b.age ?? -1;
         break;
       case "surgeryDate":
         av = a.surgeryDate ?? "";
         bv = b.surgeryDate ?? "";
         break;
-      case "planCount":
-        av = a.planCount;
-        bv = b.planCount;
+      case "procedureName":
+        av = a.procedureName ?? "";
+        bv = b.procedureName ?? "";
         break;
       default:
         return 0;

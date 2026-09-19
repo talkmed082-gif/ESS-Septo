@@ -57,9 +57,9 @@ export default async function OpRecordPrintPage({
           <Row label="환자명" value={patient.name} />
           <Row label="차트번호" value={patient.chartNo} />
           <Row
-            label="성별 / 생년월일"
+            label="성별 / 나이"
             value={`${patient.sex === "M" ? "남" : patient.sex === "F" ? "여" : "-"} / ${
-              safeDateStr(patient.birthDate) ?? "-"
+              patient.age != null ? `만 ${patient.age}세` : "-"
             }`}
           />
           <Row label="수술일" value={safeDateStr(record.operationDate) ?? "-"} />

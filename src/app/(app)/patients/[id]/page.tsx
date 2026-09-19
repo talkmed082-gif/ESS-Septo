@@ -42,7 +42,7 @@ export default async function PatientDetailPage({
           <p className="mt-1 text-sm text-slate-500">
             {patient.chartNo ? `차트번호 ${patient.chartNo} · ` : ""}
             {patient.sex === "M" ? "남" : patient.sex === "F" ? "여" : "성별 미상"}
-            {safeDateStr(patient.birthDate) ? ` · ${safeDateStr(patient.birthDate)} 생` : ""}
+            {patient.age != null ? ` · 만 ${patient.age}세` : ""}
           </p>
           {patient.memo && (
             <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600">

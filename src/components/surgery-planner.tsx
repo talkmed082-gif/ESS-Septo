@@ -278,10 +278,11 @@ export function SurgeryPlanner({
                     </select>
                   </div>
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700">생년월일</label>
+                    <label className="mb-1 block text-sm font-medium text-slate-700">나이</label>
                     <input
-                      type="date"
-                      name="birthDate"
+                      type="number"
+                      name="age"
+                      min="0"
                       className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
                     />
                   </div>
@@ -323,16 +324,6 @@ export function SurgeryPlanner({
               type="date"
               name="plannedDate"
               defaultValue={new Date().toISOString().slice(0, 10)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-            />
-          </div>
-        )}
-
-        {selected && loggedIn && (
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">술전 진단명</label>
-            <input
-              name="diagnosis"
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
             />
           </div>

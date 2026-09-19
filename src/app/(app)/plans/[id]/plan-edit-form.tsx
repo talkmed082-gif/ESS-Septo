@@ -92,16 +92,8 @@ export function PlanEditForm({
       {/* 수술측은 무의미한 입력이라 선택 UI를 없앴다 — 과거 값이 있으면 그대로 보존만 한다. */}
       <input type="hidden" name="side" defaultValue={defaultValues.side} />
 
-      <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">
-          술전 진단명
-        </label>
-        <input
-          name="diagnosis"
-          defaultValue={defaultValues.diagnosis}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-        />
-      </div>
+      {/* 술전 진단명도 무의미한 입력이라 선택 UI를 없앴다 — 과거 값이 있으면 그대로 보존만 한다. */}
+      <input type="hidden" name="diagnosis" defaultValue={defaultValues.diagnosis} />
 
       <PresetBar
         surgeryTypeId={surgeryTypeId}
