@@ -16,7 +16,7 @@ import {
 const FieldDefSchema = z.object({
   key: z.string().trim().min(1),
   label: z.string().trim().min(1),
-  type: z.enum(["checkbox", "text", "textarea", "select", "number"]),
+  type: z.enum(["checkbox", "text", "textarea", "select", "multiselect", "number"]),
   options: z.array(z.string()).optional(),
 });
 
@@ -86,8 +86,8 @@ export async function createSurgeryType(
     },
   });
 
-  revalidatePath("/surgery-types");
-  redirect("/surgery-types");
+  revalidatePath("/settings");
+  redirect("/settings");
 }
 
 // 기본 제공 수술 종류(ESS/SEPTOPLASTY/COMBO)의 입력 항목 정의는 코드
@@ -111,10 +111,10 @@ export async function reseedBuiltInSurgeryTypes() {
     });
   }
 
-  revalidatePath("/surgery-types");
+  revalidatePath("/settings");
   // 폼 제출만으로는 페이지가 그대로라 클릭이 반영됐는지 알기 어려워서,
   // 완료 표시를 위해 쿼리 파라미터를 붙여 리다이렉트한다.
-  redirect("/surgery-types?updated=1");
+  redirect("/settings?updated=1");
 }
 
 export async function deleteSurgeryType(surgeryTypeId: string) {
@@ -130,5 +130,5 @@ export async function deleteSurgeryType(surgeryTypeId: string) {
   } catch {
     // op plans still reference this surgery type
   }
-  revalidatePath("/surgery-types");
+  revalidatePath("/settings");
 }
