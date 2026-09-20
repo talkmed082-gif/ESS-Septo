@@ -7,7 +7,8 @@ import { buildProcedureName, type NameStyle, type SideNotation } from "@/lib/op-
 import { safeDateStr } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
 import { PatientsListTitle } from "@/components/patients-list-title";
-import { PatientListTable, isPlanDone, type PatientRow } from "./patient-list-table";
+import { PatientListTable } from "./patient-list-table";
+import { isPlanDone, type PatientRow } from "./patient-row";
 
 export default async function PatientsPage({
   searchParams,

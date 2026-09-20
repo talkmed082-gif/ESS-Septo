@@ -6,28 +6,12 @@ import { useActionState, useOptimistic, useRef, useTransition } from "react";
 import { deletePatients } from "@/app/actions/patients";
 import { toggleOpPlanDone } from "@/app/actions/op-plans";
 import { buttonStyles } from "@/lib/ui";
+import type { PatientRow } from "./patient-row";
 
-export interface PatientRow {
-  id: string;
-  name: string;
-  chartNo: string | null;
-  sex: string | null;
-  age: number | null;
-  surgeryDate: string | null;
-  surgeryPlanId: string | null;
-  procedureName: string | null;
-  recordId: string | null;
-  planDone: boolean;
-}
+export type { PatientRow };
 
 function procedureLabel(p: PatientRow): string {
   return p.procedureName ?? "계획 보기";
-}
-
-// 기록지가 이미 있으면 그 자체로 완료고, 없으면 "완료" 체크(며칠 뒤에
-// 몰아서 기록지를 쓰는 경우가 많아 수동으로 표시)를 따른다.
-export function isPlanDone(p: PatientRow): boolean {
-  return Boolean(p.recordId) || p.planDone;
 }
 
 // 예정/완료 상태를 순번 옆 한 곳에서만 보여준다 — 예전엔 수술명 뒤에
