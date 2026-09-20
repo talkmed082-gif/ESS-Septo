@@ -120,12 +120,20 @@ export default async function PatientsPage({
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-semibold">환자 목록</h1>
-        <Link
-          href="/patients/new"
-          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-        >
-          + 새 환자 등록
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/print/fess-checklist"
+            className="text-sm text-slate-500 hover:underline"
+          >
+            수술방용 체크리스트 인쇄
+          </Link>
+          <Link
+            href="/patients/new"
+            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+          >
+            + 새 환자 등록
+          </Link>
+        </div>
       </div>
 
       {upcomingPlans.length > 0 && (
