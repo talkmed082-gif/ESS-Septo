@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { parseFieldValues } from "@/lib/field-types";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
-import { buildPlanTable, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
+import { buildPlanTable, hasAnyRevision, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
 import { PrintButton } from "@/components/print-button";
 import { AppNavBar } from "@/components/app-nav-bar";
@@ -203,7 +203,7 @@ export default async function FessChecklistPrintPage({
           patientName: plan.patient.name,
           date: safeDateStr(plan.plannedDate),
           procedureName: table?.procedureName ?? plan.surgeryType.name,
-          revision: values.f_revision === true,
+          revision: hasAnyRevision(values),
           findings: table?.findings ?? "",
           rows,
         };

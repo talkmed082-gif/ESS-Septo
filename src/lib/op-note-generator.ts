@@ -39,7 +39,7 @@ export function anesthesiaLabel(anesthesiaType: string | undefined): string {
 // 마취 유도 직후 항상 시행하는 국소 처치라 선택 항목 없이 기록지에 기본으로
 // 포함시킨다. 주입 방향은 실제 수술 범위(편측/양측)에 맞춰 표기한다.
 function sphenopalatineBlockSentence(sideLabel: string): string {
-  return `${sideLabel} sphenopalatine foramen 부위에 epinephrine/lidocaine mixture를 주입하여 국소마취를 추가 시행함`;
+  return `${sideLabel} sphenopalatine fossa 부위에 epinephrine/lidocaine mixture를 주입하여 국소마취를 추가 시행함`;
 }
 
 // Dermacol은 packing 재료가 아니라 창상 회복을 돕는 보조제라, packing 시행
@@ -48,11 +48,28 @@ function dermacolSentence(values: FieldValues): string {
   return bool(values, "dermacol") ? "Dermacol을 수술 부위에 도포함" : "";
 }
 
-// Revision case(재수술)라는 사실을 기록지에도 남긴다.
+// 세 부위(Septoturbinoplasty/우측 ESS/좌측 ESS) 중 어느 것에 대한
+// Revision case(재수술)인지 각각 독립적으로 표시한다.
+export function hasAnyRevision(values: FieldValues): boolean {
+  return (
+    bool(values, "f_revision_septo") ||
+    bool(values, "f_revision_ess_right") ||
+    bool(values, "f_revision_ess_left")
+  );
+}
+
+// Revision case(재수술)라는 사실과 그 대상 부위를 기록지에도 남긴다.
 function revisionSentence(values: FieldValues): string {
-  return bool(values, "f_revision")
-    ? "본 수술은 이전 수술 부위에 대한 Revision case로, 기존 수술 부위를 재평가하며 진행함"
-    : "";
+  const parts: string[] = [];
+  if (bool(values, "f_revision_septo")) parts.push("Septoturbinoplasty");
+  const rightEss = bool(values, "f_revision_ess_right");
+  const leftEss = bool(values, "f_revision_ess_left");
+  if (rightEss && leftEss) parts.push("양측 ESS");
+  else if (rightEss) parts.push("우측 ESS");
+  else if (leftEss) parts.push("좌측 ESS");
+
+  if (parts.length === 0) return "";
+  return `본 수술은 이전 ${parts.join(", ")} 수술 부위에 대한 Revision case로, 기존 수술 부위를 재평가하며 진행함`;
 }
 
 // ---------- 비강 소견 (공통) ----------
@@ -389,11 +406,12 @@ function genSeptoplasty(values: FieldValues, mode: OpNoteMode, anesLabel: string
   const steps: (string | false)[] = [];
   if (mode === "record") {
     steps.push(`환자를 앙와위로 눕히고 ${anesLabel} 하에 수술을 시작함`);
+    steps.push(revisionSentence(values) || false);
     steps.push(sphenopalatineBlockSentence("양측"));
     steps.push(`${localAnesthetic}를 비중격 점막에 국소 침윤 마취함`);
   }
   steps.push(...septoCore(values));
-  steps.push("양측 비강에 Nasocel로 packing을 시행하고 출혈 소견 없음을 확인한 후 수술을 종료함");
+  steps.push("양측 비강에 Rhinocel로 packing을 시행하고 출혈 소견 없음을 확인한 후 수술을 종료함");
 
   return { findings: nasalFindingsText(values), procedureDetail: numberSteps(steps) };
 }
@@ -422,13 +440,17 @@ function fessSideBlock(sideName: "좌측" | "우측", prefix: "f_left_" | "f_rig
   if (selectedSteps.length > 0) {
     // Microdebrider는 비용종이 있을 때만 쓰는 게 아니라 ESS 전반의 점막/조직
     // 정리에 기본적으로 쓰이므로, 비용종 유무와 무관하게 기본 문구로 넣는다.
-    block.push(`[${sideName}] Microdebrider를 이용하여 점막 및 병변 조직을 정리하며 수술을 진행함`);
+    // Cutting forceps/cuff forceps도 함께 병용하는 것을 기본값으로 서술한다.
+    block.push(
+      `[${sideName}] Microdebrider와 cutting forceps, cuff forceps를 이용하여 점막 및 병변 조직을 정리하며 수술을 진행함`,
+    );
     // Uncinectomy는 MMA/Ant.&Post. ethmoidectomy/Frontal sinusotomy를 할 때는
     // 선행되는 조작이라 자동으로 포함시키지만, Sphenoidotomy만 단독으로 할
     // 때는 uncinectomy 없이도 접근 가능해서 자동으로 넣지 않는다. Revision
     // case(재수술)에서는 이전 수술에서 이미 uncinectomy가 되어 있을 수 있어
-    // 자동 판단 대신 직접 체크한 값을 그대로 따른다.
-    const isRevision = bool(values, "f_revision");
+    // 자동 판단 대신 직접 체크한 값을 그대로 따른다. 좌/우가 각각 다른
+    // revision 대상일 수 있어 해당 side의 플래그만 본다.
+    const isRevision = bool(values, prefix === "f_left_" ? "f_revision_ess_left" : "f_revision_ess_right");
     const needsUncinectomy = isRevision
       ? bool(values, `${prefix}uncinectomy`)
       : selectedSteps.some((key) => key !== "sphenoid");
@@ -488,16 +510,17 @@ function fessOperativeSideLabel(values: FieldValues): string {
 }
 
 function genFess(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpNoteResult {
+  const operativeSide = fessOperativeSideLabel(values);
   const steps: (string | false)[] = [];
   if (mode === "record") {
     steps.push(`환자를 앙와위로 눕히고 ${anesLabel} 하에 수술을 시작함`);
     steps.push(revisionSentence(values) || false);
-    steps.push("Epinephrine을 적신 patty로 양측 비강 점막을 수축시킴");
-    steps.push(sphenopalatineBlockSentence(fessOperativeSideLabel(values)));
+    steps.push(`Epinephrine을 적신 patty로 ${operativeSide} 비강 점막을 수축시킴`);
+    steps.push(sphenopalatineBlockSentence(operativeSide));
   }
   steps.push(...fessCore(values));
   steps.push(silasticSheetSentence(values) || false);
-  steps.push("양측 수술 부위 지혈 상태를 확인한 후 Nasocel로 1차 packing을 시행함");
+  steps.push(`${operativeSide} 수술 부위 지혈 상태를 확인한 후 Nasocel로 1차 packing을 시행함`);
   steps.push(dermacolSentence(values) || false);
   steps.push("이어서 Rhinocel로 마무리 packing을 시행하고 수술을 종료함");
 
@@ -629,16 +652,29 @@ function formatRegionList(regions: string[], style: NameStyle): string {
 
 // Frontal/Sphenoid/Maxillary는 그 자체로 하나의 독립된 수술 술식이라,
 // 그 부위 딱 하나만 시행했을 때는 "ESS(Frontal)"처럼 뭉뚱그리지 않고
-// 실제 술식명을 그대로 쓴다. Ethmoid는 전/후방을 나눠 시행할 수 있어
-// 하나의 고정된 술식명으로 보기 어려워서 여기서는 제외한다.
+// 실제 술식명을 그대로 쓴다. Ethmoid도 마찬가지지만 전/후방을 나눠 시행할
+// 수 있어 고정된 이름 하나로 못 정하고, ethmoidLabelForSide로 그때그때
+// (Ant./Post./Ant. & Post.) 계산해서 넣는다 — 다른 부위와 함께 시행해서
+// regions가 2개 이상이면(예: Ethmoid+Maxillary) 이 특수 표기 없이 기존처럼
+// "ESS(Maxillary, Ethmoid)" 형태로 묶어 보여준다.
 const SINGLE_REGION_PROCEDURE_NAMES: Partial<Record<(typeof fessRegionOrder)[number], string>> = {
   Frontal: "Frontal sinusotomy",
   Sphenoid: "Sphenoidotomy",
   Maxillary: "MMA",
 };
 
-function regionSegment(label: string, regions: string[], style: NameStyle): string {
+function ethmoidLabelForSide(prefix: "f_left_" | "f_right_", values: FieldValues): string | undefined {
+  const ant = bool(values, `${prefix}ant_eth`);
+  const post = bool(values, `${prefix}post_eth`);
+  if (ant && post) return "Ant. & Post. Ethmoidectomy";
+  if (ant) return "Ant. Ethmoidectomy";
+  if (post) return "Post. Ethmoidectomy";
+  return undefined;
+}
+
+function regionSegment(label: string, regions: string[], style: NameStyle, ethmoidLabel?: string): string {
   if (regions.length === 1) {
+    if (regions[0] === "Ethmoid" && ethmoidLabel) return ethmoidLabel;
     const single = SINGLE_REGION_PROCEDURE_NAMES[regions[0] as (typeof fessRegionOrder)[number]];
     if (single) return single;
   }
@@ -670,21 +706,36 @@ function buildFessProcedureName(values: FieldValues, label: string, style: NameS
 
   if (left.length === 0 && right.length === 0) return label;
 
+  const leftEthmoidLabel = ethmoidLabelForSide("f_left_", values);
+  const rightEthmoidLabel = ethmoidLabelForSide("f_right_", values);
+  const isEthmoidOnly = (regions: string[]) => regions.length === 1 && regions[0] === "Ethmoid";
   const sameSet = left.length === right.length && left.every((r, i) => r === right[i]);
-  if (left.length > 0 && right.length > 0 && sameSet && leftTurb.length === 0 && rightTurb.length === 0) {
-    return `${formatSideLabel("B", style)} ${regionSegment(label, left, style)}`;
+  // Ethmoid만 시행한 경우는 region 이름만 같아도 좌/우가 Ant./Post. 구성까지
+  // 똑같아야 "Both ..."로 합칠 수 있다 — 다르면(예: 우측 Ant.만, 좌측 Post.만)
+  // 아래 side별 분기로 넘어가 각자 올바른 이름이 붙는다.
+  const ethmoidMatches = !isEthmoidOnly(left) || leftEthmoidLabel === rightEthmoidLabel;
+  if (
+    left.length > 0 &&
+    right.length > 0 &&
+    sameSet &&
+    ethmoidMatches &&
+    leftTurb.length === 0 &&
+    rightTurb.length === 0
+  ) {
+    const ethmoidLabel = isEthmoidOnly(left) ? leftEthmoidLabel : undefined;
+    return `${formatSideLabel("B", style)} ${regionSegment(label, left, style, ethmoidLabel)}`;
   }
 
   const parts: string[] = [];
   if (right.length > 0) {
     const turbText = rightTurb.length > 0 ? ` ${rightTurb.join(" ")}` : "";
-    parts.push(`${formatSideLabel("R", style)} ${regionSegment(label, right, style)}${turbText}`);
+    parts.push(`${formatSideLabel("R", style)} ${regionSegment(label, right, style, rightEthmoidLabel)}${turbText}`);
   } else if (rightTurb.length > 0) {
     parts.push(`${formatSideLabel("R", style)} ${rightTurb.join(" ")}`);
   }
   if (left.length > 0) {
     const turbText = leftTurb.length > 0 ? ` ${leftTurb.join(" ")}` : "";
-    parts.push(`${formatSideLabel("L", style)} ${regionSegment(label, left, style)}${turbText}`);
+    parts.push(`${formatSideLabel("L", style)} ${regionSegment(label, left, style, leftEthmoidLabel)}${turbText}`);
   } else if (leftTurb.length > 0) {
     parts.push(`${formatSideLabel("L", style)} ${leftTurb.join(" ")}`);
   }
@@ -700,6 +751,7 @@ function septoplastyProcedureName(values: FieldValues, style: NameStyle): string
   const inferior = turbSideFlags("inferior", values);
   const bothInferior = inferior.right && inferior.left;
   const base = bothInferior ? "Septoturbinoplasty" : "Septoplasty";
+  const revisionPrefix = bool(values, "f_revision_septo") ? "Revision " : "";
 
   const parts: string[] = [];
   const middle = turbSideFlags("middle", values);
@@ -712,7 +764,7 @@ function septoplastyProcedureName(values: FieldValues, style: NameStyle): string
     parts.push(`${formatSideLabel(side, style)} ${turbTypeWord.inferior}`);
   }
 
-  return parts.length > 0 ? `${base} + ${parts.join(" + ")}` : base;
+  return parts.length > 0 ? `${revisionPrefix}${base} + ${parts.join(" + ")}` : `${revisionPrefix}${base}`;
 }
 
 export function buildProcedureName(
@@ -725,9 +777,9 @@ export function buildProcedureName(
   const hasFessRegions =
     fessRegionsForSide("f_left_", values).length > 0 || fessRegionsForSide("f_right_", values).length > 0;
   const turbSuffix = turbinoplastyGlobalSuffix(values, style, hasFessRegions);
-  // Revision case(재수술)는 수술명 맨 앞에 표기한다 (FESS가 포함된 경우만
-  // 해당 — f_revision은 fessFields에만 있는 필드).
-  const revisionPrefix = bool(values, "f_revision") ? "Revision " : "";
+  // Revision case(재수술)는 수술명 맨 앞에 한 번만 표기한다 — 어느 부위의
+  // revision인지는 수술명이 아니라 기록지 서술문(revisionSentence)에서 밝힌다.
+  const revisionPrefix = hasAnyRevision(values) ? "Revision " : "";
 
   if (surgeryCode === "ESS") return `${revisionPrefix}${buildFessProcedureName(values, "ESS", style)}${turbSuffix}`;
   return `${revisionPrefix}Septoplasty + ${buildFessProcedureName(values, "ESS", style)}${turbSuffix}`;
@@ -738,6 +790,9 @@ export function buildProcedureName(
 export interface PlanKeyValueRow {
   label: string;
   value: string;
+  // 있으면(interactive 모드에서) 이 값을 클릭해 field 값을 바로 토글할 수
+  // 있다 — 예: Navigation 사용/미사용.
+  toggleKey?: string;
 }
 
 export interface PlanSideMatrixRow {
@@ -758,7 +813,7 @@ function fessSideMatrix(values: FieldValues): { title: string; rows: PlanSideMat
   const rows: PlanSideMatrixRow[] = [];
   // Revision case(재수술)에서는 uncinectomy가 이전 수술에서 이미 됐을 수
   // 있어 자동 판단 대신 직접 체크하게 하므로, 표에서도 맨 위에 보여준다.
-  if (bool(values, "f_revision")) {
+  if (bool(values, "f_revision_ess_right") || bool(values, "f_revision_ess_left")) {
     rows.push({
       key: "uncinectomy",
       label: "Uncinectomy",
@@ -819,7 +874,7 @@ export function buildPlanTable(
       findings,
       keyValueRows: [
         ...turbRow,
-        { label: "Navigation", value: bool(values, "f_nav") ? "사용" : "미사용" },
+        { label: "Navigation", value: bool(values, "f_nav") ? "사용" : "미사용", toggleKey: "f_nav" },
         { label: "Packing / Material", value: packingCellValue(values, true) },
       ],
       sideMatrix: fessSideMatrix(values),
@@ -835,6 +890,7 @@ export function buildPlanTable(
       { label: "절개(비중격)", value: incision },
       { label: "동반 술식(비중격)", value: rest.length > 0 ? rest.join(", ") : "-" },
       ...turbRow,
+      { label: "Navigation", value: bool(values, "f_nav") ? "사용" : "미사용", toggleKey: "f_nav" },
       { label: "Packing / Material(공통)", value: packingCellValue(values, true) },
     ],
     sideMatrix: fessSideMatrix(values),

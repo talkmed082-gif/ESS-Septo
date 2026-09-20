@@ -34,16 +34,25 @@ export function getAnatomyVisibility(surgeryTypeCode: string): {
   };
 }
 
-// 모식도가 대신 담당하는 필드 키 목록 — 같은 항목이 아래 체크리스트에도 중복으로
-// 나타나 두 입력 방식이 서로 어긋나 보이는 것("원활하지 않음")을 막기 위해,
-// 이 키들은 SurgeryFieldInputs 목록에서는 제외하고 모식도에서만 선택하게 한다.
-export function getAnatomyCoveredKeys(surgeryTypeCode: string): string[] {
-  const keys: string[] = [];
-  const { showSeptum, showSinus } = getAnatomyVisibility(surgeryTypeCode);
+// 모식도(또는 SurgeryPlanner 상단의 Revision 토글)가 대신 담당하는 필드
+// 키 목록 — 같은 항목이 아래 체크리스트에도 중복으로 나타나 두 입력 방식이
+// 서로 어긋나 보이는 것("원활하지 않음")을 막기 위해, 이 키들은
+// SurgeryFieldInputs 목록에서는 제외하고 모식도/상단 토글에서만 선택하게 한다.
+// n_dev_side만 비강 소견(nasalFields) 쪽 필드라 getSeptumCoveredKeys에 둔다.
+export function getSeptumCoveredKeys(surgeryTypeCode: string): string[] {
+  return getAnatomyVisibility(surgeryTypeCode).showSeptum ? ["n_dev_side"] : [];
+}
 
-  if (showSeptum) keys.push("n_dev_side");
+// f_revision_septo/f_revision_ess_*는 nasalFindingFields가 아니라 procedure
+// 쪽 필드(septoFields/fessFields)라 procedureFields 목록(수술 방법 탭)에서
+// 제외해야 한다 — getSinusCoveredKeys의 결과가 그 목록의 excludeKeys로
+// 쓰이므로 여기에 함께 둔다.
+export function getSinusCoveredKeys(surgeryTypeCode: string): string[] {
+  const { showSeptum, showSinus } = getAnatomyVisibility(surgeryTypeCode);
+  const keys: string[] = [];
+  if (showSeptum) keys.push("f_revision_septo");
   if (showSinus) {
-    keys.push("f_revision");
+    keys.push("f_revision_ess_right", "f_revision_ess_left");
     for (const prefix of ["f_left_", "f_right_"] as const) {
       keys.push(`${prefix}uncinectomy`);
       for (const step of SINUS_STEPS) keys.push(`${prefix}${step.key}`);
@@ -52,14 +61,8 @@ export function getAnatomyCoveredKeys(surgeryTypeCode: string): string[] {
   return keys;
 }
 
-// getAnatomyCoveredKeys 중 비강 소견 페이지(SeptumDiagram)가 담당하는 키만
-export function getSeptumCoveredKeys(surgeryTypeCode: string): string[] {
-  return getAnatomyVisibility(surgeryTypeCode).showSeptum ? ["n_dev_side"] : [];
-}
-
-// getAnatomyCoveredKeys 중 수술 방법 페이지(SinusDiagram)가 담당하는 키만
-export function getSinusCoveredKeys(surgeryTypeCode: string): string[] {
-  return getAnatomyCoveredKeys(surgeryTypeCode).filter((k) => k !== "n_dev_side");
+export function getAnatomyCoveredKeys(surgeryTypeCode: string): string[] {
+  return [...getSeptumCoveredKeys(surgeryTypeCode), ...getSinusCoveredKeys(surgeryTypeCode)];
 }
 
 function findForm(el: HTMLElement | null): HTMLFormElement | null {
@@ -173,7 +176,8 @@ export function SinusDiagram({
   hideRevisionToggle?: boolean;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const [revision, setRevision] = useState<boolean>(() => values?.f_revision === true);
+  const [revisionRight, setRevisionRight] = useState<boolean>(() => values?.f_revision_ess_right === true);
+  const [revisionLeft, setRevisionLeft] = useState<boolean>(() => values?.f_revision_ess_left === true);
   const [checked, setChecked] = useState<Record<string, boolean>>(() => {
     const next: Record<string, boolean> = {};
     for (const prefix of ["f_left_", "f_right_"] as const) {
@@ -201,19 +205,22 @@ export function SinusDiagram({
 
   // Revision case(재수술)에서는 uncinectomy가 이전 수술 때 이미 됐을 수 있어서
   // 자동으로 넣지 않고 직접 체크하게 한다 — 처음 켤 때는 보통 다시 확인/완료가
-  // 필요한 경우가 많아 기본으로 체크해서 맨 위에 보여준다.
-  function toggleRevision() {
+  // 필요한 경우가 많아 기본으로 체크해서 맨 위에 보여준다. 어느 쪽이
+  // Revision인지가 다를 수 있어(예: 우측만 재수술) 좌/우를 각각 토글한다.
+  function toggleRevision(side: "f_right_" | "f_left_") {
+    const key = side === "f_right_" ? "f_revision_ess_right" : "f_revision_ess_left";
+    const current = side === "f_right_" ? revisionRight : revisionLeft;
     const form = findForm(rootRef.current);
-    const el = getInput(form, "field_f_revision");
-    const nextVal = el instanceof HTMLInputElement ? !el.checked : !revision;
+    const el = getInput(form, `field_${key}`);
+    const nextVal = el instanceof HTMLInputElement ? !el.checked : !current;
     if (el instanceof HTMLInputElement) el.checked = nextVal;
-    setRevision(nextVal);
+    if (side === "f_right_") setRevisionRight(nextVal);
+    else setRevisionLeft(nextVal);
     if (nextVal) {
-      for (const key of ["f_right_uncinectomy", "f_left_uncinectomy"]) {
-        const uEl = getInput(form, `field_${key}`);
-        if (uEl instanceof HTMLInputElement) uEl.checked = true;
-      }
-      setChecked((c) => ({ ...c, f_right_uncinectomy: true, f_left_uncinectomy: true }));
+      const uKey = `${side}uncinectomy`;
+      const uEl = getInput(form, `field_${uKey}`);
+      if (uEl instanceof HTMLInputElement) uEl.checked = true;
+      setChecked((c) => ({ ...c, [uKey]: true }));
     }
     onChange?.();
   }
@@ -243,7 +250,7 @@ export function SinusDiagram({
     <div className="flex flex-col items-center gap-2">
       <span className="text-xs font-medium text-slate-600">{label}</span>
       <div className="flex flex-col gap-2">
-        {revision && (
+        {(prefix === "f_right_" ? revisionRight : revisionLeft) && (
           <button
             type="button"
             onClick={() => toggle(prefix, "uncinectomy")}
@@ -285,15 +292,26 @@ export function SinusDiagram({
         영상의학 기준: 왼쪽 = 환자 우측(Rt.), 오른쪽 = 환자 좌측(Lt.)
       </p>
       {!hideRevisionToggle && (
-        <label className="mb-3 flex items-center gap-2 text-xs font-medium text-slate-600">
-          <input
-            type="checkbox"
-            checked={revision}
-            onChange={toggleRevision}
-            className="h-4 w-4 rounded border-slate-300"
-          />
-          Revision case (재수술)
-        </label>
+        <div className="mb-3 flex flex-wrap gap-4 text-xs font-medium text-slate-600">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={revisionRight}
+              onChange={() => toggleRevision("f_right_")}
+              className="h-4 w-4 rounded border-slate-300"
+            />
+            우측 ESS Revision case (재수술)
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={revisionLeft}
+              onChange={() => toggleRevision("f_left_")}
+              className="h-4 w-4 rounded border-slate-300"
+            />
+            좌측 ESS Revision case (재수술)
+          </label>
+        </div>
       )}
       <div className="mb-2 flex justify-center gap-2">
         <button type="button" onClick={() => copyToOtherSide("f_right_")} className={buttonStyles.pill}>

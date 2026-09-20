@@ -153,7 +153,13 @@ export function SurgeryPlanner({
   );
   const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState<1 | 2>(1);
-  const [templateValues, setTemplateValues] = useState<FieldValues | undefined>(editPlan?.values);
+  // 필드 default(예: Septoturbinoplasty P/E 기본 체크, CHR 양측 등)가 실제
+  // 체크박스/선택값에도 바로 반영되도록, 초기값에도 applyFieldDefaults를
+  // 거친다 — 그냥 editPlan?.values(빈 값)만 넘기면 CollapsibleFindingSection
+  // 등 controlled 입력들이 죄다 "선택 안 됨" 상태로 시작해 default가 무시된다.
+  const [templateValues, setTemplateValues] = useState<FieldValues | undefined>(() =>
+    initialSelected ? applyFieldDefaults(editPlan?.values ?? {}, initialSelected.fields) : editPlan?.values,
+  );
   const [templateKey, setTemplateKey] = useState(0);
 
   if (!first) {
@@ -214,10 +220,14 @@ export function SurgeryPlanner({
 
   // Revision case(재수술)를 "수술 방법" 탭 안 모식도까지 들어가야만 보이던
   // 것을 탭과 무관하게 항상 보이는 곳으로 빼서 계획 화면에서 바로 설정할
-  // 수 있게 한다. 켤 때는 uncinectomy도 기본으로 체크해준다(모식도의
-  // 기존 동작과 동일) — applyCombo로 다시 마운트시켜 모식도가 새 값을
-  // 그대로 반영하게 한다.
-  function toggleRevisionCase(e?: ChangeEvent<HTMLInputElement>) {
+  // 수 있게 한다. 어느 부위(Septoturbinoplasty/우측 ESS/좌측 ESS)의
+  // revision인지 각각 켤 수 있고, ESS 쪽을 켤 때는 그 side의 uncinectomy도
+  // 기본으로 체크해준다(모식도의 기존 동작과 동일) — applyCombo로 다시
+  // 마운트시켜 모식도가 새 값을 그대로 반영하게 한다.
+  function toggleRevisionFlag(
+    key: "f_revision_septo" | "f_revision_ess_right" | "f_revision_ess_left",
+    e?: ChangeEvent<HTMLInputElement>,
+  ) {
     // 이 체크박스가 <form onChange={regenerateFromForm}> 안에 있어서, 클릭하면
     // change 이벤트가 폼까지 버블링되어 regenerateFromForm도 같이 실행된다.
     // 문제는 그게 이 함수보다 "나중에" 실행되는데, 이 함수가 이미 리마운트를
@@ -228,23 +238,29 @@ export function SurgeryPlanner({
     e?.stopPropagation();
     if (!selected || !formRef.current) return;
     const current = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
-    const next = !(current.f_revision === true);
-    const updated: FieldValues = { ...current, f_revision: next };
-    if (next) {
-      updated.f_right_uncinectomy = true;
-      updated.f_left_uncinectomy = true;
-    }
+    const next = !(current[key] === true);
+    const updated: FieldValues = { ...current, [key]: next };
+    if (next && key === "f_revision_ess_right") updated.f_right_uncinectomy = true;
+    if (next && key === "f_revision_ess_left") updated.f_left_uncinectomy = true;
     applyCombo(updated);
   }
 
-  function handleSurgeryTypeChange(id: string) {
+  function handleSurgeryTypeChange(id: string, e?: ChangeEvent<HTMLSelectElement>) {
+    // 이 select도 <form onChange={regenerateFromForm}> 안에 있어서, 바뀌면
+    // change 이벤트가 폼까지 버블링된다. 아래 setTexts로 이미 새 수술
+    // 종류에 맞는 올바른 미리보기를 계산해뒀는데, regenerateFromForm이 뒤이어
+    // (아직 리마운트 전이라 옛 수술 종류의 필드가 남아있는) DOM을 다시 읽어
+    // 그 값으로 덮어써 버려서 한 박자 늦게(옛 내용이 잠깐 보였다가) 바뀌는
+    // 것처럼 보였다. 버블링을 막아 중복 실행을 방지한다.
+    e?.stopPropagation();
     setSelectedId(id);
-    setTemplateValues(undefined);
-    setTemplateKey((k) => k + 1);
     const next = surgeryTypes.find((st) => st.id === id);
+    const nextValues = next ? applyFieldDefaults({}, next.fields) : undefined;
+    setTemplateValues(nextValues);
+    setTemplateKey((k) => k + 1);
     setTexts(
-      next
-        ? buildTexts(next.code, applyFieldDefaults({}, next.fields), anesthesiaType, nameStyle)
+      next && nextValues
+        ? buildTexts(next.code, nextValues, anesthesiaType, nameStyle)
         : { planTable: null, recordText: "" },
     );
   }
@@ -372,7 +388,7 @@ export function SurgeryPlanner({
             <select
               name="surgeryTypeId"
               value={selectedId}
-              onChange={(e) => handleSurgeryTypeChange(e.target.value)}
+              onChange={(e) => handleSurgeryTypeChange(e.target.value, e)}
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
             >
               {!fixedPatient && <option value="">계획은 나중에 작성 (환자만 등록)</option>}
@@ -434,16 +450,47 @@ export function SurgeryPlanner({
                 </button>
               </div>
             )}
-            {showSinus && (
-              <label className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={templateValues?.f_revision === true}
-                  onChange={toggleRevisionCase}
-                  className="h-4 w-4 rounded border-slate-300"
-                />
-                Revision case (재수술)
-              </label>
+            {(showSeptum || showSinus) && (
+              <div className="space-y-1.5 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+                <p className="text-xs font-medium text-slate-500">
+                  Revision case (재수술) — 해당하는 부위를 선택하세요
+                </p>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium text-slate-700">
+                  {showSeptum && (
+                    <label className="flex items-center gap-1.5">
+                      <input
+                        type="checkbox"
+                        checked={templateValues?.f_revision_septo === true}
+                        onChange={(e) => toggleRevisionFlag("f_revision_septo", e)}
+                        className="h-4 w-4 rounded border-slate-300"
+                      />
+                      Septoturbinoplasty
+                    </label>
+                  )}
+                  {showSinus && (
+                    <>
+                      <label className="flex items-center gap-1.5">
+                        <input
+                          type="checkbox"
+                          checked={templateValues?.f_revision_ess_right === true}
+                          onChange={(e) => toggleRevisionFlag("f_revision_ess_right", e)}
+                          className="h-4 w-4 rounded border-slate-300"
+                        />
+                        Rt. ESS
+                      </label>
+                      <label className="flex items-center gap-1.5">
+                        <input
+                          type="checkbox"
+                          checked={templateValues?.f_revision_ess_left === true}
+                          onChange={(e) => toggleRevisionFlag("f_revision_ess_left", e)}
+                          className="h-4 w-4 rounded border-slate-300"
+                        />
+                        Lt. ESS
+                      </label>
+                    </>
+                  )}
+                </div>
+              </div>
             )}
             <div className="flex gap-2 border-b border-slate-200 pb-3">
               <button type="button" onClick={() => setStep(1)} className={stepButtonClass(step === 1)}>

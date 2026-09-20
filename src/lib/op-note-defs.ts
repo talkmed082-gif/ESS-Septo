@@ -171,6 +171,10 @@ export const turbinoplastyFields: SurgeryFieldDef[] = [
 
 // 비중격교정술 전용 항목
 export const septoFields: SurgeryFieldDef[] = [
+  // 어느 부위의 재수술인지(Septoturbinoplasty/우측 ESS/좌측 ESS)를 각각
+  // 구분해서 표시해야 해서, ESS 쪽 revision(f_revision_ess_right/left)과
+  // 별개의 플래그로 둔다.
+  { key: "f_revision_septo", label: "Septoturbinoplasty Revision case (재수술)", type: "checkbox" },
   {
     key: "s_incision",
     label: "절개(Incision) 방법",
@@ -236,7 +240,10 @@ export const fessFields: SurgeryFieldDef[] = [
   // Revision case(재수술)에서는 uncinectomy가 이전 수술에서 이미 되어 있을
   // 수도 있어서, 평소처럼(다른 부위 시행 시 자동 포함) 넘길 수 없다 —
   // 체크 여부를 직접 선택하게 한다(모식도에서 맨 위에, 기본 체크된 채로 노출).
-  { key: "f_revision", label: "Revision case (재수술)", type: "checkbox" },
+  // 어느 쪽 ESS에 대한 재수술인지가 다를 수 있어(예: 우측만 재수술) 좌/우를
+  // 각각의 플래그로 나눈다.
+  { key: "f_revision_ess_right", label: "우측 ESS Revision case (재수술)", type: "checkbox" },
+  { key: "f_revision_ess_left", label: "좌측 ESS Revision case (재수술)", type: "checkbox" },
   { key: "f_right_uncinectomy", label: "우측 - Uncinectomy", type: "checkbox" },
   { key: "f_left_uncinectomy", label: "좌측 - Uncinectomy", type: "checkbox" },
   ...fessStepFieldKeys.map((k) => ({
@@ -303,10 +310,10 @@ export const septoplastyFullFields: SurgeryFieldDef[] = withDefaults(
   },
 ).filter((f) => f.key !== "dermacol");
 // 병행 수술명에는 항상 "Septoplasty"와 "ESS"가 함께 들어가므로 두 P/E를 모두
-// 기본으로 체크해둔다.
+// 기본으로 체크해두고, 비중격교정술 단독과 마찬가지로 CHR도 양측 기본으로 켜둔다.
 export const comboFullFields: SurgeryFieldDef[] = withDefaults(
   [...nasalFindingFields, ...turbinoplastyFields, ...septoFieldsForCombo, ...fessFieldsForCombo, ...comboOnlyFields],
-  { [SEPTO_PE_DONE_KEY]: "true", [ESS_PE_DONE_KEY]: "true" },
+  { [SEPTO_PE_DONE_KEY]: "true", [ESS_PE_DONE_KEY]: "true", n_chr: "양측" },
 );
 
 export const BUILT_IN_SURGERY_CODES = ["ESS", "SEPTOPLASTY", "COMBO"] as const;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import type { OpRecordFormState } from "@/app/actions/op-records";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import { OpNoteGenerateButton } from "@/components/op-note-generate-button";
@@ -62,6 +62,19 @@ export function RecordForm({
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
   const [step, setStep] = useState<1 | 2>(1);
+  // f_revision_septo는 procedureFields 목록에서 숨겨진 채(hidden fallback
+  // input으로) 실제 제출되고, 이 체크박스는 그 숨겨진 입력의 checked를 직접
+  // 토글하는 트리거 역할만 한다 — SinusDiagram의 Revision 토글과 같은 방식.
+  const revisionSeptoRef = useRef<HTMLLabelElement>(null);
+  const [revisionSepto, setRevisionSepto] = useState<boolean>(() => fieldValues?.f_revision_septo === true);
+
+  function toggleRevisionSepto() {
+    const form = revisionSeptoRef.current?.closest("form");
+    const el = form?.elements.namedItem("field_f_revision_septo");
+    const nextVal = el instanceof HTMLInputElement ? !el.checked : !revisionSepto;
+    if (el instanceof HTMLInputElement) el.checked = nextVal;
+    setRevisionSepto(nextVal);
+  }
   // 자동 생성을 지원하지 않는 커스텀 수술 종류는 검토할 초안 문구 자체가
   // 없으므로 세부 항목을 접어둘 이유가 없다 — 처음부터 펼쳐둔다.
   const [showDetails, setShowDetails] = useState(!isBuiltInSurgeryCode(surgeryTypeCode));
@@ -134,6 +147,20 @@ export function RecordForm({
       </button>
 
       <div className={showDetails ? "space-y-4" : "hidden"}>
+        {showSeptum && (
+          <label
+            ref={revisionSeptoRef}
+            className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700"
+          >
+            <input
+              type="checkbox"
+              checked={revisionSepto}
+              onChange={toggleRevisionSepto}
+              className="h-4 w-4 rounded border-slate-300"
+            />
+            Septoturbinoplasty Revision case (재수술)
+          </label>
+        )}
         <div className="flex gap-2 border-b border-slate-200 pb-3">
           <button
             type="button"

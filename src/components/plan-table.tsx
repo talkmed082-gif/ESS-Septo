@@ -53,7 +53,23 @@ export function PlanTableView({
                 >
                   {row.label}
                 </th>
-                <td className={`border border-slate-400 ${cellPad} align-top`}>{row.value}</td>
+                <td className={`border border-slate-400 ${cellPad} align-top`}>
+                  {interactive && row.toggleKey ? (
+                    <button
+                      type="button"
+                      onClick={() => onToggle?.(row.toggleKey!)}
+                      className={`touch-manipulation rounded px-2 py-0.5 font-medium active:scale-95 ${
+                        row.value === "사용"
+                          ? "bg-emerald-600 text-white"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      }`}
+                    >
+                      {row.value}
+                    </button>
+                  ) : (
+                    row.value
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
