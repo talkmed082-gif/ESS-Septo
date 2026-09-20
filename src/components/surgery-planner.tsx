@@ -20,7 +20,12 @@ import { PresetBar, type PresetItem } from "@/components/preset-bar";
 import type { RecentCombo } from "@/lib/recent-combos";
 import { PlanTableView } from "@/components/plan-table";
 import { buttonStyles } from "@/lib/ui";
-import { fieldValuesFromFormData, type FieldValues, type SurgeryFieldDef } from "@/lib/field-types";
+import {
+  applyFieldDefaults,
+  fieldValuesFromFormData,
+  type FieldValues,
+  type SurgeryFieldDef,
+} from "@/lib/field-types";
 import {
   isBuiltInSurgeryCode,
   isNasalFindingKey,
@@ -158,7 +163,12 @@ export function SurgeryPlanner({
   const [patientMode, setPatientMode] = useState<"new" | "existing">("new");
   const [{ planTable, recordText }, setTexts] = useState(() =>
     initialSelected
-      ? buildTexts(initialSelected.code, editPlan?.values ?? {}, "General", nameStyle)
+      ? buildTexts(
+          initialSelected.code,
+          applyFieldDefaults(editPlan?.values ?? {}, initialSelected.fields),
+          "General",
+          nameStyle,
+        )
       : { planTable: null, recordText: "" },
   );
   const formRef = useRef<HTMLFormElement>(null);
@@ -252,7 +262,11 @@ export function SurgeryPlanner({
     setTemplateValues(undefined);
     setTemplateKey((k) => k + 1);
     const next = surgeryTypes.find((st) => st.id === id);
-    setTexts(next ? buildTexts(next.code, {}, anesthesiaType, nameStyle) : { planTable: null, recordText: "" });
+    setTexts(
+      next
+        ? buildTexts(next.code, applyFieldDefaults({}, next.fields), anesthesiaType, nameStyle)
+        : { planTable: null, recordText: "" },
+    );
   }
 
   const showPatientSection = loggedIn && !fixedPatient;
@@ -539,7 +553,7 @@ export function SurgeryPlanner({
             {pending
               ? "저장 중..."
               : editPlan
-                ? "계획 수정"
+                ? "저장"
                 : fixedPatient || patientMode === "existing"
                   ? "계획 저장"
                   : "환자 등록 + 계획 저장"}

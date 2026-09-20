@@ -55,12 +55,11 @@ function sexAgeLabel(sex: string | null, age: number | null): string {
   return `${sex ?? "-"}/${age ?? "-"}`;
 }
 
-// 이름을 누르면 이력 화면 대신 바로 인쇄용 화면으로 간다 — 기록지가 있으면
-// 기록지 인쇄용, 없으면 계획 인쇄용, 계획조차 없으면 환자 상세로 보낸다.
-function patientPrintHref(p: PatientRow): string {
-  if (p.recordId) return `/records/${p.recordId}/print`;
-  if (p.surgeryPlanId) return `/plans/${p.surgeryPlanId}/print`;
-  return `/patients/${p.id}`;
+// 이름/성별·나이/차트번호/수술일자는 환자 정보를 확인·수정하는 입구로
+// 통일한다. 계획 자체를 보거나 고치려면 수술명을, 비강 소견/기록지를
+// 확인하려면 오른쪽 끝 버튼을 누르면 되므로 서로 목적이 겹치지 않는다.
+function patientEditHref(p: PatientRow): string {
+  return `/patients/${p.id}/edit`;
 }
 
 export function PatientListTable({
@@ -155,14 +154,16 @@ export function PatientListTable({
                   value={p.id}
                   className="h-4 w-4 rounded border-slate-300"
                 />
-                <Link href={patientPrintHref(p)} className="font-medium text-slate-900 hover:underline">
+                <Link href={patientEditHref(p)} className="font-medium text-slate-900 hover:underline">
                   {p.name}
                 </Link>
-                <span className="text-xs text-slate-500">
+                <Link href={patientEditHref(p)} className="text-xs text-slate-500 hover:underline">
                   {sexAgeLabel(p.sex, p.age)} · {p.chartNo ?? "-"}
-                </span>
+                </Link>
               </div>
-              <span className="shrink-0 text-xs text-slate-400">{shortDate(p.surgeryDate) ?? "-"}</span>
+              <Link href={patientEditHref(p)} className="shrink-0 text-xs text-slate-400 hover:underline">
+                {shortDate(p.surgeryDate) ?? "-"}
+              </Link>
             </div>
             <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
               {p.surgeryPlanId ? (
@@ -186,7 +187,7 @@ export function PatientListTable({
             </div>
             <div className="mt-2 flex gap-2">
               {p.surgeryPlanId ? (
-                <Link href={`/plans/${p.surgeryPlanId}`} className={buttonStyles.smallOutline}>
+                <Link href={`/plans/${p.surgeryPlanId}/print`} className={buttonStyles.smallOutline}>
                   비강 소견 확인
                 </Link>
               ) : null}
@@ -245,20 +246,24 @@ export function PatientListTable({
                 </td>
                 <td className="px-2 py-2 text-slate-400">{idx + 1}</td>
                 <td className="px-4 py-2 whitespace-nowrap">
-                  <Link href={patientPrintHref(p)} className="font-medium text-slate-900 hover:underline">
+                  <Link href={patientEditHref(p)} className="font-medium text-slate-900 hover:underline">
                     {p.name}
                   </Link>
                 </td>
-                <td className="px-4 py-2 text-slate-600 whitespace-nowrap">{sexAgeLabel(p.sex, p.age)}</td>
-                <td className="px-4 py-2 text-slate-600 whitespace-nowrap">{p.chartNo ?? "-"}</td>
                 <td className="px-4 py-2 text-slate-600 whitespace-nowrap">
-                  {p.surgeryPlanId ? (
-                    <Link href={`/plans/${p.surgeryPlanId}`} className="hover:underline">
-                      {shortDate(p.surgeryDate) ?? "입력"}
-                    </Link>
-                  ) : (
-                    (shortDate(p.surgeryDate) ?? "-")
-                  )}
+                  <Link href={patientEditHref(p)} className="hover:underline">
+                    {sexAgeLabel(p.sex, p.age)}
+                  </Link>
+                </td>
+                <td className="px-4 py-2 text-slate-600 whitespace-nowrap">
+                  <Link href={patientEditHref(p)} className="hover:underline">
+                    {p.chartNo ?? "-"}
+                  </Link>
+                </td>
+                <td className="px-4 py-2 text-slate-600 whitespace-nowrap">
+                  <Link href={patientEditHref(p)} className="hover:underline">
+                    {shortDate(p.surgeryDate) ?? "-"}
+                  </Link>
                 </td>
                 <td className="px-4 py-2 text-slate-600">
                   <div className="flex flex-wrap items-center gap-2">
@@ -284,7 +289,7 @@ export function PatientListTable({
                 </td>
                 <td className="px-2 py-2 whitespace-nowrap">
                   {p.surgeryPlanId ? (
-                    <Link href={`/plans/${p.surgeryPlanId}`} className={buttonStyles.smallOutline}>
+                    <Link href={`/plans/${p.surgeryPlanId}/print`} className={buttonStyles.smallOutline}>
                       비강 소견 확인
                     </Link>
                   ) : (

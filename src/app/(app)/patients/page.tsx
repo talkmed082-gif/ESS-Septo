@@ -6,6 +6,7 @@ import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
 import { buildProcedureName, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
+import { PatientsListTitle } from "@/components/patients-list-title";
 import { PatientListTable, type PatientRow } from "./patient-list-table";
 
 export default async function PatientsPage({
@@ -120,10 +121,13 @@ export default async function PatientsPage({
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">환자 목록</h1>
+        <PatientsListTitle />
         <div className="flex items-center gap-3">
-          <Link href="/print/fess-checklist" className={buttonStyles.link}>
-            수술방용 체크리스트 인쇄
+          {/* "선택한 환자 Op Plan 인쇄"(체크한 환자로 채워서 인쇄)와 헷갈리지
+              않도록, 환자 데이터 없이 빈 칸으로 인쇄하는 이 링크는 "빈"을
+              명시한다. */}
+          <Link href="/print/fess-checklist" className={buttonStyles.secondarySmall}>
+            빈 체크리스트 양식 인쇄
           </Link>
           <Link href="/patients/new" className={buttonStyles.primary}>
             + 새 환자 등록
