@@ -2,16 +2,7 @@
 
 import type { PlanTable } from "@/lib/op-note-generator";
 
-// 인쇄용 화면 등 비상호작용 표시에서 체크 여부를 또렷하게 보여준다 —
-// 그냥 텍스트 체크 표시(✓)만 있으면 인쇄/축소했을 때 옅게 보여 눈에 잘
-// 안 띄어서, 실제 테두리 박스 안에 체크됐을 때만 표시하는 방식으로 바꿨다.
-function StaticCheckBox({ checked }: { checked: boolean }) {
-  return (
-    <span className="inline-flex h-4 w-4 items-center justify-center border-2 border-slate-700 align-middle">
-      {checked && <span className="text-sm leading-none font-bold text-slate-900">{"✓"}</span>}
-    </span>
-  );
-}
+const CHECK_MARK = String.fromCharCode(0x2713);
 
 export function PlanTableView({
   table,
@@ -110,36 +101,52 @@ export function PlanTableView({
             {table.sideMatrix.rows.map((row) => (
               <tr key={row.label}>
                 <td className={`border border-slate-400 ${cellPad}`}>{row.label}</td>
-                <td className={`border border-slate-400 ${cellPad} text-center`}>
-                  {interactive ? (
-                    <button
-                      type="button"
-                      onClick={() => toggleCell("f_right_", row.key)}
-                      className={`h-6 w-6 rounded touch-manipulation active:scale-95 ${
-                        row.right ? "bg-emerald-600 text-white" : "bg-slate-100 text-transparent hover:bg-slate-200"
+                {interactive ? (
+                  <>
+                    <td className={`border border-slate-400 ${cellPad} text-center`}>
+                      <button
+                        type="button"
+                        onClick={() => toggleCell("f_right_", row.key)}
+                        className={`h-6 w-6 rounded touch-manipulation active:scale-95 ${
+                          row.right ? "bg-emerald-600 text-white" : "bg-slate-100 text-transparent hover:bg-slate-200"
+                        }`}
+                      >
+                        {CHECK_MARK}
+                      </button>
+                    </td>
+                    <td className={`border border-slate-400 ${cellPad} text-center`}>
+                      <button
+                        type="button"
+                        onClick={() => toggleCell("f_left_", row.key)}
+                        className={`h-6 w-6 rounded touch-manipulation active:scale-95 ${
+                          row.left ? "bg-emerald-600 text-white" : "bg-slate-100 text-transparent hover:bg-slate-200"
+                        }`}
+                      >
+                        {CHECK_MARK}
+                      </button>
+                    </td>
+                  </>
+                ) : (
+                  // 이미 값이 정해진 인쇄용 표는 굳이 체크박스 모양을 그릴 필요가
+                  // 없다 — 표 자체가 이미 칸으로 나뉘어 있으니, 체크된 칸만
+                  // 색을 채워서 바로 눈에 띄게 한다.
+                  <>
+                    <td
+                      className={`border border-slate-400 ${cellPad} text-center font-bold ${
+                        row.right ? "bg-slate-800 text-white" : ""
                       }`}
                     >
-                      ✓
-                    </button>
-                  ) : (
-                    <StaticCheckBox checked={row.right} />
-                  )}
-                </td>
-                <td className={`border border-slate-400 ${cellPad} text-center`}>
-                  {interactive ? (
-                    <button
-                      type="button"
-                      onClick={() => toggleCell("f_left_", row.key)}
-                      className={`h-6 w-6 rounded touch-manipulation active:scale-95 ${
-                        row.left ? "bg-emerald-600 text-white" : "bg-slate-100 text-transparent hover:bg-slate-200"
+                      {row.right ? CHECK_MARK : ""}
+                    </td>
+                    <td
+                      className={`border border-slate-400 ${cellPad} text-center font-bold ${
+                        row.left ? "bg-slate-800 text-white" : ""
                       }`}
                     >
-                      ✓
-                    </button>
-                  ) : (
-                    <StaticCheckBox checked={row.left} />
-                  )}
-                </td>
+                      {row.left ? CHECK_MARK : ""}
+                    </td>
+                  </>
+                )}
               </tr>
             ))}
           </tbody>

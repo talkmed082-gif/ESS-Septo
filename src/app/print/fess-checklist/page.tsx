@@ -55,16 +55,29 @@ function BlankLines({ count }: { count: number }) {
   );
 }
 
-// Unicode ☑/☐ 글자는 글꼴에 따라 너무 작거나 흐리게 나와서, 실제 테두리
-// 박스에 체크됐을 때만 ✓ 글자를 넣는 방식으로 직접 그린다 — 인쇄/축소해도
-// 항상 또렷하게 보인다.
-function CheckBox({ checked }: { checked: boolean }) {
+// 빈 양식(손으로 체크)에서만 쓰는 빈 테두리 박스 — Unicode 체크박스 글자는
+// 글꼴에 따라 너무 작거나 흐리게 나와서 CSS로 직접 그린다.
+function CheckBox() {
+  return <span className="inline-block h-4 w-4 border-2 border-slate-700 align-middle" />;
+}
+
+// 이미 값이 정해진(자동 채워진) 표는 굳이 체크박스 모양을 그릴 필요가
+// 없다 — 표 자체가 이미 칸으로 나뉘어 있으니, 체크된 칸만 색을 채워서
+// 바로 눈에 띄게 한다.
+function DataCell({ checked }: { checked: boolean }) {
   return (
-    <span className="inline-flex h-4 w-4 items-center justify-center border-2 border-slate-700 align-middle">
-      {checked && <span className="text-sm leading-none font-bold text-slate-900">{"✓"}</span>}
-    </span>
+    <td
+      className={
+        "border border-slate-400 text-center text-xs font-bold " +
+        (checked ? "bg-slate-800 text-white" : "")
+      }
+    >
+      {checked ? CHECK_MARK : ""}
+    </td>
   );
 }
+
+const CHECK_MARK = String.fromCharCode(0x2713);
 
 function ChecklistCard({ data }: { data?: CardData }) {
   const rows: CardRow[] = data?.rows ?? BLANK_ROWS.map((label) => ({ label, right: false, left: false }));
@@ -75,23 +88,38 @@ function ChecklistCard({ data }: { data?: CardData }) {
         <div className="flex gap-1">
           <span className="shrink-0 text-slate-500">환자명:</span>
           <span className="flex-1 border-b border-slate-400 font-medium">
-            {data?.patientName ?? " "}
+            {data?.patientName ?? " "}
           </span>
           <span className="shrink-0 text-slate-500">날짜:</span>
-          <span className="flex-1 border-b border-slate-400 font-medium">{data?.date ?? " "}</span>
+          <span className="flex-1 border-b border-slate-400 font-medium">{data?.date ?? " "}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <CheckBox checked={data?.revision === true} />
-          <span className="shrink-0 text-slate-500">Revision case</span>
+          {data ? (
+            <span
+              className={
+                "shrink-0 rounded px-1 " +
+                (data.revision ? "bg-slate-800 font-bold text-white" : "text-slate-400")
+              }
+            >
+              Revision case
+            </span>
+          ) : (
+            <>
+              <CheckBox />
+              <span className="shrink-0 text-slate-500">Revision case</span>
+            </>
+          )}
           <span className="ml-2 shrink-0 text-slate-500">수술명:</span>
           <span className="flex-1 border-b border-slate-400 font-medium">
-            {data?.procedureName ?? " "}
+            {data?.procedureName ?? " "}
           </span>
         </div>
       </div>
       {/* 1개 인쇄용 보기(PlanTableView)와 순서를 맞춘다 — 비강 소견이 Op
-          Plan(시행 부위 표)보다 먼저 나온다. */}
-      <div className="mb-2 flex flex-1 flex-col">
+          Plan(시행 부위 표)보다 먼저 나온다. 값이 채워진 카드는 소견
+          길이가 제각각이라 flex-1로 늘리면 표 시작 위치가 카드마다
+          들쭉날쭉해지므로, 빈 양식일 때만 손글씨 줄을 늘려서 채운다. */}
+      <div className={"mb-2 flex flex-col " + (data ? "" : "flex-1")}>
         <span className="mb-1 text-xs font-medium text-slate-600">비강 소견</span>
         {data ? (
           <p className="text-[11px] whitespace-pre-wrap text-slate-700">{data.findings || "-"}</p>
@@ -117,12 +145,21 @@ function ChecklistCard({ data }: { data?: CardData }) {
           {rows.map((row) => (
             <tr key={row.label}>
               <td className="border border-slate-400 px-1.5 py-1.5">{row.label}</td>
-              <td className="border border-slate-400 text-center">
-                <CheckBox checked={row.right} />
-              </td>
-              <td className="border border-slate-400 text-center">
-                <CheckBox checked={row.left} />
-              </td>
+              {data ? (
+                <>
+                  <DataCell checked={row.right} />
+                  <DataCell checked={row.left} />
+                </>
+              ) : (
+                <>
+                  <td className="border border-slate-400 text-center">
+                    <CheckBox />
+                  </td>
+                  <td className="border border-slate-400 text-center">
+                    <CheckBox />
+                  </td>
+                </>
+              )}
             </tr>
           ))}
         </tbody>
