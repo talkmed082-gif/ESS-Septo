@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useActionState, useRef } from "react";
 import { deletePatients } from "@/app/actions/patients";
 
@@ -64,6 +65,7 @@ export function PatientListTable({
 }) {
   const [, formAction, pending] = useActionState(deletePatients, undefined);
   const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
 
   function toggleAll(e: React.ChangeEvent<HTMLInputElement>) {
     const form = formRef.current;
@@ -84,17 +86,41 @@ export function PatientListTable({
     }
   }
 
+  // 체크한 환자들의 최신 수술 계획을 모아 수술방 체크리스트 양식에 채워서
+  // 인쇄한다 (A4 한 장에 4개 — 부족하면 나머지는 빈 칸으로 나온다).
+  function printOpPlans() {
+    const checked = formRef.current?.querySelectorAll<HTMLInputElement>('input[name="ids"]:checked');
+    const checkedIds = new Set(Array.from(checked ?? []).map((el) => el.value));
+    const planIds = patients
+      .filter((p) => checkedIds.has(p.id) && p.surgeryPlanId)
+      .map((p) => p.surgeryPlanId as string);
+    if (planIds.length === 0) {
+      window.alert("수술 계획이 있는 환자를 먼저 선택하세요.");
+      return;
+    }
+    router.push(`/print/fess-checklist?plans=${planIds.join(",")}`);
+  }
+
   return (
     <form ref={formRef} action={formAction} onSubmit={handleSubmit}>
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-slate-500">체크 후 선택 삭제를 누르면 일괄 삭제됩니다.</p>
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
-        >
-          {pending ? "삭제 중..." : "선택 삭제"}
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={printOpPlans}
+            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
+          >
+            선택한 환자 Op Plan 인쇄
+          </button>
+          <button
+            type="submit"
+            disabled={pending}
+            className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
+          >
+            {pending ? "삭제 중..." : "선택 삭제"}
+          </button>
+        </div>
       </div>
 
       {/* 모바일에서는 표가 옆으로 길어져 스크롤해야 하는 문제가 있어서, 한
