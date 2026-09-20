@@ -47,7 +47,7 @@ export async function createOpRecord(
     return { message: "수술 계획을 찾을 수 없습니다." };
   }
   if (plan.opRecord) {
-    redirect(`/records/${plan.opRecord.id}`);
+    redirect(`/patients/${plan.patientId}`);
   }
 
   const validated = parseRecordFormData(formData);
@@ -59,7 +59,7 @@ export async function createOpRecord(
   const fields = parseFieldDefs(plan.surgeryType.fields);
   const recordData = fieldValuesFromFormData(formData, fields);
 
-  const record = await prisma.opRecord.create({
+  await prisma.opRecord.create({
     data: {
       opPlanId: planId,
       operationDate: new Date(data.operationDate),
@@ -75,7 +75,9 @@ export async function createOpRecord(
 
   revalidatePath(`/plans/${planId}`);
   revalidatePath(`/patients/${plan.patientId}`);
-  redirect(`/records/${record.id}`);
+  // 저장 후에는 계획+기록지가 다 보이는 환자 기본 화면으로 보내서 화면
+  // 성격이 저장할 때마다 바뀌는 느낌을 없앤다.
+  redirect(`/patients/${plan.patientId}`);
 }
 
 export async function updateOpRecord(
@@ -116,5 +118,6 @@ export async function updateOpRecord(
   });
 
   revalidatePath(`/records/${recordId}`);
-  redirect(`/records/${recordId}`);
+  revalidatePath(`/patients/${record.opPlan.patientId}`);
+  redirect(`/patients/${record.opPlan.patientId}`);
 }

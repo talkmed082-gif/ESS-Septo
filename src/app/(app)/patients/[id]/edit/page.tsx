@@ -6,9 +6,11 @@ import { PatientForm } from "../../patient-form";
 
 export default async function EditPatientPage({
   params,
+  searchParams,
 }: PageProps<"/patients/[id]/edit">) {
   await verifySession();
   const { id } = await params;
+  const { from } = await searchParams;
 
   const patient = await prisma.patient.findUnique({ where: { id } });
   if (!patient) notFound();
@@ -21,6 +23,7 @@ export default async function EditPatientPage({
       <PatientForm
         action={updatePatientWithId}
         submitLabel="저장"
+        returnTo={typeof from === "string" ? from : undefined}
         defaultValues={{
           name: patient.name,
           chartNo: patient.chartNo ?? "",

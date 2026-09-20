@@ -53,7 +53,10 @@ export default async function PatientDetailPage({
           )}
         </div>
         <div className="flex gap-2">
-          <Link href={`/patients/${patient.id}/edit`} className={buttonStyles.secondarySmall}>
+          <Link
+            href={`/patients/${patient.id}/edit?from=${encodeURIComponent(`/patients/${patient.id}`)}`}
+            className={buttonStyles.secondarySmall}
+          >
             정보 수정
           </Link>
           <Link href={`/patients/${patient.id}/plans/new`} className={buttonStyles.primarySmall}>

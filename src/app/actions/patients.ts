@@ -67,6 +67,16 @@ export async function createPatient(
   redirect(`/patients/${patient.id}`);
 }
 
+// 환자 목록에서 왔으면 목록으로, 환자 상세 화면에서 왔으면 그 화면으로
+// 돌아가게 한다 — 링크에 실어 보낸 경로만 신뢰하고, 그 외(비어있거나
+// 외부 주소로 유도하려는 값)는 안전하게 목록으로 대체한다.
+function safeReturnPath(value: FormDataEntryValue | null): string {
+  if (typeof value === "string" && value.startsWith("/") && !value.startsWith("//")) {
+    return value;
+  }
+  return "/patients";
+}
+
 export async function updatePatient(
   patientId: string,
   _prevState: PatientFormState | undefined,
@@ -92,7 +102,7 @@ export async function updatePatient(
 
   revalidatePath("/patients");
   revalidatePath(`/patients/${patientId}`);
-  redirect(`/patients/${patientId}`);
+  redirect(safeReturnPath(formData.get("returnTo")));
 }
 
 export async function deletePatient(patientId: string) {

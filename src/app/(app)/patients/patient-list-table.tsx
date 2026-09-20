@@ -66,11 +66,13 @@ function sexAgeLabel(sex: string | null, age: number | null): string {
   return `${sex ?? "-"}/${age ?? "-"}`;
 }
 
-// 이름/성별·나이/차트번호/수술일자는 환자 정보를 확인·수정하는 입구로
-// 통일한다. 계획 자체를 보거나 고치려면 수술명을, 비강 소견/기록지를
-// 확인하려면 오른쪽 끝 버튼을 누르면 되므로 서로 목적이 겹치지 않는다.
-function patientEditHref(p: PatientRow): string {
-  return `/patients/${p.id}/edit`;
+// 이름/성별·나이/차트번호/수술일자를 누르면 그 환자의 기본 화면(계획+
+// 기록지가 다 보이는 허브)으로 간다 — 정보 수정은 그 화면 안의 "정보 수정"
+// 버튼으로 들어가고 저장하면 다시 이 화면으로 돌아온다. 계획 자체를 보거나
+// 고치려면 수술명을, 비강 소견/기록지를 확인하려면 오른쪽 끝 버튼을
+// 누르면 되므로 서로 목적이 겹치지 않는다.
+function patientHubHref(p: PatientRow): string {
+  return `/patients/${p.id}`;
 }
 
 export function PatientListTable({
@@ -166,14 +168,14 @@ export function PatientListTable({
                   className="h-4 w-4 rounded border-slate-300"
                 />
                 <StatusBadge p={p} onToggle={handleToggleDone} />
-                <Link href={patientEditHref(p)} className="font-medium text-slate-900 hover:underline">
+                <Link href={patientHubHref(p)} className="font-medium text-slate-900 hover:underline">
                   {p.name}
                 </Link>
-                <Link href={patientEditHref(p)} className="text-xs text-slate-500 hover:underline">
+                <Link href={patientHubHref(p)} className="text-xs text-slate-500 hover:underline">
                   {sexAgeLabel(p.sex, p.age)} · {p.chartNo ?? "-"}
                 </Link>
               </div>
-              <Link href={patientEditHref(p)} className="shrink-0 text-xs text-slate-400 hover:underline">
+              <Link href={patientHubHref(p)} className="shrink-0 text-xs text-slate-400 hover:underline">
                 {shortDate(p.surgeryDate) ?? "-"}
               </Link>
             </div>
@@ -251,22 +253,22 @@ export function PatientListTable({
                   <StatusBadge p={p} onToggle={handleToggleDone} />
                 </td>
                 <td className="px-4 py-2 whitespace-nowrap">
-                  <Link href={patientEditHref(p)} className="font-medium text-slate-900 hover:underline">
+                  <Link href={patientHubHref(p)} className="font-medium text-slate-900 hover:underline">
                     {p.name}
                   </Link>
                 </td>
                 <td className="px-4 py-2 text-slate-600 whitespace-nowrap">
-                  <Link href={patientEditHref(p)} className="hover:underline">
+                  <Link href={patientHubHref(p)} className="hover:underline">
                     {sexAgeLabel(p.sex, p.age)}
                   </Link>
                 </td>
                 <td className="px-4 py-2 text-slate-600 whitespace-nowrap">
-                  <Link href={patientEditHref(p)} className="hover:underline">
+                  <Link href={patientHubHref(p)} className="hover:underline">
                     {p.chartNo ?? "-"}
                   </Link>
                 </td>
                 <td className="px-4 py-2 text-slate-600 whitespace-nowrap">
-                  <Link href={patientEditHref(p)} className="hover:underline">
+                  <Link href={patientHubHref(p)} className="hover:underline">
                     {shortDate(p.surgeryDate) ?? "-"}
                   </Link>
                 </td>

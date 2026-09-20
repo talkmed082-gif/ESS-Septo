@@ -54,7 +54,10 @@ export async function updateOpPlan(
 
   revalidatePath(`/plans/${planId}`);
   revalidatePath(`/patients/${plan.patientId}`);
-  redirect(`/plans/${planId}`);
+  // 저장 후 같은 수정 화면을 새로고침하면(같은 URL이라도) 스크롤이 맨 위로
+  // 튀면서 화면이 확 바뀐 것처럼 느껴져서, 계획+기록지가 다 보이는 환자
+  // 기본 화면으로 보낸다.
+  redirect(`/patients/${plan.patientId}`);
 }
 
 

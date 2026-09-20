@@ -13,6 +13,7 @@ export function PatientForm({
   action,
   defaultValues,
   submitLabel,
+  returnTo,
 }: {
   action: Action;
   defaultValues?: {
@@ -23,11 +24,15 @@ export function PatientForm({
     memo?: string;
   };
   submitLabel: string;
+  // 저장 후 어디로 돌아갈지 — 환자 목록에서 왔으면 목록으로, 환자 상세
+  // 화면에서 왔으면 그 화면으로 돌아가게 한다. 안 넘기면 액션이 기본값을 씀.
+  returnTo?: string;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
 
   return (
     <form action={formAction} className="space-y-4">
+      {returnTo && <input type="hidden" name="returnTo" value={returnTo} />}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">
