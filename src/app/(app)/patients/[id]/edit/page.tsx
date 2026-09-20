@@ -1,8 +1,10 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
 import { updatePatient } from "@/app/actions/patients";
 import { PatientForm } from "../../patient-form";
+import { buttonStyles } from "@/lib/ui";
 
 export default async function EditPatientPage({
   params,
@@ -11,6 +13,7 @@ export default async function EditPatientPage({
   await verifySession();
   const { id } = await params;
   const { from } = await searchParams;
+  const backHref = typeof from === "string" ? from : "/patients";
 
   const patient = await prisma.patient.findUnique({ where: { id } });
   if (!patient) notFound();
@@ -19,6 +22,9 @@ export default async function EditPatientPage({
 
   return (
     <div className="max-w-lg">
+      <Link href={backHref} className={`mb-2 inline-block ${buttonStyles.link}`}>
+        ← 뒤로가기
+      </Link>
       <h1 className="mb-6 text-xl font-semibold">환자 정보 수정</h1>
       <PatientForm
         action={updatePatientWithId}
