@@ -66,13 +66,12 @@ function sexAgeLabel(sex: string | null, age: number | null): string {
   return `${sex ?? "-"}/${age ?? "-"}`;
 }
 
-// 이름/성별·나이/차트번호/수술일자를 누르면 그 환자의 기본 화면(계획+
-// 기록지가 다 보이는 허브)으로 간다 — 정보 수정은 그 화면 안의 "정보 수정"
-// 버튼으로 들어가고 저장하면 다시 이 화면으로 돌아온다. 계획 자체를 보거나
-// 고치려면 수술명을, 비강 소견/기록지를 확인하려면 오른쪽 끝 버튼을
-// 누르면 되므로 서로 목적이 겹치지 않는다.
+// 이름/성별·나이/차트번호/수술일자를 누르면 그 환자의 기본 화면으로 간다 —
+// 계획이 있으면 계획 작성 화면(실시간으로 미리보기까지 나오는 진짜 중심
+// 화면) 자체가 기본 화면이고, 계획이 아직 없으면 계획을 만들 수 있는
+// 환자 상세 화면으로 보낸다.
 function patientHubHref(p: PatientRow): string {
-  return `/patients/${p.id}`;
+  return p.surgeryPlanId ? `/plans/${p.surgeryPlanId}` : `/patients/${p.id}`;
 }
 
 export function PatientListTable({

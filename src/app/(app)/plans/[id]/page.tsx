@@ -41,12 +41,15 @@ export default async function OpPlanPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <Link href={`/patients/${plan.patientId}`} className={buttonStyles.link}>
-            ← {plan.patient.name} 환자로 돌아가기
-          </Link>
-          <h1 className="mt-2 text-xl font-semibold">
+          <h1 className="text-xl font-semibold">
             {plan.surgeryType.name} 수술 계획
           </h1>
+          <Link
+            href={`/patients/${plan.patientId}/edit?from=${encodeURIComponent(`/plans/${plan.id}`)}`}
+            className={`mt-1 inline-block ${buttonStyles.link}`}
+          >
+            환자 정보 수정
+          </Link>
         </div>
         <div className="flex gap-2">
           <Link href={`/plans/${plan.id}/print`} className={buttonStyles.secondarySmall}>

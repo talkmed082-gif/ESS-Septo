@@ -94,7 +94,7 @@ export async function createPatientWithPlan(
   const fields = parseFieldDefs(surgeryType.fields);
   const planData = fieldValuesFromFormData(formData, fields);
 
-  await prisma.opPlan.create({
+  const plan = await prisma.opPlan.create({
     data: {
       patientId,
       surgeryTypeId: surgeryType.id,
@@ -106,7 +106,7 @@ export async function createPatientWithPlan(
   });
 
   revalidatePath("/patients");
-  // 계획 저장 후에도 계획+기록지가 다 보이는 환자 기본 화면으로 보내서,
-  // 저장할 때마다 화면 성격이 이리저리 바뀌는 느낌을 없앤다.
-  redirect(`/patients/${patientId}`);
+  // 계획 작성 화면 자체가 환자 기본 화면이라, 만든 뒤 바로 그 계획
+  // 화면으로 이동한다.
+  redirect(`/plans/${plan.id}`);
 }

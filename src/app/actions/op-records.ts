@@ -47,7 +47,7 @@ export async function createOpRecord(
     return { message: "수술 계획을 찾을 수 없습니다." };
   }
   if (plan.opRecord) {
-    redirect(`/patients/${plan.patientId}`);
+    redirect(`/plans/${planId}`);
   }
 
   const validated = parseRecordFormData(formData);
@@ -75,9 +75,9 @@ export async function createOpRecord(
 
   revalidatePath(`/plans/${planId}`);
   revalidatePath(`/patients/${plan.patientId}`);
-  // 저장 후에는 계획+기록지가 다 보이는 환자 기본 화면으로 보내서 화면
-  // 성격이 저장할 때마다 바뀌는 느낌을 없앤다.
-  redirect(`/patients/${plan.patientId}`);
+  // 계획 작성 화면 자체가 환자 기본 화면이라, 기록지를 쓴 뒤에도 그
+  // 화면으로 돌아간다(이제 "기록지 보기" 버튼이 나타남).
+  redirect(`/plans/${planId}`);
 }
 
 export async function updateOpRecord(
@@ -118,6 +118,9 @@ export async function updateOpRecord(
   });
 
   revalidatePath(`/records/${recordId}`);
+  revalidatePath(`/plans/${record.opPlan.id}`);
   revalidatePath(`/patients/${record.opPlan.patientId}`);
-  redirect(`/patients/${record.opPlan.patientId}`);
+  // 계획 작성 화면 자체가 환자 기본 화면이라, 기록지 수정 후에도 그
+  // 화면으로 돌아간다.
+  redirect(`/plans/${record.opPlan.id}`);
 }
