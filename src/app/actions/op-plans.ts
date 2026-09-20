@@ -64,3 +64,17 @@ export async function deleteOpPlan(planId: string, patientId: string) {
   revalidatePath(`/patients/${patientId}`);
   redirect(`/patients/${patientId}`);
 }
+
+// 기록지를 아직 안 썼어도(수술 당일이 아니라 며칠 뒤에 쓰는 경우가 많아서)
+// 환자 목록의 "예정)" 표시를 수술 완료 시점에 바로 지울 수 있게 하는
+// 수동 토글. OpPlan.status 컬럼은 있었지만 그동안 아무 데서도 안 쓰였음.
+export async function toggleOpPlanDone(planId: string) {
+  await verifySession();
+  const plan = await prisma.opPlan.findUnique({ where: { id: planId } });
+  if (!plan) return;
+  await prisma.opPlan.update({
+    where: { id: planId },
+    data: { status: plan.status === "DONE" ? "PLANNED" : "DONE" },
+  });
+  revalidatePath("/patients");
+}

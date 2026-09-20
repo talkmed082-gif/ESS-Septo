@@ -45,6 +45,7 @@ export default async function PatientsPage({
           id: true,
           plannedDate: true,
           planData: true,
+          status: true,
           surgeryType: true,
           opRecord: { select: { id: true } },
         },
@@ -80,6 +81,7 @@ export default async function PatientsPage({
       procedureName,
       nasalFindings,
       recordId: latestPlan?.opRecord?.id ?? null,
+      planDone: latestPlan?.status === "DONE",
     };
   });
 

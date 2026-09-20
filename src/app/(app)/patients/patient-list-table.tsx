@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useActionState, useRef } from "react";
 import { deletePatients } from "@/app/actions/patients";
+import { toggleOpPlanDone } from "@/app/actions/op-plans";
 
 export interface PatientRow {
   id: string;
@@ -16,6 +17,16 @@ export interface PatientRow {
   procedureName: string | null;
   nasalFindings: string | null;
   recordId: string | null;
+  planDone: boolean;
+}
+
+// 기록지를 아직 안 썼어도(며칠 뒤에 몰아서 쓰는 경우가 많음) "완료" 체크만
+// 해두면 예정) 표시를 뗄 수 있다 — 기록지가 있으면 그걸로 이미 충분하니
+// 그때는 예정) 표시가 필요 없다.
+function procedureLabel(p: PatientRow): string {
+  if (!p.procedureName) return "계획 보기";
+  const done = p.recordId || p.planDone;
+  return done ? p.procedureName : `예정) ${p.procedureName}`;
 }
 
 const SORT_COLUMNS: { key: string; label: string }[] = [
@@ -101,6 +112,11 @@ export function PatientListTable({
     router.push(`/print/fess-checklist?plans=${planIds.join(",")}`);
   }
 
+  async function handleToggleDone(planId: string) {
+    await toggleOpPlanDone(planId);
+    router.refresh();
+  }
+
   return (
     <form ref={formRef} action={formAction} onSubmit={handleSubmit}>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -145,13 +161,24 @@ export function PatientListTable({
               </div>
               <span className="shrink-0 text-xs text-slate-400">{shortDate(p.surgeryDate) ?? "-"}</span>
             </div>
-            <div className="mt-1.5 text-sm">
+            <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
               {p.surgeryPlanId ? (
                 <Link href={`/plans/${p.surgeryPlanId}`} className="font-medium text-slate-900 hover:underline">
-                  {p.procedureName ? (p.recordId ? p.procedureName : `예정) ${p.procedureName}`) : "계획 보기"}
+                  {procedureLabel(p)}
                 </Link>
               ) : (
                 <span className="text-slate-400">-</span>
+              )}
+              {p.surgeryPlanId && !p.recordId && (
+                <label className="inline-flex items-center gap-1 text-xs text-slate-400">
+                  <input
+                    type="checkbox"
+                    checked={p.planDone}
+                    onChange={() => handleToggleDone(p.surgeryPlanId as string)}
+                    className="h-3.5 w-3.5 rounded border-slate-300"
+                  />
+                  완료
+                </label>
               )}
             </div>
             <div className="mt-2 flex gap-2">
@@ -240,13 +267,26 @@ export function PatientListTable({
                   )}
                 </td>
                 <td className="px-4 py-2 text-slate-600">
-                  {p.surgeryPlanId ? (
-                    <Link href={`/plans/${p.surgeryPlanId}`} className="font-medium text-slate-900 hover:underline">
-                      {p.procedureName ? (p.recordId ? p.procedureName : `예정) ${p.procedureName}`) : "계획 보기"}
-                    </Link>
-                  ) : (
-                    "-"
-                  )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {p.surgeryPlanId ? (
+                      <Link href={`/plans/${p.surgeryPlanId}`} className="font-medium text-slate-900 hover:underline">
+                        {procedureLabel(p)}
+                      </Link>
+                    ) : (
+                      "-"
+                    )}
+                    {p.surgeryPlanId && !p.recordId && (
+                      <label className="inline-flex items-center gap-1 text-xs text-slate-400">
+                        <input
+                          type="checkbox"
+                          checked={p.planDone}
+                          onChange={() => handleToggleDone(p.surgeryPlanId as string)}
+                          className="h-3.5 w-3.5 rounded border-slate-300"
+                        />
+                        완료
+                      </label>
+                    )}
+                  </div>
                 </td>
                 <td className="px-2 py-2 whitespace-nowrap">
                   {p.surgeryPlanId ? (

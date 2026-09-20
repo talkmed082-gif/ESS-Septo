@@ -6,6 +6,7 @@ import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
 import { buildPlanTable, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
 import { PrintButton } from "@/components/print-button";
+import { AppNavBar } from "@/components/app-nav-bar";
 
 // 수술방에서 내시경 모니터 앞에 붙여두고 손으로 체크하는 용도의 FESS 시행
 // 부위 체크리스트. A4 한 장에 4장씩 나온다. 환자 목록에서 ?plans=id1,id2,...
@@ -57,8 +58,12 @@ function BlankLines({ count }: { count: number }) {
 
 // 빈 양식(손으로 체크)에서만 쓰는 빈 테두리 박스 — Unicode 체크박스 글자는
 // 글꼴에 따라 너무 작거나 흐리게 나와서 CSS로 직접 그린다.
-function CheckBox() {
-  return <span className="inline-block h-4 w-4 border-2 border-slate-700 align-middle" />;
+function CheckBox({ checked = false }: { checked?: boolean }) {
+  return (
+    <span className="inline-flex h-4 w-4 items-center justify-center border-2 border-slate-700 align-middle">
+      {checked && <span className="text-sm leading-none font-bold text-slate-900">{CHECK_MARK}</span>}
+    </span>
+  );
 }
 
 // 이미 값이 정해진(자동 채워진) 표는 굳이 체크박스 모양을 그릴 필요가
@@ -94,21 +99,10 @@ function ChecklistCard({ data }: { data?: CardData }) {
           <span className="flex-1 border-b border-slate-400 font-medium">{data?.date ?? " "}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          {data ? (
-            <span
-              className={
-                "shrink-0 rounded px-1 " +
-                (data.revision ? "bg-slate-800 font-bold text-white" : "text-slate-400")
-              }
-            >
-              Revision case
-            </span>
-          ) : (
-            <>
-              <CheckBox />
-              <span className="shrink-0 text-slate-500">Revision case</span>
-            </>
-          )}
+          {/* Revision case는 표 밖의 항목이라 표 칸과 달리 체크박스 형태를
+              그대로 유지한다 (값이 채워진 카드도 동일). */}
+          <CheckBox checked={data?.revision === true} />
+          <span className="shrink-0 text-slate-500">Revision case</span>
           <span className="ml-2 shrink-0 text-slate-500">수술명:</span>
           <span className="flex-1 border-b border-slate-400 font-medium">
             {data?.procedureName ?? " "}
@@ -248,8 +242,10 @@ export default async function FessChecklistPrintPage({
       : [[undefined, undefined, undefined, undefined]];
 
   return (
-    <div className="mx-auto w-full max-w-3xl bg-white p-3 text-slate-900 sm:p-8 print:max-w-none print:p-0">
-      <div className="sticky top-0 z-10 mb-4 flex flex-wrap items-center justify-between gap-2 bg-white py-2 print:hidden">
+    <div>
+      <AppNavBar />
+      <div className="mx-auto w-full max-w-3xl bg-white p-3 text-slate-900 sm:p-8 print:max-w-none print:p-0">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 print:hidden">
         <Link href="/patients" className="text-sm text-slate-500 hover:underline">
           ← 목록으로 돌아가기
         </Link>
@@ -268,6 +264,7 @@ export default async function FessChecklistPrintPage({
           <ChecklistPage cards={cards} />
         </div>
       ))}
+      </div>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { verifySession } from "@/lib/dal";
 import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
 import { PrintButton } from "@/components/print-button";
 import { SaveImageButton } from "@/components/save-image-button";
+import { AppNavBar } from "@/components/app-nav-bar";
 import { safeDateStr } from "@/lib/date-format";
 
 function Row({ label, value }: { label: string; value?: string | null }) {
@@ -44,8 +45,10 @@ export default async function OpRecordPrintPage({
   );
 
   return (
-    <div className="mx-auto w-full max-w-3xl bg-white p-3 text-slate-900 sm:p-8 print:max-w-none print:p-0">
-      <div className="sticky top-0 z-10 mb-4 flex flex-wrap items-center justify-between gap-2 bg-white py-2 print:hidden">
+    <div>
+      <AppNavBar />
+      <div className="mx-auto w-full max-w-3xl bg-white p-3 text-slate-900 sm:p-8 print:max-w-none print:p-0">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 print:hidden">
         <Link href={`/records/${record.id}`} className="text-sm text-slate-500 hover:underline">
           ← 기록지로 돌아가기
         </Link>
@@ -98,6 +101,7 @@ export default async function OpRecordPrintPage({
         <div className="mt-12 flex justify-end text-sm">
           <p>집도의: {record.surgeonName} (인)</p>
         </div>
+      </div>
       </div>
     </div>
   );

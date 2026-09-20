@@ -8,6 +8,7 @@ import { buildPlanTable, type NameStyle, type SideNotation } from "@/lib/op-note
 import { PlanTableView } from "@/components/plan-table";
 import { PrintButton } from "@/components/print-button";
 import { SaveImageButton } from "@/components/save-image-button";
+import { AppNavBar } from "@/components/app-nav-bar";
 import { safeDateStr } from "@/lib/date-format";
 
 export default async function OpPlanPrintPage({
@@ -32,8 +33,10 @@ export default async function OpPlanPrintPage({
     : null;
 
   return (
-    <div className="mx-auto w-full max-w-2xl bg-white p-3 text-slate-900 sm:p-8 print:max-w-none print:p-0">
-      <div className="sticky top-0 z-10 mb-4 flex flex-wrap items-center justify-between gap-2 bg-white py-2 print:hidden">
+    <div>
+      <AppNavBar />
+      <div className="mx-auto w-full max-w-2xl bg-white p-3 text-slate-900 sm:p-8 print:max-w-none print:p-0">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 print:hidden">
         <Link href={`/plans/${plan.id}`} className="text-sm text-slate-500 hover:underline">
           ← 계획으로 돌아가기
         </Link>
@@ -88,6 +91,7 @@ export default async function OpPlanPrintPage({
             {plan.planNote}
           </div>
         )}
+      </div>
       </div>
     </div>
   );
