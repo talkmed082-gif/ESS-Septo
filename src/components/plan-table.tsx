@@ -2,6 +2,17 @@
 
 import type { PlanTable } from "@/lib/op-note-generator";
 
+// 인쇄용 화면 등 비상호작용 표시에서 체크 여부를 또렷하게 보여준다 —
+// 그냥 텍스트 체크 표시(✓)만 있으면 인쇄/축소했을 때 옅게 보여 눈에 잘
+// 안 띄어서, 실제 테두리 박스 안에 체크됐을 때만 표시하는 방식으로 바꿨다.
+function StaticCheckBox({ checked }: { checked: boolean }) {
+  return (
+    <span className="inline-flex h-4 w-4 items-center justify-center border-2 border-slate-700 align-middle">
+      {checked && <span className="text-sm leading-none font-bold text-slate-900">{"✓"}</span>}
+    </span>
+  );
+}
+
 export function PlanTableView({
   table,
   size = "normal",
@@ -111,7 +122,7 @@ export function PlanTableView({
                       ✓
                     </button>
                   ) : (
-                    row.right ? "✓" : ""
+                    <StaticCheckBox checked={row.right} />
                   )}
                 </td>
                 <td className={`border border-slate-400 ${cellPad} text-center`}>
@@ -126,7 +137,7 @@ export function PlanTableView({
                       ✓
                     </button>
                   ) : (
-                    row.left ? "✓" : ""
+                    <StaticCheckBox checked={row.left} />
                   )}
                 </td>
               </tr>

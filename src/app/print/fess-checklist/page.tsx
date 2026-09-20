@@ -55,9 +55,19 @@ function BlankLines({ count }: { count: number }) {
   );
 }
 
+// Unicode ☑/☐ 글자는 글꼴에 따라 너무 작거나 흐리게 나와서, 실제 테두리
+// 박스에 체크됐을 때만 ✓ 글자를 넣는 방식으로 직접 그린다 — 인쇄/축소해도
+// 항상 또렷하게 보인다.
+function CheckBox({ checked }: { checked: boolean }) {
+  return (
+    <span className="inline-flex h-4 w-4 items-center justify-center border-2 border-slate-700 align-middle">
+      {checked && <span className="text-sm leading-none font-bold text-slate-900">{"✓"}</span>}
+    </span>
+  );
+}
+
 function ChecklistCard({ data }: { data?: CardData }) {
   const rows: CardRow[] = data?.rows ?? BLANK_ROWS.map((label) => ({ label, right: false, left: false }));
-  const box = (checked: boolean) => (checked ? "☑" : "☐");
 
   return (
     <div className="flex h-full flex-col p-3">
@@ -70,8 +80,9 @@ function ChecklistCard({ data }: { data?: CardData }) {
           <span className="shrink-0 text-slate-500">날짜:</span>
           <span className="flex-1 border-b border-slate-400 font-medium">{data?.date ?? " "}</span>
         </div>
-        <div className="flex items-center gap-1">
-          <span className="shrink-0 text-slate-500">{box(data?.revision === true)} Revision case</span>
+        <div className="flex items-center gap-1.5">
+          <CheckBox checked={data?.revision === true} />
+          <span className="shrink-0 text-slate-500">Revision case</span>
           <span className="ml-2 shrink-0 text-slate-500">수술명:</span>
           <span className="flex-1 border-b border-slate-400 font-medium">
             {data?.procedureName ?? " "}
@@ -106,8 +117,12 @@ function ChecklistCard({ data }: { data?: CardData }) {
           {rows.map((row) => (
             <tr key={row.label}>
               <td className="border border-slate-400 px-1.5 py-1.5">{row.label}</td>
-              <td className="border border-slate-400 text-center text-sm">{box(row.right)}</td>
-              <td className="border border-slate-400 text-center text-sm">{box(row.left)}</td>
+              <td className="border border-slate-400 text-center">
+                <CheckBox checked={row.right} />
+              </td>
+              <td className="border border-slate-400 text-center">
+                <CheckBox checked={row.left} />
+              </td>
             </tr>
           ))}
         </tbody>
