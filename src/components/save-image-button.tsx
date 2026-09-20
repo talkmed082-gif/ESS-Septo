@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { buttonStyles } from "@/lib/ui";
 
 // 인쇄용 페이지를 그대로 캡처해서 JPG로 만든다. 폰에서는 공유하기(Web
 // Share) 시트를 띄워서 메일/카카오톡 등 원하는 앱으로 바로 보낼 수 있게
@@ -90,7 +91,7 @@ export function SaveImageButton({
         type="button"
         onClick={handleClick}
         disabled={busy}
-        className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+        className={buttonStyles.secondary}
       >
         {busy ? "이미지 생성 중..." : "이미지 공유/저장 (JPG)"}
       </button>

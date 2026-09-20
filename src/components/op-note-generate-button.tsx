@@ -4,6 +4,7 @@ import { useState } from "react";
 import { fieldValuesFromFormData, type SurgeryFieldDef } from "@/lib/field-types";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
 import { buildProcedureName, generateOpNote, type NameStyle } from "@/lib/op-note-generator";
+import { buttonStyles } from "@/lib/ui";
 
 function setFieldValue(form: HTMLFormElement, name: string, value: string) {
   const el = form.elements.namedItem(name);
@@ -55,7 +56,7 @@ export function OpNoteGenerateButton({
     <button
       type="button"
       onClick={handleClick}
-      className="rounded-md border border-emerald-600 px-3 py-1.5 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
+      className={buttonStyles.accentOutline}
     >
       {justGenerated ? "생성됨 ✓ (검토 후 저장하세요)" : "위 항목으로 문장 자동 작성"}
     </button>

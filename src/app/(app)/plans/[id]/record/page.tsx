@@ -7,6 +7,7 @@ import { createOpRecord } from "@/app/actions/op-records";
 import { buildProcedureName, generateOpNote, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
 import { safeDateStr } from "@/lib/date-format";
+import { buttonStyles } from "@/lib/ui";
 import { RecordForm } from "../../../records/record-form";
 
 export default async function NewOpRecordPage({
@@ -39,7 +40,7 @@ export default async function NewOpRecordPage({
 
   return (
     <div className="max-w-3xl">
-      <Link href={`/plans/${plan.id}`} className="text-sm text-slate-500 hover:underline">
+      <Link href={`/plans/${plan.id}`} className={buttonStyles.link}>
         ← 수술 계획으로 돌아가기
       </Link>
       <h1 className="mt-2 mb-1 text-xl font-semibold">수술기록지 작성</h1>

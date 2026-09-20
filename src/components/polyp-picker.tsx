@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import type { FieldValues } from "@/lib/field-types";
+import { buttonStyles } from "@/lib/ui";
 
 const POLYP_SITE_FIELDS = [
   { key: "site_mm", label: "중비도" },
@@ -120,18 +121,10 @@ export function PolypPicker({
       {present && (
         <div className="mt-3 border-t border-slate-100 pt-3">
           <div className="mb-2 flex gap-2">
-            <button
-              type="button"
-              onClick={() => copyToOtherSide("n_polyp_right_")}
-              className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
-            >
+            <button type="button" onClick={() => copyToOtherSide("n_polyp_right_")} className={buttonStyles.pill}>
               우→좌 동일
             </button>
-            <button
-              type="button"
-              onClick={() => copyToOtherSide("n_polyp_left_")}
-              className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
-            >
+            <button type="button" onClick={() => copyToOtherSide("n_polyp_left_")} className={buttonStyles.pill}>
               좌→우 동일
             </button>
           </div>

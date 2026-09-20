@@ -7,6 +7,8 @@ import { buildPlanTable, type NameStyle, type SideNotation } from "@/lib/op-note
 import { safeDateStr } from "@/lib/date-format";
 import { PrintButton } from "@/components/print-button";
 import { AppNavBar } from "@/components/app-nav-bar";
+import { CheckBox, DataCell } from "@/components/check-cell";
+import { buttonStyles } from "@/lib/ui";
 
 // 수술방에서 내시경 모니터 앞에 붙여두고 손으로 체크하는 용도의 FESS 시행
 // 부위 체크리스트. A4 한 장에 4장씩 나온다. 환자 목록에서 ?plans=id1,id2,...
@@ -56,34 +58,6 @@ function BlankLines({ count }: { count: number }) {
   );
 }
 
-// 빈 양식(손으로 체크)에서만 쓰는 빈 테두리 박스 — Unicode 체크박스 글자는
-// 글꼴에 따라 너무 작거나 흐리게 나와서 CSS로 직접 그린다.
-function CheckBox({ checked = false }: { checked?: boolean }) {
-  return (
-    <span className="inline-flex h-4 w-4 items-center justify-center border-2 border-slate-700 align-middle">
-      {checked && <span className="text-sm leading-none font-bold text-slate-900">{CHECK_MARK}</span>}
-    </span>
-  );
-}
-
-// 이미 값이 정해진(자동 채워진) 표는 굳이 체크박스 모양을 그릴 필요가
-// 없다 — 표 자체가 이미 칸으로 나뉘어 있으니, 체크된 칸만 색을 채워서
-// 바로 눈에 띄게 한다.
-function DataCell({ checked }: { checked: boolean }) {
-  return (
-    <td
-      className={
-        "border border-slate-400 text-center text-xs font-bold " +
-        (checked ? "bg-slate-800 text-white" : "")
-      }
-    >
-      {checked ? CHECK_MARK : ""}
-    </td>
-  );
-}
-
-const CHECK_MARK = String.fromCharCode(0x2713);
-
 function ChecklistCard({ data }: { data?: CardData }) {
   const rows: CardRow[] = data?.rows ?? BLANK_ROWS.map((label) => ({ label, right: false, left: false }));
 
@@ -113,7 +87,7 @@ function ChecklistCard({ data }: { data?: CardData }) {
           Plan(시행 부위 표)보다 먼저 나온다. 값이 채워진 카드는 소견
           길이가 제각각이라 flex-1로 늘리면 표 시작 위치가 카드마다
           들쭉날쭉해지므로, 빈 양식일 때만 손글씨 줄을 늘려서 채운다. */}
-      <div className={"mb-2 flex flex-col " + (data ? "" : "flex-1")}>
+      <div className={`mb-2 flex flex-col ${data ? "" : "flex-1"}`}>
         <span className="mb-1 text-xs font-medium text-slate-600">비강 소견</span>
         {data ? (
           <p className="text-[11px] whitespace-pre-wrap text-slate-700">{data.findings || "-"}</p>
@@ -244,26 +218,26 @@ export default async function FessChecklistPrintPage({
   return (
     <div>
       <AppNavBar />
-      <div className="mx-auto w-full max-w-3xl bg-white p-3 text-slate-900 sm:p-8 print:max-w-none print:p-0">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 print:hidden">
-        <Link href="/patients" className="text-sm text-slate-500 hover:underline">
-          ← 목록으로 돌아가기
-        </Link>
-        <PrintButton />
-      </div>
-      <p className="mb-3 text-xs text-slate-500 print:hidden">
-        {cardsData.length > 0
-          ? "선택한 환자들의 최신 수술 계획으로 채워서 인쇄합니다. 4명 단위로 한 페이지씩 나뉘고, 남는 칸은 빈 양식입니다."
-          : "환자 데이터와 무관한 빈 양식입니다. 미리 여러 장 인쇄해두고 수술방에서 케이스마다 한 장씩 손으로 체크해서 쓰면 됩니다."}{" "}
-        가운데 점선을 따라 위아래·좌우로 한 번씩 자르면 4장으로 나뉩니다. (인쇄 대화상자의
-        &ldquo;설정 더보기&rdquo;에서 &ldquo;머리글과 바닥글&rdquo;을 꺼두면 날짜/URL 같은
-        여백이 더 줄어듭니다.)
-      </p>
-      {pages.map((cards, i) => (
-        <div key={i} className={i < pages.length - 1 ? "print:break-after-page" : ""}>
-          <ChecklistPage cards={cards} />
+      <div className="mx-auto w-full max-w-3xl bg-white px-3 pt-4 pb-3 text-slate-900 sm:px-8 sm:pt-6 sm:pb-8 print:max-w-none print:p-0">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 print:hidden">
+          <Link href="/patients" className={buttonStyles.link}>
+            ← 목록으로 돌아가기
+          </Link>
+          <PrintButton />
         </div>
-      ))}
+        <p className="mb-3 text-xs text-slate-500 print:hidden">
+          {cardsData.length > 0
+            ? "선택한 환자들의 최신 수술 계획으로 채워서 인쇄합니다. 4명 단위로 한 페이지씩 나뉘고, 남는 칸은 빈 양식입니다."
+            : "환자 데이터와 무관한 빈 양식입니다. 미리 여러 장 인쇄해두고 수술방에서 케이스마다 한 장씩 손으로 체크해서 쓰면 됩니다."}{" "}
+          가운데 점선을 따라 위아래·좌우로 한 번씩 자르면 4장으로 나뉩니다. (인쇄 대화상자의
+          &ldquo;설정 더보기&rdquo;에서 &ldquo;머리글과 바닥글&rdquo;을 꺼두면 날짜/URL 같은
+          여백이 더 줄어듭니다.)
+        </p>
+        {pages.map((cards, i) => (
+          <div key={i} className={i < pages.length - 1 ? "print:break-after-page" : ""}>
+            <ChecklistPage cards={cards} />
+          </div>
+        ))}
       </div>
     </div>
   );

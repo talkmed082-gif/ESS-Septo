@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useActionState, useRef } from "react";
+import { useActionState, useOptimistic, useRef, useTransition } from "react";
 import { deletePatients } from "@/app/actions/patients";
 import { toggleOpPlanDone } from "@/app/actions/op-plans";
+import { buttonStyles } from "@/lib/ui";
 
 export interface PatientRow {
   id: string;
@@ -15,7 +16,6 @@ export interface PatientRow {
   surgeryDate: string | null;
   surgeryPlanId: string | null;
   procedureName: string | null;
-  nasalFindings: string | null;
   recordId: string | null;
   planDone: boolean;
 }
@@ -77,6 +77,14 @@ export function PatientListTable({
   const [, formAction, pending] = useActionState(deletePatients, undefined);
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
+  const [, startTransition] = useTransition();
+  // 완료 체크는 서버 왕복이 끝나야 반영되면 클릭해도 잠깐 반응이 없는 것처럼
+  // 보여서, 클릭 즉시 화면에 반영(낙관적 업데이트)하고 뒤에서 실제 저장한다.
+  const [optimisticPatients, setOptimisticDone] = useOptimistic(
+    patients,
+    (state, planId: string) =>
+      state.map((p) => (p.surgeryPlanId === planId ? { ...p, planDone: !p.planDone } : p)),
+  );
 
   function toggleAll(e: React.ChangeEvent<HTMLInputElement>) {
     const form = formRef.current;
@@ -112,9 +120,12 @@ export function PatientListTable({
     router.push(`/print/fess-checklist?plans=${planIds.join(",")}`);
   }
 
-  async function handleToggleDone(planId: string) {
-    await toggleOpPlanDone(planId);
-    router.refresh();
+  function handleToggleDone(planId: string) {
+    startTransition(async () => {
+      setOptimisticDone(planId);
+      await toggleOpPlanDone(planId);
+      router.refresh();
+    });
   }
 
   return (
@@ -122,18 +133,10 @@ export function PatientListTable({
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-slate-500">체크 후 선택 삭제를 누르면 일괄 삭제됩니다.</p>
         <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={printOpPlans}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
-          >
+          <button type="button" onClick={printOpPlans} className={buttonStyles.secondarySmall}>
             선택한 환자 Op Plan 인쇄
           </button>
-          <button
-            type="submit"
-            disabled={pending}
-            className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
-          >
+          <button type="submit" disabled={pending} className={buttonStyles.danger}>
             {pending ? "삭제 중..." : "선택 삭제"}
           </button>
         </div>
@@ -142,7 +145,7 @@ export function PatientListTable({
       {/* 모바일에서는 표가 옆으로 길어져 스크롤해야 하는 문제가 있어서, 한
           화면 안에 다 들어오는 카드형 목록으로 대신 보여준다. */}
       <div className="space-y-2 sm:hidden">
-        {patients.map((p) => (
+        {optimisticPatients.map((p) => (
           <div key={p.id} className="rounded-lg border border-slate-200 bg-white p-3">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2">
@@ -183,32 +186,23 @@ export function PatientListTable({
             </div>
             <div className="mt-2 flex gap-2">
               {p.surgeryPlanId ? (
-                <Link
-                  href={`/plans/${p.surgeryPlanId}`}
-                  className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
-                >
+                <Link href={`/plans/${p.surgeryPlanId}`} className={buttonStyles.smallOutline}>
                   비강 소견 확인
                 </Link>
               ) : null}
               {p.recordId ? (
-                <Link
-                  href={`/records/${p.recordId}`}
-                  className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
-                >
+                <Link href={`/records/${p.recordId}`} className={buttonStyles.smallOutline}>
                   수술기록 확인
                 </Link>
               ) : p.surgeryPlanId ? (
-                <Link
-                  href={`/plans/${p.surgeryPlanId}/record`}
-                  className="rounded-md border border-emerald-600 px-2 py-1 text-xs text-emerald-700 hover:bg-emerald-50"
-                >
+                <Link href={`/plans/${p.surgeryPlanId}/record`} className={buttonStyles.smallOutlineAccent}>
                   수술기록 확인
                 </Link>
               ) : null}
             </div>
           </div>
         ))}
-        {patients.length === 0 && (
+        {optimisticPatients.length === 0 && (
           <p className="rounded-lg border border-slate-200 bg-white px-4 py-8 text-center text-slate-400">
             등록된 환자가 없습니다.
           </p>
@@ -239,7 +233,7 @@ export function PatientListTable({
             </tr>
           </thead>
           <tbody>
-            {patients.map((p, idx) => (
+            {optimisticPatients.map((p, idx) => (
               <tr key={p.id} className="border-t border-slate-100 hover:bg-slate-50">
                 <td className="px-4 py-2">
                   <input
@@ -290,10 +284,7 @@ export function PatientListTable({
                 </td>
                 <td className="px-2 py-2 whitespace-nowrap">
                   {p.surgeryPlanId ? (
-                    <Link
-                      href={`/plans/${p.surgeryPlanId}`}
-                      className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
-                    >
+                    <Link href={`/plans/${p.surgeryPlanId}`} className={buttonStyles.smallOutline}>
                       비강 소견 확인
                     </Link>
                   ) : (
@@ -302,17 +293,11 @@ export function PatientListTable({
                 </td>
                 <td className="px-2 py-2 whitespace-nowrap">
                   {p.recordId ? (
-                    <Link
-                      href={`/records/${p.recordId}`}
-                      className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
-                    >
+                    <Link href={`/records/${p.recordId}`} className={buttonStyles.smallOutline}>
                       수술기록 확인
                     </Link>
                   ) : p.surgeryPlanId ? (
-                    <Link
-                      href={`/plans/${p.surgeryPlanId}/record`}
-                      className="rounded-md border border-emerald-600 px-2 py-1 text-xs text-emerald-700 hover:bg-emerald-50"
-                    >
+                    <Link href={`/plans/${p.surgeryPlanId}/record`} className={buttonStyles.smallOutlineAccent}>
                       수술기록 확인
                     </Link>
                   ) : (
@@ -321,7 +306,7 @@ export function PatientListTable({
                 </td>
               </tr>
             ))}
-            {patients.length === 0 && (
+            {optimisticPatients.length === 0 && (
               <tr>
                 <td colSpan={10} className="px-4 py-8 text-center text-slate-400">
                   등록된 환자가 없습니다.

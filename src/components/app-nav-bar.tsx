@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/dal";
 import { logout } from "@/app/actions/auth";
+import { PatientsNavLink } from "@/components/patients-nav-link";
 
 // 메인 앱 화면(app 레이아웃)과 인쇄용 화면(레이아웃 밖, 프린트 전용)에서
 // 똑같이 써야 해서 공용 컴포넌트로 뺐다. 인쇄용 화면에서는 실제 인쇄
@@ -15,9 +16,7 @@ export async function AppNavBar() {
           <Link href="/" className="text-base font-semibold">
             Op Plan &amp; 기록지
           </Link>
-          <Link href="/patients" className="text-sm text-slate-600 hover:text-slate-900">
-            환자
-          </Link>
+          <PatientsNavLink />
           <Link href="/surgery-types" className="text-sm text-slate-600 hover:text-slate-900">
             수술 종류 관리
           </Link>

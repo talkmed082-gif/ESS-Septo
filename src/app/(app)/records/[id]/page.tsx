@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
 import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
 import { safeDateStr } from "@/lib/date-format";
+import { buttonStyles } from "@/lib/ui";
 
 function Row({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
@@ -36,10 +37,7 @@ export default async function OpRecordPage({
     <div className="max-w-3xl space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <Link
-            href={`/patients/${record.opPlan.patientId}`}
-            className="text-sm text-slate-500 hover:underline"
-          >
+          <Link href={`/patients/${record.opPlan.patientId}`} className={buttonStyles.link}>
             ← {record.opPlan.patient.name} 환자로 돌아가기
           </Link>
           <h1 className="mt-2 text-xl font-semibold">
@@ -47,16 +45,10 @@ export default async function OpRecordPage({
           </h1>
         </div>
         <div className="flex gap-2">
-          <Link
-            href={`/records/${record.id}/print`}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50"
-          >
+          <Link href={`/records/${record.id}/print`} className={buttonStyles.secondarySmall}>
             인쇄용 보기
           </Link>
-          <Link
-            href={`/records/${record.id}/edit`}
-            className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700"
-          >
+          <Link href={`/records/${record.id}/edit`} className={buttonStyles.primarySmall}>
             수정
           </Link>
         </div>

@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import type { FieldValues } from "@/lib/field-types";
 import { fessStepFieldKeys } from "@/lib/op-note-defs";
+import { buttonStyles } from "@/lib/ui";
 
 // 모식도의 순서를 Op Plan 표/기록지 서술 순서(fessStepFieldKeys)와 똑같이
 // 맞춘다 — 예전엔 이 컴포넌트가 별도의 순서(Frontal이 맨 위)를 갖고 있어서
@@ -295,18 +296,10 @@ export function SinusDiagram({
         </label>
       )}
       <div className="mb-2 flex justify-center gap-2">
-        <button
-          type="button"
-          onClick={() => copyToOtherSide("f_right_")}
-          className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
-        >
+        <button type="button" onClick={() => copyToOtherSide("f_right_")} className={buttonStyles.pill}>
           우→좌 동일
         </button>
-        <button
-          type="button"
-          onClick={() => copyToOtherSide("f_left_")}
-          className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
-        >
+        <button type="button" onClick={() => copyToOtherSide("f_left_")} className={buttonStyles.pill}>
           좌→우 동일
         </button>
       </div>

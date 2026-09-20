@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import type { FieldValues } from "@/lib/field-types";
+import { buttonStyles } from "@/lib/ui";
 
 const TURB_TYPES = [
   { key: "middle", label: "중비갑개 축소술" },
@@ -77,18 +78,10 @@ export function TurbinoplastyTypePicker({
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <span className="text-xs font-medium text-slate-600">터비노플라스티 시행 부위</span>
         <div className="flex gap-1">
-          <button
-            type="button"
-            onClick={() => copyToOtherSide("right")}
-            className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
-          >
+          <button type="button" onClick={() => copyToOtherSide("right")} className={buttonStyles.pill}>
             우→좌 동일
           </button>
-          <button
-            type="button"
-            onClick={() => copyToOtherSide("left")}
-            className="rounded-full border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
-          >
+          <button type="button" onClick={() => copyToOtherSide("left")} className={buttonStyles.pill}>
             좌→우 동일
           </button>
         </div>

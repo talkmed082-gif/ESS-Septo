@@ -19,6 +19,7 @@ import { TurbinoplastyTypePicker, TURBINOPLASTY_FIELD_KEYS } from "@/components/
 import { PresetBar, type PresetItem } from "@/components/preset-bar";
 import type { RecentCombo } from "@/lib/recent-combos";
 import { PlanTableView } from "@/components/plan-table";
+import { buttonStyles } from "@/lib/ui";
 import { fieldValuesFromFormData, type FieldValues, type SurgeryFieldDef } from "@/lib/field-types";
 import {
   isBuiltInSurgeryCode,
@@ -104,7 +105,7 @@ function CopyButton({ text }: { text: string }) {
           // 클립보드 접근 불가 - 무시
         }
       }}
-      className="rounded-md border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50"
+      className={buttonStyles.smallOutline}
     >
       {copied ? "복사됨 ✓" : "복사"}
     </button>
@@ -534,11 +535,7 @@ export function SurgeryPlanner({
         )}
 
         {canSave ? (
-          <button
-            type="submit"
-            disabled={pending}
-            className="w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
-          >
+          <button type="submit" disabled={pending} className={`w-full ${buttonStyles.primary}`}>
             {pending
               ? "저장 중..."
               : editPlan
@@ -548,11 +545,7 @@ export function SurgeryPlanner({
                   : "환자 등록 + 계획 저장"}
           </button>
         ) : (
-          <button
-            type="button"
-            onClick={regenerateFromForm}
-            className="w-full rounded-md border border-emerald-600 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
-          >
+          <button type="button" onClick={regenerateFromForm} className={`w-full ${buttonStyles.accentOutline}`}>
             위 항목으로 미리보기 새로고침
           </button>
         )}

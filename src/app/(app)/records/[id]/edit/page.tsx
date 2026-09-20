@@ -6,6 +6,7 @@ import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
 import { updateOpRecord } from "@/app/actions/op-records";
 import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
+import { buttonStyles } from "@/lib/ui";
 import { RecordForm } from "../../record-form";
 
 export default async function EditOpRecordPage({
@@ -30,7 +31,7 @@ export default async function EditOpRecordPage({
 
   return (
     <div className="max-w-3xl">
-      <Link href={`/records/${record.id}`} className="text-sm text-slate-500 hover:underline">
+      <Link href={`/records/${record.id}`} className={buttonStyles.link}>
         ← 기록지로 돌아가기
       </Link>
       <h1 className="mt-2 mb-1 text-xl font-semibold">수술기록지 수정</h1>

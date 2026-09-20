@@ -7,6 +7,7 @@ import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
 import { buildPlanTable, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
 import { PlanTableView } from "@/components/plan-table";
+import { buttonStyles } from "@/lib/ui";
 
 export default async function PatientDetailPage({
   params,
@@ -52,16 +53,10 @@ export default async function PatientDetailPage({
           )}
         </div>
         <div className="flex gap-2">
-          <Link
-            href={`/patients/${patient.id}/edit`}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50"
-          >
+          <Link href={`/patients/${patient.id}/edit`} className={buttonStyles.secondarySmall}>
             정보 수정
           </Link>
-          <Link
-            href={`/patients/${patient.id}/plans/new`}
-            className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700"
-          >
+          <Link href={`/patients/${patient.id}/plans/new`} className={buttonStyles.primarySmall}>
             + 수술 계획 작성
           </Link>
         </div>
@@ -85,24 +80,15 @@ export default async function PatientDetailPage({
                 예정일: <span className="font-medium text-slate-900">{safeDateStr(plan.plannedDate) ?? "미정"}</span>
               </div>
               <div className="flex gap-2">
-                <Link
-                  href={`/plans/${plan.id}`}
-                  className="rounded-md border border-slate-300 px-2.5 py-1 text-xs hover:bg-slate-50"
-                >
+                <Link href={`/plans/${plan.id}`} className={buttonStyles.smallOutline}>
                   계획 수정
                 </Link>
                 {plan.opRecord ? (
-                  <Link
-                    href={`/records/${plan.opRecord.id}/edit`}
-                    className="rounded-md border border-slate-300 px-2.5 py-1 text-xs hover:bg-slate-50"
-                  >
+                  <Link href={`/records/${plan.opRecord.id}/edit`} className={buttonStyles.smallOutline}>
                     기록지 수정
                   </Link>
                 ) : (
-                  <Link
-                    href={`/plans/${plan.id}/record`}
-                    className="rounded-md bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-700"
-                  >
+                  <Link href={`/plans/${plan.id}/record`} className={buttonStyles.smallOutlineAccent}>
                     기록지 작성
                   </Link>
                 )}

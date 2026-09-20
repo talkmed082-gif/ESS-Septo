@@ -6,6 +6,7 @@ import {
   type SettingsFormState,
 } from "@/app/actions/settings";
 import { buildProcedureName, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
+import { buttonStyles } from "@/lib/ui";
 
 const SAMPLE_VALUES = {
   f_left_ant_eth: true,
@@ -96,7 +97,7 @@ export function SettingsForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+        className={buttonStyles.primary}
       >
         {pending ? "저장 중..." : "저장"}
       </button>

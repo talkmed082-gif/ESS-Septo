@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
 import { deleteSurgeryType, reseedBuiltInSurgeryTypes } from "@/app/actions/surgery-types";
 import { parseFieldDefs } from "@/lib/field-types";
+import { buttonStyles } from "@/lib/ui";
 import { SurgeryTypeFieldBuilder } from "./field-builder";
 
 export default async function SurgeryTypesPage({
@@ -32,7 +33,7 @@ export default async function SurgeryTypesPage({
       <form action={reseedBuiltInSurgeryTypes}>
         <button
           type="submit"
-          className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50"
+          className={buttonStyles.secondarySmall}
         >
           기본 수술 종류(ESS/비중격교정술/병행) 입력 항목 최신화
         </button>

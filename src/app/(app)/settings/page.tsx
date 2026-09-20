@@ -5,6 +5,7 @@ import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
 import { buildProcedureName, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { buildGoogleCalendarUrl } from "@/lib/calendar";
 import { safeDateStr } from "@/lib/date-format";
+import { buttonStyles } from "@/lib/ui";
 import { SettingsForm } from "./settings-form";
 
 export default async function SettingsPage() {
@@ -16,7 +17,8 @@ export default async function SettingsPage() {
 
   const todayUtc = new Date(new Date().toISOString().slice(0, 10));
   const upcomingPlans = await prisma.opPlan.findMany({
-    where: { plannedDate: { gte: todayUtc } },
+    // "완료"로 표시해둔 계획은 더 이상 캘린더에 새로 추가할 필요가 없으니 제외한다.
+    where: { plannedDate: { gte: todayUtc }, status: { not: "DONE" } },
     orderBy: { plannedDate: "asc" },
     include: { surgeryType: true },
   });
@@ -65,14 +67,11 @@ export default async function SettingsPage() {
                     })}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="ml-auto rounded-md border border-slate-300 px-2.5 py-1 text-xs hover:bg-slate-50"
+                    className={`ml-auto ${buttonStyles.smallOutline}`}
                   >
                     Google 캘린더
                   </a>
-                  <a
-                    href={`/plans/${plan.id}/ics`}
-                    className="rounded-md border border-slate-300 px-2.5 py-1 text-xs hover:bg-slate-50"
-                  >
+                  <a href={`/plans/${plan.id}/ics`} className={buttonStyles.smallOutline}>
                     .ics 다운로드
                   </a>
                 </li>

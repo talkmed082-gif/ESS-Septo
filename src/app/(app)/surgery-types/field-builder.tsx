@@ -6,6 +6,7 @@ import {
   createSurgeryType,
   type SurgeryTypeFormState,
 } from "@/app/actions/surgery-types";
+import { buttonStyles } from "@/lib/ui";
 
 const TYPE_LABEL: Record<SurgeryFieldType, string> = {
   text: "한 줄 텍스트",
@@ -94,7 +95,7 @@ export function SurgeryTypeFieldBuilder() {
           <button
             type="button"
             onClick={() => setRows((prev) => [...prev, emptyRow()])}
-            className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50"
+            className={buttonStyles.smallOutline}
           >
             + 항목 추가
           </button>
@@ -161,7 +162,7 @@ export function SurgeryTypeFieldBuilder() {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+        className={buttonStyles.primary}
       >
         {pending ? "저장 중..." : "수술 종류 추가"}
       </button>
