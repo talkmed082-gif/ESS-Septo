@@ -20,13 +20,40 @@ export interface PatientRow {
   planDone: boolean;
 }
 
-// 기록지를 아직 안 썼어도(며칠 뒤에 몰아서 쓰는 경우가 많음) "완료" 체크만
-// 해두면 예정) 표시를 뗄 수 있다 — 기록지가 있으면 그걸로 이미 충분하니
-// 그때는 예정) 표시가 필요 없다.
 function procedureLabel(p: PatientRow): string {
-  if (!p.procedureName) return "계획 보기";
-  const done = p.recordId || p.planDone;
-  return done ? p.procedureName : `예정) ${p.procedureName}`;
+  return p.procedureName ?? "계획 보기";
+}
+
+// 기록지가 이미 있으면 그 자체로 완료고, 없으면 "완료" 체크(며칠 뒤에
+// 몰아서 기록지를 쓰는 경우가 많아 수동으로 표시)를 따른다.
+export function isPlanDone(p: PatientRow): boolean {
+  return Boolean(p.recordId) || p.planDone;
+}
+
+// 예정/완료 상태를 순번 옆 한 곳에서만 보여준다 — 예전엔 수술명 뒤에
+// 체크박스를 붙여서 시선이 이리저리 흩어졌다.
+function StatusBadge({ p, onToggle }: { p: PatientRow; onToggle: (planId: string) => void }) {
+  if (!p.surgeryPlanId) return <span className="text-xs text-slate-300">-</span>;
+  if (p.recordId) {
+    return (
+      <span className="inline-block rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
+        완료
+      </span>
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => onToggle(p.surgeryPlanId as string)}
+      className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
+        p.planDone
+          ? "bg-slate-100 text-slate-500"
+          : "border border-amber-300 bg-amber-50 text-amber-700"
+      }`}
+    >
+      {p.planDone ? "완료" : "예정"}
+    </button>
+  );
 }
 
 const SORT_COLUMNS: { key: string; label: string }[] = [
@@ -154,6 +181,7 @@ export function PatientListTable({
                   value={p.id}
                   className="h-4 w-4 rounded border-slate-300"
                 />
+                <StatusBadge p={p} onToggle={handleToggleDone} />
                 <Link href={patientEditHref(p)} className="font-medium text-slate-900 hover:underline">
                   {p.name}
                 </Link>
@@ -172,17 +200,6 @@ export function PatientListTable({
                 </Link>
               ) : (
                 <span className="text-slate-400">-</span>
-              )}
-              {p.surgeryPlanId && !p.recordId && (
-                <label className="inline-flex items-center gap-1 text-xs text-slate-400">
-                  <input
-                    type="checkbox"
-                    checked={p.planDone}
-                    onChange={() => handleToggleDone(p.surgeryPlanId as string)}
-                    className="h-3.5 w-3.5 rounded border-slate-300"
-                  />
-                  완료
-                </label>
               )}
             </div>
             <div className="mt-2 flex gap-2">
@@ -218,6 +235,7 @@ export function PatientListTable({
                 <input type="checkbox" onChange={toggleAll} className="h-4 w-4 rounded border-slate-300" />
               </th>
               <th className="w-12 px-2 py-2 font-medium whitespace-nowrap">순번</th>
+              <th className="px-2 py-2 font-medium whitespace-nowrap">상태</th>
               {SORT_COLUMNS.map((col) => (
                 <th key={col.key} className="px-4 py-2 font-medium whitespace-nowrap">
                   <Link href={buildSortHref(query, sort, dir, col.key)} className="hover:underline">
@@ -245,6 +263,9 @@ export function PatientListTable({
                   />
                 </td>
                 <td className="px-2 py-2 text-slate-400">{idx + 1}</td>
+                <td className="px-2 py-2 whitespace-nowrap">
+                  <StatusBadge p={p} onToggle={handleToggleDone} />
+                </td>
                 <td className="px-4 py-2 whitespace-nowrap">
                   <Link href={patientEditHref(p)} className="font-medium text-slate-900 hover:underline">
                     {p.name}
@@ -266,26 +287,13 @@ export function PatientListTable({
                   </Link>
                 </td>
                 <td className="px-4 py-2 text-slate-600">
-                  <div className="flex flex-wrap items-center gap-2">
-                    {p.surgeryPlanId ? (
-                      <Link href={`/plans/${p.surgeryPlanId}`} className="font-medium text-slate-900 hover:underline">
-                        {procedureLabel(p)}
-                      </Link>
-                    ) : (
-                      "-"
-                    )}
-                    {p.surgeryPlanId && !p.recordId && (
-                      <label className="inline-flex items-center gap-1 text-xs text-slate-400">
-                        <input
-                          type="checkbox"
-                          checked={p.planDone}
-                          onChange={() => handleToggleDone(p.surgeryPlanId as string)}
-                          className="h-3.5 w-3.5 rounded border-slate-300"
-                        />
-                        완료
-                      </label>
-                    )}
-                  </div>
+                  {p.surgeryPlanId ? (
+                    <Link href={`/plans/${p.surgeryPlanId}`} className="font-medium text-slate-900 hover:underline">
+                      {procedureLabel(p)}
+                    </Link>
+                  ) : (
+                    "-"
+                  )}
                 </td>
                 <td className="px-2 py-2 whitespace-nowrap">
                   {p.surgeryPlanId ? (

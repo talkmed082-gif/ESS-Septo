@@ -269,10 +269,10 @@ export function nasalFindingsSummary(values: FieldValues): string {
 // ---------- Turbinoplasty (비중격교정술/FESS 공통) ----------
 
 const turbinateFields: { key: string; side: "좌측" | "우측"; label: string }[] = [
-  { key: "turb_middle_right", side: "우측", label: "중비갑개" },
-  { key: "turb_inferior_right", side: "우측", label: "하비갑개" },
-  { key: "turb_middle_left", side: "좌측", label: "중비갑개" },
-  { key: "turb_inferior_left", side: "좌측", label: "하비갑개" },
+  { key: "turb_middle_right", side: "우측", label: "Middle turbinoplasty" },
+  { key: "turb_inferior_right", side: "우측", label: "Inferior turbinoplasty" },
+  { key: "turb_middle_left", side: "좌측", label: "Middle turbinoplasty" },
+  { key: "turb_inferior_left", side: "좌측", label: "Inferior turbinoplasty" },
 ];
 
 function turbinateLabelsForSide(side: "좌측" | "우측", values: FieldValues): string[] {

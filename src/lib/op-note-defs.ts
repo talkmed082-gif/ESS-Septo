@@ -156,10 +156,10 @@ export const nasalFindingFields: SurgeryFieldDef[] = [
 // Turbinoplasty(실제 시행 여부) — 소견이 아니라 술식이라 "수술 방법" 페이지로 감.
 // 비중격교정술/FESS 어느 쪽에도 단독 또는 동반될 수 있어 공통 항목으로 둠
 export const turbinoplastyFields: SurgeryFieldDef[] = [
-  { key: "turb_middle_right", label: "중비갑개 축소술 - 우측", type: "checkbox" },
-  { key: "turb_middle_left", label: "중비갑개 축소술 - 좌측", type: "checkbox" },
-  { key: "turb_inferior_right", label: "하비갑개 축소술 - 우측", type: "checkbox" },
-  { key: "turb_inferior_left", label: "하비갑개 축소술 - 좌측", type: "checkbox" },
+  { key: "turb_middle_right", label: "Middle turbinoplasty - 우측", type: "checkbox" },
+  { key: "turb_middle_left", label: "Middle turbinoplasty - 좌측", type: "checkbox" },
+  { key: "turb_inferior_right", label: "Inferior turbinoplasty - 우측", type: "checkbox" },
+  { key: "turb_inferior_left", label: "Inferior turbinoplasty - 좌측", type: "checkbox" },
 ];
 
 // 비중격교정술 전용 항목

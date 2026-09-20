@@ -5,8 +5,8 @@ import type { FieldValues } from "@/lib/field-types";
 import { buttonStyles } from "@/lib/ui";
 
 const TURB_TYPES = [
-  { key: "middle", label: "중비갑개 축소술" },
-  { key: "inferior", label: "하비갑개 축소술" },
+  { key: "middle", label: "Middle turbinoplasty" },
+  { key: "inferior", label: "Inferior turbinoplasty" },
 ] as const;
 
 const SIDES = [

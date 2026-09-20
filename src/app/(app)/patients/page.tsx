@@ -7,7 +7,7 @@ import { buildProcedureName, type NameStyle, type SideNotation } from "@/lib/op-
 import { safeDateStr } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
 import { PatientsListTitle } from "@/components/patients-list-title";
-import { PatientListTable, type PatientRow } from "./patient-list-table";
+import { PatientListTable, isPlanDone, type PatientRow } from "./patient-list-table";
 
 export default async function PatientsPage({
   searchParams,
@@ -87,6 +87,11 @@ export default async function PatientsPage({
 
   const dirMul = dir === "asc" ? 1 : -1;
   const sortedRows = [...rows].sort((a, b) => {
+    // 정렬 기준과 무관하게, 예정인 수술을 항상 위에 두고 완료된 수술은
+    // 아래로 모아서 보여준다 — 그 안에서만 선택한 열로 다시 정렬한다.
+    const doneDiff = Number(isPlanDone(a)) - Number(isPlanDone(b));
+    if (doneDiff !== 0) return doneDiff;
+
     let av: string | number = "";
     let bv: string | number = "";
     switch (sort) {

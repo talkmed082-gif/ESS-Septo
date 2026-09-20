@@ -14,7 +14,7 @@ import { buttonStyles } from "@/lib/ui";
 // 부위 체크리스트. A4 한 장에 4장씩 나온다. 환자 목록에서 ?plans=id1,id2,...
 // 로 계획 id를 넘기면 그 계획들의 실제 체크 상태로 채워서 인쇄하고(부족한
 // 칸은 빈 양식), 아무것도 안 넘기면 전부 빈 양식으로 미리 뽑아둘 수 있다.
-const FESS_ONLY_ROW_LABELS = ["중비갑개 축소술", "하비갑개 축소술"];
+const FESS_ONLY_ROW_LABELS = ["Middle turbinoplasty", "Inferior turbinoplasty"];
 const BLANK_ROWS = [
   "Uncinectomy",
   "MMA (Middle meatal antrostomy)",
@@ -46,15 +46,21 @@ function chunk<T>(arr: T[], size: number): T[][] {
   return out;
 }
 
-// 손으로 밑줄만 그으면 되는 빈 줄 여러 개 — flex-1로 남는 세로 공간을
-// 줄 사이에 고르게 나눠 채워서 카드 높이가 달라져도 항상 꽉 차 보인다.
-function BlankLines({ count }: { count: number }) {
+// 손으로 밑줄을 그을 수 있는 빈 줄들 — 예전엔 고정된 개수(4줄)를 남는
+// 세로 공간에 억지로 늘려 붙여서 표 한 칸보다 줄 간격이 훨씬 넓어 보였다.
+// 그 대신 표의 한 행 높이(28px)와 같은 간격으로 선을 반복해서, 공간이
+// 남으면 그만큼 줄이 더 생기고 줄 사이 간격은 항상 표와 비슷하게 유지된다.
+const CHECKLIST_ROW_HEIGHT = 28;
+function BlankLines() {
   return (
-    <div className="flex flex-1 flex-col justify-between">
-      {Array.from({ length: count }).map((_, i) => (
-        <span key={i} className="border-b border-slate-300" />
-      ))}
-    </div>
+    <div
+      className="flex-1"
+      style={{
+        backgroundImage: `repeating-linear-gradient(to bottom, transparent 0, transparent ${
+          CHECKLIST_ROW_HEIGHT - 1
+        }px, #cbd5e1 ${CHECKLIST_ROW_HEIGHT - 1}px, #cbd5e1 ${CHECKLIST_ROW_HEIGHT}px)`,
+      }}
+    />
   );
 }
 
@@ -92,7 +98,7 @@ function ChecklistCard({ data }: { data?: CardData }) {
         {data ? (
           <p className="text-[11px] whitespace-pre-wrap text-slate-700">{data.findings || "-"}</p>
         ) : (
-          <BlankLines count={4} />
+          <BlankLines />
         )}
       </div>
       <table className="w-full border-collapse text-xs">
@@ -183,12 +189,12 @@ export default async function FessChecklistPrintPage({
         const rows: CardRow[] = [
           ...(table?.sideMatrix?.rows.map((r) => ({ label: r.label, right: r.right, left: r.left })) ?? []),
           {
-            label: "중비갑개 축소술",
+            label: "Middle turbinoplasty",
             right: values.turb_middle_right === true,
             left: values.turb_middle_left === true,
           },
           {
-            label: "하비갑개 축소술",
+            label: "Inferior turbinoplasty",
             right: values.turb_inferior_right === true,
             left: values.turb_inferior_left === true,
           },
