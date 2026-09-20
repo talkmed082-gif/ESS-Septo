@@ -78,6 +78,16 @@ function ChecklistCard({ data }: { data?: CardData }) {
           </span>
         </div>
       </div>
+      {/* 1개 인쇄용 보기(PlanTableView)와 순서를 맞춘다 — 비강 소견이 Op
+          Plan(시행 부위 표)보다 먼저 나온다. */}
+      <div className="mb-2 flex flex-1 flex-col">
+        <span className="mb-1 text-xs font-medium text-slate-600">비강 소견</span>
+        {data ? (
+          <p className="text-[11px] whitespace-pre-wrap text-slate-700">{data.findings || "-"}</p>
+        ) : (
+          <BlankLines count={4} />
+        )}
+      </div>
       <table className="w-full border-collapse text-xs">
         <thead>
           <tr>
@@ -102,14 +112,6 @@ function ChecklistCard({ data }: { data?: CardData }) {
           ))}
         </tbody>
       </table>
-      <div className="mt-2 flex flex-1 flex-col">
-        <span className="mb-1 text-xs font-medium text-slate-600">비강 소견</span>
-        {data ? (
-          <p className="text-[11px] whitespace-pre-wrap text-slate-700">{data.findings || "-"}</p>
-        ) : (
-          <BlankLines count={4} />
-        )}
-      </div>
     </div>
   );
 }
