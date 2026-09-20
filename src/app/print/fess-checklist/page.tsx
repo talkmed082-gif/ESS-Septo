@@ -103,7 +103,7 @@ function ChecklistCard({ data }: { data?: CardData }) {
         </tbody>
       </table>
       <div className="mt-2 flex flex-1 flex-col">
-        <span className="mb-1 text-xs font-medium text-slate-600">비강/영상 소견</span>
+        <span className="mb-1 text-xs font-medium text-slate-600">비강 소견</span>
         {data ? (
           <p className="text-[11px] whitespace-pre-wrap text-slate-700">{data.findings || "-"}</p>
         ) : (
@@ -195,7 +195,7 @@ export default async function FessChecklistPrintPage({
 
   return (
     <div className="mx-auto w-full max-w-3xl bg-white p-3 text-slate-900 sm:p-8 print:max-w-none print:p-0">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 print:hidden">
+      <div className="sticky top-0 z-10 mb-4 flex flex-wrap items-center justify-between gap-2 bg-white py-2 print:hidden">
         <Link href="/patients" className="text-sm text-slate-500 hover:underline">
           ← 목록으로 돌아가기
         </Link>

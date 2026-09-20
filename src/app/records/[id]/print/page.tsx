@@ -45,7 +45,7 @@ export default async function OpRecordPrintPage({
 
   return (
     <div className="mx-auto w-full max-w-3xl bg-white p-3 text-slate-900 sm:p-8 print:max-w-none print:p-0">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 print:hidden">
+      <div className="sticky top-0 z-10 mb-4 flex flex-wrap items-center justify-between gap-2 bg-white py-2 print:hidden">
         <Link href={`/records/${record.id}`} className="text-sm text-slate-500 hover:underline">
           ← 기록지로 돌아가기
         </Link>

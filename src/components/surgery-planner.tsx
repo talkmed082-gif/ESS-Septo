@@ -428,14 +428,14 @@ export function SurgeryPlanner({
             {patientNasalFindings && Object.keys(patientNasalFindings).length > 0 && (
               <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3">
                 <p className="mb-2 text-xs font-medium text-emerald-700">
-                  이 환자의 이전 기록에 비강/영상 소견이 저장되어 있습니다
+                  이 환자의 이전 기록에 비강 소견이 저장되어 있습니다
                 </p>
                 <button
                   type="button"
                   onClick={applyPatientNasalFindings}
                   className="rounded-full border border-emerald-600 bg-white px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
                 >
-                  저장된 비강/영상 소견 불러오기
+                  저장된 비강 소견 불러오기
                 </button>
               </div>
             )}
@@ -452,7 +452,7 @@ export function SurgeryPlanner({
             )}
             <div className="flex gap-2 border-b border-slate-200 pb-3">
               <button type="button" onClick={() => setStep(1)} className={stepButtonClass(step === 1)}>
-                1. 비강/영상 소견
+                1. 비강 소견
               </button>
               <button type="button" onClick={() => setStep(2)} className={stepButtonClass(step === 2)}>
                 2. 수술 방법

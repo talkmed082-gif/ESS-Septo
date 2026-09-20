@@ -159,16 +159,17 @@ export function nasalFindingsText(values: FieldValues): string {
   }
 
   if (bool(values, "n_ess_pe_done")) {
+    // 화면의 ESS P/E 입력 순서(UP attach -> 이상 소견 6개 -> 비용종)와
+    // 그대로 맞춘다.
+    const uncinate = uncinateLine(values);
+    if (uncinate) lines.push(uncinate);
     lines.push(
       bool(values, "n_cb_present")
         ? `Concha bullosa: ${str(values, "n_cb_side", "양측")}`
         : "Concha bullosa 없음",
     );
-    lines.push(polypFindingText(values));
     const skullBase = presentSidedLine("Low skull base", "n_skull_base_risk_present", "n_skull_base_risk_side", values);
     if (skullBase) lines.push(skullBase);
-    const uncinate = uncinateLine(values);
-    if (uncinate) lines.push(uncinate);
     const onodi = presentSidedLine("Onodi's cell", "n_onodi_present", "n_onodi_side", values);
     if (onodi) lines.push(onodi);
     const haller = presentSidedLine("Haller's cell", "n_haller_present", "n_haller_side", values);
@@ -187,6 +188,7 @@ export function nasalFindingsText(values: FieldValues): string {
       values,
     );
     if (dehiscence) lines.push(dehiscence);
+    lines.push(polypFindingText(values));
   }
 
   return lines.join("\n");
@@ -219,18 +221,7 @@ export function nasalFindingsSummary(values: FieldValues): string {
     return items.length > 0 ? items.join(", ") + "." : "특이 소견 없음";
   }
 
-  if (bool(values, "n_cb_present")) {
-    items.push(`${str(values, "n_cb_side", "양측")} concha bullosa`);
-  }
-
-  if (hasPolyp(values)) {
-    items.push(polypFindingText(values));
-  }
-
-  if (bool(values, "n_skull_base_risk_present")) {
-    items.push(`${str(values, "n_skull_base_risk_side", "양측")} Low skull base`);
-  }
-
+  // 화면의 ESS P/E 입력 순서(UP attach -> 이상 소견 6개 -> 비용종)와 그대로 맞춘다.
   // UP attach는 어떤 값이든 frontal sinusotomy 접근 계획에 항상 참고되는
   // 정보라, 다른 항목과 달리 "흔한 값(LP)"이어도 요약에서 빼지 않고 항상 넣는다.
   const uncLeft = str(values, "n_uncinate_left", "");
@@ -240,6 +231,14 @@ export function nasalFindingsSummary(values: FieldValues): string {
     if (uncRight) parts.push(`우측 ${uncRight}`);
     if (uncLeft) parts.push(`좌측 ${uncLeft}`);
     items.push(`UP attach ${parts.join(", ")}`);
+  }
+
+  if (bool(values, "n_cb_present")) {
+    items.push(`${str(values, "n_cb_side", "양측")} concha bullosa`);
+  }
+
+  if (bool(values, "n_skull_base_risk_present")) {
+    items.push(`${str(values, "n_skull_base_risk_side", "양측")} Low skull base`);
   }
 
   if (bool(values, "n_onodi_present")) {
@@ -256,6 +255,10 @@ export function nasalFindingsSummary(values: FieldValues): string {
 
   if (bool(values, "n_dehiscence_present")) {
     items.push(`${str(values, "n_dehiscence_side", "양측")} 시신경/경동맥 골 결손`);
+  }
+
+  if (hasPolyp(values)) {
+    items.push(polypFindingText(values));
   }
 
   // 요약도 항목을 쉼표로 이어붙인 한 줄짜리 문단이면 읽기 어려워서, 소견

@@ -33,7 +33,7 @@ export default async function OpPlanPrintPage({
 
   return (
     <div className="mx-auto w-full max-w-2xl bg-white p-3 text-slate-900 sm:p-8 print:max-w-none print:p-0">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 print:hidden">
+      <div className="sticky top-0 z-10 mb-4 flex flex-wrap items-center justify-between gap-2 bg-white py-2 print:hidden">
         <Link href={`/plans/${plan.id}`} className="text-sm text-slate-500 hover:underline">
           ← 계획으로 돌아가기
         </Link>

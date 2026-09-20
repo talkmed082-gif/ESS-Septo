@@ -109,7 +109,7 @@ export function RecordForm({
 
       <div>
         <label className="mb-1 block text-sm font-medium text-slate-700">
-          비강/영상 소견 및 수술 과정 (Findings &amp; Procedure)
+          비강 소견 및 수술 과정 (Findings &amp; Procedure)
         </label>
         {/* 소견/과정을 굳이 서로 다른 칸에 나눠두면 병원 EMR 등 다른 곳에 옮겨
             적을 때 두 번 복사해야 해서, 한 칸에 이어서 보여주고 통째로
@@ -139,7 +139,7 @@ export function RecordForm({
             onClick={() => setStep(1)}
             className={stepButtonClass(step === 1)}
           >
-            1. 비강/영상 소견
+            1. 비강 소견
           </button>
           <button
             type="button"
