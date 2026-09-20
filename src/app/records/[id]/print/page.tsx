@@ -5,6 +5,7 @@ import { verifySession } from "@/lib/dal";
 import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
 import { PrintButton } from "@/components/print-button";
 import { SaveImageButton } from "@/components/save-image-button";
+import { CopyButton } from "@/components/copy-button";
 import { AppNavBar } from "@/components/app-nav-bar";
 import { safeDateStr } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
@@ -45,6 +46,15 @@ export default async function OpRecordPrintPage({
     (f) => f.type !== "checkbox" && values[f.key],
   );
 
+  // 병원 EMR 등 다른 곳에 옮겨 적을 수 있게, 수술명 + 소견/과정을 통째로
+  // 복사할 수 있는 텍스트를 만든다.
+  const copyText = [
+    record.procedureName,
+    [record.findings, record.procedureDetail].filter(Boolean).join("\n\n"),
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
   return (
     <div>
       <AppNavBar />
@@ -54,6 +64,7 @@ export default async function OpRecordPrintPage({
             ← 기록지로 돌아가기
           </Link>
           <div className="flex flex-wrap gap-2">
+            <CopyButton text={copyText} label="내용 복사" className={buttonStyles.secondary} />
             <SaveImageButton
               targetId="op-record-print-content"
               fileName={`${patient.name}_수술기록지.jpg`}

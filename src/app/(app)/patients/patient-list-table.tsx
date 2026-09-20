@@ -188,7 +188,7 @@ export function PatientListTable({
             <div className="mt-2 flex gap-2">
               {p.surgeryPlanId ? (
                 <Link href={`/plans/${p.surgeryPlanId}/print`} className={buttonStyles.smallOutline}>
-                  비강 소견 확인
+                  수술 계획 확인
                 </Link>
               ) : null}
               {p.recordId ? (
@@ -290,7 +290,7 @@ export function PatientListTable({
                 <td className="px-2 py-2 whitespace-nowrap">
                   {p.surgeryPlanId ? (
                     <Link href={`/plans/${p.surgeryPlanId}/print`} className={buttonStyles.smallOutline}>
-                      비강 소견 확인
+                      수술 계획 확인
                     </Link>
                   ) : (
                     "-"

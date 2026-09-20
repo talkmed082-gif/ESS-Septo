@@ -4,10 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
 import { parseFieldValues } from "@/lib/field-types";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
-import { buildPlanTable, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
+import { buildPlanTable, planTableToText, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { PlanTableView } from "@/components/plan-table";
 import { PrintButton } from "@/components/print-button";
 import { SaveImageButton } from "@/components/save-image-button";
+import { CopyButton } from "@/components/copy-button";
 import { AppNavBar } from "@/components/app-nav-bar";
 import { safeDateStr } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
@@ -42,6 +43,7 @@ export default async function OpPlanPrintPage({
             ← 계획으로 돌아가기
           </Link>
           <div className="flex flex-wrap gap-2">
+            {table && <CopyButton text={planTableToText(table)} label="내용 복사" className={buttonStyles.secondary} />}
             <SaveImageButton
               targetId="op-plan-print-content"
               fileName={`${plan.patient.name}_수술계획표.jpg`}

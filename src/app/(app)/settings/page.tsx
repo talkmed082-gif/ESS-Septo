@@ -5,6 +5,7 @@ import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
 import { buildProcedureName, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { buildGoogleCalendarUrl } from "@/lib/calendar";
 import { safeDateStr } from "@/lib/date-format";
+import Link from "next/link";
 import { buttonStyles } from "@/lib/ui";
 import { SettingsForm } from "./settings-form";
 
@@ -34,6 +35,17 @@ export default async function SettingsPage() {
           initialSideNotation={user.sideNotation as SideNotation}
           initialAbbreviate={user.abbreviateRegions}
         />
+      </div>
+
+      <div>
+        <h2 className="mb-1 text-sm font-semibold text-slate-700">수술 종류 관리</h2>
+        <p className="mb-3 text-sm text-slate-500">
+          기본 제공되는 ESS/비중격교정술 외에, 다루는 이비인후과 수술을 자유롭게 추가하거나 입력 항목을
+          확인할 수 있습니다.
+        </p>
+        <Link href="/surgery-types" className={buttonStyles.secondarySmall}>
+          수술 종류 관리 화면으로 이동
+        </Link>
       </div>
 
       <div>

@@ -19,6 +19,7 @@ import { TurbinoplastyTypePicker, TURBINOPLASTY_FIELD_KEYS } from "@/components/
 import { PresetBar, type PresetItem } from "@/components/preset-bar";
 import type { RecentCombo } from "@/lib/recent-combos";
 import { PlanTableView } from "@/components/plan-table";
+import { CopyButton } from "@/components/copy-button";
 import { buttonStyles } from "@/lib/ui";
 import {
   applyFieldDefaults,
@@ -94,27 +95,6 @@ function buildTexts(
     planTable,
     recordText: `수술명: ${procedureName}\n\n${findingsSection}[수술 과정]\n${record.procedureDetail}`,
   };
-}
-
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      type="button"
-      onClick={async () => {
-        try {
-          await navigator.clipboard.writeText(text);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1200);
-        } catch {
-          // 클립보드 접근 불가 - 무시
-        }
-      }}
-      className={buttonStyles.smallOutline}
-    >
-      {copied ? "복사됨 ✓" : "복사"}
-    </button>
-  );
 }
 
 // 퀵 도구(비로그인 미리보기) · 새 환자 등록 · 기존 환자의 새 계획 작성을
