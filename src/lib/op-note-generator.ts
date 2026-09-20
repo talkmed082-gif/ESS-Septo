@@ -367,15 +367,14 @@ function septoCore(values: FieldValues): string[] {
   const turbMiddleSide = turbTypeSideLabel("middle", values);
   const turbInferiorSide = turbTypeSideLabel("inferior", values);
   const splint = bool(values, "s_splint");
-  const quiltingSuture = str(values, "s_quilting_suture", "4-0 chromic catgut");
-  const splintSuture = str(values, "s_splint_suture", "4-0 nylon");
+  const quiltingSuture = str(values, "s_quilting_suture", "4-0 Vicryl");
+  const splintSuture = str(values, "s_splint_suture", "4-0 Vicryl");
 
   const steps: (string | false)[] = [
     incisionSentence(values),
     caudal && "Caudal septum의 편위 부위에 대해 함께 교정을 시행함",
     spur && "골성 비중격(perpendicular plate of ethmoid, vomer)에서 bony spur를 확인하고 제거함",
     "확인된 편위 부위의 변형된 septal cartilage 및 골성 비중격 일부를 절제 및 교정하여 straightening 후 정중앙에 위치시킴",
-    "Microdebrider를 이용하여 골성 및 연골성 비중격 조작을 보조적으로 시행함",
     turbMiddleSide && `${turbMiddleSide} ${turbinoplastyTechniqueSentence("middle")}`,
     turbInferiorSide && `${turbInferiorSide} ${turbinoplastyTechniqueSentence("inferior")}`,
     `Flap을 원위치로 정복한 후 ${quiltingSuture}를 사용하여 quilting suture 시행`,
@@ -394,9 +393,7 @@ function genSeptoplasty(values: FieldValues, mode: OpNoteMode, anesLabel: string
     steps.push(`${localAnesthetic}를 비중격 점막에 국소 침윤 마취함`);
   }
   steps.push(...septoCore(values));
-  steps.push("양측 비강에 Nasocel로 1차 packing을 시행함");
-  steps.push(dermacolSentence(values) || false);
-  steps.push("이어서 Rhinocel로 마무리 packing을 시행하고 출혈 소견 없음을 확인한 후 수술을 종료함");
+  steps.push("양측 비강에 Nasocel로 packing을 시행하고 출혈 소견 없음을 확인한 후 수술을 종료함");
 
   return { findings: nasalFindingsText(values), procedureDetail: numberSteps(steps) };
 }
@@ -694,20 +691,44 @@ function buildFessProcedureName(values: FieldValues, label: string, style: NameS
   return parts.join(", ");
 }
 
+// 비중격교정술 + 양측 하비갑개 축소술을 함께 시행하는 것이 기본 술식이라,
+// 그 조합일 때는 "Septoplasty + Both Turbinoplasty"라고 풀어 쓰지 않고
+// 합쳐진 명칭 "Septoturbinoplasty"를 그대로 수술명으로 쓴다. 한쪽만
+// 하비갑개 축소술을 했거나 아예 안 했으면(비대칭/기본과 다른 경우) 기존처럼
+// "Septoplasty"에 방향을 붙여 서술한다.
+function septoplastyProcedureName(values: FieldValues, style: NameStyle): string {
+  const inferior = turbSideFlags("inferior", values);
+  const bothInferior = inferior.right && inferior.left;
+  const base = bothInferior ? "Septoturbinoplasty" : "Septoplasty";
+
+  const parts: string[] = [];
+  const middle = turbSideFlags("middle", values);
+  if (middle.right || middle.left) {
+    const side = middle.right && middle.left ? "B" : middle.right ? "R" : "L";
+    parts.push(`${formatSideLabel(side, style)} ${turbTypeWord.middle}`);
+  }
+  if (!bothInferior && (inferior.right || inferior.left)) {
+    const side = inferior.right ? "R" : "L";
+    parts.push(`${formatSideLabel(side, style)} ${turbTypeWord.inferior}`);
+  }
+
+  return parts.length > 0 ? `${base} + ${parts.join(" + ")}` : base;
+}
+
 export function buildProcedureName(
   surgeryCode: BuiltInSurgeryCode,
   values: FieldValues,
   style: NameStyle = DEFAULT_NAME_STYLE,
 ): string {
+  if (surgeryCode === "SEPTOPLASTY") return septoplastyProcedureName(values, style);
+
   const hasFessRegions =
-    surgeryCode !== "SEPTOPLASTY" &&
-    (fessRegionsForSide("f_left_", values).length > 0 || fessRegionsForSide("f_right_", values).length > 0);
+    fessRegionsForSide("f_left_", values).length > 0 || fessRegionsForSide("f_right_", values).length > 0;
   const turbSuffix = turbinoplastyGlobalSuffix(values, style, hasFessRegions);
   // Revision case(재수술)는 수술명 맨 앞에 표기한다 (FESS가 포함된 경우만
   // 해당 — f_revision은 fessFields에만 있는 필드).
-  const revisionPrefix = surgeryCode !== "SEPTOPLASTY" && bool(values, "f_revision") ? "Revision " : "";
+  const revisionPrefix = bool(values, "f_revision") ? "Revision " : "";
 
-  if (surgeryCode === "SEPTOPLASTY") return `Septoplasty${turbSuffix}`;
   if (surgeryCode === "ESS") return `${revisionPrefix}${buildFessProcedureName(values, "ESS", style)}${turbSuffix}`;
   return `${revisionPrefix}Septoplasty + ${buildFessProcedureName(values, "ESS", style)}${turbSuffix}`;
 }
@@ -756,10 +777,15 @@ function fessSideMatrix(values: FieldValues): { title: string; rows: PlanSideMat
   return { title: "FESS 시행 부위", rows };
 }
 
-// 패킹 재료는 항상 Nasocel + Rhinocel 병용이 기본이고, Dermacol은 packing
-// 재료는 아니지만 같이 도포하는 경우가 많아 표에서는 한 칸에 묶어 보여준다.
-function packingCellValue(values: FieldValues): string {
-  return bool(values, "dermacol") ? "Nasocel + Rhinocel + Dermacol" : "Nasocel + Rhinocel";
+// 패킹 재료는 ESS/병행에서는 Nasocel + Rhinocel 병용이 기본이지만, 비중격
+// 교정술 단독 시행 시에는 Rhinocel을 쓰지 않는다(genSeptoplasty 참고).
+// Dermacol은 packing 재료는 아니지만 같이 도포하는 경우가 많아 표에서는 한
+// 칸에 묶어 보여준다.
+function packingCellValue(values: FieldValues, includeRhinocel: boolean): string {
+  const parts = ["Nasocel"];
+  if (includeRhinocel) parts.push("Rhinocel");
+  if (bool(values, "dermacol")) parts.push("Dermacol");
+  return parts.join(" + ");
 }
 
 export function buildPlanTable(
@@ -782,7 +808,7 @@ export function buildPlanTable(
         { label: "절개", value: incision },
         { label: "동반 술식", value: rest.length > 0 ? rest.join(", ") : "-" },
         ...turbRow,
-        { label: "Packing / Material", value: packingCellValue(values) },
+        { label: "Packing / Material", value: packingCellValue(values, false) },
       ],
     };
   }
@@ -794,7 +820,7 @@ export function buildPlanTable(
       keyValueRows: [
         ...turbRow,
         { label: "Navigation", value: bool(values, "f_nav") ? "사용" : "미사용" },
-        { label: "Packing / Material", value: packingCellValue(values) },
+        { label: "Packing / Material", value: packingCellValue(values, true) },
       ],
       sideMatrix: fessSideMatrix(values),
     };
@@ -809,7 +835,7 @@ export function buildPlanTable(
       { label: "절개(비중격)", value: incision },
       { label: "동반 술식(비중격)", value: rest.length > 0 ? rest.join(", ") : "-" },
       ...turbRow,
-      { label: "Packing / Material(공통)", value: packingCellValue(values) },
+      { label: "Packing / Material(공통)", value: packingCellValue(values, true) },
     ],
     sideMatrix: fessSideMatrix(values),
   };

@@ -28,10 +28,10 @@ async function main() {
 
   await prisma.surgeryType.upsert({
     where: { code: "SEPTOPLASTY" },
-    update: { name: "비중격교정술 (Septoplasty)", fields: toJson(septoplastyFullFields), isBuiltIn: true },
+    update: { name: "비중격교정술 (Septoturbinoplasty)", fields: toJson(septoplastyFullFields), isBuiltIn: true },
     create: {
       code: "SEPTOPLASTY",
-      name: "비중격교정술 (Septoplasty)",
+      name: "비중격교정술 (Septoturbinoplasty)",
       fields: toJson(septoplastyFullFields),
       isBuiltIn: true,
     },

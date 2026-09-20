@@ -99,7 +99,7 @@ export async function reseedBuiltInSurgeryTypes() {
 
   const builtIns: { code: string; name: string; fields: SurgeryFieldDef[] }[] = [
     { code: "ESS", name: "부비동내시경수술 (FESS)", fields: essFullFields },
-    { code: "SEPTOPLASTY", name: "비중격교정술 (Septoplasty)", fields: septoplastyFullFields },
+    { code: "SEPTOPLASTY", name: "비중격교정술 (Septoturbinoplasty)", fields: septoplastyFullFields },
     { code: "COMBO", name: "비중격교정술 + FESS 병행", fields: comboFullFields },
   ];
 

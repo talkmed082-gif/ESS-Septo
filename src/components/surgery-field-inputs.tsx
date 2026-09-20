@@ -1,5 +1,13 @@
 import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 
+function multiselectValues(value: string | boolean | undefined, field: SurgeryFieldDef): string[] {
+  const raw = typeof value === "string" ? value : (field.default ?? "");
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 function HiddenFieldInput({
   field,
   value,
@@ -18,6 +26,25 @@ function HiddenFieldInput({
         aria-hidden="true"
         tabIndex={-1}
       />
+    );
+  }
+  if (field.type === "multiselect") {
+    const selected = multiselectValues(value, field);
+    return (
+      <>
+        {(field.options ?? []).map((opt) => (
+          <input
+            key={opt}
+            type="checkbox"
+            name={name}
+            value={opt}
+            defaultChecked={selected.includes(opt)}
+            className="hidden"
+            aria-hidden="true"
+            tabIndex={-1}
+          />
+        ))}
+      </>
     );
   }
   if (field.type === "select") {
@@ -105,6 +132,31 @@ export function SurgeryFieldInputs({
                       </option>
                     ))}
                   </select>
+                </div>
+              );
+            }
+
+            if (field.type === "multiselect") {
+              const selected = multiselectValues(value, field);
+              return (
+                <div key={field.key}>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">
+                    {field.label}
+                  </label>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1.5 rounded-md border border-slate-300 px-3 py-2">
+                    {(field.options ?? []).map((opt) => (
+                      <label key={opt} className="flex items-center gap-1.5 text-sm">
+                        <input
+                          type="checkbox"
+                          name={name}
+                          value={opt}
+                          defaultChecked={selected.includes(opt)}
+                          className="h-4 w-4 rounded border-slate-300"
+                        />
+                        {opt}
+                      </label>
+                    ))}
+                  </div>
                 </div>
               );
             }

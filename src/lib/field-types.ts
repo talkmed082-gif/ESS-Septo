@@ -3,6 +3,7 @@ export type SurgeryFieldType =
   | "text"
   | "textarea"
   | "select"
+  | "multiselect"
   | "number";
 
 export interface SurgeryFieldDef {
@@ -43,6 +44,11 @@ export function fieldValuesFromFormData(
     const name = `field_${field.key}`;
     if (field.type === "checkbox") {
       values[field.key] = formData.get(name) === "on";
+    } else if (field.type === "multiselect") {
+      values[field.key] = formData
+        .getAll(name)
+        .filter((v): v is string => typeof v === "string")
+        .join(", ");
     } else {
       values[field.key] = (formData.get(name) as string | null) ?? "";
     }

@@ -12,6 +12,7 @@ const TYPE_LABEL: Record<SurgeryFieldType, string> = {
   text: "한 줄 텍스트",
   textarea: "여러 줄 텍스트",
   select: "선택(드롭다운)",
+  multiselect: "다중 선택(체크박스)",
   checkbox: "체크박스",
   number: "숫자",
 };
@@ -50,7 +51,7 @@ export function SurgeryTypeFieldBuilder() {
         label: r.label.trim(),
         type: r.type,
         options:
-          r.type === "select"
+          r.type === "select" || r.type === "multiselect"
             ? (r.options ?? []).map((o) => o.trim()).filter(Boolean)
             : undefined,
       })),
@@ -133,7 +134,7 @@ export function SurgeryTypeFieldBuilder() {
                   </option>
                 ))}
               </select>
-              {row.type === "select" && (
+              {(row.type === "select" || row.type === "multiselect") && (
                 <input
                   placeholder="선택지 (쉼표로 구분)"
                   value={(row.options ?? []).join(", ")}

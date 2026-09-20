@@ -36,8 +36,15 @@ export const septumTurbinateFindingFields: SurgeryFieldDef[] = [
   },
   {
     key: "n_septum_note",
-    label: "비중격 기타 특이사항 (예: 천공 크기/위치, 연골괴사 등)",
-    type: "text",
+    label: "비중격 기타 특이사항",
+    type: "multiselect",
+    options: [
+      "High deviation",
+      "Caudal deviation",
+      "Internal nasal valve narrowing",
+      "External nasal valve narrowing",
+      "Septal tubercle",
+    ],
   },
   // 하비갑개 비후 — 비중격교정술과 흔히 같이 시행되는 turbinoplasty의
   // 적응증이라 비중격 소견과 한 그룹으로 묶는다.
@@ -184,7 +191,7 @@ export const septoFields: SurgeryFieldDef[] = [
   },
   { key: "s_caudal", label: "Caudal septum 편위 동반 교정", type: "checkbox" },
   { key: "s_spur", label: "Bony spur 제거", type: "checkbox" },
-  { key: "s_splint", label: "Silastic splint 삽입", type: "checkbox" },
+  { key: "s_splint", label: "Silastic splint 삽입", type: "checkbox", default: "true" },
   { key: "dermacol", label: "Dermacol 도포", type: "checkbox", default: "true" },
   {
     key: "s_local_anesthetic",
@@ -196,13 +203,13 @@ export const septoFields: SurgeryFieldDef[] = [
     key: "s_quilting_suture",
     label: "Quilting suture 봉합사",
     type: "text",
-    default: "4-0 chromic catgut",
+    default: "4-0 Vicryl",
   },
   {
     key: "s_splint_suture",
     label: "Splint 고정 봉합사",
     type: "text",
-    default: "4-0 nylon",
+    default: "4-0 Vicryl",
   },
 ];
 
@@ -268,25 +275,39 @@ export const comboOnlyFields: SurgeryFieldDef[] = [
 const septoFieldsForCombo = septoFields;
 const fessFieldsForCombo = fessFields.filter((f) => f.key !== "dermacol");
 
+// 특정 수술 종류에서만 다르게 적용할 default 값을 덮어쓴다 — 같은 필드
+// 정의(예: CHR, P/E 시행 체크)를 여러 수술 종류가 공유하지만, 그 수술을
+// 할 때 임상적으로 흔한/기본적인 값은 수술 종류마다 다르기 때문.
+function withDefaults(fields: SurgeryFieldDef[], overrides: Record<string, string>): SurgeryFieldDef[] {
+  return fields.map((f) => (f.key in overrides ? { ...f, default: overrides[f.key] } : f));
+}
+
 // ESS/병행은 비강소견 두 그룹(비중격/하비갑개 + ESS)을 모두 보여주고,
 // 비중격교정술 단독은 비중격/하비갑개 그룹만 보여준다(ESS 전용 CT 소견 불필요).
-export const essFullFields: SurgeryFieldDef[] = [
-  ...nasalFindingFields,
-  ...turbinoplastyFields,
-  ...fessFields,
-];
-export const septoplastyFullFields: SurgeryFieldDef[] = [
-  ...septumTurbinateFindingFields,
-  ...turbinoplastyFields,
-  ...septoFields,
-];
-export const comboFullFields: SurgeryFieldDef[] = [
-  ...nasalFindingFields,
-  ...turbinoplastyFields,
-  ...septoFieldsForCombo,
-  ...fessFieldsForCombo,
-  ...comboOnlyFields,
-];
+// ESS/병행 수술명에는 항상 "ESS"가 들어가므로 ESS P/E도 기본으로 체크해둔다.
+export const essFullFields: SurgeryFieldDef[] = withDefaults(
+  [...nasalFindingFields, ...turbinoplastyFields, ...fessFields],
+  { [ESS_PE_DONE_KEY]: "true" },
+);
+// 비중격교정술은 하비갑개 비후(CHR)를 양측에 동반하는 경우가 대부분이고,
+// 양측 하비갑개 축소술까지 함께 시행하는 것("Septoturbinoplasty")이 기본
+// 술식이라 관련 항목들을 기본으로 켜둔다. Packing 재료에서 Rhinocel/Dermacol은
+// 쓰지 않아서(genSeptoplasty 참고) dermacol 항목 자체를 뺀다.
+export const septoplastyFullFields: SurgeryFieldDef[] = withDefaults(
+  [...septumTurbinateFindingFields, ...turbinoplastyFields, ...septoFields],
+  {
+    [SEPTO_PE_DONE_KEY]: "true",
+    n_chr: "양측",
+    turb_inferior_right: "true",
+    turb_inferior_left: "true",
+  },
+).filter((f) => f.key !== "dermacol");
+// 병행 수술명에는 항상 "Septoplasty"와 "ESS"가 함께 들어가므로 두 P/E를 모두
+// 기본으로 체크해둔다.
+export const comboFullFields: SurgeryFieldDef[] = withDefaults(
+  [...nasalFindingFields, ...turbinoplastyFields, ...septoFieldsForCombo, ...fessFieldsForCombo, ...comboOnlyFields],
+  { [SEPTO_PE_DONE_KEY]: "true", [ESS_PE_DONE_KEY]: "true" },
+);
 
 export const BUILT_IN_SURGERY_CODES = ["ESS", "SEPTOPLASTY", "COMBO"] as const;
 export type BuiltInSurgeryCode = (typeof BUILT_IN_SURGERY_CODES)[number];
