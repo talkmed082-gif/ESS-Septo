@@ -52,7 +52,7 @@ export function SideMatrixTable({
                     <button
                       type="button"
                       onClick={() => onToggle?.(row.rightFieldKey)}
-                      className={`h-6 w-6 rounded touch-manipulation active:scale-95 ${
+                      className={`relative h-6 w-6 rounded touch-manipulation active:scale-95 before:absolute before:-inset-x-7 before:-inset-y-2 before:content-[''] ${
                         row.right ? "bg-emerald-600 text-white" : "bg-slate-100 text-transparent hover:bg-slate-200"
                       }`}
                     >
@@ -63,7 +63,7 @@ export function SideMatrixTable({
                     <button
                       type="button"
                       onClick={() => onToggle?.(row.leftFieldKey)}
-                      className={`h-6 w-6 rounded touch-manipulation active:scale-95 ${
+                      className={`relative h-6 w-6 rounded touch-manipulation active:scale-95 before:absolute before:-inset-x-7 before:-inset-y-2 before:content-[''] ${
                         row.left ? "bg-emerald-600 text-white" : "bg-slate-100 text-transparent hover:bg-slate-200"
                       }`}
                     >
