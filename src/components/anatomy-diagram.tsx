@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FieldValues } from "@/lib/field-types";
 import { fessStepFieldKeys } from "@/lib/op-note-defs";
 import { buttonStyles } from "@/lib/ui";
@@ -164,6 +164,17 @@ export function SeptumDiagram({
   );
 }
 
+function sinusCheckedFromValues(values?: FieldValues): Record<string, boolean> {
+  const next: Record<string, boolean> = {};
+  for (const prefix of ["f_left_", "f_right_"] as const) {
+    next[`${prefix}uncinectomy`] = values?.[`${prefix}uncinectomy`] === true;
+    for (const step of SINUS_STEPS) {
+      next[`${prefix}${step.key}`] = values?.[`${prefix}${step.key}`] === true;
+    }
+  }
+  return next;
+}
+
 export function SinusDiagram({
   values,
   onChange,
@@ -179,16 +190,12 @@ export function SinusDiagram({
   const rootRef = useRef<HTMLDivElement>(null);
   const [revisionRight, setRevisionRight] = useState<boolean>(() => values?.f_revision_ess_right === true);
   const [revisionLeft, setRevisionLeft] = useState<boolean>(() => values?.f_revision_ess_left === true);
-  const [checked, setChecked] = useState<Record<string, boolean>>(() => {
-    const next: Record<string, boolean> = {};
-    for (const prefix of ["f_left_", "f_right_"] as const) {
-      next[`${prefix}uncinectomy`] = values?.[`${prefix}uncinectomy`] === true;
-      for (const step of SINUS_STEPS) {
-        next[`${prefix}${step.key}`] = values?.[`${prefix}${step.key}`] === true;
-      }
-    }
-    return next;
-  });
+  const [checked, setChecked] = useState<Record<string, boolean>>(() => sinusCheckedFromValues(values));
+  // 소견 쪽 셀을 눌러 부위가 바뀌면(표를 다시 만들지 않으므로) values만 바뀐다 —
+  // 그때 모식도 안의 표시도 같은 값으로 맞춘다.
+  useEffect(() => {
+    setChecked(sinusCheckedFromValues(values));
+  }, [values]);
 
   function toggle(prefix: "f_left_" | "f_right_", key: string) {
     const fullKey = `${prefix}${key}`;
