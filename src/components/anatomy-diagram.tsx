@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { FieldValues } from "@/lib/field-types";
 import { fessStepFieldKeys } from "@/lib/op-note-defs";
 import { buttonStyles } from "@/lib/ui";
@@ -193,9 +193,11 @@ export function SinusDiagram({
   const [checked, setChecked] = useState<Record<string, boolean>>(() => sinusCheckedFromValues(values));
   // 소견 쪽 셀을 눌러 부위가 바뀌면(표를 다시 만들지 않으므로) values만 바뀐다 —
   // 그때 모식도 안의 표시도 같은 값으로 맞춘다.
-  useEffect(() => {
+  const [prevValues, setPrevValues] = useState(values);
+  if (values !== prevValues) {
+    setPrevValues(values);
     setChecked(sinusCheckedFromValues(values));
-  }, [values]);
+  }
 
   function toggle(prefix: "f_left_" | "f_right_", key: string) {
     const fullKey = `${prefix}${key}`;
