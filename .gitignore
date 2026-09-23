@@ -48,3 +48,4 @@ next-env.d.ts
 /prisma/dev.db-journal
 /dev.db
 /dev.db-journal
+.ua/
