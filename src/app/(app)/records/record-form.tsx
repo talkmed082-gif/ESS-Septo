@@ -79,9 +79,8 @@ export function RecordForm({
   const [showAnatomicFindings, setShowAnatomicFindings] = useState(() =>
     ANATOMIC_RISK_PRESENT_KEYS.some((k) => fieldValues?.[k] === true),
   );
-  const [showSinusitisFindings, setShowSinusitisFindings] = useState(() =>
-    SINUSITIS_PRESENT_KEYS.some((k) => fieldValues?.[k] === true),
-  );
+  // 부비동염은 ESS 계획에서 워낙 흔히 관련돼 있어 기본으로 펼쳐둔다.
+  const [showSinusitisFindings, setShowSinusitisFindings] = useState(true);
   const [showPolypFindings, setShowPolypFindings] = useState(() =>
     POLYP_FIELD_KEYS.some((k) => fieldValues?.[k] === true),
   );
@@ -278,11 +277,11 @@ export function RecordForm({
                 onToggleSinusitis={(v) => setFindingGroupOpen(SINUSITIS_PRESENT_KEYS, v, setShowSinusitisFindings)}
                 onTogglePolyp={(v) => setFindingGroupOpen(POLYP_FIELD_KEYS, v, setShowPolypFindings)}
               />
-              {showAnatomicFindings && <AnatomicRiskFindingsPicker values={liveFieldValues} />}
               {showSinusitisFindings && (
                 <SinusitisFindingsPicker values={liveFieldValues} onToggle={toggleLiveField} />
               )}
               {showPolypFindings && <PolypPicker values={liveFieldValues} onToggle={toggleLiveField} />}
+              {showAnatomicFindings && <AnatomicRiskFindingsPicker values={liveFieldValues} />}
             </CollapsibleFindingSection>
           )}
           <SurgeryFieldInputs

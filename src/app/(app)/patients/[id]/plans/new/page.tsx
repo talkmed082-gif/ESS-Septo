@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
-import { parseFieldDefs } from "@/lib/field-types";
+import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
 import { getLatestNasalFindingsForPatient } from "@/lib/patient-nasal-findings";
 import { SurgeryPlanner } from "@/components/surgery-planner";
@@ -34,11 +34,12 @@ export default async function NewOpPlanPage({
           id: st.id,
           code: st.code,
           name: st.name,
-          fields: parseFieldDefs(st.fields),
+          fields: resolveSurgeryTypeFields(st),
         }))}
         loggedIn
         nameStyle={nameStyle}
         userEmail={user.email}
+        userName={user.name}
         fixedPatient={{ id: patient.id, name: patient.name }}
         patientNasalFindings={patientNasalFindings}
       />

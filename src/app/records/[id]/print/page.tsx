@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
-import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
+import { parseFieldValues } from "@/lib/field-types";
+import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import { PrintButton } from "@/components/print-button";
 import { SaveImageButton } from "@/components/save-image-button";
 import { CopyButton } from "@/components/copy-button";
@@ -38,7 +39,7 @@ export default async function OpRecordPrintPage({
   if (!record) notFound();
 
   const patient = record.opPlan.patient;
-  const fields = parseFieldDefs(record.opPlan.surgeryType.fields);
+  const fields = resolveSurgeryTypeFields(record.opPlan.surgeryType);
   const values = parseFieldValues(record.recordData);
 
   const checkedFields = fields.filter((f) => f.type === "checkbox" && values[f.key]);

@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
-import { parseFieldDefs, fieldValuesFromFormData } from "@/lib/field-types";
+import { fieldValuesFromFormData } from "@/lib/field-types";
+import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 
 const OpRecordSchema = z.object({
   operationDate: z.string().trim().min(1, { error: "수술일을 입력하세요." }),
@@ -56,7 +57,7 @@ export async function createOpRecord(
   }
   const data = validated.data;
 
-  const fields = parseFieldDefs(plan.surgeryType.fields);
+  const fields = resolveSurgeryTypeFields(plan.surgeryType);
   const recordData = fieldValuesFromFormData(formData, fields);
 
   await prisma.opRecord.create({
@@ -101,7 +102,7 @@ export async function updateOpRecord(
   }
   const data = validated.data;
 
-  const fields = parseFieldDefs(record.opPlan.surgeryType.fields);
+  const fields = resolveSurgeryTypeFields(record.opPlan.surgeryType);
   const recordData = fieldValuesFromFormData(formData, fields);
 
   await prisma.opRecord.update({

@@ -28,15 +28,6 @@ export function NasalFindingsOverview({
         <label className="flex items-center gap-1.5">
           <input
             type="checkbox"
-            checked={showAnatomic}
-            onChange={(e) => onToggleAnatomic(e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300"
-          />
-          해부학적 이상 소견
-        </label>
-        <label className="flex items-center gap-1.5">
-          <input
-            type="checkbox"
             checked={showSinusitis}
             onChange={(e) => onToggleSinusitis(e.target.checked)}
             className="h-4 w-4 rounded border-slate-300"
@@ -51,6 +42,15 @@ export function NasalFindingsOverview({
             className="h-4 w-4 rounded border-slate-300"
           />
           비용종
+        </label>
+        <label className="flex items-center gap-1.5">
+          <input
+            type="checkbox"
+            checked={showAnatomic}
+            onChange={(e) => onToggleAnatomic(e.target.checked)}
+            className="h-4 w-4 rounded border-slate-300"
+          />
+          해부학적 이상 소견
         </label>
       </div>
     </div>

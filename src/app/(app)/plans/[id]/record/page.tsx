@@ -2,10 +2,10 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
-import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
+import { parseFieldValues } from "@/lib/field-types";
 import { createOpRecord } from "@/app/actions/op-records";
 import { buildProcedureName, generateOpNote, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
-import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
+import { isBuiltInSurgeryCode, resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import { safeDateStr } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
 import { RecordForm } from "../../../records/record-form";
@@ -29,7 +29,7 @@ export default async function NewOpRecordPage({
     sideNotation: currentUser.sideNotation as SideNotation,
     abbreviateRegions: currentUser.abbreviateRegions,
   };
-  const fields = parseFieldDefs(plan.surgeryType.fields);
+  const fields = resolveSurgeryTypeFields(plan.surgeryType);
   const planValues = parseFieldValues(plan.planData);
   const action = createOpRecord.bind(null, planId);
 

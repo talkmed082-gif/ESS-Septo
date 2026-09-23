@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
-import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
+import { parseFieldValues } from "@/lib/field-types";
 import { updateOpRecord } from "@/app/actions/op-records";
+import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
@@ -25,7 +26,7 @@ export default async function EditOpRecordPage({
     sideNotation: user.sideNotation as SideNotation,
     abbreviateRegions: user.abbreviateRegions,
   };
-  const fields = parseFieldDefs(record.opPlan.surgeryType.fields);
+  const fields = resolveSurgeryTypeFields(record.opPlan.surgeryType);
   const values = parseFieldValues(record.recordData);
   const action = updateOpRecord.bind(null, record.id);
 

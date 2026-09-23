@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { deleteSurgeryType, reseedBuiltInSurgeryTypes } from "@/app/actions/surgery-types";
-import { parseFieldDefs } from "@/lib/field-types";
+import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import { buttonStyles } from "@/lib/ui";
 import { SurgeryTypeFieldBuilder } from "./field-builder";
 
@@ -22,8 +22,8 @@ export async function SurgeryTypesManager({ updated }: { updated?: boolean }) {
           기본 수술 종류(ESS/비중격교정술/병행) 입력 항목 최신화
         </button>
         <p className="mt-1 text-xs text-slate-400">
-          op-note-defs.ts 쪽 기본 항목/기본값이 바뀐 뒤 반영이 안 됐을 때 눌러서 DB의 입력 항목 정의를
-          다시 맞춥니다. 기존에 저장된 계획/기록지 값은 바뀌지 않습니다.
+          기본 3종(ESS/비중격교정술/병행)은 화면·저장 모두 항상 최신 코드 정의를 그대로 쓰므로 평소엔
+          안 눌러도 됩니다. 이 버튼은 아래 표에 보이는 DB 저장 값만 최신 코드 정의로 맞춰줍니다.
         </p>
       </form>
 
@@ -46,7 +46,7 @@ export async function SurgeryTypesManager({ updated }: { updated?: boolean }) {
                 </td>
                 <td className="px-4 py-2">{st.name}</td>
                 <td className="px-4 py-2 text-slate-600">
-                  {parseFieldDefs(st.fields).length}개
+                  {resolveSurgeryTypeFields(st).length}개
                 </td>
                 <td className="px-4 py-2 text-slate-600">
                   {st.isBuiltIn ? "기본" : "사용자 추가"}

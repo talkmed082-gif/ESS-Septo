@@ -90,6 +90,7 @@ function buildTexts(
   values: FieldValues,
   anesthesiaType: string,
   nameStyle?: NameStyle,
+  recordMeta?: { date: string; surgeonName: string },
 ): { planTable: PlanTable | null; recordText: string } {
   if (!isBuiltInSurgeryCode(code)) {
     return {
@@ -101,9 +102,16 @@ function buildTexts(
   const record = generateOpNote(code, values, "record", anesthesiaType);
   const procedureName = buildProcedureName(code, values, nameStyle);
   const findingsSection = record.findings ? `[수술 소견]\n${record.findings}\n\n` : "";
+  // 기록지 초안의 수술명 줄에는 수술 날짜와 집도의를 같이 적어서, 병원
+  // EMR 등 다른 곳에 옮겨 적을 때 그대로 쓸 수 있게 한다.
+  const nameLine = recordMeta
+    ? `수술명 : ${recordMeta.date}${recordMeta.date ? " " : ""}${procedureName}${
+        recordMeta.surgeonName ? ` by ${recordMeta.surgeonName}` : ""
+      }`
+    : `수술명: ${procedureName}`;
   return {
     planTable,
-    recordText: `수술명: ${procedureName}\n\n${findingsSection}[수술 과정]\n${record.procedureDetail}`,
+    recordText: `${nameLine}\n\n${findingsSection}[수술 과정]\n${record.procedureDetail}`,
   };
 }
 
@@ -132,12 +140,13 @@ function buildTextsFrozenAware(
   frozenPlanValues: FieldValues | undefined,
   anesthesiaType: string,
   nameStyle?: NameStyle,
+  recordMeta?: { date: string; surgeonName: string },
 ): { planTable: PlanTable | null; recordText: string } {
   const overrides = proceduralFrozenOverrides(fields, frozenPlanValues);
   const planTableValues = overrides ? { ...values, ...overrides } : values;
   return {
     planTable: buildTexts(code, planTableValues, anesthesiaType, nameStyle).planTable,
-    recordText: buildTexts(code, values, anesthesiaType, nameStyle).recordText,
+    recordText: buildTexts(code, values, anesthesiaType, nameStyle, recordMeta).recordText,
   };
 }
 
@@ -154,6 +163,7 @@ export function SurgeryPlanner({
   loggedIn,
   nameStyle,
   userEmail,
+  userName,
   fixedPatient,
   patientNasalFindings,
   editPlan,
@@ -165,6 +175,8 @@ export function SurgeryPlanner({
   nameStyle?: NameStyle;
   // 기록지 초안을 메일로 보낼 때 기본 수신자로 채운다.
   userEmail?: string;
+  // 기록지 초안의 수술명 줄에 집도의로 채운다.
+  userName?: string;
   fixedPatient?: { id: string; name: string };
   patientNasalFindings?: FieldValues;
   // 기존 계획 수정 모드 — 넘기면 수술 종류가 고정되고 값들이 미리 채워진다.
@@ -189,6 +201,11 @@ export function SurgeryPlanner({
   const [selectedId, setSelectedId] = useState(initialSelected?.id ?? first?.id ?? "");
   // 마취는 항상 전신마취(General)가 기본이라 별도 선택 없이 고정한다.
   const anesthesiaType = "General";
+  // 기록지 초안 수술명 줄에 쓸 날짜 — 기본은 작성 당일이고, 저장된 계획을
+  // 다시 열면 그때 저장해둔 날짜를 그대로 보여준다.
+  const [surgeryDate, setSurgeryDate] = useState(
+    () => editPlan?.plannedDate || new Date().toISOString().slice(0, 10),
+  );
   const [{ planTable, recordText }, setTexts] = useState(() =>
     initialSelected
       ? buildTextsFrozenAware(
@@ -198,6 +215,7 @@ export function SurgeryPlanner({
           editPlan?.frozenPlanValues,
           "General",
           nameStyle,
+          { date: editPlan?.plannedDate || new Date().toISOString().slice(0, 10), surgeonName: userName ?? "" },
         )
       : { planTable: null, recordText: "" },
   );
@@ -220,9 +238,8 @@ export function SurgeryPlanner({
   const [showAnatomicFindings, setShowAnatomicFindings] = useState(() =>
     ANATOMIC_RISK_PRESENT_KEYS.some((k) => templateValues?.[k] === true),
   );
-  const [showSinusitisFindings, setShowSinusitisFindings] = useState(() =>
-    SINUSITIS_PRESENT_KEYS.some((k) => templateValues?.[k] === true),
-  );
+  // 부비동염은 ESS 계획에서 워낙 흔히 관련돼 있어 기본으로 펼쳐둔다.
+  const [showSinusitisFindings, setShowSinusitisFindings] = useState(true);
   const [showPolypFindings, setShowPolypFindings] = useState(() =>
     POLYP_FIELD_KEYS.some((k) => templateValues?.[k] === true),
   );
@@ -265,7 +282,7 @@ export function SurgeryPlanner({
       active ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
     }`;
 
-  function computeTexts(values: FieldValues): { planTable: PlanTable | null; recordText: string } {
+  function computeTexts(values: FieldValues, dateOverride?: string): { planTable: PlanTable | null; recordText: string } {
     if (!selected) return { planTable: null, recordText: "" };
     return buildTextsFrozenAware(
       selected.code,
@@ -274,7 +291,19 @@ export function SurgeryPlanner({
       editPlan?.frozenPlanValues,
       anesthesiaType,
       nameStyle,
+      { date: dateOverride ?? surgeryDate, surgeonName: userName ?? "" },
     );
+  }
+
+  // 날짜 입력도 <form onChange={regenerateFromForm}>에 걸려서 바꾸면 change가
+  // 버블링되는데, 그건 방금 바뀐 날짜 state를 아직 못 본 채로
+  // regenerateFromForm이 실행돼(리렌더 전) 미리보기가 한 박자 늦게 바뀐다 —
+  // 버블링을 막고 새 날짜를 직접 넘겨서 바로 반영한다.
+  function handleSurgeryDateChange(e: ChangeEvent<HTMLInputElement>) {
+    e.stopPropagation();
+    const next = e.target.value;
+    setSurgeryDate(next);
+    setTexts(computeTexts(templateValues ?? {}, next));
   }
 
   function regenerateFromForm() {
@@ -398,7 +427,15 @@ export function SurgeryPlanner({
     setTemplateKey((k) => k + 1);
     setTexts(
       next && nextValues
-        ? buildTextsFrozenAware(next.code, next.fields, nextValues, editPlan?.frozenPlanValues, anesthesiaType, nameStyle)
+        ? buildTextsFrozenAware(
+            next.code,
+            next.fields,
+            nextValues,
+            editPlan?.frozenPlanValues,
+            anesthesiaType,
+            nameStyle,
+            { date: surgeryDate, surgeonName: userName ?? "" },
+          )
         : { planTable: null, recordText: "" },
     );
   }
@@ -524,12 +561,6 @@ export function SurgeryPlanner({
         )}
 
 
-        {/* 수술 예정일은 병원 EMR 스케줄과 겹치는 행정 항목이라 화면에서 입력
-            받지 않는다. 이미 저장된 계획을 수정할 때는(editPlan) 기존 값을
-            그대로 숨겨서 다시 제출해 값이 지워지지 않게 하고, 새로 만드는
-            계획은 날짜 없이 생성된다. */}
-        {editPlan && <input type="hidden" name="plannedDate" defaultValue={editPlan.plannedDate} />}
-
         {selected && (
           <div key={`${selected.id}-${templateKey}`} className="space-y-4">
             {patientNasalFindings && Object.keys(patientNasalFindings).length > 0 && (
@@ -579,9 +610,6 @@ export function SurgeryPlanner({
                     onToggleSinusitis={(v) => setFindingGroupOpen(SINUSITIS_PRESENT_KEYS, v, setShowSinusitisFindings)}
                     onTogglePolyp={(v) => setFindingGroupOpen(POLYP_FIELD_KEYS, v, setShowPolypFindings)}
                   />
-                  {showAnatomicFindings && (
-                    <AnatomicRiskFindingsPicker values={templateValues} onChange={regenerateFromForm} />
-                  )}
                   {showSinusitisFindings && (
                     <SinusitisFindingsPicker
                       values={templateValues}
@@ -593,6 +621,9 @@ export function SurgeryPlanner({
                       values={templateValues}
                       onToggle={(key) => toggleFindingWithCascade(key, POLYP_TO_FESS_FIELD)}
                     />
+                  )}
+                  {showAnatomicFindings && (
+                    <AnatomicRiskFindingsPicker values={templateValues} onChange={regenerateFromForm} />
                   )}
                 </CollapsibleFindingSection>
               )}
@@ -735,8 +766,20 @@ export function SurgeryPlanner({
         )}
         {view === "post" && (
           <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="mb-2 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-700">수술기록지 초안</h2>
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-semibold text-slate-700">수술기록지 초안</h2>
+                <label className="flex items-center gap-1.5 text-xs text-slate-500">
+                  수술 날짜
+                  <input
+                    type="date"
+                    name="plannedDate"
+                    value={surgeryDate}
+                    onChange={handleSurgeryDateChange}
+                    className="rounded border border-slate-300 px-1.5 py-0.5 text-xs"
+                  />
+                </label>
+              </div>
               <div className="flex gap-2">
                 <CopyButton text={recordText} />
                 <a

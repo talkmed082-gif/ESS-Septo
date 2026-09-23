@@ -1,4 +1,4 @@
-import type { SurgeryFieldDef } from "./field-types";
+import { parseFieldDefs, type SurgeryFieldDef } from "./field-types";
 
 // 두 비강 소견 그룹(Septoturbinoplasty용/ESS용)을 각각 접어두고, 실제로
 // 그 진찰을 기록할 때만 체크해서 펼치는 스위치. 이 체크 여부가 기록지
@@ -360,6 +360,19 @@ export type BuiltInSurgeryCode = (typeof BUILT_IN_SURGERY_CODES)[number];
 
 export function isBuiltInSurgeryCode(code: string): code is BuiltInSurgeryCode {
   return (BUILT_IN_SURGERY_CODES as readonly string[]).includes(code);
+}
+
+// 기본 3종(ESS/SEPTOPLASTY/COMBO)은 DB에 저장된 fields를 신뢰하지 않고
+// 항상 코드(essFullFields 등) 쪽 최신 정의를 그대로 쓴다 — 그동안 필드
+// 정의를 바꿀 때마다 "기본 수술 종류 입력 항목 최신화"를 안 누르면 화면과
+// 저장 로직이 서로 다른(구버전) 필드 목록을 봐서 체크가 안 눌리거나 값이
+// 저장 안 되는 문제가 반복됐다. 이제는 그 버튼을 안 눌러도 항상 최신
+// 정의로 동작한다(커스텀 수술 종류는 그대로 DB 정의를 쓴다).
+export function resolveSurgeryTypeFields(surgeryType: { code: string; fields: unknown }): SurgeryFieldDef[] {
+  if (surgeryType.code === "ESS") return essFullFields;
+  if (surgeryType.code === "SEPTOPLASTY") return septoplastyFullFields;
+  if (surgeryType.code === "COMBO") return comboFullFields;
+  return parseFieldDefs(surgeryType.fields);
 }
 
 // 기록지/계획 화면을 "비강/영상 소견"과 "수술 방법" 두 페이지로 나눌 때 쓰는

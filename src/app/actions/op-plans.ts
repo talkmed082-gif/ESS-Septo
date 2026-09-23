@@ -5,8 +5,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
-import { parseFieldDefs, parseFieldValues, fieldValuesFromFormData, type FieldValues } from "@/lib/field-types";
-import { isNasalFindingKey, REVISION_FLAG_KEYS } from "@/lib/op-note-defs";
+import { parseFieldValues, fieldValuesFromFormData, type FieldValues } from "@/lib/field-types";
+import { isNasalFindingKey, REVISION_FLAG_KEYS, resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 
 const OpPlanSchema = z.object({
   plannedDate: z.string().trim().optional(),
@@ -57,7 +57,7 @@ export async function updateOpPlan(
     surgeryType = newType;
   }
 
-  const fields = parseFieldDefs(surgeryType.fields);
+  const fields = resolveSurgeryTypeFields(surgeryType);
   const submittedValues = fieldValuesFromFormData(formData, fields);
 
   // 완료(DONE) 처리된 계획은 Op Plan 표가 계속 원래 계획 그대로를 보여줘야

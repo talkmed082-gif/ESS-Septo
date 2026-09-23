@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
-import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
+import { parseFieldValues } from "@/lib/field-types";
+import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import { safeDateStr } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
 
@@ -30,7 +31,7 @@ export default async function OpRecordPage({
   });
   if (!record) notFound();
 
-  const fields = parseFieldDefs(record.opPlan.surgeryType.fields);
+  const fields = resolveSurgeryTypeFields(record.opPlan.surgeryType);
   const values = parseFieldValues(record.recordData);
 
   return (

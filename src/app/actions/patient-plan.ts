@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
-import { parseFieldDefs, fieldValuesFromFormData } from "@/lib/field-types";
+import { fieldValuesFromFormData } from "@/lib/field-types";
+import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 
 const PatientPlanSchema = z.object({
   existingPatientId: z.string().trim().optional(),
@@ -100,7 +101,7 @@ export async function createPatientWithPlan(
     redirect(`/patients/${patientId}`);
   }
 
-  const fields = parseFieldDefs(surgeryType.fields);
+  const fields = resolveSurgeryTypeFields(surgeryType);
   const planData = fieldValuesFromFormData(formData, fields);
 
   const plan = await prisma.opPlan.create({

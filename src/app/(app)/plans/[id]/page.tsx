@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
-import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
+import { parseFieldValues } from "@/lib/field-types";
 import { deleteOpPlan, updateOpPlan } from "@/app/actions/op-plans";
+import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
 import { SurgeryPlanner } from "@/components/surgery-planner";
@@ -66,11 +67,12 @@ export default async function OpPlanPage({
           id: st.id,
           code: st.code,
           name: st.name,
-          fields: parseFieldDefs(st.fields),
+          fields: resolveSurgeryTypeFields(st),
         }))}
         loggedIn
         nameStyle={nameStyle}
         userEmail={user.email}
+        userName={user.name}
         fixedPatient={{ id: plan.patient.id, name: plan.patient.name }}
         // 완료로 표시된 계획은 "수술 후" 화면(수술 방법/기록지)을 기본으로
         // 열어서, 이미 끝난 수술의 소견 입력 화면부터 다시 보여주지 않게 한다.
