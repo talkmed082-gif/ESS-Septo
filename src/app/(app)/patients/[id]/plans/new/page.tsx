@@ -38,6 +38,7 @@ export default async function NewOpPlanPage({
         }))}
         loggedIn
         nameStyle={nameStyle}
+        userEmail={user.email}
         fixedPatient={{ id: patient.id, name: patient.name }}
         patientNasalFindings={patientNasalFindings}
       />

@@ -107,7 +107,7 @@ export function TurbinoplastyTypePicker({
             onChange={togglePerformed}
             className="h-4 w-4 rounded border-slate-300"
           />
-          터비노플라스티 시행
+          Turbinoplasty 시행
         </label>
         {performed && (
           <div className="flex gap-1">

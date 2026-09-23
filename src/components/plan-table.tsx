@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { PlanSideMatrixRow, PlanTable } from "@/lib/op-note-generator";
 import { CHECK_MARK, DataCell } from "@/components/check-cell";
 import { buttonStyles } from "@/lib/ui";
@@ -36,10 +37,7 @@ export function SideMatrixTable({
       <table className={`w-full border-collapse ${textSize}`}>
         <thead>
           <tr>
-            <th className={`border border-slate-400 bg-slate-50 ${cellPad} text-left font-medium`}>
-              {title}
-              {interactive && <span className="ml-2 font-normal text-slate-400">(클릭해서 체크)</span>}
-            </th>
+            <th className={`border border-slate-400 bg-slate-50 ${cellPad} text-left font-medium`}>{title}</th>
             <th className={`w-20 border border-slate-400 bg-slate-50 ${cellPad} font-medium`}>우측</th>
             <th className={`w-20 border border-slate-400 bg-slate-50 ${cellPad} font-medium`}>좌측</th>
           </tr>
@@ -110,6 +108,12 @@ export function PlanTableView({
 
   const nameSize = size === "large" ? "text-2xl" : "text-base";
 
+  // Turbinoplasty는 안 하는 경우가 더 많아 기본으로는 접어두고, 체크해야
+  // 표가 열리게 한다 — 이미 값이 있으면(수정 화면 등) 처음부터 펼쳐둔다.
+  const [turbExpanded, setTurbExpanded] = useState(
+    () => table.turbMatrix?.rows.some((r) => r.left || r.right) ?? false,
+  );
+
   return (
     <div className="space-y-4">
       <p className={`${nameSize} font-bold`}>{table.procedureName}</p>
@@ -166,15 +170,30 @@ export function PlanTableView({
         />
       )}
 
-      {table.turbMatrix && (
-        <SideMatrixTable
-          title={table.turbMatrix.title}
-          rows={table.turbMatrix.rows}
-          textSize={textSize}
-          cellPad={cellPad}
-          interactive={interactive}
-          onToggle={onToggle}
-        />
+      {table.turbMatrix && (interactive || turbExpanded) && (
+        <div>
+          {interactive && (
+            <label className="mb-1 flex items-center gap-1.5 text-xs font-medium text-slate-600">
+              <input
+                type="checkbox"
+                checked={turbExpanded}
+                onChange={(e) => setTurbExpanded(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300"
+              />
+              Turbinoplasty
+            </label>
+          )}
+          {(turbExpanded || !interactive) && (
+            <SideMatrixTable
+              title={table.turbMatrix.title}
+              rows={table.turbMatrix.rows}
+              textSize={textSize}
+              cellPad={cellPad}
+              interactive={interactive}
+              onToggle={onToggle}
+            />
+          )}
+        </div>
       )}
     </div>
   );

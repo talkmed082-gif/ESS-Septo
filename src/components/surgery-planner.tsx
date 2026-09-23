@@ -42,6 +42,7 @@ import {
   REVISION_FLAG_KEYS,
   SINUSITIS_TO_FESS_FIELD,
   POLYP_TO_FESS_FIELD,
+  POST_OP_FINISH_KEYS,
 } from "@/lib/op-note-defs";
 import {
   buildProcedureName,
@@ -57,12 +58,6 @@ export interface SurgeryTypeOption {
   code: string;
   name: string;
   fields: SurgeryFieldDef[];
-}
-
-export interface ExistingPatientOption {
-  id: string;
-  name: string;
-  chartNo: string | null;
 }
 
 // 기존 수술 계획을 수정할 때 넘겨주는 초기 상태 — 넘기면 수술 종류는
@@ -149,13 +144,16 @@ function buildTextsFrozenAware(
 // 퀵 도구(비로그인 미리보기) · 새 환자 등록 · 기존 환자의 새 계획 작성을
 // 한 컴포넌트로 통일한 것 — 예전엔 이 세 화면이 각각 따로 구현돼 있어서
 // 필드/픽커 관련 기능을 추가할 때마다 세 곳을 다 고쳐야 했다. 이제는
-// fixedPatient/existingPatients/loggedIn 조합으로 화면만 달라지고,
-// 저장은 항상 같은 createPatientWithPlan 액션 하나로 처리한다.
+// fixedPatient/loggedIn 조합으로 화면만 달라지고, 저장은 항상 같은
+// createPatientWithPlan 액션 하나로 처리한다. fixedPatient가 없으면 항상
+// 새 환자 등록 화면이다 — "새 환자 등록" 메뉴로 들어온 이상 기존 환자를
+// 고를 이유가 없어서, 그 선택지 자체를 없앴다(기존 환자에 계획을 추가하는
+// 건 해당 환자 상세 화면의 "새 계획" 쪽에서 fixedPatient로 처리한다).
 export function SurgeryPlanner({
   surgeryTypes,
   loggedIn,
   nameStyle,
-  existingPatients,
+  userEmail,
   fixedPatient,
   patientNasalFindings,
   editPlan,
@@ -165,7 +163,8 @@ export function SurgeryPlanner({
   surgeryTypes: SurgeryTypeOption[];
   loggedIn: boolean;
   nameStyle?: NameStyle;
-  existingPatients?: ExistingPatientOption[];
+  // 기록지 초안을 메일로 보낼 때 기본 수신자로 채운다.
+  userEmail?: string;
   fixedPatient?: { id: string; name: string };
   patientNasalFindings?: FieldValues;
   // 기존 계획 수정 모드 — 넘기면 수술 종류가 고정되고 값들이 미리 채워진다.
@@ -190,7 +189,6 @@ export function SurgeryPlanner({
   const [selectedId, setSelectedId] = useState(initialSelected?.id ?? first?.id ?? "");
   // 마취는 항상 전신마취(General)가 기본이라 별도 선택 없이 고정한다.
   const anesthesiaType = "General";
-  const [patientMode, setPatientMode] = useState<"new" | "existing">("new");
   const [{ planTable, recordText }, setTexts] = useState(() =>
     initialSelected
       ? buildTextsFrozenAware(
@@ -404,175 +402,110 @@ export function SurgeryPlanner({
           </p>
         )}
 
-        {showPatientSection && (
-          <div className="space-y-3 rounded-md border border-slate-200 p-4">
-            <div className="flex gap-4 text-sm">
+        {/* 첫 줄: 수술 전/후 상태 + 수술 종류(Septo/ESS) — 한눈에 보이게 컴팩트하게 묶는다. */}
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700">
+          {showPatientSection && (
+            <div className="flex items-center gap-3">
               <label className="flex items-center gap-1.5">
-                <input
-                  type="radio"
-                  name="patientMode"
-                  checked={patientMode === "new"}
-                  onChange={() => setPatientMode("new")}
-                />
-                새 환자 등록
+                <input type="radio" name="planStatus" value="PLANNED" defaultChecked onChange={() => setView("pre")} />
+                수술 전
               </label>
               <label className="flex items-center gap-1.5">
-                <input
-                  type="radio"
-                  name="patientMode"
-                  checked={patientMode === "existing"}
-                  onChange={() => setPatientMode("existing")}
-                />
-                기존 환자 선택
+                <input type="radio" name="planStatus" value="DONE" onChange={() => setView("post")} />
+                수술 후
               </label>
             </div>
+          )}
+          <input type="hidden" name="surgeryTypeId" value={selectedId} />
+          {septoType && (
+            <label className="flex items-center gap-1.5">
+              <input
+                type="checkbox"
+                checked={septoChecked}
+                onChange={(e) => handleSurgeryTypeChange(idForBuiltInCombo(e.target.checked, essChecked), e)}
+                className="h-4 w-4 rounded border-slate-300"
+              />
+              Septo
+            </label>
+          )}
+          {essType && (
+            <label className="flex items-center gap-1.5">
+              <input
+                type="checkbox"
+                checked={essChecked}
+                onChange={(e) => handleSurgeryTypeChange(idForBuiltInCombo(septoChecked, e.target.checked), e)}
+                className="h-4 w-4 rounded border-slate-300"
+              />
+              ESS
+            </label>
+          )}
+        </div>
 
-            {patientMode === "existing" ? (
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">환자</label>
-                <select
-                  name="existingPatientId"
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-                >
-                  {(existingPatients ?? []).map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                      {p.chartNo ? ` (${p.chartNo})` : ""}
-                    </option>
-                  ))}
-                </select>
-                {(existingPatients ?? []).length === 0 && (
-                  <p className="mt-1 text-xs text-slate-400">등록된 환자가 없습니다.</p>
-                )}
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700">환자 이름 *</label>
-                    <input
-                      name="name"
-                      required
-                      className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-                    />
-                    {state?.errors?.name && (
-                      <p className="mt-1 text-sm text-red-600">{state.errors.name[0]}</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700">차트번호</label>
-                    <input
-                      name="chartNo"
-                      className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700">성별</label>
-                    <select
-                      name="sex"
-                      defaultValue=""
-                      className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-                    >
-                      <option value="">선택 안 함</option>
-                      <option value="M">남</option>
-                      <option value="F">여</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700">나이</label>
-                    <input
-                      type="number"
-                      name="age"
-                      min="0"
-                      className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">환자 상태</label>
-                  <div className="flex gap-4 text-sm">
-                    <label className="flex items-center gap-1.5">
-                      <input
-                        type="radio"
-                        name="planStatus"
-                        value="PLANNED"
-                        defaultChecked
-                        onChange={() => setView("pre")}
-                      />
-                      수술 전 환자
-                    </label>
-                    <label className="flex items-center gap-1.5">
-                      <input
-                        type="radio"
-                        name="planStatus"
-                        value="DONE"
-                        onChange={() => setView("post")}
-                      />
-                      수술 후 환자
-                    </label>
-                  </div>
-                </div>
-              </>
-            )}
+        {customTypes.length > 0 && (
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-500">기타 수술 종류</label>
+            <select
+              value={isCustomSelected ? selectedId : ""}
+              onChange={(e) => handleSurgeryTypeChange(e.target.value, e)}
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            >
+              <option value="">선택 안 함</option>
+              {customTypes.map((st) => (
+                <option key={st.id} value={st.id}>
+                  {st.name}
+                </option>
+              ))}
+            </select>
           </div>
         )}
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">수술 종류</label>
-          <input type="hidden" name="surgeryTypeId" value={selectedId} />
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium text-slate-700">
-            {septoType && (
-              <label className="flex items-center gap-1.5">
+        {showPatientSection && (
+          <div className="space-y-3 rounded-md border border-slate-200 p-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">환자 이름</label>
                 <input
-                  type="checkbox"
-                  checked={septoChecked}
-                  onChange={(e) => handleSurgeryTypeChange(idForBuiltInCombo(e.target.checked, essChecked), e)}
-                  className="h-4 w-4 rounded border-slate-300"
+                  name="name"
+                  placeholder="비워두면 등록 날짜·시간으로 자동 생성"
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
                 />
-                Septo
-              </label>
-            )}
-            {essType && (
-              <label className="flex items-center gap-1.5">
+                {state?.errors?.name && (
+                  <p className="mt-1 text-sm text-red-600">{state.errors.name[0]}</p>
+                )}
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">차트번호</label>
                 <input
-                  type="checkbox"
-                  checked={essChecked}
-                  onChange={(e) => handleSurgeryTypeChange(idForBuiltInCombo(septoChecked, e.target.checked), e)}
-                  className="h-4 w-4 rounded border-slate-300"
+                  name="chartNo"
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
                 />
-                ESS
-              </label>
-            )}
-          </div>
-          {!fixedPatient && !editPlan && !septoChecked && !essChecked && !isCustomSelected && (
-            <p className="mt-1 text-xs text-slate-400">체크하지 않으면 계획 없이 환자만 등록됩니다.</p>
-          )}
-          {customTypes.length > 0 && (
-            <div className="mt-2">
-              <label className="mb-1 block text-xs font-medium text-slate-500">기타 수술 종류</label>
-              <select
-                value={isCustomSelected ? selectedId : ""}
-                onChange={(e) => handleSurgeryTypeChange(e.target.value, e)}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-              >
-                <option value="">선택 안 함</option>
-                {customTypes.map((st) => (
-                  <option key={st.id} value={st.id}>
-                    {st.name}
-                  </option>
-                ))}
-              </select>
+              </div>
             </div>
-          )}
-          {editPlan && (
-            <p className="mt-1 text-xs text-slate-400">
-              종류를 바꾸면 그 종류의 입력 항목으로 다시 표시됩니다. 겹치는 항목(비강 소견 등)은 유지되고,
-              새 종류에 없는 값은 사라집니다.
-            </p>
-          )}
-        </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">성별</label>
+                <select
+                  name="sex"
+                  defaultValue=""
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+                >
+                  <option value="">선택 안 함</option>
+                  <option value="M">남</option>
+                  <option value="F">여</option>
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">나이</label>
+                <input
+                  type="number"
+                  name="age"
+                  min="0"
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
 
         {/* 수술 예정일은 병원 EMR 스케줄과 겹치는 행정 항목이라 화면에서 입력
@@ -607,12 +540,7 @@ export function SurgeryPlanner({
             </div>
             <div className={view === "pre" ? "space-y-4" : "hidden"}>
               {showSeptum && (
-                <CollapsibleFindingSection
-                  doneKey={SEPTO_PE_DONE_KEY}
-                  label="Septoturbinoplasty P/E"
-                  values={templateValues}
-                  onChange={regenerateFromForm}
-                >
+                <CollapsibleFindingSection doneKey={SEPTO_PE_DONE_KEY} label="Septoturbinoplasty P/E">
                   <SeptumDiagram values={templateValues} onChange={regenerateFromForm} />
                   <SurgeryFieldInputs
                     fields={nasalFields.filter((f) => SEPTUM_DETAIL_FIELD_KEYS.includes(f.key))}
@@ -621,12 +549,7 @@ export function SurgeryPlanner({
                 </CollapsibleFindingSection>
               )}
               {showSinus && (
-                <CollapsibleFindingSection
-                  doneKey={ESS_PE_DONE_KEY}
-                  label="ESS P/E"
-                  values={templateValues}
-                  onChange={regenerateFromForm}
-                >
+                <CollapsibleFindingSection doneKey={ESS_PE_DONE_KEY} label="ESS P/E">
                   <UncinateAttachmentFields
                     fields={nasalFields.filter((f) => UNCINATE_FIELD_KEYS.includes(f.key))}
                     values={templateValues}
@@ -714,14 +637,38 @@ export function SurgeryPlanner({
               )}
             </div>
             <div className={view === "post" ? "space-y-4" : "hidden"}>
+              <SurgeryFieldInputs
+                fields={selected.fields.filter((f) => f.key === "f_side_order" || f.key === "c_order")}
+                values={templateValues}
+              />
+              <SurgeryFieldInputs
+                fields={selected.fields.filter((f) => f.key === "f_nav")}
+                values={templateValues}
+              />
               {showSinus && (
                 <SinusDiagram values={templateValues} onChange={regenerateFromForm} hideRevisionToggle />
               )}
               <TurbinoplastyTypePicker values={templateValues} onChange={regenerateFromForm} />
+              {selected.fields.some((f) => POST_OP_FINISH_KEYS.includes(f.key)) && (
+                <div className="rounded-md border border-slate-200 p-3">
+                  <p className="mb-2 text-sm font-medium text-slate-700">수술후 마무리</p>
+                  <SurgeryFieldInputs
+                    fields={selected.fields.filter((f) => POST_OP_FINISH_KEYS.includes(f.key))}
+                    values={templateValues}
+                  />
+                </div>
+              )}
               <SurgeryFieldInputs
                 fields={procedureFields}
                 values={templateValues}
-                excludeKeys={[...getSinusCoveredKeys(selected.code), ...TURBINOPLASTY_FIELD_KEYS]}
+                excludeKeys={[
+                  ...getSinusCoveredKeys(selected.code),
+                  ...TURBINOPLASTY_FIELD_KEYS,
+                  "f_side_order",
+                  "c_order",
+                  "f_nav",
+                  ...POST_OP_FINISH_KEYS,
+                ]}
               />
             </div>
           </div>
@@ -736,11 +683,6 @@ export function SurgeryPlanner({
               <h2 className="text-sm font-semibold text-slate-700">Op Plan 요약</h2>
               {planTable && <CopyButton text={planTableToText(planTable)} />}
             </div>
-            {editPlan?.isDone && (
-              <p className="mb-2 text-xs text-slate-400">
-                완료 처리된 계획입니다 — 원래 계획 그대로 표시되며, 실제 시행 내역 수정은 수술 후 화면에서 합니다.
-              </p>
-            )}
             {planTable ? (
               <PlanTableView
                 table={planTable}
@@ -760,7 +702,7 @@ export function SurgeryPlanner({
               <div className="flex gap-2">
                 <CopyButton text={recordText} />
                 <a
-                  href={`mailto:?subject=${encodeURIComponent(
+                  href={`mailto:${encodeURIComponent(userEmail ?? "")}?subject=${encodeURIComponent(
                     `수술기록지${fixedPatient ? ` - ${fixedPatient.name}` : ""}`,
                   )}&body=${encodeURIComponent(recordText)}`}
                   className={buttonStyles.smallOutline}
@@ -805,20 +747,16 @@ export function SurgeryPlanner({
         )}
 
         {state?.message && <p className="text-sm text-red-600">{state.message}</p>}
-        {state?.errors?.name && patientMode === "existing" && (
-          <p className="text-sm text-red-600">{state.errors.name[0]}</p>
-        )}
 
         {canSave ? (
-          <button type="submit" disabled={pending} className={`w-full ${buttonStyles.primary}`}>
-            {pending
-              ? "저장 중..."
-              : editPlan
-                ? "저장"
-                : fixedPatient || patientMode === "existing"
-                  ? "계획 저장"
-                  : "환자 등록 + 계획 저장"}
-          </button>
+          <div className="flex gap-2">
+            <button type="submit" name="saveIntent" value="save" disabled={pending} className={`flex-1 ${buttonStyles.secondary}`}>
+              {pending ? "저장 중..." : editPlan ? "저장" : fixedPatient ? "계획 저장" : "환자 등록 + 계획 저장"}
+            </button>
+            <button type="submit" name="saveIntent" value="record" disabled={pending} className={`flex-1 ${buttonStyles.primary}`}>
+              {pending ? "저장 중..." : "저장 후 기록지 작성"}
+            </button>
+          </div>
         ) : (
           <button type="button" onClick={regenerateFromForm} className={`w-full ${buttonStyles.accentOutline}`}>
             위 항목으로 미리보기 새로고침

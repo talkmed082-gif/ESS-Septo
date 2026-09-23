@@ -6,6 +6,11 @@ import type { SurgeryFieldDef } from "./field-types";
 export const SEPTO_PE_DONE_KEY = "n_septo_pe_done";
 export const ESS_PE_DONE_KEY = "n_ess_pe_done";
 
+// "수술후 마무리" 섹션에 묶어서 보여줄 필드들(계획/기록지 작성 화면 공통) —
+// 시행 순서/Navigation/ESS 시행 부위/Turbinoplasty 다음, 수술의 실제
+// 마지막 단계(패킹/실라스틱 시트)를 순서 그대로 배치한다.
+export const POST_OP_FINISH_KEYS = ["f_silastic_sheet", "f_nasocel", "f_rhinocel", "dermacol"];
+
 // 비강 소견 - 비중격/하비갑개 그룹 (Septoturbinoplasty용) — 비중격교정술
 // 단독 시행 시에는 이 그룹만 있으면 충분하고, ESS/FESS 관련 CT 소견은
 // 필요 없어서 별도 그룹으로 분리한다.
@@ -277,6 +282,8 @@ export const fessFields: SurgeryFieldDef[] = [
   })),
   { key: "f_silastic_sheet", label: "Silastic sheet 삽입 (유착 방지)", type: "checkbox" },
   { key: "f_nav", label: "Navigation 병용", type: "checkbox" },
+  { key: "f_nasocel", label: "Nasocel packing", type: "checkbox", default: "true" },
+  { key: "f_rhinocel", label: "Rhinocel packing", type: "checkbox", default: "true" },
   { key: "dermacol", label: "Dermacol 도포", type: "checkbox", default: "true" },
 ];
 

@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
 import { parseFieldDefs } from "@/lib/field-types";
 import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
-import { SurgeryPlanner, type ExistingPatientOption } from "@/components/surgery-planner";
+import { SurgeryPlanner } from "@/components/surgery-planner";
 
 export default async function NewPatientPage() {
   const user = await getCurrentUser();
@@ -14,10 +14,6 @@ export default async function NewPatientPage() {
     sideNotation: user.sideNotation as SideNotation,
     abbreviateRegions: user.abbreviateRegions,
   };
-  const existingPatients: ExistingPatientOption[] = await prisma.patient.findMany({
-    orderBy: { createdAt: "desc" },
-    select: { id: true, name: true, chartNo: true },
-  });
 
   return (
     <div>
@@ -34,7 +30,7 @@ export default async function NewPatientPage() {
         }))}
         loggedIn
         nameStyle={nameStyle}
-        existingPatients={existingPatients}
+        userEmail={user.email}
       />
     </div>
   );

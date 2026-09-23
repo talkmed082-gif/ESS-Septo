@@ -7,23 +7,27 @@ import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
 import { parseFieldDefs, fieldValuesFromFormData } from "@/lib/field-types";
 
-const PatientPlanSchema = z
-  .object({
-    existingPatientId: z.string().trim().optional(),
-    name: z.string().trim().optional(),
-    chartNo: z.string().trim().optional(),
-    sex: z.enum(["M", "F", ""]).optional(),
-    age: z.string().trim().optional(),
-    memo: z.string().trim().optional(),
-    surgeryTypeId: z.string().trim().optional(),
-    plannedDate: z.string().trim().optional(),
-    planNote: z.string().trim().optional(),
-    planStatus: z.enum(["PLANNED", "DONE"]).optional(),
-  })
-  .refine((data) => data.existingPatientId || (data.name && data.name.length > 0), {
-    error: "환자를 선택하거나 이름을 입력하세요.",
-    path: ["name"],
-  });
+const PatientPlanSchema = z.object({
+  existingPatientId: z.string().trim().optional(),
+  name: z.string().trim().optional(),
+  chartNo: z.string().trim().optional(),
+  sex: z.enum(["M", "F", ""]).optional(),
+  age: z.string().trim().optional(),
+  memo: z.string().trim().optional(),
+  surgeryTypeId: z.string().trim().optional(),
+  plannedDate: z.string().trim().optional(),
+  planNote: z.string().trim().optional(),
+  planStatus: z.enum(["PLANNED", "DONE"]).optional(),
+  saveIntent: z.enum(["save", "record"]).optional(),
+});
+
+// 이름을 안 적어도 등록할 수 있게(예: 접수 직후 바로 계획부터 잡을 때) —
+// 나중에 알아볼 수 있게 등록 날짜·시간으로 이름을 대신 채운다.
+function autoPatientName(): string {
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())} 환자`;
+}
 
 export interface PatientPlanFormState {
   errors?: Record<string, string[]>;
@@ -56,6 +60,7 @@ export async function createPatientWithPlan(
     plannedDate: formData.get("plannedDate") ?? "",
     planNote: formData.get("planNote") ?? "",
     planStatus: formData.get("planStatus") || undefined,
+    saveIntent: formData.get("saveIntent") || undefined,
   });
   if (!validated.success) {
     return { errors: z.flattenError(validated.error).fieldErrors };
@@ -77,7 +82,7 @@ export async function createPatientWithPlan(
   } else {
     const patient = await prisma.patient.create({
       data: {
-        name: data.name as string,
+        name: data.name || autoPatientName(),
         chartNo: data.chartNo || null,
         sex: data.sex || null,
         age: parseAge(data.age),
@@ -110,6 +115,7 @@ export async function createPatientWithPlan(
 
   revalidatePath("/patients");
   // 계획 작성 화면 자체가 환자 기본 화면이라, 만든 뒤 바로 그 계획
-  // 화면으로 이동한다.
-  redirect(`/plans/${plan.id}`);
+  // 화면으로 이동한다. "저장 후 기록지 작성" 버튼으로 저장했으면 수술 후
+  // 기본화면(수술 방법·기록지)이 바로 열리게 view를 지정해서 넘긴다.
+  redirect(`/plans/${plan.id}${data.saveIntent === "record" ? "?view=post" : ""}`);
 }

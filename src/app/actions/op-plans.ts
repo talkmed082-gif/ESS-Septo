@@ -11,6 +11,7 @@ import { isNasalFindingKey, REVISION_FLAG_KEYS } from "@/lib/op-note-defs";
 const OpPlanSchema = z.object({
   plannedDate: z.string().trim().optional(),
   planNote: z.string().trim().optional(),
+  saveIntent: z.enum(["save", "record"]).optional(),
 });
 
 export interface OpPlanFormState {
@@ -35,11 +36,12 @@ export async function updateOpPlan(
   const validated = OpPlanSchema.safeParse({
     plannedDate: formData.get("plannedDate"),
     planNote: formData.get("planNote"),
+    saveIntent: formData.get("saveIntent") || undefined,
   });
   if (!validated.success) {
     return { message: "입력값을 확인하세요." };
   }
-  const { plannedDate, planNote } = validated.data;
+  const { plannedDate, planNote, saveIntent } = validated.data;
 
   // 계획을 만든 뒤에도 수술 종류를 바꿀 수 있게 한다 — 화면(SurgeryPlanner)에서
   // 종류를 바꾸면 그 종류의 필드로 폼이 다시 그려지므로, formData도 이미 새
@@ -94,8 +96,9 @@ export async function updateOpPlan(
   revalidatePath(`/plans/${planId}`);
   revalidatePath(`/patients/${plan.patientId}`);
   // 이 화면(계획 작성) 자체가 환자 기본 화면이라, 저장 후 그대로 이 화면에
-  // 남는다.
-  redirect(`/plans/${planId}`);
+  // 남는다. "저장 후 기록지 작성" 버튼으로 저장했으면 수술 후 기본화면
+  // (수술 방법·기록지)이 바로 열리게 view를 지정해서 넘긴다.
+  redirect(`/plans/${planId}${saveIntent === "record" ? "?view=post" : ""}`);
 }
 
 

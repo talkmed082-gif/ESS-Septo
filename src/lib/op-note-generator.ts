@@ -598,9 +598,16 @@ function genFess(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpNo
   }
   steps.push(...fessCore(values));
   steps.push(silasticSheetSentence(values) || false);
-  steps.push(`${operativeSide} 수술 부위 지혈 상태를 확인한 후 Nasocel로 1차 packing을 시행함`);
+  steps.push(
+    bool(values, "f_nasocel") &&
+      `${operativeSide} 수술 부위 지혈 상태를 확인한 후 Nasocel로 1차 packing을 시행함`,
+  );
   steps.push(dermacolSentence(values) || false);
-  steps.push("이어서 Rhinocel로 마무리 packing을 시행하고 수술을 종료함");
+  steps.push(
+    bool(values, "f_rhinocel")
+      ? "이어서 Rhinocel로 마무리 packing을 시행하고 수술을 종료함"
+      : "출혈 소견 없음을 확인한 후 수술을 종료함",
+  );
 
   return { findings: nasalFindingsText(values), procedureDetail: numberSteps(steps) };
 }
@@ -658,9 +665,11 @@ function genCombo(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpN
   parts.push("--- 종료 ---");
   const closingSteps: (string | false)[] = [
     silasticSheetSentence(values) || false,
-    "양측 비강에 Nasocel로 1차 packing을 시행함",
+    bool(values, "f_nasocel") && "양측 비강에 Nasocel로 1차 packing을 시행함",
     dermacolSentence(values) || false,
-    "이어서 Rhinocel로 마무리 packing을 시행하고 출혈 소견 없음을 확인한 후 수술을 종료함",
+    bool(values, "f_rhinocel")
+      ? "이어서 Rhinocel로 마무리 packing을 시행하고 출혈 소견 없음을 확인한 후 수술을 종료함"
+      : "출혈 소견 없음을 확인한 후 수술을 종료함",
   ];
   parts.push(numberSteps(closingSteps, n));
 
@@ -964,15 +973,15 @@ function turbinoplastySideMatrix(values: FieldValues): { title: string; rows: Pl
   };
 }
 
-// 패킹 재료는 ESS/병행에서는 Nasocel + Rhinocel 병용이 기본이지만, 비중격
-// 교정술 단독 시행 시에는 Rhinocel을 쓰지 않는다(genSeptoplasty 참고).
-// Dermacol은 packing 재료는 아니지만 같이 도포하는 경우가 많아 표에서는 한
-// 칸에 묶어 보여준다.
-function packingCellValue(values: FieldValues, includeRhinocel: boolean): string {
-  const parts = ["Nasocel"];
-  if (includeRhinocel) parts.push("Rhinocel");
+// FESS/병행의 패킹 재료는 Nasocel/Rhinocel 체크박스(f_nasocel/f_rhinocel,
+// 기본 둘 다 체크)를 그대로 반영한다. Dermacol은 packing 재료는 아니지만
+// 같이 도포하는 경우가 많아 표에서는 한 칸에 묶어 보여준다.
+function packingCellValue(values: FieldValues): string {
+  const parts: string[] = [];
+  if (bool(values, "f_nasocel")) parts.push("Nasocel");
+  if (bool(values, "f_rhinocel")) parts.push("Rhinocel");
   if (bool(values, "dermacol")) parts.push("Dermacol");
-  return parts.join(" + ");
+  return parts.length > 0 ? parts.join(" + ") : "-";
 }
 
 export function buildPlanTable(
@@ -995,7 +1004,7 @@ export function buildPlanTable(
         { label: "절개", value: incision },
         { label: "동반 술식", value: rest.length > 0 ? rest.join(", ") : "-" },
         ...turbRow,
-        { label: "Packing / Material", value: packingCellValue(values, false) },
+        { label: "Packing / Material", value: "Rhinocel" },
       ],
     };
   }
@@ -1006,7 +1015,7 @@ export function buildPlanTable(
       findings,
       keyValueRows: [
         { label: "Navigation", value: bool(values, "f_nav") ? "사용" : "미사용", toggleKey: "f_nav" },
-        { label: "Packing / Material", value: packingCellValue(values, true) },
+        { label: "Packing / Material", value: packingCellValue(values) },
       ],
       sideMatrix: fessSideMatrix(values),
       turbMatrix: turbinoplastySideMatrix(values),
@@ -1022,7 +1031,7 @@ export function buildPlanTable(
       { label: "절개(비중격)", value: incision },
       { label: "동반 술식(비중격)", value: rest.length > 0 ? rest.join(", ") : "-" },
       { label: "Navigation", value: bool(values, "f_nav") ? "사용" : "미사용", toggleKey: "f_nav" },
-      { label: "Packing / Material(공통)", value: packingCellValue(values, true) },
+      { label: "Packing / Material(공통)", value: packingCellValue(values) },
     ],
     sideMatrix: fessSideMatrix(values),
     turbMatrix: turbinoplastySideMatrix(values),

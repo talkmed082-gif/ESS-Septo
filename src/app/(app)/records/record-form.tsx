@@ -33,6 +33,7 @@ import {
   UNCINATE_FIELD_KEYS,
   SEPTO_PE_DONE_KEY,
   ESS_PE_DONE_KEY,
+  POST_OP_FINISH_KEYS,
 } from "@/lib/op-note-defs";
 
 type Action = (
@@ -227,11 +228,7 @@ export function RecordForm({
 
         <div className={step === 1 ? "space-y-4" : "hidden"}>
           {showSeptum && (
-            <CollapsibleFindingSection
-              doneKey={SEPTO_PE_DONE_KEY}
-              label="Septoturbinoplasty P/E"
-              values={liveFieldValues}
-            >
+            <CollapsibleFindingSection doneKey={SEPTO_PE_DONE_KEY} label="Septoturbinoplasty P/E">
               <SeptumDiagram values={liveFieldValues} />
               <SurgeryFieldInputs
                 fields={nasalFields.filter((f) => SEPTUM_DETAIL_FIELD_KEYS.includes(f.key))}
@@ -240,7 +237,7 @@ export function RecordForm({
             </CollapsibleFindingSection>
           )}
           {showSinus && (
-            <CollapsibleFindingSection doneKey={ESS_PE_DONE_KEY} label="ESS P/E" values={liveFieldValues}>
+            <CollapsibleFindingSection doneKey={ESS_PE_DONE_KEY} label="ESS P/E">
               <UncinateAttachmentFields
                 fields={nasalFields.filter((f) => UNCINATE_FIELD_KEYS.includes(f.key))}
                 values={liveFieldValues}
@@ -276,12 +273,33 @@ export function RecordForm({
         </div>
 
         <div className={step === 2 ? "space-y-4" : "hidden"}>
+          <SurgeryFieldInputs
+            fields={fields.filter((f) => f.key === "f_side_order" || f.key === "c_order")}
+            values={liveFieldValues}
+          />
+          <SurgeryFieldInputs fields={fields.filter((f) => f.key === "f_nav")} values={liveFieldValues} />
           {showSinus && <SinusDiagram values={liveFieldValues} />}
           <TurbinoplastyTypePicker values={liveFieldValues} />
+          {fields.some((f) => POST_OP_FINISH_KEYS.includes(f.key)) && (
+            <div className="rounded-md border border-slate-200 p-3">
+              <p className="mb-2 text-sm font-medium text-slate-700">수술후 마무리</p>
+              <SurgeryFieldInputs
+                fields={fields.filter((f) => POST_OP_FINISH_KEYS.includes(f.key))}
+                values={liveFieldValues}
+              />
+            </div>
+          )}
           <SurgeryFieldInputs
             fields={procedureFields}
             values={liveFieldValues}
-            excludeKeys={[...getSinusCoveredKeys(surgeryTypeCode), ...TURBINOPLASTY_FIELD_KEYS]}
+            excludeKeys={[
+              ...getSinusCoveredKeys(surgeryTypeCode),
+              ...TURBINOPLASTY_FIELD_KEYS,
+              "f_side_order",
+              "c_order",
+              "f_nav",
+              ...POST_OP_FINISH_KEYS,
+            ]}
           />
         </div>
 

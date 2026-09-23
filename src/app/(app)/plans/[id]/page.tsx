@@ -11,9 +11,11 @@ import { buttonStyles } from "@/lib/ui";
 
 export default async function OpPlanPage({
   params,
+  searchParams,
 }: PageProps<"/plans/[id]">) {
   const user = await getCurrentUser();
   const { id } = await params;
+  const { view: viewParam } = await searchParams;
 
   const plan = await prisma.opPlan.findUnique({
     where: { id },
@@ -44,29 +46,13 @@ export default async function OpPlanPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h1 className="text-xl font-semibold">
-            {plan.surgeryType.name} 수술 계획
-          </h1>
-          <Link
-            href={`/patients/${plan.patientId}/edit?from=${encodeURIComponent(`/plans/${plan.id}`)}`}
-            className={`mt-1 inline-block ${buttonStyles.link}`}
-          >
-            환자 정보 수정
-          </Link>
+          <h1 className="text-xl font-semibold">{plan.patient.name} 환자 수술 계획</h1>
+          <p className="mt-1 text-sm text-slate-500">{plan.surgeryType.name}</p>
         </div>
         <div className="flex gap-2">
           <Link href={`/plans/${plan.id}/print`} className={buttonStyles.secondarySmall}>
             인쇄용 보기
           </Link>
-          {plan.opRecord ? (
-            <Link href={`/records/${plan.opRecord.id}`} className={buttonStyles.accent}>
-              기록지 보기
-            </Link>
-          ) : (
-            <Link href={`/plans/${plan.id}/record`} className={buttonStyles.accent}>
-              기록지 작성
-            </Link>
-          )}
           <form action={deleteOpPlan.bind(null, plan.id, plan.patientId)}>
             <button type="submit" className={buttonStyles.danger}>
               계획 삭제
@@ -84,10 +70,12 @@ export default async function OpPlanPage({
         }))}
         loggedIn
         nameStyle={nameStyle}
+        userEmail={user.email}
         fixedPatient={{ id: plan.patient.id, name: plan.patient.name }}
         // 완료로 표시된 계획은 "수술 후" 화면(수술 방법/기록지)을 기본으로
         // 열어서, 이미 끝난 수술의 소견 입력 화면부터 다시 보여주지 않게 한다.
-        defaultView={isDone ? "post" : "pre"}
+        // ?view= 로 명시적으로 넘어오면(저장 후 기록지 작성 버튼) 그걸 우선한다.
+        defaultView={viewParam === "pre" || viewParam === "post" ? viewParam : isDone ? "post" : "pre"}
         editPlan={{
           surgeryTypeId: plan.surgeryTypeId,
           // 화면에 더 이상 날짜 입력란이 없으므로, 없던 날짜를 오늘 날짜로

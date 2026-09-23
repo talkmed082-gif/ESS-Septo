@@ -133,7 +133,7 @@ export function SeptumDiagram({
   return (
     <div ref={rootRef} className="rounded-md border border-slate-200 p-3">
       <p className="mb-2 text-xs font-medium text-slate-600">
-        비중격 편위 방향 (클릭해서 선택 · 다시 누르면 해제)
+        비중격 편위 방향
         <br />
         영상의학 기준: 왼쪽 = 환자 우측(Rt.), 오른쪽 = 환자 좌측(Lt.)
       </p>
@@ -287,7 +287,7 @@ export function SinusDiagram({
   return (
     <div ref={rootRef} className="rounded-md border border-slate-200 p-3">
       <p className="mb-2 text-xs font-medium text-slate-600">
-        부비동 시행 부위 (좌/우 각각 클릭해서 선택)
+        ESS 시행 부위
         <br />
         영상의학 기준: 왼쪽 = 환자 우측(Rt.), 오른쪽 = 환자 좌측(Lt.)
       </p>

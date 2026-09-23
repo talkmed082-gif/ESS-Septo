@@ -23,9 +23,7 @@ export function NasalFindingsOverview({
 }) {
   return (
     <div className="space-y-1.5 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
-      <p className="text-xs font-medium text-slate-500">
-        간략 소견 — 해당하는 것만 체크하면 아래에 상세 선택 칸이 열립니다
-      </p>
+      <p className="text-xs font-medium text-slate-500">간략 소견</p>
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium text-slate-700">
         <label className="flex items-center gap-1.5">
           <input
