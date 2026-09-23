@@ -9,11 +9,8 @@ import { buttonStyles } from "@/lib/ui";
 import { SettingsForm } from "./settings-form";
 import { SurgeryTypesManager } from "../surgery-types/surgery-types-manager";
 
-export default async function SettingsPage({
-  searchParams,
-}: PageProps<"/settings">) {
+export default async function SettingsPage() {
   const user = await getCurrentUser();
-  const { updated } = await searchParams;
   const nameStyle: NameStyle = {
     sideNotation: user.sideNotation as SideNotation,
     abbreviateRegions: user.abbreviateRegions,
@@ -91,7 +88,7 @@ export default async function SettingsPage({
           기본 제공되는 ESS/비중격교정술 외에, 다루는 이비인후과 수술을 자유롭게 추가하거나 입력 항목을
           확인할 수 있습니다.
         </p>
-        <SurgeryTypesManager updated={updated === "1"} />
+        <SurgeryTypesManager />
       </div>
     </div>
   );
