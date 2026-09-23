@@ -18,8 +18,8 @@ export default async function OpPlanPage({
   const { id } = await params;
   const { view: viewParam } = await searchParams;
 
-  const plan = await prisma.opPlan.findUnique({
-    where: { id },
+  const plan = await prisma.opPlan.findFirst({
+    where: { id, createdById: user.id },
     include: { patient: true, surgeryType: true, opRecord: { select: { id: true } } },
   });
   if (!plan) notFound();

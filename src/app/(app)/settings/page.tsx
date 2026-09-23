@@ -19,7 +19,7 @@ export default async function SettingsPage() {
   const todayUtc = new Date(new Date().toISOString().slice(0, 10));
   const upcomingPlans = await prisma.opPlan.findMany({
     // "완료"로 표시해둔 계획은 더 이상 캘린더에 새로 추가할 필요가 없으니 제외한다.
-    where: { plannedDate: { gte: todayUtc }, status: { not: "DONE" } },
+    where: { createdById: user.id, plannedDate: { gte: todayUtc }, status: { not: "DONE" } },
     orderBy: { plannedDate: "asc" },
     include: { surgeryType: true },
   });

@@ -16,8 +16,8 @@ export default async function EditOpRecordPage({
   const user = await getCurrentUser();
   const { id } = await params;
 
-  const record = await prisma.opRecord.findUnique({
-    where: { id },
+  const record = await prisma.opRecord.findFirst({
+    where: { id, createdById: user.id },
     include: { opPlan: { include: { patient: true, surgeryType: true } } },
   });
   if (!record) notFound();

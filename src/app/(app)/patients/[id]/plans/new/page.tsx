@@ -12,7 +12,7 @@ export default async function NewOpPlanPage({
   const user = await getCurrentUser();
   const { id: patientId } = await params;
 
-  const patient = await prisma.patient.findUnique({ where: { id: patientId } });
+  const patient = await prisma.patient.findFirst({ where: { id: patientId, createdById: user.id } });
   if (!patient) notFound();
 
   const surgeryTypes = await prisma.surgeryType.findMany({
@@ -22,7 +22,7 @@ export default async function NewOpPlanPage({
     sideNotation: user.sideNotation as SideNotation,
     abbreviateRegions: user.abbreviateRegions,
   };
-  const patientNasalFindings = await getLatestNasalFindingsForPatient(patientId);
+  const patientNasalFindings = await getLatestNasalFindingsForPatient(patientId, user.id);
 
   return (
     <div>
