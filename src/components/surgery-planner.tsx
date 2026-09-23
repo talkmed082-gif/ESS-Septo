@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState, type ChangeEvent } from "react";
+import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
 import Link from "next/link";
 import { createPatientWithPlan } from "@/app/actions/patient-plan";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
@@ -232,6 +232,14 @@ export function SurgeryPlanner({
     initialSelected ? applyFieldDefaults(editPlan?.values ?? {}, initialSelected.fields) : editPlan?.values,
   );
   const [templateKey, setTemplateKey] = useState(0);
+  // 방금 applyCombo로 정한 값 — 화면(폼)이 그 값으로 다시 그려지기 전까지는 폼이
+  // 옛 값을 들고 있어서, 그 사이에 연달아 들어온 클릭이 옛 값을 기준으로 계산되어
+  // 앞선 클릭이 사라지는 문제가 있었다. 다시 그려진 뒤(templateKey가 바뀐 뒤)에
+  // 비운다.
+  const pendingValuesRef = useRef<FieldValues | null>(null);
+  useEffect(() => {
+    pendingValuesRef.current = null;
+  }, [templateKey]);
   // ESS P/E 안의 세 상세 소견 그룹은 한꺼번에 다 펼쳐두면 체크박스가 너무
   // 많아서, "간략 소견"에서 체크한 그룹만 펼친다 — 기존에 값이 있으면(예:
   // 수정 화면) 처음부터 펼쳐서 보여준다.
@@ -306,13 +314,19 @@ export function SurgeryPlanner({
     setTexts(computeTexts(templateValues ?? {}, next));
   }
 
+  function readCurrentValues(): FieldValues | null {
+    if (!selected || !formRef.current) return null;
+    return pendingValuesRef.current ?? fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
+  }
+
   function regenerateFromForm() {
-    if (!selected || !formRef.current) return;
-    const values = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
+    const values = readCurrentValues();
+    if (!values) return;
     setTexts(computeTexts(values));
   }
 
   function applyCombo(values: FieldValues) {
+    pendingValuesRef.current = values;
     setTemplateValues(values);
     setTemplateKey((k) => k + 1);
     if (selected) setTexts(computeTexts(values));
@@ -324,7 +338,8 @@ export function SurgeryPlanner({
   function setFindingGroupOpen(clearKeys: string[], open: boolean, setOpen: (v: boolean) => void) {
     setOpen(open);
     if (open || !selected || !formRef.current) return;
-    const current = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
+    const current = readCurrentValues();
+    if (!current) return;
     const updated: FieldValues = { ...current };
     for (const key of clearKeys) updated[key] = false;
     applyCombo(updated);
@@ -340,7 +355,8 @@ export function SurgeryPlanner({
   // 컴포넌트도 새 값으로 다시 마운트시켜 상태가 어긋나지 않게 한다.
   function toggleFessField(fieldKey: string) {
     if (!selected || !formRef.current) return;
-    const current = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
+    const current = readCurrentValues();
+    if (!current) return;
     applyCombo({ ...current, [fieldKey]: !current[fieldKey] });
   }
 
@@ -350,7 +366,8 @@ export function SurgeryPlanner({
   // 있어서, applyCombo로 한 번에 반영하면 넷 다 같이 갱신된다.
   function toggleFindingWithCascade(fieldKey: string, cascadeMap: Record<string, string>) {
     if (!selected || !formRef.current) return;
-    const current = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
+    const current = readCurrentValues();
+    if (!current) return;
     const next = !current[fieldKey];
     const updated: FieldValues = { ...current, [fieldKey]: next };
     const fessKey = cascadeMap[fieldKey];
@@ -363,7 +380,8 @@ export function SurgeryPlanner({
   function copySideInTable(from: "f_left_" | "f_right_") {
     if (!selected || !formRef.current || !planTable?.sideMatrix) return;
     const to = from === "f_left_" ? "f_right_" : "f_left_";
-    const current = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
+    const current = readCurrentValues();
+    if (!current) return;
     const updated: FieldValues = { ...current };
     for (const row of planTable.sideMatrix.rows) {
       updated[`${to}${row.key}`] = current[`${from}${row.key}`];
@@ -390,7 +408,8 @@ export function SurgeryPlanner({
     // 버블링을 막아 regenerateFromForm이 중복 실행되지 않게 한다.
     e?.stopPropagation();
     if (!selected || !formRef.current) return;
-    const current = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
+    const current = readCurrentValues();
+    if (!current) return;
     const next = !(current[key] === true);
     const updated: FieldValues = { ...current, [key]: next };
     if (next && key === "f_revision_ess_right") updated.f_right_uncinectomy = true;
