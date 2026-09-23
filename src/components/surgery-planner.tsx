@@ -12,7 +12,14 @@ import {
   getSinusCoveredKeys,
 } from "@/components/anatomy-diagram";
 import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
-import { EssFindingsPicker, ESS_FINDINGS_FIELD_KEYS } from "@/components/ess-findings-picker";
+import {
+  AnatomicRiskFindingsPicker,
+  SinusitisFindingsPicker,
+  ANATOMIC_RISK_PRESENT_KEYS,
+  SINUSITIS_PRESENT_KEYS,
+  ESS_FINDINGS_FIELD_KEYS,
+} from "@/components/ess-findings-picker";
+import { NasalFindingsOverview } from "@/components/nasal-findings-overview";
 import { CollapsibleFindingSection } from "@/components/collapsible-finding-section";
 import { UncinateAttachmentFields } from "@/components/uncinate-attachment-fields";
 import { TurbinoplastyTypePicker, TURBINOPLASTY_FIELD_KEYS } from "@/components/turbinoplasty-type-picker";
@@ -207,6 +214,18 @@ export function SurgeryPlanner({
     initialSelected ? applyFieldDefaults(editPlan?.values ?? {}, initialSelected.fields) : editPlan?.values,
   );
   const [templateKey, setTemplateKey] = useState(0);
+  // ESS P/E 안의 세 상세 소견 그룹은 한꺼번에 다 펼쳐두면 체크박스가 너무
+  // 많아서, "간략 소견"에서 체크한 그룹만 펼친다 — 기존에 값이 있으면(예:
+  // 수정 화면) 처음부터 펼쳐서 보여준다.
+  const [showAnatomicFindings, setShowAnatomicFindings] = useState(() =>
+    ANATOMIC_RISK_PRESENT_KEYS.some((k) => templateValues?.[k] === true),
+  );
+  const [showSinusitisFindings, setShowSinusitisFindings] = useState(() =>
+    SINUSITIS_PRESENT_KEYS.some((k) => templateValues?.[k] === true),
+  );
+  const [showPolypFindings, setShowPolypFindings] = useState(() =>
+    POLYP_FIELD_KEYS.some((k) => templateValues?.[k] === true),
+  );
 
   if (!first) {
     return <p className="text-sm text-slate-500">등록된 수술 종류가 없습니다.</p>;
@@ -262,6 +281,18 @@ export function SurgeryPlanner({
     setTemplateValues(values);
     setTemplateKey((k) => k + 1);
     if (selected) setTexts(computeTexts(values));
+  }
+
+  // 간략 소견에서 그룹을 펼치는 건 그냥 화면 상태만 바꾸면 되지만, 접을
+  // 때는 그 안의 체크박스들이 화면엔 안 보여도 폼에는 남아있지 않도록
+  // 현재 폼 값을 읽어와서 해당 키들만 꺼서 applyCombo로 다시 반영한다.
+  function setFindingGroupOpen(clearKeys: string[], open: boolean, setOpen: (v: boolean) => void) {
+    setOpen(open);
+    if (open || !selected || !formRef.current) return;
+    const current = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
+    const updated: FieldValues = { ...current };
+    for (const key of clearKeys) updated[key] = false;
+    applyCombo(updated);
   }
 
   function applyPatientNasalFindings() {
@@ -585,8 +616,23 @@ export function SurgeryPlanner({
                     values={templateValues}
                     onChange={regenerateFromForm}
                   />
-                  <EssFindingsPicker values={templateValues} onChange={regenerateFromForm} />
-                  <PolypPicker values={templateValues} onChange={regenerateFromForm} />
+                  <NasalFindingsOverview
+                    showAnatomic={showAnatomicFindings}
+                    showSinusitis={showSinusitisFindings}
+                    showPolyp={showPolypFindings}
+                    onToggleAnatomic={(v) => setFindingGroupOpen(ANATOMIC_RISK_PRESENT_KEYS, v, setShowAnatomicFindings)}
+                    onToggleSinusitis={(v) => setFindingGroupOpen(SINUSITIS_PRESENT_KEYS, v, setShowSinusitisFindings)}
+                    onTogglePolyp={(v) => setFindingGroupOpen(POLYP_FIELD_KEYS, v, setShowPolypFindings)}
+                  />
+                  {showAnatomicFindings && (
+                    <AnatomicRiskFindingsPicker values={templateValues} onChange={regenerateFromForm} />
+                  )}
+                  {showSinusitisFindings && (
+                    <SinusitisFindingsPicker values={templateValues} onChange={regenerateFromForm} />
+                  )}
+                  {showPolypFindings && (
+                    <PolypPicker values={templateValues} onChange={regenerateFromForm} hideToggle />
+                  )}
                 </CollapsibleFindingSection>
               )}
               <SurgeryFieldInputs

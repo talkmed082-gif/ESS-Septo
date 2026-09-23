@@ -40,9 +40,14 @@ function getInput(form: HTMLFormElement | null, name: string) {
 export function PolypPicker({
   values,
   onChange,
+  hideToggle = false,
 }: {
   values?: FieldValues;
   onChange?: () => void;
+  // true면 자체 "비용종 있음" 체크박스를 감추고 항상 상세 선택 칸만 보여준다 —
+  // 상위(NasalFindingsOverview)가 그룹 전체를 이미 보여줄지 말지 결정하는
+  // 화면에서, 체크박스가 중복으로 두 번 보이지 않게 하기 위함.
+  hideToggle?: boolean;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [sites, setSites] = useState<Record<string, boolean>>(() => {
@@ -109,17 +114,19 @@ export function PolypPicker({
 
   return (
     <div ref={rootRef} className="rounded-md border border-slate-200 p-3">
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={present}
-          onChange={togglePresent}
-          className="h-4 w-4 rounded border-slate-300"
-        />
-        비용종(Polyp) 있음
-      </label>
-      {present && (
-        <div className="mt-3 border-t border-slate-100 pt-3">
+      {!hideToggle && (
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={present}
+            onChange={togglePresent}
+            className="h-4 w-4 rounded border-slate-300"
+          />
+          비용종(Polyp) 있음
+        </label>
+      )}
+      {(hideToggle || present) && (
+        <div className={hideToggle ? undefined : "mt-3 border-t border-slate-100 pt-3"}>
           <div className="mb-2 flex gap-2">
             <button type="button" onClick={() => copyToOtherSide("n_polyp_right_")} className={buttonStyles.pill}>
               우→좌 동일

@@ -12,7 +12,14 @@ import {
   getSinusCoveredKeys,
 } from "@/components/anatomy-diagram";
 import { PolypPicker, POLYP_FIELD_KEYS } from "@/components/polyp-picker";
-import { EssFindingsPicker, ESS_FINDINGS_FIELD_KEYS } from "@/components/ess-findings-picker";
+import {
+  AnatomicRiskFindingsPicker,
+  SinusitisFindingsPicker,
+  ANATOMIC_RISK_PRESENT_KEYS,
+  SINUSITIS_PRESENT_KEYS,
+  ESS_FINDINGS_FIELD_KEYS,
+} from "@/components/ess-findings-picker";
+import { NasalFindingsOverview } from "@/components/nasal-findings-overview";
 import { CollapsibleFindingSection } from "@/components/collapsible-finding-section";
 import { UncinateAttachmentFields } from "@/components/uncinate-attachment-fields";
 import { TurbinoplastyTypePicker, TURBINOPLASTY_FIELD_KEYS } from "@/components/turbinoplasty-type-picker";
@@ -61,7 +68,37 @@ export function RecordForm({
   nameStyle?: NameStyle;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
+  const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState<1 | 2>(1);
+  // ESS P/E 안의 세 상세 소견 그룹은 한꺼번에 다 펼치면 체크박스가 너무
+  // 많아서, "간략 소견"에서 체크한 그룹만 펼친다. 그룹을 접을 때 실제 DOM
+  // 체크박스도 같이 꺼야 해서(defaultChecked는 리마운트 전까진 값이 안
+  // 바뀜) fieldValues의 사본을 따로 들고 있다가 갱신한다.
+  const [liveFieldValues, setLiveFieldValues] = useState<FieldValues>(fieldValues);
+  const [showAnatomicFindings, setShowAnatomicFindings] = useState(() =>
+    ANATOMIC_RISK_PRESENT_KEYS.some((k) => fieldValues?.[k] === true),
+  );
+  const [showSinusitisFindings, setShowSinusitisFindings] = useState(() =>
+    SINUSITIS_PRESENT_KEYS.some((k) => fieldValues?.[k] === true),
+  );
+  const [showPolypFindings, setShowPolypFindings] = useState(() =>
+    POLYP_FIELD_KEYS.some((k) => fieldValues?.[k] === true),
+  );
+
+  function setFindingGroupOpen(clearKeys: string[], open: boolean, setOpen: (v: boolean) => void) {
+    setOpen(open);
+    if (open) return;
+    setLiveFieldValues((v) => {
+      const updated = { ...v };
+      for (const key of clearKeys) updated[key] = false;
+      return updated;
+    });
+    const form = formRef.current;
+    for (const key of clearKeys) {
+      const el = form?.elements.namedItem(`field_${key}`);
+      if (el instanceof HTMLInputElement) el.checked = false;
+    }
+  }
   // f_revision_septo는 procedureFields 목록에서 숨겨진 채(hidden fallback
   // input으로) 실제 제출되고, 이 체크박스는 그 숨겨진 입력의 checked를 직접
   // 토글하는 트리거 역할만 한다 — SinusDiagram의 Revision 토글과 같은 방식.
@@ -89,7 +126,7 @@ export function RecordForm({
     }`;
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form ref={formRef} action={formAction} className="space-y-4">
       <div className="flex items-start justify-end gap-3">
         {state?.message && <p className="mt-2 text-sm text-red-600">{state.message}</p>}
         <button
@@ -183,28 +220,37 @@ export function RecordForm({
             <CollapsibleFindingSection
               doneKey={SEPTO_PE_DONE_KEY}
               label="Septoturbinoplasty P/E"
-              values={fieldValues}
+              values={liveFieldValues}
             >
-              <SeptumDiagram values={fieldValues} />
+              <SeptumDiagram values={liveFieldValues} />
               <SurgeryFieldInputs
                 fields={nasalFields.filter((f) => SEPTUM_DETAIL_FIELD_KEYS.includes(f.key))}
-                values={fieldValues}
+                values={liveFieldValues}
               />
             </CollapsibleFindingSection>
           )}
           {showSinus && (
-            <CollapsibleFindingSection doneKey={ESS_PE_DONE_KEY} label="ESS P/E" values={fieldValues}>
+            <CollapsibleFindingSection doneKey={ESS_PE_DONE_KEY} label="ESS P/E" values={liveFieldValues}>
               <UncinateAttachmentFields
                 fields={nasalFields.filter((f) => UNCINATE_FIELD_KEYS.includes(f.key))}
-                values={fieldValues}
+                values={liveFieldValues}
               />
-              <EssFindingsPicker values={fieldValues} />
-              <PolypPicker values={fieldValues} />
+              <NasalFindingsOverview
+                showAnatomic={showAnatomicFindings}
+                showSinusitis={showSinusitisFindings}
+                showPolyp={showPolypFindings}
+                onToggleAnatomic={(v) => setFindingGroupOpen(ANATOMIC_RISK_PRESENT_KEYS, v, setShowAnatomicFindings)}
+                onToggleSinusitis={(v) => setFindingGroupOpen(SINUSITIS_PRESENT_KEYS, v, setShowSinusitisFindings)}
+                onTogglePolyp={(v) => setFindingGroupOpen(POLYP_FIELD_KEYS, v, setShowPolypFindings)}
+              />
+              {showAnatomicFindings && <AnatomicRiskFindingsPicker values={liveFieldValues} />}
+              {showSinusitisFindings && <SinusitisFindingsPicker values={liveFieldValues} />}
+              {showPolypFindings && <PolypPicker values={liveFieldValues} hideToggle />}
             </CollapsibleFindingSection>
           )}
           <SurgeryFieldInputs
             fields={nasalFields}
-            values={fieldValues}
+            values={liveFieldValues}
             excludeKeys={[
               ...getSeptumCoveredKeys(surgeryTypeCode),
               SEPTO_PE_DONE_KEY,
@@ -218,11 +264,11 @@ export function RecordForm({
         </div>
 
         <div className={step === 2 ? "space-y-4" : "hidden"}>
-          {showSinus && <SinusDiagram values={fieldValues} />}
-          <TurbinoplastyTypePicker values={fieldValues} />
+          {showSinus && <SinusDiagram values={liveFieldValues} />}
+          <TurbinoplastyTypePicker values={liveFieldValues} />
           <SurgeryFieldInputs
             fields={procedureFields}
-            values={fieldValues}
+            values={liveFieldValues}
             excludeKeys={[...getSinusCoveredKeys(surgeryTypeCode), ...TURBINOPLASTY_FIELD_KEYS]}
           />
         </div>
