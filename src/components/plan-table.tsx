@@ -1,8 +1,91 @@
 "use client";
 
-import type { PlanTable } from "@/lib/op-note-generator";
+import type { PlanSideMatrixRow, PlanTable } from "@/lib/op-note-generator";
 import { CHECK_MARK, DataCell } from "@/components/check-cell";
 import { buttonStyles } from "@/lib/ui";
+
+function SideMatrixTable({
+  title,
+  rows,
+  textSize,
+  cellPad,
+  interactive,
+  onToggle,
+  onCopySide,
+}: {
+  title: string;
+  rows: PlanSideMatrixRow[];
+  textSize: string;
+  cellPad: string;
+  interactive: boolean;
+  onToggle?: (fieldKey: string) => void;
+  onCopySide?: (from: "f_left_" | "f_right_") => void;
+}) {
+  return (
+    <div className="overflow-x-auto">
+      {interactive && onCopySide && (
+        <div className="mb-2 flex gap-2">
+          <button type="button" onClick={() => onCopySide("f_right_")} className={buttonStyles.pill}>
+            우→좌 동일
+          </button>
+          <button type="button" onClick={() => onCopySide("f_left_")} className={buttonStyles.pill}>
+            좌→우 동일
+          </button>
+        </div>
+      )}
+      <table className={`w-full border-collapse ${textSize}`}>
+        <thead>
+          <tr>
+            <th className={`border border-slate-400 bg-slate-50 ${cellPad} text-left font-medium`}>
+              {title}
+              {interactive && <span className="ml-2 font-normal text-slate-400">(클릭해서 체크)</span>}
+            </th>
+            <th className={`w-20 border border-slate-400 bg-slate-50 ${cellPad} font-medium`}>우측</th>
+            <th className={`w-20 border border-slate-400 bg-slate-50 ${cellPad} font-medium`}>좌측</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.key}>
+              <td className={`border border-slate-400 ${cellPad}`}>{row.label}</td>
+              {interactive ? (
+                <>
+                  <td className={`border border-slate-400 ${cellPad} text-center`}>
+                    <button
+                      type="button"
+                      onClick={() => onToggle?.(row.rightFieldKey)}
+                      className={`h-6 w-6 rounded touch-manipulation active:scale-95 ${
+                        row.right ? "bg-emerald-600 text-white" : "bg-slate-100 text-transparent hover:bg-slate-200"
+                      }`}
+                    >
+                      {CHECK_MARK}
+                    </button>
+                  </td>
+                  <td className={`border border-slate-400 ${cellPad} text-center`}>
+                    <button
+                      type="button"
+                      onClick={() => onToggle?.(row.leftFieldKey)}
+                      className={`h-6 w-6 rounded touch-manipulation active:scale-95 ${
+                        row.left ? "bg-emerald-600 text-white" : "bg-slate-100 text-transparent hover:bg-slate-200"
+                      }`}
+                    >
+                      {CHECK_MARK}
+                    </button>
+                  </td>
+                </>
+              ) : (
+                <>
+                  <DataCell checked={row.right} className={cellPad} />
+                  <DataCell checked={row.left} className={cellPad} />
+                </>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 export function PlanTableView({
   table,
@@ -26,11 +109,6 @@ export function PlanTableView({
   const cellPad = size === "large" ? "px-3 py-2.5" : "px-2 py-1.5";
 
   const nameSize = size === "large" ? "text-2xl" : "text-base";
-
-  function toggleCell(prefix: "f_left_" | "f_right_", key: string) {
-    if (!interactive) return;
-    onToggle?.(`${prefix}${key}`);
-  }
 
   return (
     <div className="space-y-4">
@@ -77,74 +155,26 @@ export function PlanTableView({
       </div>
 
       {table.sideMatrix && (
-        <div className="overflow-x-auto">
-          {interactive && onCopySide && (
-            <div className="mb-2 flex gap-2">
-              <button type="button" onClick={() => onCopySide("f_right_")} className={buttonStyles.pill}>
-                우→좌 동일
-              </button>
-              <button type="button" onClick={() => onCopySide("f_left_")} className={buttonStyles.pill}>
-                좌→우 동일
-              </button>
-            </div>
-          )}
-          <table className={`w-full border-collapse ${textSize}`}>
-            <thead>
-              <tr>
-                <th className={`border border-slate-400 bg-slate-50 ${cellPad} text-left font-medium`}>
-                  {table.sideMatrix.title}
-                  {interactive && (
-                    <span className="ml-2 font-normal text-slate-400">(클릭해서 체크)</span>
-                  )}
-                </th>
-                <th className={`w-20 border border-slate-400 bg-slate-50 ${cellPad} font-medium`}>
-                  우측
-                </th>
-                <th className={`w-20 border border-slate-400 bg-slate-50 ${cellPad} font-medium`}>
-                  좌측
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {table.sideMatrix.rows.map((row) => (
-                <tr key={row.label}>
-                  <td className={`border border-slate-400 ${cellPad}`}>{row.label}</td>
-                  {interactive ? (
-                    <>
-                      <td className={`border border-slate-400 ${cellPad} text-center`}>
-                        <button
-                          type="button"
-                          onClick={() => toggleCell("f_right_", row.key)}
-                          className={`h-6 w-6 rounded touch-manipulation active:scale-95 ${
-                            row.right ? "bg-emerald-600 text-white" : "bg-slate-100 text-transparent hover:bg-slate-200"
-                          }`}
-                        >
-                          {CHECK_MARK}
-                        </button>
-                      </td>
-                      <td className={`border border-slate-400 ${cellPad} text-center`}>
-                        <button
-                          type="button"
-                          onClick={() => toggleCell("f_left_", row.key)}
-                          className={`h-6 w-6 rounded touch-manipulation active:scale-95 ${
-                            row.left ? "bg-emerald-600 text-white" : "bg-slate-100 text-transparent hover:bg-slate-200"
-                          }`}
-                        >
-                          {CHECK_MARK}
-                        </button>
-                      </td>
-                    </>
-                  ) : (
-                    <>
-                      <DataCell checked={row.right} className={cellPad} />
-                      <DataCell checked={row.left} className={cellPad} />
-                    </>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <SideMatrixTable
+          title={table.sideMatrix.title}
+          rows={table.sideMatrix.rows}
+          textSize={textSize}
+          cellPad={cellPad}
+          interactive={interactive}
+          onToggle={onToggle}
+          onCopySide={onCopySide}
+        />
+      )}
+
+      {table.turbMatrix && (
+        <SideMatrixTable
+          title={table.turbMatrix.title}
+          rows={table.turbMatrix.rows}
+          textSize={textSize}
+          cellPad={cellPad}
+          interactive={interactive}
+          onToggle={onToggle}
+        />
       )}
     </div>
   );

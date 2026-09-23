@@ -877,6 +877,11 @@ export interface PlanSideMatrixRow {
   label: string;
   left: boolean;
   right: boolean;
+  // 표의 체크 셀을 클릭했을 때 실제로 뒤집을 field key — prefix+key 조합만
+  // 지원하면(예: f_left_/f_right_) turbinoplasty처럼 side가 접미사로 붙는
+  // 필드(turb_middle_left 등)를 못 담으므로, 아예 완전한 key를 그대로 들고 있게 한다.
+  leftFieldKey: string;
+  rightFieldKey: string;
 }
 
 export interface PlanTable {
@@ -884,6 +889,9 @@ export interface PlanTable {
   findings: string;
   keyValueRows: PlanKeyValueRow[];
   sideMatrix?: { title: string; rows: PlanSideMatrixRow[] };
+  // Turbinoplasty 시행 여부/부위를 표에서 바로 체크할 수 있게 하는 별도 표 —
+  // FESS 시행 부위와는 다른 필드 그룹이라 sideMatrix와 나눠서 둔다.
+  turbMatrix?: { title: string; rows: PlanSideMatrixRow[] };
 }
 
 function fessSideMatrix(values: FieldValues): { title: string; rows: PlanSideMatrixRow[] } {
@@ -896,6 +904,8 @@ function fessSideMatrix(values: FieldValues): { title: string; rows: PlanSideMat
       label: "Uncinectomy",
       left: bool(values, "f_left_uncinectomy"),
       right: bool(values, "f_right_uncinectomy"),
+      leftFieldKey: "f_left_uncinectomy",
+      rightFieldKey: "f_right_uncinectomy",
     });
   }
   rows.push(
@@ -904,9 +914,30 @@ function fessSideMatrix(values: FieldValues): { title: string; rows: PlanSideMat
       label: fessStepLabels[k],
       left: bool(values, `f_left_${k}`),
       right: bool(values, `f_right_${k}`),
+      leftFieldKey: `f_left_${k}`,
+      rightFieldKey: `f_right_${k}`,
     })),
   );
   return { title: "FESS 시행 부위", rows };
+}
+
+const turbMatrixTypes = [
+  { key: "middle", label: "Middle turbinoplasty" },
+  { key: "inferior", label: "Inferior turbinoplasty" },
+] as const;
+
+function turbinoplastySideMatrix(values: FieldValues): { title: string; rows: PlanSideMatrixRow[] } {
+  return {
+    title: "Turbinoplasty",
+    rows: turbMatrixTypes.map((t) => ({
+      key: t.key,
+      label: t.label,
+      left: bool(values, `turb_${t.key}_left`),
+      right: bool(values, `turb_${t.key}_right`),
+      leftFieldKey: `turb_${t.key}_left`,
+      rightFieldKey: `turb_${t.key}_right`,
+    })),
+  };
 }
 
 // 패킹 재료는 ESS/병행에서는 Nasocel + Rhinocel 병용이 기본이지만, 비중격
@@ -950,11 +981,11 @@ export function buildPlanTable(
       procedureName,
       findings,
       keyValueRows: [
-        ...turbRow,
         { label: "Navigation", value: bool(values, "f_nav") ? "사용" : "미사용", toggleKey: "f_nav" },
         { label: "Packing / Material", value: packingCellValue(values, true) },
       ],
       sideMatrix: fessSideMatrix(values),
+      turbMatrix: turbinoplastySideMatrix(values),
     };
   }
 
@@ -966,11 +997,11 @@ export function buildPlanTable(
       { label: "시행 순서", value: str(values, "c_order", "비중격 → 우 FESS → 좌 FESS") },
       { label: "절개(비중격)", value: incision },
       { label: "동반 술식(비중격)", value: rest.length > 0 ? rest.join(", ") : "-" },
-      ...turbRow,
       { label: "Navigation", value: bool(values, "f_nav") ? "사용" : "미사용", toggleKey: "f_nav" },
       { label: "Packing / Material(공통)", value: packingCellValue(values, true) },
     ],
     sideMatrix: fessSideMatrix(values),
+    turbMatrix: turbinoplastySideMatrix(values),
   };
 }
 
@@ -981,6 +1012,12 @@ export function planTableToText(table: PlanTable): string {
   if (table.sideMatrix) {
     lines.push("", table.sideMatrix.title);
     for (const row of table.sideMatrix.rows) {
+      lines.push(`  ${row.label} - 우측: ${row.right ? "O" : "-"} / 좌측: ${row.left ? "O" : "-"}`);
+    }
+  }
+  if (table.turbMatrix) {
+    lines.push("", table.turbMatrix.title);
+    for (const row of table.turbMatrix.rows) {
       lines.push(`  ${row.label} - 우측: ${row.right ? "O" : "-"} / 좌측: ${row.left ? "O" : "-"}`);
     }
   }
