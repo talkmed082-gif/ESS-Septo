@@ -58,33 +58,14 @@ export function hasAnyRevision(values: FieldValues): boolean {
   );
 }
 
-function regionsEqual(a: string[], b: string[]): boolean {
-  return a.length === b.length && a.every((r, i) => r === b[i]);
-}
-
-// ESS revision 부분의 "rev>" 표기 — 양쪽 다 revision이고 이번에 시행하는
-// 부위(sinus)가 같으면 "B) ESS(FEM)"처럼 한 번만 묶어서 쓰고, 양쪽 부위가
-// 다르면 "B) ESS(Rt. FEMS, Lt. FEM)"처럼 side별로 나눠서 밝힌다. 한쪽만
-// revision이면 그 side만 표기한다.
-function essRevisionLabel(values: FieldValues, style: NameStyle, rightEss: boolean, leftEss: boolean): string {
-  const rightRegions = fessRegionsForSide("f_right_", values);
-  const leftRegions = fessRegionsForSide("f_left_", values);
-
-  if (rightEss && leftEss) {
-    if (regionsEqual(rightRegions, leftRegions)) {
-      const regionText = rightRegions.length > 0 ? `(${formatRegionList(rightRegions, style)})` : "";
-      return `${formatSideLabel("B", style)} ESS${regionText}`;
-    }
-    const rightText = rightRegions.length > 0 ? `Rt. ${formatRegionList(rightRegions, style)}` : "Rt.";
-    const leftText = leftRegions.length > 0 ? `Lt. ${formatRegionList(leftRegions, style)}` : "Lt.";
-    return `${formatSideLabel("B", style)} ESS(${rightText}, ${leftText})`;
-  }
-  if (rightEss) {
-    const regionText = rightRegions.length > 0 ? `(${formatRegionList(rightRegions, style)})` : "";
-    return `${formatSideLabel("R", style)} ESS${regionText}`;
-  }
-  const regionText = leftRegions.length > 0 ? `(${formatRegionList(leftRegions, style)})` : "";
-  return `${formatSideLabel("L", style)} ESS${regionText}`;
+// ESS revision 부분의 "rev>" 표기 — 시행하는 sinus 상세 내역(FEMS 등)은
+// 바로 뒤에 이어지는 실제 수술명(buildFessProcedureName)이 어차피 다시
+// 풀어서 보여주므로, 여기서는 "어느 side가 재수술인지"만 짧게 표기해
+// 뒤의 실제 수술명과 내용이 그대로 겹쳐 찍히지 않게 한다.
+function essRevisionLabel(style: NameStyle, rightEss: boolean, leftEss: boolean): string {
+  if (rightEss && leftEss) return `${formatSideLabel("B", style)} ESS`;
+  if (rightEss) return `${formatSideLabel("R", style)} ESS`;
+  return `${formatSideLabel("L", style)} ESS`;
 }
 
 // 수술명 맨 앞에 "이전에 무엇에 대한 재수술인지"를 "rev> 부위" 형태로 짧게
@@ -95,7 +76,7 @@ function revisionPrefixText(values: FieldValues, style: NameStyle): string {
   if (bool(values, "f_revision_septo")) parts.push("Septo");
   const rightEss = bool(values, "f_revision_ess_right");
   const leftEss = bool(values, "f_revision_ess_left");
-  if (rightEss || leftEss) parts.push(essRevisionLabel(values, style, rightEss, leftEss));
+  if (rightEss || leftEss) parts.push(essRevisionLabel(style, rightEss, leftEss));
   return parts.length > 0 ? `rev> ${parts.join(", ")} ` : "";
 }
 
