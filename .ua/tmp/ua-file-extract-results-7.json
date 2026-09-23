@@ -1,0 +1,429 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 16,
+  "filesSkipped": [
+    "prisma/schema.prisma",
+    "src/app/globals.css"
+  ],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 16,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 6,
+      "failed": 0,
+      "skipped": 10
+    }
+  },
+  "results": [
+    {
+      "path": ".ua/config.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "sections": [
+        {
+          "heading": "outputLanguage",
+          "level": 1,
+          "line": 1
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": "eslint.config.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 18,
+      "nonEmptyLines": 16,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "next.config.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 7,
+      "nonEmptyLines": 5,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "postcss.config.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 7,
+      "nonEmptyLines": 6,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "prisma/migrations/20260918033326_init/migration.sql",
+      "language": "sql",
+      "fileCategory": "data",
+      "totalLines": 107,
+      "nonEmptyLines": 89,
+      "definitions": [
+        {
+          "name": "User",
+          "kind": "table",
+          "fields": [
+            "id",
+            "email",
+            "name",
+            "passwordHash",
+            "createdAt"
+          ],
+          "startLine": 2,
+          "endLine": 10
+        },
+        {
+          "name": "SurgeryType",
+          "kind": "table",
+          "fields": [
+            "id",
+            "code",
+            "name",
+            "fields",
+            "isBuiltIn",
+            "createdAt"
+          ],
+          "startLine": 13,
+          "endLine": 22
+        },
+        {
+          "name": "Patient",
+          "kind": "table",
+          "fields": [
+            "id",
+            "chartNo",
+            "name",
+            "sex",
+            "birthDate",
+            "memo",
+            "createdAt",
+            "updatedAt",
+            "createdById"
+          ],
+          "startLine": 25,
+          "endLine": 37
+        },
+        {
+          "name": "OpPlan",
+          "kind": "table",
+          "fields": [
+            "id",
+            "patientId",
+            "surgeryTypeId",
+            "plannedDate",
+            "side",
+            "diagnosis",
+            "planNote",
+            "planData",
+            "status",
+            "createdById",
+            "createdAt",
+            "updatedAt"
+          ],
+          "startLine": 40,
+          "endLine": 55
+        },
+        {
+          "name": "OpRecord",
+          "kind": "table",
+          "fields": [
+            "id",
+            "opPlanId",
+            "operationDate",
+            "surgeonName",
+            "assistantName",
+            "anesthesiaType",
+            "preOpDiagnosis",
+            "postOpDiagnosis",
+            "procedureName",
+            "findings",
+            "procedureDetail",
+            "recordData",
+            "complication",
+            "estimatedBloodLoss",
+            "specimen",
+            "postOpPlan",
+            "createdById",
+            "createdAt",
+            "updatedAt"
+          ],
+          "startLine": 58,
+          "endLine": 80
+        },
+        {
+          "name": "User_email_key",
+          "kind": "index",
+          "fields": [],
+          "startLine": 83,
+          "endLine": 83
+        },
+        {
+          "name": "SurgeryType_code_key",
+          "kind": "index",
+          "fields": [],
+          "startLine": 86,
+          "endLine": 86
+        },
+        {
+          "name": "OpRecord_opPlanId_key",
+          "kind": "index",
+          "fields": [],
+          "startLine": 89,
+          "endLine": 89
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 8
+      }
+    },
+    {
+      "path": "prisma/migrations/20260918120000_add_user_name_style_settings/migration.sql",
+      "language": "sql",
+      "fileCategory": "data",
+      "totalLines": 3,
+      "nonEmptyLines": 3,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 0
+      }
+    },
+    {
+      "path": "prisma/migrations/20260918140000_add_default_assistant_name/migration.sql",
+      "language": "sql",
+      "fileCategory": "data",
+      "totalLines": 2,
+      "nonEmptyLines": 2,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 0
+      }
+    },
+    {
+      "path": "prisma/migrations/20260918160000_add_opplan_checklist/migration.sql",
+      "language": "sql",
+      "fileCategory": "data",
+      "totalLines": 2,
+      "nonEmptyLines": 2,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 0
+      }
+    },
+    {
+      "path": "prisma/migrations/20260919090000_drop_opplan_checklist/migration.sql",
+      "language": "sql",
+      "fileCategory": "data",
+      "totalLines": 2,
+      "nonEmptyLines": 2,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 0
+      }
+    },
+    {
+      "path": "prisma/migrations/20260919100000_add_surgery_preset/migration.sql",
+      "language": "sql",
+      "fileCategory": "data",
+      "totalLines": 17,
+      "nonEmptyLines": 14,
+      "definitions": [
+        {
+          "name": "SurgeryPreset",
+          "kind": "table",
+          "fields": [
+            "id",
+            "name",
+            "surgeryTypeId",
+            "fieldValues",
+            "createdById",
+            "createdAt"
+          ],
+          "startLine": 2,
+          "endLine": 11
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 1
+      }
+    },
+    {
+      "path": "prisma/migrations/20260919150000_add_patient_age/migration.sql",
+      "language": "sql",
+      "fileCategory": "data",
+      "totalLines": 2,
+      "nonEmptyLines": 2,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 0
+      }
+    },
+    {
+      "path": "prisma/migrations/20260923180000_add_opplan_actual_data/migration.sql",
+      "language": "sql",
+      "fileCategory": "data",
+      "totalLines": 2,
+      "nonEmptyLines": 2,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 0
+      }
+    },
+    {
+      "path": "prisma/migrations/migration_lock.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 3,
+      "nonEmptyLines": 3,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "path": "prisma7.config.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 15,
+      "nonEmptyLines": 14,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/icon.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 24,
+      "nonEmptyLines": 22,
+      "functions": [
+        {
+          "name": "Icon",
+          "startLine": 6,
+          "endLine": 24,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "size",
+          "line": 3,
+          "isDefault": false
+        },
+        {
+          "name": "contentType",
+          "line": 4,
+          "isDefault": false
+        },
+        {
+          "name": "Icon",
+          "line": 6,
+          "isDefault": true
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 35,
+      "nonEmptyLines": 30,
+      "functions": [
+        {
+          "name": "RootLayout",
+          "startLine": 24,
+          "endLine": 35,
+          "params": [
+            "{ children }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "metadata",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "viewport",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "RootLayout",
+          "line": 24,
+          "isDefault": true
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 3,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    }
+  ]
+}

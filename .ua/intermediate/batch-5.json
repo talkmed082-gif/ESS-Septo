@@ -1,0 +1,629 @@
+{
+ "nodes": [
+  {
+   "id": "file:proxy.ts",
+   "type": "file",
+   "name": "proxy.ts",
+   "filePath": "proxy.ts",
+   "summary": "Next.js 16 proxy(구 middleware)로, 세션 쿠키를 검증해 비로그인 사용자를 /login으로 보내고 로그인 사용자의 로그인/회원가입 접근을 막으며, 방문 시마다 세션 만료를 연장(sliding session)한다.",
+   "tags": [
+    "middleware",
+    "인증",
+    "라우트-가드",
+    "entry-point",
+    "session"
+   ],
+   "complexity": "simple",
+   "lineRange": "Next.js 16에서 middleware.ts 대신 proxy.ts의 default export와 config.matcher로 요청 가로채기를 정의한다."
+  },
+  {
+   "id": "function:proxy.ts:proxy",
+   "type": "function",
+   "name": "proxy",
+   "filePath": "proxy.ts",
+   "summary": "요청 경로가 공개/인증전용 라우트인지 판단해 리다이렉트하고, 유효 세션이면 JWT를 재발급해 쿠키 만료를 갱신하는 프록시 핸들러.",
+   "tags": [
+    "middleware",
+    "인증",
+    "리다이렉트",
+    "session"
+   ],
+   "complexity": "moderate",
+   "lineRange": [
+    14,
+    40
+   ]
+  },
+  {
+   "id": "file:src/app/actions/auth.ts",
+   "type": "file",
+   "name": "auth.ts",
+   "filePath": "src/app/actions/auth.ts",
+   "summary": "회원가입·로그인·로그아웃 Server Action 모음으로, zod로 폼을 검증하고 bcrypt로 비밀번호를 해싱/비교하며 Prisma User 조회 후 세션을 생성·삭제한다.",
+   "tags": [
+    "api-handler",
+    "server-action",
+    "인증",
+    "validation"
+   ],
+   "complexity": "moderate",
+   "lineRange": "'use server' 지시어와 useActionState 호환 시그니처(prevState, formData)를 사용하는 Server Action 패턴."
+  },
+  {
+   "id": "function:src/app/actions/auth.ts:signup",
+   "type": "function",
+   "name": "signup",
+   "filePath": "src/app/actions/auth.ts",
+   "summary": "회원가입 폼을 zod로 검증하고 이메일 중복 확인 후 bcrypt 해시로 사용자를 생성, 세션을 만들고 홈으로 리다이렉트한다.",
+   "tags": [
+    "server-action",
+    "회원가입",
+    "validation",
+    "database"
+   ],
+   "complexity": "moderate",
+   "lineRange": [
+    26,
+    54
+   ]
+  },
+  {
+   "id": "function:src/app/actions/auth.ts:login",
+   "type": "function",
+   "name": "login",
+   "filePath": "src/app/actions/auth.ts",
+   "summary": "이메일/비밀번호를 검증하고 bcrypt로 해시를 비교해 일치하면 세션을 생성하고 홈으로 리다이렉트한다.",
+   "tags": [
+    "server-action",
+    "로그인",
+    "인증",
+    "validation"
+   ],
+   "complexity": "moderate",
+   "lineRange": [
+    61,
+    87
+   ]
+  },
+  {
+   "id": "function:src/app/actions/auth.ts:logout",
+   "type": "function",
+   "name": "logout",
+   "filePath": "src/app/actions/auth.ts",
+   "summary": "세션 쿠키를 삭제하고 /login으로 리다이렉트하는 로그아웃 Server Action.",
+   "tags": [
+    "server-action",
+    "로그아웃",
+    "session"
+   ],
+   "complexity": "simple",
+   "lineRange": [
+    89,
+    92
+   ]
+  },
+  {
+   "id": "file:src/app/login/page.tsx",
+   "type": "file",
+   "name": "page.tsx",
+   "filePath": "src/app/login/page.tsx",
+   "summary": "로그인 페이지 클라이언트 컴포넌트로, useActionState로 login Server Action을 연결해 이메일/비밀번호 폼과 오류 메시지를 표시한다.",
+   "tags": [
+    "component",
+    "page",
+    "로그인",
+    "form"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/app/login/page.tsx:LoginPage",
+   "type": "function",
+   "name": "LoginPage",
+   "filePath": "src/app/login/page.tsx",
+   "summary": "이메일·비밀번호 입력 폼을 렌더링하고 login 액션 결과(필드 오류, 메시지, pending 상태)를 표시하며 회원가입 링크를 제공한다.",
+   "tags": [
+    "component",
+    "로그인",
+    "form",
+    "ui"
+   ],
+   "complexity": "moderate",
+   "lineRange": [
+    7,
+    60
+   ]
+  },
+  {
+   "id": "file:src/app/page.tsx",
+   "type": "file",
+   "name": "page.tsx",
+   "filePath": "src/app/page.tsx",
+   "summary": "루트(/) 페이지로, 세션 유무에 따라 환자 목록(/patients) 또는 로그인(/login)으로 즉시 리다이렉트한다.",
+   "tags": [
+    "entry-point",
+    "page",
+    "리다이렉트",
+    "인증"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/app/page.tsx:HomePage",
+   "type": "function",
+   "name": "HomePage",
+   "filePath": "src/app/page.tsx",
+   "summary": "세션 payload를 읽어 userId가 있으면 /patients, 없으면 /login으로 리다이렉트하는 서버 컴포넌트.",
+   "tags": [
+    "page",
+    "리다이렉트",
+    "session"
+   ],
+   "complexity": "simple",
+   "lineRange": [
+    7,
+    10
+   ]
+  },
+  {
+   "id": "file:src/app/signup/page.tsx",
+   "type": "file",
+   "name": "page.tsx",
+   "filePath": "src/app/signup/page.tsx",
+   "summary": "회원가입 페이지 클라이언트 컴포넌트로, useActionState로 signup Server Action을 연결해 이름·이메일·비밀번호 폼과 필드별 오류를 표시한다.",
+   "tags": [
+    "component",
+    "page",
+    "회원가입",
+    "form"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/app/signup/page.tsx:SignupPage",
+   "type": "function",
+   "name": "SignupPage",
+   "filePath": "src/app/signup/page.tsx",
+   "summary": "이름·이메일·비밀번호 입력 폼을 렌더링하고 signup 액션의 필드 오류와 pending 상태를 표시하며 로그인 링크를 제공한다.",
+   "tags": [
+    "component",
+    "회원가입",
+    "form",
+    "ui"
+   ],
+   "complexity": "moderate",
+   "lineRange": [
+    7,
+    89
+   ]
+  },
+  {
+   "id": "file:src/lib/session.ts",
+   "type": "file",
+   "name": "session.ts",
+   "filePath": "src/lib/session.ts",
+   "summary": "jose 기반 HS256 JWT 세션 관리 모듈로, 세션 암호화/복호화, 쿠키 옵션, 세션 생성·삭제·조회 함수를 제공하며 365일 장기 세션을 사용한다.",
+   "tags": [
+    "service",
+    "인증",
+    "session",
+    "jwt",
+    "utility"
+   ],
+   "complexity": "moderate",
+   "lineRange": "'server-only' import로 클라이언트 번들 포함을 차단하고, 모듈 로드 시 SESSION_SECRET 부재면 즉시 예외를 던진다."
+  },
+  {
+   "id": "function:src/lib/session.ts:encrypt",
+   "type": "function",
+   "name": "encrypt",
+   "filePath": "src/lib/session.ts",
+   "summary": "SessionPayload를 HS256으로 서명하고 365일 만료의 JWT 문자열을 생성한다.",
+   "tags": [
+    "jwt",
+    "암호화",
+    "session"
+   ],
+   "complexity": "simple",
+   "lineRange": [
+    22,
+    28
+   ]
+  },
+  {
+   "id": "function:src/lib/session.ts:decrypt",
+   "type": "function",
+   "name": "decrypt",
+   "filePath": "src/lib/session.ts",
+   "summary": "세션 JWT를 검증해 payload를 반환하고, 없거나 유효하지 않으면 null을 반환한다.",
+   "tags": [
+    "jwt",
+    "검증",
+    "session"
+   ],
+   "complexity": "simple",
+   "lineRange": [
+    30,
+    42
+   ]
+  },
+  {
+   "id": "function:src/lib/session.ts:sessionCookieOptions",
+   "type": "function",
+   "name": "sessionCookieOptions",
+   "filePath": "src/lib/session.ts",
+   "summary": "httpOnly·secure(프로덕션)·sameSite=lax 등 세션 쿠키 설정 객체를 만료 시각과 함께 반환한다.",
+   "tags": [
+    "cookie",
+    "configuration",
+    "보안"
+   ],
+   "complexity": "simple",
+   "lineRange": [
+    44,
+    52
+   ]
+  },
+  {
+   "id": "function:src/lib/session.ts:createSession",
+   "type": "function",
+   "name": "createSession",
+   "filePath": "src/lib/session.ts",
+   "summary": "userId로 JWT를 발급해 세션 쿠키에 저장한다.",
+   "tags": [
+    "session",
+    "cookie",
+    "인증"
+   ],
+   "complexity": "simple",
+   "lineRange": [
+    54,
+    60
+   ]
+  },
+  {
+   "id": "function:src/lib/session.ts:deleteSession",
+   "type": "function",
+   "name": "deleteSession",
+   "filePath": "src/lib/session.ts",
+   "summary": "세션 쿠키를 삭제한다.",
+   "tags": [
+    "session",
+    "cookie",
+    "로그아웃"
+   ],
+   "complexity": "simple",
+   "lineRange": [
+    62,
+    65
+   ]
+  },
+  {
+   "id": "function:src/lib/session.ts:getSessionPayload",
+   "type": "function",
+   "name": "getSessionPayload",
+   "filePath": "src/lib/session.ts",
+   "summary": "요청 쿠키에서 세션 토큰을 읽어 복호화한 payload를 반환한다.",
+   "tags": [
+    "session",
+    "cookie",
+    "인증"
+   ],
+   "complexity": "simple",
+   "lineRange": [
+    67,
+    71
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "source": "file:proxy.ts",
+   "target": "function:proxy.ts:proxy",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:proxy.ts",
+   "target": "function:proxy.ts:proxy",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/actions/auth.ts",
+   "target": "function:src/app/actions/auth.ts:signup",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/actions/auth.ts",
+   "target": "function:src/app/actions/auth.ts:signup",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/actions/auth.ts",
+   "target": "function:src/app/actions/auth.ts:login",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/actions/auth.ts",
+   "target": "function:src/app/actions/auth.ts:login",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/actions/auth.ts",
+   "target": "function:src/app/actions/auth.ts:logout",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/actions/auth.ts",
+   "target": "function:src/app/actions/auth.ts:logout",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/login/page.tsx",
+   "target": "function:src/app/login/page.tsx:LoginPage",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/login/page.tsx",
+   "target": "function:src/app/login/page.tsx:LoginPage",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/page.tsx",
+   "target": "function:src/app/page.tsx:HomePage",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/page.tsx",
+   "target": "function:src/app/page.tsx:HomePage",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/signup/page.tsx",
+   "target": "function:src/app/signup/page.tsx:SignupPage",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/signup/page.tsx",
+   "target": "function:src/app/signup/page.tsx:SignupPage",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/session.ts",
+   "target": "function:src/lib/session.ts:encrypt",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/session.ts",
+   "target": "function:src/lib/session.ts:encrypt",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/session.ts",
+   "target": "function:src/lib/session.ts:decrypt",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/session.ts",
+   "target": "function:src/lib/session.ts:decrypt",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/session.ts",
+   "target": "function:src/lib/session.ts:sessionCookieOptions",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/session.ts",
+   "target": "function:src/lib/session.ts:sessionCookieOptions",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/session.ts",
+   "target": "function:src/lib/session.ts:createSession",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/session.ts",
+   "target": "function:src/lib/session.ts:createSession",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/session.ts",
+   "target": "function:src/lib/session.ts:deleteSession",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/session.ts",
+   "target": "function:src/lib/session.ts:deleteSession",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/session.ts",
+   "target": "function:src/lib/session.ts:getSessionPayload",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/session.ts",
+   "target": "function:src/lib/session.ts:getSessionPayload",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:proxy.ts",
+   "target": "file:src/lib/session.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/actions/auth.ts",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/actions/auth.ts",
+   "target": "file:src/lib/session.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/login/page.tsx",
+   "target": "file:src/app/actions/auth.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/page.tsx",
+   "target": "file:src/lib/session.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/signup/page.tsx",
+   "target": "file:src/app/actions/auth.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "function:proxy.ts:proxy",
+   "target": "function:src/lib/session.ts:decrypt",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:proxy.ts:proxy",
+   "target": "function:src/lib/session.ts:encrypt",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:proxy.ts:proxy",
+   "target": "function:src/lib/session.ts:sessionCookieOptions",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/actions/auth.ts:signup",
+   "target": "function:src/lib/session.ts:createSession",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/actions/auth.ts:login",
+   "target": "function:src/lib/session.ts:createSession",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/actions/auth.ts:logout",
+   "target": "function:src/lib/session.ts:deleteSession",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/page.tsx:HomePage",
+   "target": "function:src/lib/session.ts:getSessionPayload",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/login/page.tsx:LoginPage",
+   "target": "function:src/app/actions/auth.ts:login",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/signup/page.tsx:SignupPage",
+   "target": "function:src/app/actions/auth.ts:signup",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/session.ts:createSession",
+   "target": "function:src/lib/session.ts:encrypt",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/session.ts:createSession",
+   "target": "function:src/lib/session.ts:sessionCookieOptions",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/session.ts:getSessionPayload",
+   "target": "function:src/lib/session.ts:decrypt",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  }
+ ]
+}

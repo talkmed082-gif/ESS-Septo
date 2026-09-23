@@ -1,0 +1,958 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 8,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 8,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 8,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "src/app/(app)/patients/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 199,
+      "nonEmptyLines": 189,
+      "functions": [
+        {
+          "name": "PatientsPage",
+          "startLine": 13,
+          "endLine": 199,
+          "params": [
+            "{\n  searchParams,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "PatientsPage",
+          "line": 13,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "PatientsPage",
+          "callee": "getCurrentUser",
+          "lineNumber": 16
+        },
+        {
+          "caller": "PatientsPage",
+          "callee": "new Date().toISOString().slice",
+          "lineNumber": 21
+        },
+        {
+          "caller": "PatientsPage",
+          "callee": "new Date().toISOString",
+          "lineNumber": 21
+        },
+        {
+          "caller": "PatientsPage",
+          "callee": "prisma.opPlan.findMany",
+          "lineNumber": 23
+        },
+        {
+          "caller": "PatientsPage",
+          "callee": "q.trim",
+          "lineNumber": 33
+        },
+        {
+          "caller": "PatientsPage",
+          "callee": "prisma.patient.findMany",
+          "lineNumber": 37
+        },
+        {
+          "caller": "PatientsPage",
+          "callee": "patients.map",
+          "lineNumber": 61
+        },
+        {
+          "caller": "PatientsPage",
+          "callee": "p.opPlans.filter",
+          "lineNumber": 62
+        },
+        {
+          "caller": "PatientsPage",
+          "callee": "withDates.reduce",
+          "lineNumber": 67
+        },
+        {
+          "caller": "PatientsPage",
+          "callee": "parseFieldValues",
+          "lineNumber": 69
+        },
+        {
+          "caller": "PatientsPage",
+          "callee": "isBuiltInSurgeryCode",
+          "lineNumber": 71
+        },
+        {
+          "caller": "PatientsPage",
+          "callee": "buildProcedureName",
+          "lineNumber": 72
+        },
+        {
+          "caller": "PatientsPage",
+          "callee": "safeDateStr",
+          "lineNumber": 81
+        },
+        {
+          "caller": "PatientsPage",
+          "callee": "[...rows].sort",
+          "lineNumber": 90
+        },
+        {
+          "caller": "PatientsPage",
+          "callee": "upcomingPlans.map",
+          "lineNumber": 145
+        },
+        {
+          "caller": "PatientsPage",
+          "callee": "parseFieldValues",
+          "lineNumber": 147
+        },
+        {
+          "caller": "PatientsPage",
+          "callee": "isBuiltInSurgeryCode",
+          "lineNumber": 148
+        },
+        {
+          "caller": "PatientsPage",
+          "callee": "buildProcedureName",
+          "lineNumber": 149
+        },
+        {
+          "caller": "PatientsPage",
+          "callee": "safeDateStr",
+          "lineNumber": 155
+        }
+      ],
+      "metrics": {
+        "importCount": 10,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/(app)/patients/patient-list-table.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 319,
+      "nonEmptyLines": 302,
+      "functions": [
+        {
+          "name": "procedureLabel",
+          "startLine": 13,
+          "endLine": 15,
+          "params": [
+            "p"
+          ]
+        },
+        {
+          "name": "StatusBadge",
+          "startLine": 19,
+          "endLine": 41,
+          "params": [
+            "{ p, onToggle }"
+          ]
+        },
+        {
+          "name": "buildSortHref",
+          "startLine": 50,
+          "endLine": 56,
+          "params": [
+            "query",
+            "sort",
+            "dir",
+            "column"
+          ]
+        },
+        {
+          "name": "shortDate",
+          "startLine": 59,
+          "endLine": 62,
+          "params": [
+            "d"
+          ]
+        },
+        {
+          "name": "sexAgeLabel",
+          "startLine": 64,
+          "endLine": 67,
+          "params": [
+            "sex",
+            "age"
+          ]
+        },
+        {
+          "name": "patientHubHref",
+          "startLine": 73,
+          "endLine": 75,
+          "params": [
+            "p"
+          ]
+        },
+        {
+          "name": "PatientListTable",
+          "startLine": 77,
+          "endLine": 319,
+          "params": [
+            "{\n  patients,\n  query,\n  sort,\n  dir,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "PatientRow",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "PatientListTable",
+          "line": 77,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "StatusBadge",
+          "callee": "onToggle",
+          "lineNumber": 31
+        },
+        {
+          "caller": "buildSortHref",
+          "callee": "params.set",
+          "lineNumber": 52
+        },
+        {
+          "caller": "buildSortHref",
+          "callee": "params.set",
+          "lineNumber": 53
+        },
+        {
+          "caller": "buildSortHref",
+          "callee": "params.set",
+          "lineNumber": 54
+        },
+        {
+          "caller": "buildSortHref",
+          "callee": "params.toString",
+          "lineNumber": 55
+        },
+        {
+          "caller": "shortDate",
+          "callee": "d.slice",
+          "lineNumber": 61
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "useActionState",
+          "lineNumber": 88
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "useRef",
+          "lineNumber": 89
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "useRouter",
+          "lineNumber": 90
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "useTransition",
+          "lineNumber": 91
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "useOptimistic",
+          "lineNumber": 94
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "state.map",
+          "lineNumber": 97
+        },
+        {
+          "caller": "toggleAll",
+          "callee": "form.querySelectorAll<HTMLInputElement>('input[name=\"ids\"]').forEach",
+          "lineNumber": 103
+        },
+        {
+          "caller": "toggleAll",
+          "callee": "form.querySelectorAll",
+          "lineNumber": 103
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "formRef.current?.querySelectorAll",
+          "lineNumber": 109
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "e.preventDefault",
+          "lineNumber": 111
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "window.confirm",
+          "lineNumber": 114
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "e.preventDefault",
+          "lineNumber": 115
+        },
+        {
+          "caller": "printOpPlans",
+          "callee": "formRef.current?.querySelectorAll",
+          "lineNumber": 122
+        },
+        {
+          "caller": "printOpPlans",
+          "callee": "Array.from(checked ?? []).map",
+          "lineNumber": 123
+        },
+        {
+          "caller": "printOpPlans",
+          "callee": "Array.from",
+          "lineNumber": 123
+        },
+        {
+          "caller": "printOpPlans",
+          "callee": "patients\n      .filter((p) => checkedIds.has(p.id) && p.surgeryPlanId)\n      .map",
+          "lineNumber": 124
+        },
+        {
+          "caller": "printOpPlans",
+          "callee": "patients\n      .filter",
+          "lineNumber": 124
+        },
+        {
+          "caller": "printOpPlans",
+          "callee": "checkedIds.has",
+          "lineNumber": 125
+        },
+        {
+          "caller": "printOpPlans",
+          "callee": "window.alert",
+          "lineNumber": 128
+        },
+        {
+          "caller": "printOpPlans",
+          "callee": "router.push",
+          "lineNumber": 131
+        },
+        {
+          "caller": "printOpPlans",
+          "callee": "planIds.join",
+          "lineNumber": 131
+        },
+        {
+          "caller": "handleToggleDone",
+          "callee": "startTransition",
+          "lineNumber": 135
+        },
+        {
+          "caller": "handleToggleDone",
+          "callee": "setOptimisticDone",
+          "lineNumber": 136
+        },
+        {
+          "caller": "handleToggleDone",
+          "callee": "toggleOpPlanDone",
+          "lineNumber": 137
+        },
+        {
+          "caller": "handleToggleDone",
+          "callee": "router.refresh",
+          "lineNumber": 138
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "optimisticPatients.map",
+          "lineNumber": 159
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "patientHubHref",
+          "lineNumber": 170
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "patientHubHref",
+          "lineNumber": 173
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "sexAgeLabel",
+          "lineNumber": 174
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "patientHubHref",
+          "lineNumber": 177
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "shortDate",
+          "lineNumber": 178
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "procedureLabel",
+          "lineNumber": 184
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "SORT_COLUMNS.map",
+          "lineNumber": 224
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "buildSortHref",
+          "lineNumber": 226
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "optimisticPatients.map",
+          "lineNumber": 240
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "patientHubHref",
+          "lineNumber": 255
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "patientHubHref",
+          "lineNumber": 260
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "sexAgeLabel",
+          "lineNumber": 261
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "patientHubHref",
+          "lineNumber": 265
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "patientHubHref",
+          "lineNumber": 270
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "shortDate",
+          "lineNumber": 271
+        },
+        {
+          "caller": "PatientListTable",
+          "callee": "procedureLabel",
+          "lineNumber": 277
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 2,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/(app)/patients/patient-row.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 18,
+      "nonEmptyLines": 18,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/(app)/plans/[id]/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 95,
+      "nonEmptyLines": 90,
+      "functions": [
+        {
+          "name": "OpPlanPage",
+          "startLine": 13,
+          "endLine": 95,
+          "params": [
+            "{\n  params,\n  searchParams,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "OpPlanPage",
+          "line": 13,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "OpPlanPage",
+          "callee": "getCurrentUser",
+          "lineNumber": 17
+        },
+        {
+          "caller": "OpPlanPage",
+          "callee": "prisma.opPlan.findUnique",
+          "lineNumber": 21
+        },
+        {
+          "caller": "OpPlanPage",
+          "callee": "notFound",
+          "lineNumber": 25
+        },
+        {
+          "caller": "OpPlanPage",
+          "callee": "parseFieldValues",
+          "lineNumber": 31
+        },
+        {
+          "caller": "OpPlanPage",
+          "callee": "parseFieldValues",
+          "lineNumber": 32
+        },
+        {
+          "caller": "OpPlanPage",
+          "callee": "prisma.surgeryType.findMany",
+          "lineNumber": 42
+        },
+        {
+          "caller": "OpPlanPage",
+          "callee": "deleteOpPlan.bind",
+          "lineNumber": 57
+        },
+        {
+          "caller": "OpPlanPage",
+          "callee": "surgeryTypes.map",
+          "lineNumber": 66
+        },
+        {
+          "caller": "OpPlanPage",
+          "callee": "resolveSurgeryTypeFields",
+          "lineNumber": 70
+        },
+        {
+          "caller": "OpPlanPage",
+          "callee": "safeDateStr",
+          "lineNumber": 86
+        },
+        {
+          "caller": "OpPlanPage",
+          "callee": "updateOpPlan.bind",
+          "lineNumber": 91
+        }
+      ],
+      "metrics": {
+        "importCount": 9,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/(app)/records/[id]/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 104,
+      "nonEmptyLines": 96,
+      "functions": [
+        {
+          "name": "Row",
+          "startLine": 10,
+          "endLine": 18,
+          "params": [
+            "{ label, value }"
+          ]
+        },
+        {
+          "name": "OpRecordPage",
+          "startLine": 20,
+          "endLine": 104,
+          "params": [
+            "{\n  params,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "OpRecordPage",
+          "line": 20,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "OpRecordPage",
+          "callee": "verifySession",
+          "lineNumber": 23
+        },
+        {
+          "caller": "OpRecordPage",
+          "callee": "prisma.opRecord.findUnique",
+          "lineNumber": 26
+        },
+        {
+          "caller": "OpRecordPage",
+          "callee": "notFound",
+          "lineNumber": 32
+        },
+        {
+          "caller": "OpRecordPage",
+          "callee": "resolveSurgeryTypeFields",
+          "lineNumber": 34
+        },
+        {
+          "caller": "OpRecordPage",
+          "callee": "parseFieldValues",
+          "lineNumber": 35
+        },
+        {
+          "caller": "OpRecordPage",
+          "callee": "safeDateStr",
+          "lineNumber": 63
+        },
+        {
+          "caller": "OpRecordPage",
+          "callee": "fields.map",
+          "lineNumber": 77
+        },
+        {
+          "caller": "OpRecordPage",
+          "callee": "String",
+          "lineNumber": 86
+        },
+        {
+          "caller": "OpRecordPage",
+          "callee": "[record.findings, record.procedureDetail].filter(Boolean).join",
+          "lineNumber": 98
+        },
+        {
+          "caller": "OpRecordPage",
+          "callee": "[record.findings, record.procedureDetail].filter",
+          "lineNumber": 98
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/actions/op-plans.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 124,
+      "nonEmptyLines": 110,
+      "functions": [
+        {
+          "name": "updateOpPlan",
+          "startLine": 21,
+          "endLine": 102,
+          "params": [
+            "planId",
+            "_prevState",
+            "formData"
+          ]
+        },
+        {
+          "name": "deleteOpPlan",
+          "startLine": 105,
+          "endLine": 110,
+          "params": [
+            "planId",
+            "patientId"
+          ]
+        },
+        {
+          "name": "toggleOpPlanDone",
+          "startLine": 115,
+          "endLine": 124,
+          "params": [
+            "planId"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "updateOpPlan",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "deleteOpPlan",
+          "line": 105,
+          "isDefault": false
+        },
+        {
+          "name": "toggleOpPlanDone",
+          "line": 115,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "updateOpPlan",
+          "callee": "verifySession",
+          "lineNumber": 26
+        },
+        {
+          "caller": "updateOpPlan",
+          "callee": "prisma.opPlan.findUnique",
+          "lineNumber": 28
+        },
+        {
+          "caller": "updateOpPlan",
+          "callee": "OpPlanSchema.safeParse",
+          "lineNumber": 36
+        },
+        {
+          "caller": "updateOpPlan",
+          "callee": "formData.get",
+          "lineNumber": 37
+        },
+        {
+          "caller": "updateOpPlan",
+          "callee": "formData.get",
+          "lineNumber": 38
+        },
+        {
+          "caller": "updateOpPlan",
+          "callee": "formData.get",
+          "lineNumber": 39
+        },
+        {
+          "caller": "updateOpPlan",
+          "callee": "formData.get",
+          "lineNumber": 50
+        },
+        {
+          "caller": "updateOpPlan",
+          "callee": "prisma.surgeryType.findUnique",
+          "lineNumber": 53
+        },
+        {
+          "caller": "updateOpPlan",
+          "callee": "resolveSurgeryTypeFields",
+          "lineNumber": 60
+        },
+        {
+          "caller": "updateOpPlan",
+          "callee": "fieldValuesFromFormData",
+          "lineNumber": 61
+        },
+        {
+          "caller": "updateOpPlan",
+          "callee": "parseFieldValues",
+          "lineNumber": 70
+        },
+        {
+          "caller": "updateOpPlan",
+          "callee": "parseFieldValues",
+          "lineNumber": 71
+        },
+        {
+          "caller": "updateOpPlan",
+          "callee": "isNasalFindingKey",
+          "lineNumber": 75
+        },
+        {
+          "caller": "updateOpPlan",
+          "callee": "(REVISION_FLAG_KEYS as readonly string[]).includes",
+          "lineNumber": 75
+        },
+        {
+          "caller": "updateOpPlan",
+          "callee": "prisma.opPlan.update",
+          "lineNumber": 85
+        },
+        {
+          "caller": "updateOpPlan",
+          "callee": "revalidatePath",
+          "lineNumber": 96
+        },
+        {
+          "caller": "updateOpPlan",
+          "callee": "revalidatePath",
+          "lineNumber": 97
+        },
+        {
+          "caller": "updateOpPlan",
+          "callee": "redirect",
+          "lineNumber": 101
+        },
+        {
+          "caller": "deleteOpPlan",
+          "callee": "verifySession",
+          "lineNumber": 106
+        },
+        {
+          "caller": "deleteOpPlan",
+          "callee": "prisma.opPlan.delete",
+          "lineNumber": 107
+        },
+        {
+          "caller": "deleteOpPlan",
+          "callee": "revalidatePath",
+          "lineNumber": 108
+        },
+        {
+          "caller": "deleteOpPlan",
+          "callee": "redirect",
+          "lineNumber": 109
+        },
+        {
+          "caller": "toggleOpPlanDone",
+          "callee": "verifySession",
+          "lineNumber": 116
+        },
+        {
+          "caller": "toggleOpPlanDone",
+          "callee": "prisma.opPlan.findUnique",
+          "lineNumber": 117
+        },
+        {
+          "caller": "toggleOpPlanDone",
+          "callee": "prisma.opPlan.update",
+          "lineNumber": 119
+        },
+        {
+          "caller": "toggleOpPlanDone",
+          "callee": "revalidatePath",
+          "lineNumber": 123
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/patients-list-title.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 26,
+      "nonEmptyLines": 23,
+      "functions": [
+        {
+          "name": "PatientsListTitle",
+          "startLine": 8,
+          "endLine": 26,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "PatientsListTitle",
+          "line": 8,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "PatientsListTitle",
+          "callee": "useRouter",
+          "lineNumber": 9
+        },
+        {
+          "caller": "PatientsListTitle",
+          "callee": "e.preventDefault",
+          "lineNumber": 16
+        },
+        {
+          "caller": "PatientsListTitle",
+          "callee": "router.push",
+          "lineNumber": 17
+        },
+        {
+          "caller": "PatientsListTitle",
+          "callee": "router.refresh",
+          "lineNumber": 18
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/lib/date-format.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 7,
+      "nonEmptyLines": 7,
+      "functions": [
+        {
+          "name": "safeDateStr",
+          "startLine": 3,
+          "endLine": 7,
+          "params": [
+            "d"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "safeDateStr",
+          "line": 3,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "safeDateStr",
+          "callee": "Number.isNaN",
+          "lineNumber": 6
+        },
+        {
+          "caller": "safeDateStr",
+          "callee": "t.getTime",
+          "lineNumber": 6
+        },
+        {
+          "caller": "safeDateStr",
+          "callee": "t.toISOString().slice",
+          "lineNumber": 6
+        },
+        {
+          "caller": "safeDateStr",
+          "callee": "t.toISOString",
+          "lineNumber": 6
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    }
+  ]
+}

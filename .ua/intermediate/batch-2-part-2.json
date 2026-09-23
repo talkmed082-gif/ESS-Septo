@@ -1,0 +1,714 @@
+{
+ "nodes": [
+  {
+   "id": "file:src/app/actions/settings.ts",
+   "type": "file",
+   "name": "settings.ts",
+   "filePath": "src/app/actions/settings.ts",
+   "summary": "사용자의 수술명 표기 설정(sideNotation, abbreviateRegions)을 zod로 검증해 저장하는 Server Action.",
+   "tags": [
+    "server-action",
+    "settings",
+    "validation"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/app/actions/settings.ts:updateNameStyleSettings",
+   "type": "function",
+   "name": "updateNameStyleSettings",
+   "filePath": "src/app/actions/settings.ts",
+   "lineRange": [
+    17,
+    41
+   ],
+   "summary": "세션 확인 후 표기 설정을 검증해 User 레코드를 업데이트하고 /settings를 재검증한다.",
+   "tags": [
+    "server-action",
+    "settings",
+    "update"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/app/actions/surgery-types.ts",
+   "type": "file",
+   "name": "surgery-types.ts",
+   "filePath": "src/app/actions/surgery-types.ts",
+   "summary": "사용자 정의 수술 종류 생성/삭제 Server Actions로, 코드·이름·필드 정의 JSON을 zod로 검증하고 중복 코드 및 사용 중 삭제를 방지한다.",
+   "tags": [
+    "server-action",
+    "validation",
+    "수술종류",
+    "api-handler"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/app/actions/surgery-types.ts:createSurgeryType",
+   "type": "function",
+   "name": "createSurgeryType",
+   "filePath": "src/app/actions/surgery-types.ts",
+   "lineRange": [
+    39,
+    86
+   ],
+   "summary": "코드 형식·필드 정의 배열을 검증하고 코드 중복을 확인한 뒤 SurgeryType을 생성해 설정 페이지로 리다이렉트한다.",
+   "tags": [
+    "server-action",
+    "create",
+    "validation"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/app/actions/surgery-types.ts:deleteSurgeryType",
+   "type": "function",
+   "name": "deleteSurgeryType",
+   "filePath": "src/app/actions/surgery-types.ts",
+   "lineRange": [
+    88,
+    102
+   ],
+   "summary": "수술 종류를 조회 후 삭제하고 /settings를 재검증하는 서버 액션.",
+   "tags": [
+    "server-action",
+    "delete",
+    "수술종류"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/app/plans/[id]/ics/route.ts",
+   "type": "file",
+   "name": "route.ts",
+   "filePath": "src/app/plans/[id]/ics/route.ts",
+   "summary": "수술계획의 예정일을 iCalendar(.ics) 파일로 내려주는 Route Handler로, 수술명을 생성해 종일 일정 이벤트로 만든다.",
+   "tags": [
+    "api-handler",
+    "route-handler",
+    "calendar",
+    "export"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/app/plans/[id]/ics/route.ts:GET",
+   "type": "function",
+   "name": "GET",
+   "filePath": "src/app/plans/[id]/ics/route.ts",
+   "lineRange": [
+    9,
+    42
+   ],
+   "summary": "세션 확인 후 계획을 조회해 예정일이 없으면 404, 있으면 buildProcedureName과 buildIcsContent로 ics 응답을 반환한다.",
+   "tags": [
+    "api-handler",
+    "calendar",
+    "download"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/lib/calendar.ts",
+   "type": "file",
+   "name": "calendar.ts",
+   "filePath": "src/lib/calendar.ts",
+   "summary": "수술 일정 캘린더 연동 유틸리티로, RFC 5545 형식의 종일 ICS 콘텐츠와 구글 캘린더 이벤트 생성 URL을 만든다.",
+   "tags": [
+    "utility",
+    "calendar",
+    "ics",
+    "integration"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/lib/calendar.ts:buildIcsContent",
+   "type": "function",
+   "name": "buildIcsContent",
+   "filePath": "src/lib/calendar.ts",
+   "lineRange": [
+    15,
+    48
+   ],
+   "summary": "UID·제목·날짜·설명으로 VCALENDAR/VEVENT 종일 일정 문자열을 CRLF 구분으로 생성하며 특수문자를 이스케이프한다.",
+   "tags": [
+    "utility",
+    "ics",
+    "serialization"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/calendar.ts:buildGoogleCalendarUrl",
+   "type": "function",
+   "name": "buildGoogleCalendarUrl",
+   "filePath": "src/lib/calendar.ts",
+   "lineRange": [
+    50,
+    68
+   ],
+   "summary": "제목·날짜·세부내용으로 구글 캘린더 TEMPLATE 액션 URL을 URLSearchParams로 만든다.",
+   "tags": [
+    "utility",
+    "calendar",
+    "url-builder"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/lib/dal.ts",
+   "type": "file",
+   "name": "dal.ts",
+   "filePath": "src/lib/dal.ts",
+   "summary": "Data Access Layer로, React cache로 요청 단위 메모이즈된 세션 검증(verifySession)과 현재 사용자 조회(getCurrentUser)를 제공하며 미인증 시 /login으로 리다이렉트한다.",
+   "tags": [
+    "auth",
+    "data-access",
+    "utility",
+    "server-only"
+   ],
+   "complexity": "simple",
+   "languageNotes": "React의 cache()로 감싸 한 요청 내 중복 호출 시 DB/쿠키 조회를 한 번만 수행한다."
+  },
+  {
+   "id": "function:src/lib/dal.ts:verifySession",
+   "type": "function",
+   "name": "verifySession",
+   "filePath": "src/lib/dal.ts",
+   "lineRange": [
+    7,
+    13
+   ],
+   "summary": "세션 페이로드를 확인해 userId가 없으면 /login으로 리다이렉트하고 인증 정보를 반환하는 캐시된 함수.",
+   "tags": [
+    "auth",
+    "session",
+    "guard"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/dal.ts:getCurrentUser",
+   "type": "function",
+   "name": "getCurrentUser",
+   "filePath": "src/lib/dal.ts",
+   "lineRange": [
+    15,
+    32
+   ],
+   "summary": "세션을 검증한 뒤 사용자의 이름·이메일·표기 설정·기본 보조의 이름을 조회해 반환하는 캐시된 함수.",
+   "tags": [
+    "auth",
+    "data-access",
+    "user"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/lib/patient-nasal-findings.ts",
+   "type": "file",
+   "name": "patient-nasal-findings.ts",
+   "filePath": "src/lib/patient-nasal-findings.ts",
+   "summary": "환자의 가장 최근 수술기록지(없으면 계획)에서 비강/영상 소견만 골라 새 계획 작성 시 재사용하도록 돌려주는 서버 전용 헬퍼.",
+   "tags": [
+    "data-access",
+    "utility",
+    "수술계획",
+    "server-only"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/patient-nasal-findings.ts:getLatestNasalFindingsForPatient",
+   "type": "function",
+   "name": "getLatestNasalFindingsForPatient",
+   "filePath": "src/lib/patient-nasal-findings.ts",
+   "lineRange": [
+    20,
+    44
+   ],
+   "summary": "환자의 최근 계획 최대 20건을 순회하며 기록지·계획 데이터에서 isNasalFindingKey에 해당하는 비어있지 않은 소견을 반환한다.",
+   "tags": [
+    "data-access",
+    "비강소견",
+    "reuse"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/lib/presets.ts",
+   "type": "file",
+   "name": "presets.ts",
+   "filePath": "src/lib/presets.ts",
+   "summary": "사용자별 수술 프리셋(자주 쓰는 필드 값 조합)을 수술 종류 단위로 조회하는 서버 전용 헬퍼.",
+   "tags": [
+    "data-access",
+    "preset",
+    "server-only",
+    "utility"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/presets.ts:getPresetsForSurgeryType",
+   "type": "function",
+   "name": "getPresetsForSurgeryType",
+   "filePath": "src/lib/presets.ts",
+   "lineRange": [
+    11,
+    20
+   ],
+   "summary": "특정 사용자·수술 종류의 프리셋을 최신순으로 조회해 필드 값을 파싱한 목록으로 반환한다.",
+   "tags": [
+    "data-access",
+    "preset"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/presets.ts:getPresetsForSurgeryTypes",
+   "type": "function",
+   "name": "getPresetsForSurgeryTypes",
+   "filePath": "src/lib/presets.ts",
+   "lineRange": [
+    22,
+    40
+   ],
+   "summary": "여러 수술 종류의 프리셋을 한 번에 조회해 수술 종류 ID별 맵으로 묶어 반환한다.",
+   "tags": [
+    "data-access",
+    "preset",
+    "batch-query"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/lib/prisma.ts",
+   "type": "file",
+   "name": "prisma.ts",
+   "filePath": "src/lib/prisma.ts",
+   "summary": "PrismaPg 어댑터를 사용하는 PrismaClient 싱글톤을 생성·export하며, 개발 중 핫 리로드 시 중복 인스턴스를 막기 위해 globalThis에 캐시한다.",
+   "tags": [
+    "singleton",
+    "database",
+    "prisma",
+    "config"
+   ],
+   "complexity": "simple",
+   "languageNotes": "Prisma 7 driver adapter(@prisma/adapter-pg) 방식으로 DATABASE_URL에 직접 연결한다."
+  },
+  {
+   "id": "function:src/lib/prisma.ts:prisma",
+   "type": "function",
+   "name": "prisma",
+   "filePath": "src/lib/prisma.ts",
+   "lineRange": [
+    10,
+    10
+   ],
+   "summary": "앱 전역에서 공유되는 PrismaClient 싱글톤 인스턴스.",
+   "tags": [
+    "singleton",
+    "database",
+    "prisma"
+   ],
+   "complexity": "simple"
+  }
+ ],
+ "edges": [
+  {
+   "source": "file:src/app/actions/settings.ts",
+   "target": "function:src/app/actions/settings.ts:updateNameStyleSettings",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/actions/settings.ts",
+   "target": "function:src/app/actions/settings.ts:updateNameStyleSettings",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/actions/surgery-types.ts",
+   "target": "function:src/app/actions/surgery-types.ts:createSurgeryType",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/actions/surgery-types.ts",
+   "target": "function:src/app/actions/surgery-types.ts:createSurgeryType",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/actions/surgery-types.ts",
+   "target": "function:src/app/actions/surgery-types.ts:deleteSurgeryType",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/actions/surgery-types.ts",
+   "target": "function:src/app/actions/surgery-types.ts:deleteSurgeryType",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/plans/[id]/ics/route.ts",
+   "target": "function:src/app/plans/[id]/ics/route.ts:GET",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/plans/[id]/ics/route.ts",
+   "target": "function:src/app/plans/[id]/ics/route.ts:GET",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/calendar.ts",
+   "target": "function:src/lib/calendar.ts:buildIcsContent",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/calendar.ts",
+   "target": "function:src/lib/calendar.ts:buildIcsContent",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/calendar.ts",
+   "target": "function:src/lib/calendar.ts:buildGoogleCalendarUrl",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/calendar.ts",
+   "target": "function:src/lib/calendar.ts:buildGoogleCalendarUrl",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/dal.ts",
+   "target": "function:src/lib/dal.ts:verifySession",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/dal.ts",
+   "target": "function:src/lib/dal.ts:verifySession",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/dal.ts",
+   "target": "function:src/lib/dal.ts:getCurrentUser",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/dal.ts",
+   "target": "function:src/lib/dal.ts:getCurrentUser",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/patient-nasal-findings.ts",
+   "target": "function:src/lib/patient-nasal-findings.ts:getLatestNasalFindingsForPatient",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/patient-nasal-findings.ts",
+   "target": "function:src/lib/patient-nasal-findings.ts:getLatestNasalFindingsForPatient",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/presets.ts",
+   "target": "function:src/lib/presets.ts:getPresetsForSurgeryType",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/presets.ts",
+   "target": "function:src/lib/presets.ts:getPresetsForSurgeryType",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/presets.ts",
+   "target": "function:src/lib/presets.ts:getPresetsForSurgeryTypes",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/presets.ts",
+   "target": "function:src/lib/presets.ts:getPresetsForSurgeryTypes",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/prisma.ts",
+   "target": "function:src/lib/prisma.ts:prisma",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/prisma.ts",
+   "target": "function:src/lib/prisma.ts:prisma",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/actions/settings.ts",
+   "target": "file:src/lib/dal.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/actions/settings.ts",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/actions/surgery-types.ts",
+   "target": "file:src/lib/dal.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/actions/surgery-types.ts",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/actions/surgery-types.ts",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/plans/[id]/ics/route.ts",
+   "target": "file:src/lib/calendar.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/plans/[id]/ics/route.ts",
+   "target": "file:src/lib/dal.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/plans/[id]/ics/route.ts",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/plans/[id]/ics/route.ts",
+   "target": "file:src/lib/op-note-defs.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/plans/[id]/ics/route.ts",
+   "target": "file:src/lib/op-note-generator.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/plans/[id]/ics/route.ts",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/lib/dal.ts",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/lib/dal.ts",
+   "target": "file:src/lib/session.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/lib/patient-nasal-findings.ts",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/lib/patient-nasal-findings.ts",
+   "target": "file:src/lib/op-note-defs.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/lib/patient-nasal-findings.ts",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/lib/presets.ts",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/lib/presets.ts",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "function:src/app/actions/settings.ts:updateNameStyleSettings",
+   "target": "function:src/lib/dal.ts:verifySession",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/actions/surgery-types.ts:createSurgeryType",
+   "target": "function:src/lib/dal.ts:verifySession",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/actions/surgery-types.ts:deleteSurgeryType",
+   "target": "function:src/lib/dal.ts:verifySession",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/plans/[id]/ics/route.ts:GET",
+   "target": "function:src/lib/dal.ts:verifySession",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/plans/[id]/ics/route.ts:GET",
+   "target": "function:src/lib/calendar.ts:buildIcsContent",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/plans/[id]/ics/route.ts:GET",
+   "target": "function:src/lib/op-note-generator.ts:buildProcedureName",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/plans/[id]/ics/route.ts:GET",
+   "target": "function:src/lib/op-note-defs.ts:isBuiltInSurgeryCode",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/plans/[id]/ics/route.ts:GET",
+   "target": "function:src/lib/field-types.ts:parseFieldValues",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/dal.ts:getCurrentUser",
+   "target": "function:src/lib/session.ts:getSessionPayload",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/dal.ts:verifySession",
+   "target": "function:src/lib/session.ts:getSessionPayload",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/patient-nasal-findings.ts:getLatestNasalFindingsForPatient",
+   "target": "function:src/lib/op-note-defs.ts:isNasalFindingKey",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/patient-nasal-findings.ts:getLatestNasalFindingsForPatient",
+   "target": "function:src/lib/field-types.ts:parseFieldValues",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/presets.ts:getPresetsForSurgeryType",
+   "target": "function:src/lib/field-types.ts:parseFieldValues",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/presets.ts:getPresetsForSurgeryTypes",
+   "target": "function:src/lib/field-types.ts:parseFieldValues",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  }
+ ]
+}

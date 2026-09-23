@@ -1,0 +1,398 @@
+{
+  "scriptCompleted": true,
+  "stats": {
+    "filesScanned": 92,
+    "filesWithImports": 57,
+    "totalEdges": 238
+  },
+  "failures": [],
+  "importMap": {
+    ".env.example": [],
+    ".ua/config.json": [],
+    "AGENTS.md": [],
+    "CLAUDE.md": [],
+    "README.md": [],
+    "eslint.config.mjs": [],
+    "next.config.ts": [],
+    "package.json": [],
+    "postcss.config.mjs": [],
+    "prisma/migrations/20260918033326_init/migration.sql": [],
+    "prisma/migrations/20260918120000_add_user_name_style_settings/migration.sql": [],
+    "prisma/migrations/20260918140000_add_default_assistant_name/migration.sql": [],
+    "prisma/migrations/20260918160000_add_opplan_checklist/migration.sql": [],
+    "prisma/migrations/20260919090000_drop_opplan_checklist/migration.sql": [],
+    "prisma/migrations/20260919100000_add_surgery_preset/migration.sql": [],
+    "prisma/migrations/20260919150000_add_patient_age/migration.sql": [],
+    "prisma/migrations/20260923180000_add_opplan_actual_data/migration.sql": [],
+    "prisma/migrations/migration_lock.toml": [],
+    "prisma/schema.prisma": [],
+    "prisma/seed.ts": [
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts"
+    ],
+    "prisma7.config.ts": [],
+    "proxy.ts": [
+      "src/lib/session.ts"
+    ],
+    "src/app/(app)/layout.tsx": [
+      "src/components/app-nav-bar.tsx"
+    ],
+    "src/app/(app)/patients/[id]/edit/page.tsx": [
+      "src/app/(app)/patients/patient-form.tsx",
+      "src/app/actions/patients.ts",
+      "src/lib/dal.ts",
+      "src/lib/prisma.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/app/(app)/patients/[id]/page.tsx": [
+      "src/components/plan-table.tsx",
+      "src/lib/dal.ts",
+      "src/lib/date-format.ts",
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/op-note-generator.ts",
+      "src/lib/prisma.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/app/(app)/patients/[id]/plans/new/page.tsx": [
+      "src/components/surgery-planner.tsx",
+      "src/lib/dal.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/op-note-generator.ts",
+      "src/lib/patient-nasal-findings.ts",
+      "src/lib/prisma.ts"
+    ],
+    "src/app/(app)/patients/new/page.tsx": [
+      "src/components/surgery-planner.tsx",
+      "src/lib/dal.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/op-note-generator.ts",
+      "src/lib/prisma.ts"
+    ],
+    "src/app/(app)/patients/page.tsx": [
+      "src/app/(app)/patients/patient-list-table.tsx",
+      "src/app/(app)/patients/patient-row.ts",
+      "src/components/patients-list-title.tsx",
+      "src/lib/dal.ts",
+      "src/lib/date-format.ts",
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/op-note-generator.ts",
+      "src/lib/prisma.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/app/(app)/patients/patient-form.tsx": [
+      "src/app/actions/patients.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/app/(app)/patients/patient-list-table.tsx": [
+      "src/app/(app)/patients/patient-row.ts",
+      "src/app/actions/op-plans.ts",
+      "src/app/actions/patients.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/app/(app)/patients/patient-row.ts": [],
+    "src/app/(app)/plans/[id]/page.tsx": [
+      "src/app/actions/op-plans.ts",
+      "src/components/surgery-planner.tsx",
+      "src/lib/dal.ts",
+      "src/lib/date-format.ts",
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/op-note-generator.ts",
+      "src/lib/prisma.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/app/(app)/plans/[id]/record/page.tsx": [
+      "src/app/(app)/records/record-form.tsx",
+      "src/app/actions/op-records.ts",
+      "src/lib/dal.ts",
+      "src/lib/date-format.ts",
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/op-note-generator.ts",
+      "src/lib/prisma.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/app/(app)/records/[id]/edit/page.tsx": [
+      "src/app/(app)/records/record-form.tsx",
+      "src/app/actions/op-records.ts",
+      "src/lib/dal.ts",
+      "src/lib/date-format.ts",
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/op-note-generator.ts",
+      "src/lib/prisma.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/app/(app)/records/[id]/page.tsx": [
+      "src/lib/dal.ts",
+      "src/lib/date-format.ts",
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/prisma.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/app/(app)/records/record-form.tsx": [
+      "src/app/actions/op-records.ts",
+      "src/components/anatomy-diagram.tsx",
+      "src/components/collapsible-finding-section.tsx",
+      "src/components/ess-findings-picker.tsx",
+      "src/components/nasal-findings-overview.tsx",
+      "src/components/op-note-generate-button.tsx",
+      "src/components/polyp-picker.tsx",
+      "src/components/surgery-field-inputs.tsx",
+      "src/components/turbinoplasty-type-picker.tsx",
+      "src/components/uncinate-attachment-fields.tsx",
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/op-note-generator.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/app/(app)/settings/page.tsx": [
+      "src/app/(app)/settings/settings-form.tsx",
+      "src/app/(app)/surgery-types/surgery-types-manager.tsx",
+      "src/lib/calendar.ts",
+      "src/lib/dal.ts",
+      "src/lib/date-format.ts",
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/op-note-generator.ts",
+      "src/lib/prisma.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/app/(app)/settings/settings-form.tsx": [
+      "src/app/actions/settings.ts",
+      "src/lib/op-note-generator.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/app/(app)/surgery-types/field-builder.tsx": [
+      "src/app/actions/surgery-types.ts",
+      "src/lib/field-types.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/app/(app)/surgery-types/surgery-types-manager.tsx": [
+      "src/app/(app)/surgery-types/field-builder.tsx",
+      "src/app/actions/surgery-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/prisma.ts"
+    ],
+    "src/app/actions/auth.ts": [
+      "src/lib/prisma.ts",
+      "src/lib/session.ts"
+    ],
+    "src/app/actions/op-plans.ts": [
+      "src/lib/dal.ts",
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/prisma.ts"
+    ],
+    "src/app/actions/op-records.ts": [
+      "src/lib/dal.ts",
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/prisma.ts"
+    ],
+    "src/app/actions/patient-plan.ts": [
+      "src/lib/dal.ts",
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/prisma.ts"
+    ],
+    "src/app/actions/patients.ts": [
+      "src/lib/dal.ts",
+      "src/lib/prisma.ts"
+    ],
+    "src/app/actions/presets.ts": [
+      "src/lib/dal.ts",
+      "src/lib/field-types.ts",
+      "src/lib/prisma.ts"
+    ],
+    "src/app/actions/settings.ts": [
+      "src/lib/dal.ts",
+      "src/lib/prisma.ts"
+    ],
+    "src/app/actions/surgery-types.ts": [
+      "src/lib/dal.ts",
+      "src/lib/field-types.ts",
+      "src/lib/prisma.ts"
+    ],
+    "src/app/globals.css": [],
+    "src/app/icon.tsx": [],
+    "src/app/layout.tsx": [
+      "src/app/globals.css"
+    ],
+    "src/app/login/page.tsx": [
+      "src/app/actions/auth.ts"
+    ],
+    "src/app/page.tsx": [
+      "src/lib/session.ts"
+    ],
+    "src/app/plans/[id]/ics/route.ts": [
+      "src/lib/calendar.ts",
+      "src/lib/dal.ts",
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/op-note-generator.ts",
+      "src/lib/prisma.ts"
+    ],
+    "src/app/plans/[id]/print/page.tsx": [
+      "src/components/app-nav-bar.tsx",
+      "src/components/copy-button.tsx",
+      "src/components/plan-table.tsx",
+      "src/components/print-button.tsx",
+      "src/components/save-image-button.tsx",
+      "src/lib/dal.ts",
+      "src/lib/date-format.ts",
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/op-note-generator.ts",
+      "src/lib/prisma.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/app/print/fess-checklist/page.tsx": [
+      "src/components/app-nav-bar.tsx",
+      "src/components/check-cell.tsx",
+      "src/components/print-button.tsx",
+      "src/lib/dal.ts",
+      "src/lib/date-format.ts",
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/op-note-generator.ts",
+      "src/lib/prisma.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/app/records/[id]/print/page.tsx": [
+      "src/components/app-nav-bar.tsx",
+      "src/components/copy-button.tsx",
+      "src/components/print-button.tsx",
+      "src/components/save-image-button.tsx",
+      "src/lib/dal.ts",
+      "src/lib/date-format.ts",
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/prisma.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/app/signup/page.tsx": [
+      "src/app/actions/auth.ts"
+    ],
+    "src/components/anatomy-diagram.tsx": [
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/components/app-nav-bar.tsx": [
+      "src/app/actions/auth.ts",
+      "src/components/patients-nav-link.tsx",
+      "src/lib/dal.ts"
+    ],
+    "src/components/check-cell.tsx": [],
+    "src/components/collapsible-finding-section.tsx": [],
+    "src/components/copy-button.tsx": [
+      "src/lib/ui.ts"
+    ],
+    "src/components/ess-findings-picker.tsx": [
+      "src/components/plan-table.tsx",
+      "src/lib/field-types.ts",
+      "src/lib/op-note-generator.ts"
+    ],
+    "src/components/nasal-findings-overview.tsx": [],
+    "src/components/op-note-generate-button.tsx": [
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/op-note-generator.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/components/patients-list-title.tsx": [],
+    "src/components/patients-nav-link.tsx": [],
+    "src/components/plan-table.tsx": [
+      "src/components/check-cell.tsx",
+      "src/lib/op-note-generator.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/components/polyp-picker.tsx": [
+      "src/components/plan-table.tsx",
+      "src/lib/field-types.ts",
+      "src/lib/op-note-generator.ts"
+    ],
+    "src/components/preset-bar.tsx": [
+      "src/app/actions/presets.ts",
+      "src/lib/field-types.ts"
+    ],
+    "src/components/print-button.tsx": [
+      "src/lib/ui.ts"
+    ],
+    "src/components/save-image-button.tsx": [
+      "src/lib/ui.ts"
+    ],
+    "src/components/surgery-field-inputs.tsx": [
+      "src/lib/field-types.ts"
+    ],
+    "src/components/surgery-planner.tsx": [
+      "src/app/actions/patient-plan.ts",
+      "src/components/anatomy-diagram.tsx",
+      "src/components/collapsible-finding-section.tsx",
+      "src/components/copy-button.tsx",
+      "src/components/ess-findings-picker.tsx",
+      "src/components/nasal-findings-overview.tsx",
+      "src/components/plan-table.tsx",
+      "src/components/polyp-picker.tsx",
+      "src/components/surgery-field-inputs.tsx",
+      "src/components/turbinoplasty-type-picker.tsx",
+      "src/components/uncinate-attachment-fields.tsx",
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/op-note-generator.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/components/turbinoplasty-type-picker.tsx": [
+      "src/lib/field-types.ts",
+      "src/lib/ui.ts"
+    ],
+    "src/components/uncinate-attachment-fields.tsx": [
+      "src/lib/field-types.ts"
+    ],
+    "src/lib/calendar.ts": [],
+    "src/lib/dal.ts": [
+      "src/lib/prisma.ts",
+      "src/lib/session.ts"
+    ],
+    "src/lib/date-format.ts": [],
+    "src/lib/field-types.ts": [],
+    "src/lib/op-note-defs.test.ts": [
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts"
+    ],
+    "src/lib/op-note-defs.ts": [
+      "src/lib/field-types.ts"
+    ],
+    "src/lib/op-note-generator.test.ts": [
+      "src/lib/field-types.ts",
+      "src/lib/op-note-generator.ts"
+    ],
+    "src/lib/op-note-generator.ts": [
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts"
+    ],
+    "src/lib/patient-nasal-findings.ts": [
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/prisma.ts"
+    ],
+    "src/lib/presets.ts": [
+      "src/lib/field-types.ts",
+      "src/lib/prisma.ts"
+    ],
+    "src/lib/prisma.ts": [],
+    "src/lib/recent-combos.ts": [
+      "src/lib/field-types.ts",
+      "src/lib/op-note-defs.ts",
+      "src/lib/op-note-generator.ts",
+      "src/lib/prisma.ts"
+    ],
+    "src/lib/session.ts": [],
+    "src/lib/ui.ts": [],
+    "tsconfig.json": []
+  }
+}

@@ -1,0 +1,838 @@
+{
+ "nodes": [
+  {
+   "id": "file:src/app/(app)/patients/[id]/edit/page.tsx",
+   "type": "file",
+   "name": "page.tsx",
+   "filePath": "src/app/(app)/patients/[id]/edit/page.tsx",
+   "summary": "환자 정보 수정 페이지(Server Component)로, 세션 확인 후 환자를 조회해 updatePatient를 환자 ID에 바인딩한 뒤 공용 PatientForm에 전달한다.",
+   "tags": [
+    "page",
+    "server-component",
+    "환자관리",
+    "form"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/app/(app)/patients/[id]/edit/page.tsx:EditPatientPage",
+   "type": "function",
+   "name": "EditPatientPage",
+   "filePath": "src/app/(app)/patients/[id]/edit/page.tsx",
+   "lineRange": [
+    9,
+    43
+   ],
+   "summary": "환자 ID로 Prisma 조회 후 없으면 notFound, 있으면 updatePatient.bind로 액션을 만들어 수정 폼을 렌더링하는 페이지 컴포넌트.",
+   "tags": [
+    "page",
+    "server-component",
+    "환자관리"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/app/(app)/patients/[id]/plans/new/page.tsx",
+   "type": "file",
+   "name": "page.tsx",
+   "filePath": "src/app/(app)/patients/[id]/plans/new/page.tsx",
+   "summary": "특정 환자의 새 수술계획(Op Plan) 작성 페이지로, 수술 종류·필드 정의와 이전 비강 소견을 불러와 SurgeryPlanner에 넘긴다.",
+   "tags": [
+    "page",
+    "server-component",
+    "수술계획",
+    "entry-point"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/app/(app)/patients/[id]/plans/new/page.tsx:NewOpPlanPage",
+   "type": "function",
+   "name": "NewOpPlanPage",
+   "filePath": "src/app/(app)/patients/[id]/plans/new/page.tsx",
+   "lineRange": [
+    9,
+    48
+   ],
+   "summary": "현재 사용자·환자·수술 종류 목록과 최근 비강/영상 소견을 조회하고 resolveSurgeryTypeFields로 필드를 해석해 SurgeryPlanner를 렌더링한다.",
+   "tags": [
+    "page",
+    "server-component",
+    "수술계획"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "file:src/app/(app)/patients/patient-form.tsx",
+   "type": "file",
+   "name": "patient-form.tsx",
+   "filePath": "src/app/(app)/patients/patient-form.tsx",
+   "summary": "환자 생성/수정에 공용으로 쓰이는 클라이언트 폼 컴포넌트로, useActionState로 서버 액션 결과(검증 오류)를 표시한다.",
+   "tags": [
+    "component",
+    "client-component",
+    "form",
+    "환자관리"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/app/(app)/patients/patient-form.tsx:PatientForm",
+   "type": "function",
+   "name": "PatientForm",
+   "filePath": "src/app/(app)/patients/patient-form.tsx",
+   "lineRange": [
+    12,
+    111
+   ],
+   "summary": "이름·차트번호·성별·나이·메모 입력 필드를 렌더링하고 주입된 서버 액션을 useActionState로 실행해 필드별 오류를 보여주는 폼.",
+   "tags": [
+    "component",
+    "form",
+    "validation"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "file:src/app/(app)/settings/page.tsx",
+   "type": "file",
+   "name": "page.tsx",
+   "filePath": "src/app/(app)/settings/page.tsx",
+   "summary": "설정 페이지로, 수술명 표기 스타일 설정 폼, 다가오는 수술 일정의 구글 캘린더 추가 링크, 사용자 정의 수술 종류 관리자를 한 화면에 구성한다.",
+   "tags": [
+    "page",
+    "server-component",
+    "settings",
+    "calendar"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/app/(app)/settings/page.tsx:SettingsPage",
+   "type": "function",
+   "name": "SettingsPage",
+   "filePath": "src/app/(app)/settings/page.tsx",
+   "lineRange": [
+    12,
+    95
+   ],
+   "summary": "사용자 설정과 예정된 수술계획을 조회해 buildProcedureName으로 수술명을 만들고 buildGoogleCalendarUrl 링크를 생성하며 SettingsForm·SurgeryTypesManager를 배치한다.",
+   "tags": [
+    "page",
+    "server-component",
+    "settings"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "file:src/app/(app)/settings/settings-form.tsx",
+   "type": "file",
+   "name": "settings-form.tsx",
+   "filePath": "src/app/(app)/settings/settings-form.tsx",
+   "summary": "수술명 좌우 표기(Rt./R)/R])와 부위 약어 사용 여부를 설정하는 클라이언트 폼으로, 선택값에 따른 수술명 미리보기를 실시간으로 보여준다.",
+   "tags": [
+    "component",
+    "client-component",
+    "settings",
+    "form"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/app/(app)/settings/settings-form.tsx:SettingsForm",
+   "type": "function",
+   "name": "SettingsForm",
+   "filePath": "src/app/(app)/settings/settings-form.tsx",
+   "lineRange": [
+    24,
+    106
+   ],
+   "summary": "sideNotation·abbreviate 상태를 관리하고 buildProcedureName으로 샘플 ESS 수술명 미리보기를 렌더링하며 updateNameStyleSettings 액션으로 저장한다.",
+   "tags": [
+    "component",
+    "form",
+    "preview"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "file:src/app/(app)/surgery-types/field-builder.tsx",
+   "type": "file",
+   "name": "field-builder.tsx",
+   "filePath": "src/app/(app)/surgery-types/field-builder.tsx",
+   "summary": "사용자 정의 수술 종류의 입력 필드(키·라벨·타입·옵션)를 동적으로 추가/삭제하며 정의하는 클라이언트 필드 빌더 UI.",
+   "tags": [
+    "component",
+    "client-component",
+    "form-builder",
+    "수술종류"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/app/(app)/surgery-types/field-builder.tsx:SurgeryTypeFieldBuilder",
+   "type": "function",
+   "name": "SurgeryTypeFieldBuilder",
+   "filePath": "src/app/(app)/surgery-types/field-builder.tsx",
+   "lineRange": [
+    31,
+    172
+   ],
+   "summary": "행 단위 필드 정의 상태를 관리해 fieldsJson으로 직렬화하고 createSurgeryType 서버 액션으로 새 수술 종류를 생성하는 폼 컴포넌트.",
+   "tags": [
+    "component",
+    "form-builder",
+    "serialization"
+   ],
+   "complexity": "complex"
+  },
+  {
+   "id": "file:src/app/(app)/surgery-types/surgery-types-manager.tsx",
+   "type": "file",
+   "name": "surgery-types-manager.tsx",
+   "filePath": "src/app/(app)/surgery-types/surgery-types-manager.tsx",
+   "summary": "등록된 수술 종류 목록(필드 수 포함)을 보여주고 삭제 버튼과 새 수술 종류 필드 빌더를 제공하는 서버 컴포넌트.",
+   "tags": [
+    "component",
+    "server-component",
+    "수술종류",
+    "admin"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/app/(app)/surgery-types/surgery-types-manager.tsx:SurgeryTypesManager",
+   "type": "function",
+   "name": "SurgeryTypesManager",
+   "filePath": "src/app/(app)/surgery-types/surgery-types-manager.tsx",
+   "lineRange": [
+    6,
+    63
+   ],
+   "summary": "Prisma로 수술 종류를 조회해 resolveSurgeryTypeFields로 필드 수를 표시하고 deleteSurgeryType 바인딩 폼과 SurgeryTypeFieldBuilder를 렌더링한다.",
+   "tags": [
+    "component",
+    "server-component",
+    "수술종류"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "file:src/app/actions/patients.ts",
+   "type": "file",
+   "name": "patients.ts",
+   "filePath": "src/app/actions/patients.ts",
+   "summary": "환자 CRUD Server Actions로, zod 스키마로 폼 데이터를 검증하고 Prisma로 생성·수정·단건/다건 삭제 후 경로 재검증 및 리다이렉트한다.",
+   "tags": [
+    "server-action",
+    "api-handler",
+    "validation",
+    "환자관리"
+   ],
+   "complexity": "moderate",
+   "languageNotes": "'use server' 지시어로 파일 전체를 Next.js Server Actions로 노출한다."
+  },
+  {
+   "id": "function:src/app/actions/patients.ts:createPatient",
+   "type": "function",
+   "name": "createPatient",
+   "filePath": "src/app/actions/patients.ts",
+   "lineRange": [
+    44,
+    68
+   ],
+   "summary": "폼 데이터를 검증해 새 환자를 생성하고 환자 상세로 리다이렉트하는 서버 액션.",
+   "tags": [
+    "server-action",
+    "create",
+    "환자관리"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/app/actions/patients.ts:updatePatient",
+   "type": "function",
+   "name": "updatePatient",
+   "filePath": "src/app/actions/patients.ts",
+   "lineRange": [
+    80,
+    106
+   ],
+   "summary": "바인딩된 환자 ID의 정보를 검증 후 수정하고 안전한 returnTo 경로로 리다이렉트하는 서버 액션.",
+   "tags": [
+    "server-action",
+    "update",
+    "환자관리"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/app/actions/patients.ts:deletePatient",
+   "type": "function",
+   "name": "deletePatient",
+   "filePath": "src/app/actions/patients.ts",
+   "lineRange": [
+    108,
+    113
+   ],
+   "summary": "단일 환자를 삭제하고 목록으로 리다이렉트하는 서버 액션.",
+   "tags": [
+    "server-action",
+    "delete",
+    "환자관리"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/app/actions/patients.ts:deletePatients",
+   "type": "function",
+   "name": "deletePatients",
+   "filePath": "src/app/actions/patients.ts",
+   "lineRange": [
+    115,
+    123
+   ],
+   "summary": "선택된 여러 환자를 deleteMany로 일괄 삭제하는 서버 액션.",
+   "tags": [
+    "server-action",
+    "delete",
+    "bulk"
+   ],
+   "complexity": "simple"
+  }
+ ],
+ "edges": [
+  {
+   "source": "file:src/app/(app)/patients/[id]/edit/page.tsx",
+   "target": "function:src/app/(app)/patients/[id]/edit/page.tsx:EditPatientPage",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/(app)/patients/[id]/edit/page.tsx",
+   "target": "function:src/app/(app)/patients/[id]/edit/page.tsx:EditPatientPage",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/(app)/patients/[id]/plans/new/page.tsx",
+   "target": "function:src/app/(app)/patients/[id]/plans/new/page.tsx:NewOpPlanPage",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/(app)/patients/[id]/plans/new/page.tsx",
+   "target": "function:src/app/(app)/patients/[id]/plans/new/page.tsx:NewOpPlanPage",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/(app)/patients/patient-form.tsx",
+   "target": "function:src/app/(app)/patients/patient-form.tsx:PatientForm",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/(app)/patients/patient-form.tsx",
+   "target": "function:src/app/(app)/patients/patient-form.tsx:PatientForm",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/(app)/settings/page.tsx",
+   "target": "function:src/app/(app)/settings/page.tsx:SettingsPage",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/(app)/settings/page.tsx",
+   "target": "function:src/app/(app)/settings/page.tsx:SettingsPage",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/(app)/settings/settings-form.tsx",
+   "target": "function:src/app/(app)/settings/settings-form.tsx:SettingsForm",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/(app)/settings/settings-form.tsx",
+   "target": "function:src/app/(app)/settings/settings-form.tsx:SettingsForm",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/(app)/surgery-types/field-builder.tsx",
+   "target": "function:src/app/(app)/surgery-types/field-builder.tsx:SurgeryTypeFieldBuilder",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/(app)/surgery-types/field-builder.tsx",
+   "target": "function:src/app/(app)/surgery-types/field-builder.tsx:SurgeryTypeFieldBuilder",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/(app)/surgery-types/surgery-types-manager.tsx",
+   "target": "function:src/app/(app)/surgery-types/surgery-types-manager.tsx:SurgeryTypesManager",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/(app)/surgery-types/surgery-types-manager.tsx",
+   "target": "function:src/app/(app)/surgery-types/surgery-types-manager.tsx:SurgeryTypesManager",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/actions/patients.ts",
+   "target": "function:src/app/actions/patients.ts:createPatient",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/actions/patients.ts",
+   "target": "function:src/app/actions/patients.ts:createPatient",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/actions/patients.ts",
+   "target": "function:src/app/actions/patients.ts:updatePatient",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/actions/patients.ts",
+   "target": "function:src/app/actions/patients.ts:updatePatient",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/actions/patients.ts",
+   "target": "function:src/app/actions/patients.ts:deletePatient",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/actions/patients.ts",
+   "target": "function:src/app/actions/patients.ts:deletePatient",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/actions/patients.ts",
+   "target": "function:src/app/actions/patients.ts:deletePatients",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/actions/patients.ts",
+   "target": "function:src/app/actions/patients.ts:deletePatients",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/(app)/patients/[id]/edit/page.tsx",
+   "target": "file:src/app/(app)/patients/patient-form.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/[id]/edit/page.tsx",
+   "target": "file:src/app/actions/patients.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/[id]/edit/page.tsx",
+   "target": "file:src/lib/dal.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/[id]/edit/page.tsx",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/[id]/edit/page.tsx",
+   "target": "file:src/lib/ui.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/[id]/plans/new/page.tsx",
+   "target": "file:src/components/surgery-planner.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/[id]/plans/new/page.tsx",
+   "target": "file:src/lib/dal.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/[id]/plans/new/page.tsx",
+   "target": "file:src/lib/op-note-defs.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/[id]/plans/new/page.tsx",
+   "target": "file:src/lib/op-note-generator.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/[id]/plans/new/page.tsx",
+   "target": "file:src/lib/patient-nasal-findings.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/[id]/plans/new/page.tsx",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/patient-form.tsx",
+   "target": "file:src/app/actions/patients.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/patient-form.tsx",
+   "target": "file:src/lib/ui.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/settings/page.tsx",
+   "target": "file:src/app/(app)/settings/settings-form.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/settings/page.tsx",
+   "target": "file:src/app/(app)/surgery-types/surgery-types-manager.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/settings/page.tsx",
+   "target": "file:src/lib/calendar.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/settings/page.tsx",
+   "target": "file:src/lib/dal.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/settings/page.tsx",
+   "target": "file:src/lib/date-format.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/settings/page.tsx",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/settings/page.tsx",
+   "target": "file:src/lib/op-note-defs.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/settings/page.tsx",
+   "target": "file:src/lib/op-note-generator.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/settings/page.tsx",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/settings/page.tsx",
+   "target": "file:src/lib/ui.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/settings/settings-form.tsx",
+   "target": "file:src/app/actions/settings.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/settings/settings-form.tsx",
+   "target": "file:src/lib/op-note-generator.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/settings/settings-form.tsx",
+   "target": "file:src/lib/ui.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/surgery-types/field-builder.tsx",
+   "target": "file:src/app/actions/surgery-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/surgery-types/field-builder.tsx",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/surgery-types/field-builder.tsx",
+   "target": "file:src/lib/ui.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/surgery-types/surgery-types-manager.tsx",
+   "target": "file:src/app/(app)/surgery-types/field-builder.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/surgery-types/surgery-types-manager.tsx",
+   "target": "file:src/app/actions/surgery-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/surgery-types/surgery-types-manager.tsx",
+   "target": "file:src/lib/op-note-defs.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/surgery-types/surgery-types-manager.tsx",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/actions/patients.ts",
+   "target": "file:src/lib/dal.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/actions/patients.ts",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "function:src/app/(app)/patients/[id]/edit/page.tsx:EditPatientPage",
+   "target": "function:src/lib/dal.ts:verifySession",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/patients/[id]/plans/new/page.tsx:NewOpPlanPage",
+   "target": "function:src/lib/dal.ts:getCurrentUser",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/patients/[id]/plans/new/page.tsx:NewOpPlanPage",
+   "target": "function:src/lib/patient-nasal-findings.ts:getLatestNasalFindingsForPatient",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/patients/[id]/plans/new/page.tsx:NewOpPlanPage",
+   "target": "function:src/lib/op-note-defs.ts:resolveSurgeryTypeFields",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/settings/page.tsx:SettingsPage",
+   "target": "function:src/lib/dal.ts:getCurrentUser",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/settings/page.tsx:SettingsPage",
+   "target": "function:src/lib/calendar.ts:buildGoogleCalendarUrl",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/settings/page.tsx:SettingsPage",
+   "target": "function:src/lib/op-note-generator.ts:buildProcedureName",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/settings/page.tsx:SettingsPage",
+   "target": "function:src/lib/op-note-defs.ts:isBuiltInSurgeryCode",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/settings/page.tsx:SettingsPage",
+   "target": "function:src/lib/field-types.ts:parseFieldValues",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/settings/page.tsx:SettingsPage",
+   "target": "function:src/lib/date-format.ts:safeDateStr",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/settings/settings-form.tsx:SettingsForm",
+   "target": "function:src/lib/op-note-generator.ts:buildProcedureName",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/settings/settings-form.tsx:SettingsForm",
+   "target": "function:src/app/actions/settings.ts:updateNameStyleSettings",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/surgery-types/field-builder.tsx:SurgeryTypeFieldBuilder",
+   "target": "function:src/app/actions/surgery-types.ts:createSurgeryType",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/surgery-types/surgery-types-manager.tsx:SurgeryTypesManager",
+   "target": "function:src/app/actions/surgery-types.ts:deleteSurgeryType",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/surgery-types/surgery-types-manager.tsx:SurgeryTypesManager",
+   "target": "function:src/lib/op-note-defs.ts:resolveSurgeryTypeFields",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/actions/patients.ts:createPatient",
+   "target": "function:src/lib/dal.ts:verifySession",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/actions/patients.ts:updatePatient",
+   "target": "function:src/lib/dal.ts:verifySession",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/actions/patients.ts:deletePatient",
+   "target": "function:src/lib/dal.ts:verifySession",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/actions/patients.ts:deletePatients",
+   "target": "function:src/lib/dal.ts:verifySession",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  }
+ ]
+}

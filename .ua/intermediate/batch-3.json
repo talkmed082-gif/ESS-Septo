@@ -1,0 +1,1073 @@
+{
+ "nodes": [
+  {
+   "id": "file:src/app/(app)/layout.tsx",
+   "type": "file",
+   "name": "layout.tsx",
+   "filePath": "src/app/(app)/layout.tsx",
+   "summary": "로그인 후 메인 앱 화면들((app) 라우트 그룹)을 감싸는 레이아웃으로, 상단에 공용 AppNavBar를 배치한다.",
+   "tags": [
+    "레이아웃",
+    "entry-point",
+    "nextjs-app-router",
+    "component"
+   ],
+   "complexity": "simple",
+   "languageNotes": "Next.js App Router의 괄호 라우트 그룹 (app)은 URL에 영향을 주지 않고 레이아웃만 공유한다."
+  },
+  {
+   "id": "file:src/app/plans/[id]/print/page.tsx",
+   "type": "file",
+   "name": "page.tsx",
+   "filePath": "src/app/plans/[id]/print/page.tsx",
+   "summary": "수술계획(OpPlan)을 DB에서 조회해 수술계획표를 인쇄·이미지 저장·텍스트 복사할 수 있게 렌더링하는 서버 컴포넌트 페이지.",
+   "tags": [
+    "인쇄",
+    "수술계획",
+    "server-component",
+    "page"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "file:src/app/print/fess-checklist/page.tsx",
+   "type": "file",
+   "name": "page.tsx",
+   "filePath": "src/app/print/fess-checklist/page.tsx",
+   "summary": "수술방 내시경 모니터용 FESS 시행 부위 체크리스트를 A4 한 장에 4장씩 인쇄하는 페이지로, 쿼리로 넘긴 계획들의 체크 상태를 채우거나 빈 양식을 만든다.",
+   "tags": [
+    "인쇄",
+    "체크리스트",
+    "fess",
+    "server-component",
+    "page"
+   ],
+   "complexity": "complex",
+   "languageNotes": "CSS repeating-linear-gradient로 표 행 높이에 맞춘 손글씨용 빈 줄을 그린다."
+  },
+  {
+   "id": "file:src/app/records/[id]/print/page.tsx",
+   "type": "file",
+   "name": "page.tsx",
+   "filePath": "src/app/records/[id]/print/page.tsx",
+   "summary": "수술기록(OpRecord)과 연결된 계획·환자 정보를 조회해 체크 항목과 입력 필드를 표로 정리한 수술기록지 인쇄 페이지.",
+   "tags": [
+    "인쇄",
+    "수술기록지",
+    "server-component",
+    "page"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "file:src/components/app-nav-bar.tsx",
+   "type": "file",
+   "name": "app-nav-bar.tsx",
+   "filePath": "src/components/app-nav-bar.tsx",
+   "summary": "메인 앱 화면과 인쇄 화면에서 공용으로 쓰는 상단 내비게이션 바로, 사용자 이름 표시와 로그아웃 server action 폼을 포함한다.",
+   "tags": [
+    "component",
+    "내비게이션",
+    "server-component",
+    "auth"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/components/check-cell.tsx",
+   "type": "file",
+   "name": "check-cell.tsx",
+   "filePath": "src/components/check-cell.tsx",
+   "summary": "Op Plan 표와 FESS 체크리스트에서 공유하는 체크 셀(DataCell)과 CSS로 그린 체크박스(CheckBox) 컴포넌트 및 체크 문자 상수.",
+   "tags": [
+    "component",
+    "ui",
+    "체크박스",
+    "utility"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/components/copy-button.tsx",
+   "type": "file",
+   "name": "copy-button.tsx",
+   "filePath": "src/components/copy-button.tsx",
+   "summary": "텍스트를 클립보드로 복사하고 복사 완료 상태를 잠시 표시하는 공용 클라이언트 버튼 컴포넌트 (EMR 옮겨 적기용).",
+   "tags": [
+    "component",
+    "client-component",
+    "클립보드",
+    "ui"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/components/patients-nav-link.tsx",
+   "type": "file",
+   "name": "patients-nav-link.tsx",
+   "filePath": "src/components/patients-nav-link.tsx",
+   "summary": "환자 목록으로 이동할 때 검색/정렬 상태를 초기화하고 router.refresh로 캐시 없이 새로 불러오는 내비게이션 링크.",
+   "tags": [
+    "component",
+    "client-component",
+    "내비게이션"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/components/print-button.tsx",
+   "type": "file",
+   "name": "print-button.tsx",
+   "filePath": "src/components/print-button.tsx",
+   "summary": "window.print()를 호출하는 단순 인쇄 버튼 클라이언트 컴포넌트.",
+   "tags": [
+    "component",
+    "client-component",
+    "인쇄",
+    "ui"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/components/save-image-button.tsx",
+   "type": "file",
+   "name": "save-image-button.tsx",
+   "filePath": "src/components/save-image-button.tsx",
+   "summary": "html2canvas-pro로 인쇄 영역을 JPG로 캡처해 모바일에선 Web Share로 공유하고 미지원 환경에선 파일로 다운로드하는 버튼.",
+   "tags": [
+    "component",
+    "client-component",
+    "이미지-캡처",
+    "공유"
+   ],
+   "complexity": "moderate",
+   "languageNotes": "Tailwind 4의 oklch() 색상 때문에 원본 html2canvas 대신 fork인 html2canvas-pro를 동적 import한다."
+  },
+  {
+   "id": "function:src/app/(app)/layout.tsx:AppLayout",
+   "type": "function",
+   "name": "AppLayout",
+   "filePath": "src/app/(app)/layout.tsx",
+   "lineRange": [
+    3,
+    16
+   ],
+   "summary": "자식 페이지 위에 AppNavBar를 렌더링하는 (app) 그룹 레이아웃 컴포넌트.",
+   "tags": [
+    "레이아웃",
+    "component",
+    "nextjs-app-router"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/app/plans/[id]/print/page.tsx:OpPlanPrintPage",
+   "type": "function",
+   "name": "OpPlanPrintPage",
+   "filePath": "src/app/plans/[id]/print/page.tsx",
+   "lineRange": [
+    16,
+    101
+   ],
+   "summary": "사용자 표기 설정(NameStyle)으로 buildPlanTable을 만들어 PlanTableView와 복사/이미지저장/인쇄 버튼을 렌더링하는 async 페이지 컴포넌트.",
+   "tags": [
+    "page",
+    "인쇄",
+    "수술계획",
+    "server-component"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/app/print/fess-checklist/page.tsx:BlankLines",
+   "type": "function",
+   "name": "BlankLines",
+   "filePath": "src/app/print/fess-checklist/page.tsx",
+   "lineRange": [
+    54,
+    65
+   ],
+   "summary": "표 행 높이(28px) 간격으로 반복되는 손글씨용 밑줄 배경을 그리는 컴포넌트.",
+   "tags": [
+    "component",
+    "ui",
+    "인쇄"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/app/print/fess-checklist/page.tsx:ChecklistCard",
+   "type": "function",
+   "name": "ChecklistCard",
+   "filePath": "src/app/print/fess-checklist/page.tsx",
+   "lineRange": [
+    67,
+    143
+   ],
+   "summary": "환자명·수술명·Revision 여부·소견과 부위별 좌/우 체크 표를 담은 체크리스트 카드 한 장을 렌더링하며, 데이터가 없으면 빈 양식을 그린다.",
+   "tags": [
+    "component",
+    "체크리스트",
+    "fess"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/app/print/fess-checklist/page.tsx:ChecklistPage",
+   "type": "function",
+   "name": "ChecklistPage",
+   "filePath": "src/app/print/fess-checklist/page.tsx",
+   "lineRange": [
+    145,
+    161
+   ],
+   "summary": "카드 4장을 A4 한 페이지 그리드로 배치하는 컴포넌트.",
+   "tags": [
+    "component",
+    "인쇄",
+    "레이아웃"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/app/print/fess-checklist/page.tsx:FessChecklistPrintPage",
+   "type": "function",
+   "name": "FessChecklistPrintPage",
+   "filePath": "src/app/print/fess-checklist/page.tsx",
+   "lineRange": [
+    163,
+    250
+   ],
+   "summary": "searchParams의 plans id 목록으로 OpPlan들을 조회해 buildPlanTable의 sideMatrix와 turbinoplasty 값으로 카드 데이터를 만들고 4장씩 페이지로 나눠 렌더링한다.",
+   "tags": [
+    "page",
+    "체크리스트",
+    "fess",
+    "server-component"
+   ],
+   "complexity": "complex"
+  },
+  {
+   "id": "function:src/app/records/[id]/print/page.tsx:Row",
+   "type": "function",
+   "name": "Row",
+   "filePath": "src/app/records/[id]/print/page.tsx",
+   "lineRange": [
+    14,
+    25
+   ],
+   "summary": "라벨/값 한 쌍을 표 행으로 렌더링하며 값이 없으면 '-'를 표시한다.",
+   "tags": [
+    "component",
+    "ui",
+    "table"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/app/records/[id]/print/page.tsx:OpRecordPrintPage",
+   "type": "function",
+   "name": "OpRecordPrintPage",
+   "filePath": "src/app/records/[id]/print/page.tsx",
+   "lineRange": [
+    27,
+    121
+   ],
+   "summary": "세션 검증 후 OpRecord를 조회하고 resolveSurgeryTypeFields로 필드를 해석해 체크 항목과 기타 입력값을 인쇄용 표로 렌더링한다.",
+   "tags": [
+    "page",
+    "인쇄",
+    "수술기록지",
+    "server-component"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/components/app-nav-bar.tsx:AppNavBar",
+   "type": "function",
+   "name": "AppNavBar",
+   "filePath": "src/components/app-nav-bar.tsx",
+   "lineRange": [
+    9,
+    38
+   ],
+   "summary": "현재 사용자를 조회해 홈·환자·설정 링크와 로그아웃 폼을 가진 sticky 헤더를 렌더링하는 async 서버 컴포넌트.",
+   "tags": [
+    "component",
+    "내비게이션",
+    "auth"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/components/check-cell.tsx:DataCell",
+   "type": "function",
+   "name": "DataCell",
+   "filePath": "src/components/check-cell.tsx",
+   "lineRange": [
+    7,
+    17
+   ],
+   "summary": "체크된 경우 어두운 배경과 체크 표시로 채우는 표 셀 컴포넌트.",
+   "tags": [
+    "component",
+    "ui",
+    "table"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/components/check-cell.tsx:CheckBox",
+   "type": "function",
+   "name": "CheckBox",
+   "filePath": "src/components/check-cell.tsx",
+   "lineRange": [
+    22,
+    28
+   ],
+   "summary": "CSS 테두리로 그린 체크박스 모양 span으로, checked일 때 체크 문자를 표시한다.",
+   "tags": [
+    "component",
+    "ui",
+    "체크박스"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/components/copy-button.tsx:CopyButton",
+   "type": "function",
+   "name": "CopyButton",
+   "filePath": "src/components/copy-button.tsx",
+   "lineRange": [
+    9,
+    36
+   ],
+   "summary": "navigator.clipboard로 text를 복사하고 잠시 '복사됨' 상태를 보여주는 버튼.",
+   "tags": [
+    "component",
+    "클립보드",
+    "client-component"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/components/patients-nav-link.tsx:PatientsNavLink",
+   "type": "function",
+   "name": "PatientsNavLink",
+   "filePath": "src/components/patients-nav-link.tsx",
+   "lineRange": [
+    8,
+    24
+   ],
+   "summary": "클릭 시 기본 이동을 막고 router.push와 refresh로 /patients를 새로 불러오는 링크.",
+   "tags": [
+    "component",
+    "내비게이션",
+    "client-component"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/components/print-button.tsx:PrintButton",
+   "type": "function",
+   "name": "PrintButton",
+   "filePath": "src/components/print-button.tsx",
+   "lineRange": [
+    5,
+    11
+   ],
+   "summary": "클릭 시 브라우저 인쇄 대화상자를 여는 버튼.",
+   "tags": [
+    "component",
+    "인쇄",
+    "client-component"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/components/save-image-button.tsx:SaveImageButton",
+   "type": "function",
+   "name": "SaveImageButton",
+   "filePath": "src/components/save-image-button.tsx",
+   "lineRange": [
+    15,
+    101
+   ],
+   "summary": "targetId 요소를 2배 스케일로 캡처해 JPG Blob을 만들고 Web Share 또는 다운로드로 내보내며 진행/오류 상태를 관리한다.",
+   "tags": [
+    "component",
+    "이미지-캡처",
+    "공유",
+    "client-component"
+   ],
+   "complexity": "moderate"
+  }
+ ],
+ "edges": [
+  {
+   "source": "file:src/app/(app)/layout.tsx",
+   "target": "function:src/app/(app)/layout.tsx:AppLayout",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/(app)/layout.tsx",
+   "target": "function:src/app/(app)/layout.tsx:AppLayout",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/plans/[id]/print/page.tsx",
+   "target": "function:src/app/plans/[id]/print/page.tsx:OpPlanPrintPage",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/plans/[id]/print/page.tsx",
+   "target": "function:src/app/plans/[id]/print/page.tsx:OpPlanPrintPage",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/print/fess-checklist/page.tsx",
+   "target": "function:src/app/print/fess-checklist/page.tsx:BlankLines",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/print/fess-checklist/page.tsx",
+   "target": "function:src/app/print/fess-checklist/page.tsx:ChecklistCard",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/print/fess-checklist/page.tsx",
+   "target": "function:src/app/print/fess-checklist/page.tsx:ChecklistPage",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/print/fess-checklist/page.tsx",
+   "target": "function:src/app/print/fess-checklist/page.tsx:FessChecklistPrintPage",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/print/fess-checklist/page.tsx",
+   "target": "function:src/app/print/fess-checklist/page.tsx:FessChecklistPrintPage",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/records/[id]/print/page.tsx",
+   "target": "function:src/app/records/[id]/print/page.tsx:Row",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/records/[id]/print/page.tsx",
+   "target": "function:src/app/records/[id]/print/page.tsx:OpRecordPrintPage",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/records/[id]/print/page.tsx",
+   "target": "function:src/app/records/[id]/print/page.tsx:OpRecordPrintPage",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/components/app-nav-bar.tsx",
+   "target": "function:src/components/app-nav-bar.tsx:AppNavBar",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/app-nav-bar.tsx",
+   "target": "function:src/components/app-nav-bar.tsx:AppNavBar",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/components/check-cell.tsx",
+   "target": "function:src/components/check-cell.tsx:DataCell",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/check-cell.tsx",
+   "target": "function:src/components/check-cell.tsx:DataCell",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/components/check-cell.tsx",
+   "target": "function:src/components/check-cell.tsx:CheckBox",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/check-cell.tsx",
+   "target": "function:src/components/check-cell.tsx:CheckBox",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/components/copy-button.tsx",
+   "target": "function:src/components/copy-button.tsx:CopyButton",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/copy-button.tsx",
+   "target": "function:src/components/copy-button.tsx:CopyButton",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/components/patients-nav-link.tsx",
+   "target": "function:src/components/patients-nav-link.tsx:PatientsNavLink",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/patients-nav-link.tsx",
+   "target": "function:src/components/patients-nav-link.tsx:PatientsNavLink",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/components/print-button.tsx",
+   "target": "function:src/components/print-button.tsx:PrintButton",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/print-button.tsx",
+   "target": "function:src/components/print-button.tsx:PrintButton",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/components/save-image-button.tsx",
+   "target": "function:src/components/save-image-button.tsx:SaveImageButton",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/save-image-button.tsx",
+   "target": "function:src/components/save-image-button.tsx:SaveImageButton",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/(app)/layout.tsx",
+   "target": "file:src/components/app-nav-bar.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/plans/[id]/print/page.tsx",
+   "target": "file:src/components/app-nav-bar.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/plans/[id]/print/page.tsx",
+   "target": "file:src/components/copy-button.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/plans/[id]/print/page.tsx",
+   "target": "file:src/components/plan-table.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/plans/[id]/print/page.tsx",
+   "target": "file:src/components/print-button.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/plans/[id]/print/page.tsx",
+   "target": "file:src/components/save-image-button.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/plans/[id]/print/page.tsx",
+   "target": "file:src/lib/dal.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/plans/[id]/print/page.tsx",
+   "target": "file:src/lib/date-format.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/plans/[id]/print/page.tsx",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/plans/[id]/print/page.tsx",
+   "target": "file:src/lib/op-note-defs.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/plans/[id]/print/page.tsx",
+   "target": "file:src/lib/op-note-generator.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/plans/[id]/print/page.tsx",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/plans/[id]/print/page.tsx",
+   "target": "file:src/lib/ui.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/print/fess-checklist/page.tsx",
+   "target": "file:src/components/app-nav-bar.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/print/fess-checklist/page.tsx",
+   "target": "file:src/components/check-cell.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/print/fess-checklist/page.tsx",
+   "target": "file:src/components/print-button.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/print/fess-checklist/page.tsx",
+   "target": "file:src/lib/dal.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/print/fess-checklist/page.tsx",
+   "target": "file:src/lib/date-format.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/print/fess-checklist/page.tsx",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/print/fess-checklist/page.tsx",
+   "target": "file:src/lib/op-note-defs.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/print/fess-checklist/page.tsx",
+   "target": "file:src/lib/op-note-generator.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/print/fess-checklist/page.tsx",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/print/fess-checklist/page.tsx",
+   "target": "file:src/lib/ui.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/records/[id]/print/page.tsx",
+   "target": "file:src/components/app-nav-bar.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/records/[id]/print/page.tsx",
+   "target": "file:src/components/copy-button.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/records/[id]/print/page.tsx",
+   "target": "file:src/components/print-button.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/records/[id]/print/page.tsx",
+   "target": "file:src/components/save-image-button.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/records/[id]/print/page.tsx",
+   "target": "file:src/lib/dal.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/records/[id]/print/page.tsx",
+   "target": "file:src/lib/date-format.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/records/[id]/print/page.tsx",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/records/[id]/print/page.tsx",
+   "target": "file:src/lib/op-note-defs.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/records/[id]/print/page.tsx",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/records/[id]/print/page.tsx",
+   "target": "file:src/lib/ui.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/app-nav-bar.tsx",
+   "target": "file:src/app/actions/auth.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/app-nav-bar.tsx",
+   "target": "file:src/components/patients-nav-link.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/app-nav-bar.tsx",
+   "target": "file:src/lib/dal.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/copy-button.tsx",
+   "target": "file:src/lib/ui.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/print-button.tsx",
+   "target": "file:src/lib/ui.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/save-image-button.tsx",
+   "target": "file:src/lib/ui.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "function:src/app/(app)/layout.tsx:AppLayout",
+   "target": "function:src/components/app-nav-bar.tsx:AppNavBar",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/plans/[id]/print/page.tsx:OpPlanPrintPage",
+   "target": "function:src/lib/dal.ts:getCurrentUser",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/plans/[id]/print/page.tsx:OpPlanPrintPage",
+   "target": "function:src/lib/field-types.ts:parseFieldValues",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/plans/[id]/print/page.tsx:OpPlanPrintPage",
+   "target": "function:src/lib/op-note-defs.ts:isBuiltInSurgeryCode",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/plans/[id]/print/page.tsx:OpPlanPrintPage",
+   "target": "function:src/lib/op-note-generator.ts:buildPlanTable",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/plans/[id]/print/page.tsx:OpPlanPrintPage",
+   "target": "function:src/lib/op-note-generator.ts:planTableToText",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/plans/[id]/print/page.tsx:OpPlanPrintPage",
+   "target": "function:src/components/plan-table.tsx:PlanTableView",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/plans/[id]/print/page.tsx:OpPlanPrintPage",
+   "target": "function:src/components/save-image-button.tsx:SaveImageButton",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/plans/[id]/print/page.tsx:OpPlanPrintPage",
+   "target": "function:src/components/copy-button.tsx:CopyButton",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/plans/[id]/print/page.tsx:OpPlanPrintPage",
+   "target": "function:src/components/print-button.tsx:PrintButton",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/plans/[id]/print/page.tsx:OpPlanPrintPage",
+   "target": "function:src/components/app-nav-bar.tsx:AppNavBar",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/print/fess-checklist/page.tsx:FessChecklistPrintPage",
+   "target": "function:src/lib/dal.ts:getCurrentUser",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/print/fess-checklist/page.tsx:FessChecklistPrintPage",
+   "target": "function:src/lib/field-types.ts:parseFieldValues",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/print/fess-checklist/page.tsx:FessChecklistPrintPage",
+   "target": "function:src/lib/op-note-defs.ts:isBuiltInSurgeryCode",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/print/fess-checklist/page.tsx:FessChecklistPrintPage",
+   "target": "function:src/lib/op-note-generator.ts:buildPlanTable",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/print/fess-checklist/page.tsx:FessChecklistPrintPage",
+   "target": "function:src/lib/op-note-generator.ts:hasAnyRevision",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/print/fess-checklist/page.tsx:FessChecklistPrintPage",
+   "target": "function:src/components/print-button.tsx:PrintButton",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/print/fess-checklist/page.tsx:FessChecklistPrintPage",
+   "target": "function:src/components/app-nav-bar.tsx:AppNavBar",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/print/fess-checklist/page.tsx:ChecklistCard",
+   "target": "function:src/components/check-cell.tsx:CheckBox",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/print/fess-checklist/page.tsx:ChecklistCard",
+   "target": "function:src/components/check-cell.tsx:DataCell",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/records/[id]/print/page.tsx:OpRecordPrintPage",
+   "target": "function:src/lib/dal.ts:verifySession",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/records/[id]/print/page.tsx:OpRecordPrintPage",
+   "target": "function:src/lib/field-types.ts:parseFieldValues",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/records/[id]/print/page.tsx:OpRecordPrintPage",
+   "target": "function:src/lib/op-note-defs.ts:resolveSurgeryTypeFields",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/records/[id]/print/page.tsx:OpRecordPrintPage",
+   "target": "function:src/components/save-image-button.tsx:SaveImageButton",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/records/[id]/print/page.tsx:OpRecordPrintPage",
+   "target": "function:src/components/copy-button.tsx:CopyButton",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/records/[id]/print/page.tsx:OpRecordPrintPage",
+   "target": "function:src/components/print-button.tsx:PrintButton",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/records/[id]/print/page.tsx:OpRecordPrintPage",
+   "target": "function:src/components/app-nav-bar.tsx:AppNavBar",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/components/app-nav-bar.tsx:AppNavBar",
+   "target": "function:src/lib/dal.ts:getCurrentUser",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/components/app-nav-bar.tsx:AppNavBar",
+   "target": "function:src/app/actions/auth.ts:logout",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/components/app-nav-bar.tsx:AppNavBar",
+   "target": "function:src/components/patients-nav-link.tsx:PatientsNavLink",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  }
+ ]
+}
