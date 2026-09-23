@@ -206,6 +206,9 @@ export const septoFields: SurgeryFieldDef[] = [
     type: "text",
     default: "1% lidocaine with epinephrine, 총 5cc",
   },
+  // 기본으로 하는 과정이 아니라 가끔만 추가로 시행하는 것이라 체크박스로
+  // 켤 때만 기록지에 문장이 들어가게 한다.
+  { key: "s_quilting", label: "Quilting suture 시행", type: "checkbox" },
   {
     key: "s_quilting_suture",
     label: "Quilting suture 봉합사",

@@ -58,6 +58,17 @@ export function hasAnyRevision(values: FieldValues): boolean {
   );
 }
 
+// 수술명 맨 앞에 "이전에 무엇에 대한 재수술인지"를 "rev> 부위" 형태로 짧게
+// 표기한다 — 그냥 "Revision"이라고만 쓰면 어떤 부위의 재수술인지 이름만
+// 봐서는 알 수 없어서, 어느 부위(들)인지 이름 자체에 남긴다.
+function revisionPrefixText(values: FieldValues): string {
+  const parts: string[] = [];
+  if (bool(values, "f_revision_septo")) parts.push("Septo");
+  if (bool(values, "f_revision_ess_right")) parts.push("Rt. ESS");
+  if (bool(values, "f_revision_ess_left")) parts.push("Lt. ESS");
+  return parts.length > 0 ? `rev> ${parts.join(", ")} ` : "";
+}
+
 // Revision case(재수술)라는 사실과 그 대상 부위를 기록지에도 남긴다.
 function revisionSentence(values: FieldValues): string {
   const parts: string[] = [];
@@ -385,6 +396,7 @@ function septoCore(values: FieldValues): string[] {
   const turbMiddleSide = turbTypeSideLabel("middle", values);
   const turbInferiorSide = turbTypeSideLabel("inferior", values);
   const splint = bool(values, "s_splint");
+  const quilting = bool(values, "s_quilting");
   const quiltingSuture = str(values, "s_quilting_suture", "4-0 Vicryl");
   const splintSuture = str(values, "s_splint_suture", "4-0 Vicryl");
 
@@ -396,7 +408,9 @@ function septoCore(values: FieldValues): string[] {
     "확인된 편위 부위의 변형된 septal cartilage 및 골성 비중격 일부를 절제 및 교정하여 straightening 후 정중앙에 위치시킴",
     turbMiddleSide && `${turbMiddleSide} ${turbinoplastyTechniqueSentence("middle")}`,
     turbInferiorSide && `${turbInferiorSide} ${turbinoplastyTechniqueSentence("inferior")}`,
-    `Flap을 원위치로 정복한 후 ${quiltingSuture}를 사용하여 quilting suture 시행`,
+    quilting
+      ? `Flap을 원위치로 정복한 후 ${quiltingSuture}를 사용하여 quilting suture 시행`
+      : "Flap을 원위치로 정복함",
     splint && `양측 비강에 silastic splint를 삽입하고 ${splintSuture}로 관통 봉합하여 고정함`,
   ];
   return steps.filter((s): s is string => Boolean(s));
@@ -614,9 +628,7 @@ function septoConciseItems(values: FieldValues, includePacking: boolean): string
     bool(values, "s_caudal") && "Caudal septum 편위 교정",
     bool(values, "s_ans_release") && "ANS 부위 비중격 분리·절제 후 PDS 5-0 고정",
     bool(values, "s_spur") && "Bony spur 제거",
-    // Quilting suture는 시행 여부를 따로 고르는 항목이 아니라 항상 하는
-    // 기본 과정이라, 다른 조건부 항목과 달리 값과 무관하게 항상 넣는다.
-    `Quilting suture (${quiltingSuture})`,
+    bool(values, "s_quilting") && `Quilting suture (${quiltingSuture})`,
     bool(values, "s_splint") && "Silastic splint 삽입",
   ];
   if (includePacking) items.push("Nasocel + Rhinocel packing 예정");
@@ -758,7 +770,7 @@ function septoplastyProcedureName(values: FieldValues, style: NameStyle): string
   const inferior = turbSideFlags("inferior", values);
   const bothInferior = inferior.right && inferior.left;
   const base = bothInferior ? "Septoturbinoplasty" : "Septoplasty";
-  const revisionPrefix = bool(values, "f_revision_septo") ? "Revision " : "";
+  const revisionPrefix = revisionPrefixText(values);
 
   const parts: string[] = [];
   const middle = turbSideFlags("middle", values);
@@ -784,9 +796,9 @@ export function buildProcedureName(
   const hasFessRegions =
     fessRegionsForSide("f_left_", values).length > 0 || fessRegionsForSide("f_right_", values).length > 0;
   const turbSuffix = turbinoplastyGlobalSuffix(values, style, hasFessRegions);
-  // Revision case(재수술)는 수술명 맨 앞에 한 번만 표기한다 — 어느 부위의
-  // revision인지는 수술명이 아니라 기록지 서술문(revisionSentence)에서 밝힌다.
-  const revisionPrefix = hasAnyRevision(values) ? "Revision " : "";
+  // Revision case(재수술)는 수술명 맨 앞에 어느 부위의 재수술인지와 함께
+  // "rev> 부위" 형태로 표기한다.
+  const revisionPrefix = revisionPrefixText(values);
 
   if (surgeryCode === "ESS") return `${revisionPrefix}${buildFessProcedureName(values, "ESS", style)}${turbSuffix}`;
   return `${revisionPrefix}Septoplasty + ${buildFessProcedureName(values, "ESS", style)}${turbSuffix}`;
