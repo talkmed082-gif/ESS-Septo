@@ -25,7 +25,14 @@ export default async function OpPlanPage({
     sideNotation: user.sideNotation as SideNotation,
     abbreviateRegions: user.abbreviateRegions,
   };
-  const values = parseFieldValues(plan.planData);
+  const planValues = parseFieldValues(plan.planData);
+  const actualValues = parseFieldValues(plan.actualData);
+  const isDone = plan.status === "DONE";
+  // 완료된 계획은 "수술 후" 화면(수술 방법)을 열면 이전에 고친 실제 시행
+  // 값(actualData)이 있으면 그걸 먼저 보여주고, 없으면 원래 계획값을 그대로
+  // 보여준다 — Op Plan 표(pre)는 아래 frozenPlanValues로 planData만 따로
+  // 넘겨서 이 값과 무관하게 항상 원래 계획 그대로 표시되게 한다.
+  const values = { ...planValues, ...actualValues };
   // 계획을 만든 뒤에도 수술 종류를 바꿀 수 있어야 해서(예: ESS로 만들었다가
   // Septoplasty로 정정), 현재 종류 하나만이 아니라 전체 수술 종류 목록을
   // 새 계획 작성 화면과 똑같이 넘긴다.
@@ -80,7 +87,7 @@ export default async function OpPlanPage({
         fixedPatient={{ id: plan.patient.id, name: plan.patient.name }}
         // 완료로 표시된 계획은 "수술 후" 화면(수술 방법/기록지)을 기본으로
         // 열어서, 이미 끝난 수술의 소견 입력 화면부터 다시 보여주지 않게 한다.
-        defaultView={plan.status === "DONE" ? "post" : "pre"}
+        defaultView={isDone ? "post" : "pre"}
         editPlan={{
           surgeryTypeId: plan.surgeryTypeId,
           // 화면에 더 이상 날짜 입력란이 없으므로, 없던 날짜를 오늘 날짜로
@@ -88,6 +95,8 @@ export default async function OpPlanPage({
           // 유지되게 한다.
           plannedDate: safeDateStr(plan.plannedDate) ?? "",
           values,
+          frozenPlanValues: isDone ? planValues : undefined,
+          isDone,
         }}
         action={updateOpPlan.bind(null, plan.id)}
       />

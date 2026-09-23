@@ -79,8 +79,13 @@ model OpPlan {
   side          String?
   diagnosis     String?
   planNote      String?
-  // surgeryType.fields 의 key 에 대응하는 계획 단계 입력값
+  // surgeryType.fields 의 key 에 대응하는 계획 단계 입력값 — 완료(DONE) 처리
+  // 이후에는 더 이상 여기가 덮어써지지 않고, "수술 후" 화면(수술 방법) 수정은
+  // actualData에만 반영된다. Op Plan 표는 항상 이 planData만 읽는다.
   planData      Json?
+  // 완료 처리 이후 "수술 후" 화면에서 실제로 고친 수술 방법 값 — 기록지
+  // 초안(recordText)만 이 값(있으면)을 planData보다 우선해서 읽는다.
+  actualData    Json?
   status        String       @default("PLANNED")
   createdById   String
   createdBy     User         @relation(fields: [createdById], references: [id])

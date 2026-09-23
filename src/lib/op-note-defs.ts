@@ -370,3 +370,9 @@ const NASAL_FINDING_KEY_PREFIXES = ["n_", "skull_base_"];
 export function isNasalFindingKey(key: string): boolean {
   return NASAL_FINDING_KEY_PREFIXES.some((prefix) => key.startsWith(prefix));
 }
+
+// f_revision_* 는 필드 그룹상 procedure(f_) 쪽이지만, 화면에서는 "이전
+// 수술력"으로 비강 소견 아래에 두고 의미상으로도 시술 테크닉이 아니라 환자
+// 병력에 가깝다 — 완료(DONE) 처리 이후 계획(planData)을 얼릴 때도 이 값만은
+// 계속 바로 반영되게(actualData로 빠지지 않게) 예외로 둔다.
+export const REVISION_FLAG_KEYS = ["f_revision_septo", "f_revision_ess_right", "f_revision_ess_left"] as const;

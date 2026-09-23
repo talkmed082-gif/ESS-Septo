@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
-import { parseFieldDefs, fieldValuesFromFormData } from "@/lib/field-types";
+import { parseFieldDefs, parseFieldValues, fieldValuesFromFormData, type FieldValues } from "@/lib/field-types";
+import { isNasalFindingKey, REVISION_FLAG_KEYS } from "@/lib/op-note-defs";
 
 const OpPlanSchema = z.object({
   plannedDate: z.string().trim().optional(),
@@ -55,7 +56,29 @@ export async function updateOpPlan(
   }
 
   const fields = parseFieldDefs(surgeryType.fields);
-  const planData = fieldValuesFromFormData(formData, fields);
+  const submittedValues = fieldValuesFromFormData(formData, fields);
+
+  // 완료(DONE) 처리된 계획은 Op Plan 표가 계속 원래 계획 그대로를 보여줘야
+  // 하므로, 이후 저장부터는 planData의 절차(수술 방법) 항목을 더 이상
+  // 덮어쓰지 않는다 — 비강 소견만 최신화하고, 수술 방법 쪽 수정은
+  // actualData에만 반영해 기록지 초안에만 영향을 주게 한다.
+  let planData: FieldValues = submittedValues;
+  let actualData: FieldValues | undefined;
+  if (plan.status === "DONE") {
+    const existingPlanValues = parseFieldValues(plan.planData);
+    const existingActualValues = parseFieldValues(plan.actualData);
+    const nasalPart: FieldValues = {};
+    const procedurePart: FieldValues = {};
+    for (const f of fields) {
+      if (isNasalFindingKey(f.key) || (REVISION_FLAG_KEYS as readonly string[]).includes(f.key)) {
+        nasalPart[f.key] = submittedValues[f.key];
+      } else {
+        procedurePart[f.key] = submittedValues[f.key];
+      }
+    }
+    planData = { ...existingPlanValues, ...nasalPart };
+    actualData = { ...existingActualValues, ...procedurePart };
+  }
 
   await prisma.opPlan.update({
     where: { id: planId },
@@ -64,6 +87,7 @@ export async function updateOpPlan(
       plannedDate: plannedDate ? new Date(plannedDate) : null,
       planNote: planNote || null,
       planData,
+      ...(actualData !== undefined ? { actualData } : {}),
     },
   });
 

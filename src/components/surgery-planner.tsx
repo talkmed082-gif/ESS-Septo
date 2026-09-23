@@ -32,6 +32,7 @@ import {
   UNCINATE_FIELD_KEYS,
   SEPTO_PE_DONE_KEY,
   ESS_PE_DONE_KEY,
+  REVISION_FLAG_KEYS,
 } from "@/lib/op-note-defs";
 import {
   buildProcedureName,
@@ -60,7 +61,14 @@ export interface ExistingPatientOption {
 export interface EditPlanContext {
   surgeryTypeId: string;
   plannedDate: string;
+  // 지금 폼에 채울 값 — 완료(DONE) 처리된 계획이면 planData와 actualData를
+  // 합친 값(실제 시행 내역이 있으면 그걸 우선)이다.
   values: FieldValues;
+  // 완료(DONE) 처리된 계획일 때만 넘어오는 "원래 계획값"(planData 그대로) —
+  // Op Plan 표는 이후 수술 방법을 아무리 고쳐도 이 값만 보여줘서 원래 계획
+  // 그대로 유지된다.
+  frozenPlanValues?: FieldValues;
+  isDone?: boolean;
 }
 
 export interface SurgeryPlannerFormState {
@@ -92,6 +100,40 @@ function buildTexts(
   return {
     planTable,
     recordText: `수술명: ${procedureName}\n\n${findingsSection}[수술 과정]\n${record.procedureDetail}`,
+  };
+}
+
+// 완료(DONE) 처리된 계획은 frozenPlanValues(원래 계획)가 넘어온다 — Op Plan
+// 표는 이후 수술 방법을 고쳐도 항상 원래 계획의 절차 항목값을 그대로 보여줘야
+// 하므로, 표를 만들 때만 그 값으로 덮어쓴다. 재수술 플래그는 병력에 가까워
+// 예외로 두고 항상 최신값을 그대로 쓴다.
+function proceduralFrozenOverrides(
+  fields: SurgeryFieldDef[],
+  frozenPlanValues: FieldValues | undefined,
+): FieldValues | undefined {
+  if (!frozenPlanValues) return undefined;
+  const overrides = Object.fromEntries(
+    fields
+      .filter((f) => !isNasalFindingKey(f.key) && !(REVISION_FLAG_KEYS as readonly string[]).includes(f.key))
+      .map((f) => [f.key, frozenPlanValues[f.key]])
+      .filter(([, v]) => v !== undefined),
+  );
+  return Object.keys(overrides).length > 0 ? overrides : undefined;
+}
+
+function buildTextsFrozenAware(
+  code: string,
+  fields: SurgeryFieldDef[],
+  values: FieldValues,
+  frozenPlanValues: FieldValues | undefined,
+  anesthesiaType: string,
+  nameStyle?: NameStyle,
+): { planTable: PlanTable | null; recordText: string } {
+  const overrides = proceduralFrozenOverrides(fields, frozenPlanValues);
+  const planTableValues = overrides ? { ...values, ...overrides } : values;
+  return {
+    planTable: buildTexts(code, planTableValues, anesthesiaType, nameStyle).planTable,
+    recordText: buildTexts(code, values, anesthesiaType, nameStyle).recordText,
   };
 }
 
@@ -142,9 +184,11 @@ export function SurgeryPlanner({
   const [patientMode, setPatientMode] = useState<"new" | "existing">("new");
   const [{ planTable, recordText }, setTexts] = useState(() =>
     initialSelected
-      ? buildTexts(
+      ? buildTextsFrozenAware(
           initialSelected.code,
+          initialSelected.fields,
           applyFieldDefaults(editPlan?.values ?? {}, initialSelected.fields),
+          editPlan?.frozenPlanValues,
           "General",
           nameStyle,
         )
@@ -196,16 +240,28 @@ export function SurgeryPlanner({
       active ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
     }`;
 
+  function computeTexts(values: FieldValues): { planTable: PlanTable | null; recordText: string } {
+    if (!selected) return { planTable: null, recordText: "" };
+    return buildTextsFrozenAware(
+      selected.code,
+      selected.fields,
+      values,
+      editPlan?.frozenPlanValues,
+      anesthesiaType,
+      nameStyle,
+    );
+  }
+
   function regenerateFromForm() {
     if (!selected || !formRef.current) return;
     const values = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
-    setTexts(buildTexts(selected.code, values, anesthesiaType, nameStyle));
+    setTexts(computeTexts(values));
   }
 
   function applyCombo(values: FieldValues) {
     setTemplateValues(values);
     setTemplateKey((k) => k + 1);
-    if (selected) setTexts(buildTexts(selected.code, values, anesthesiaType, nameStyle));
+    if (selected) setTexts(computeTexts(values));
   }
 
   function applyPatientNasalFindings() {
@@ -281,7 +337,7 @@ export function SurgeryPlanner({
     setTemplateKey((k) => k + 1);
     setTexts(
       next && nextValues
-        ? buildTexts(next.code, nextValues, anesthesiaType, nameStyle)
+        ? buildTextsFrozenAware(next.code, next.fields, nextValues, editPlan?.frozenPlanValues, anesthesiaType, nameStyle)
         : { planTable: null, recordText: "" },
     );
   }
@@ -612,10 +668,15 @@ export function SurgeryPlanner({
               <h2 className="text-sm font-semibold text-slate-700">Op Plan 요약</h2>
               {planTable && <CopyButton text={planTableToText(planTable)} />}
             </div>
+            {editPlan?.isDone && (
+              <p className="mb-2 text-xs text-slate-400">
+                완료 처리된 계획입니다 — 원래 계획 그대로 표시되며, 실제 시행 내역 수정은 수술 후 화면에서 합니다.
+              </p>
+            )}
             {planTable ? (
               <PlanTableView
                 table={planTable}
-                interactive
+                interactive={!editPlan?.isDone}
                 onToggle={toggleFessField}
                 onCopySide={copySideInTable}
               />
