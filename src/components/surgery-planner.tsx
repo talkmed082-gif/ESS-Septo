@@ -40,6 +40,8 @@ import {
   SEPTO_PE_DONE_KEY,
   ESS_PE_DONE_KEY,
   REVISION_FLAG_KEYS,
+  SINUSITIS_TO_FESS_FIELD,
+  POLYP_TO_FESS_FIELD,
 } from "@/lib/op-note-defs";
 import {
   buildProcedureName,
@@ -307,6 +309,23 @@ export function SurgeryPlanner({
     if (!selected || !formRef.current) return;
     const current = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
     applyCombo({ ...current, [fieldKey]: !current[fieldKey] });
+  }
+
+  // 비강 소견(부비동염/비용종)에서 체크하면 그 부비동의 Op Plan 시행 부위도
+  // 자동으로 이어서 제안한다 — 비강 소견 -> Op Plan -> 수술 방법 -> 수술
+  // 기록지까지 하나의 데이터(templateValues)로 이어져 있어서, applyCombo로
+  // 한 번에 반영하면 넷 다 같이 갱신된다. 켤 때만 제안하고 끌 때는 이미
+  // 계획해둔 시행 부위를 임의로 지우지 않는다.
+  function toggleFindingWithCascade(fieldKey: string, cascadeMap: Record<string, string>) {
+    if (!selected || !formRef.current) return;
+    const current = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
+    const next = !current[fieldKey];
+    const updated: FieldValues = { ...current, [fieldKey]: next };
+    if (next) {
+      const fessKey = cascadeMap[fieldKey];
+      if (fessKey) updated[fessKey] = true;
+    }
+    applyCombo(updated);
   }
 
   // Op Plan 표에서도 한쪽 값을 반대쪽에 그대로 복사할 수 있게 한다 —
@@ -628,10 +647,16 @@ export function SurgeryPlanner({
                     <AnatomicRiskFindingsPicker values={templateValues} onChange={regenerateFromForm} />
                   )}
                   {showSinusitisFindings && (
-                    <SinusitisFindingsPicker values={templateValues} onChange={regenerateFromForm} />
+                    <SinusitisFindingsPicker
+                      values={templateValues}
+                      onToggle={(key) => toggleFindingWithCascade(key, SINUSITIS_TO_FESS_FIELD)}
+                    />
                   )}
                   {showPolypFindings && (
-                    <PolypPicker values={templateValues} onChange={regenerateFromForm} hideToggle />
+                    <PolypPicker
+                      values={templateValues}
+                      onToggle={(key) => toggleFindingWithCascade(key, POLYP_TO_FESS_FIELD)}
+                    />
                   )}
                 </CollapsibleFindingSection>
               )}

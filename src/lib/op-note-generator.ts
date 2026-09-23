@@ -260,16 +260,25 @@ export function nasalFindingsText(values: FieldValues): string {
   return lines.join("\n");
 }
 
-// 해부학적 이상 소견과 별개로 남기는 염증(부비동염) 소견 — 계획 단계에서
-// 보여도 이번에 그 부위를 꼭 수술하는 것은 아니라서, 시행 부위(FESS
-// sideMatrix)와는 독립된 값이다.
+const SINUSITIS_TYPES = [
+  { key: "frontal", label: "Frontal sinusitis" },
+  { key: "ethmoid", label: "Ethmoid sinusitis" },
+  { key: "maxillary", label: "Maxillary sinusitis" },
+  { key: "sphenoid", label: "Sphenoid sinusitis" },
+] as const;
+
+// 해부학적 이상 소견과 별개로 남기는 염증(부비동염) 소견 — FESS 시행
+// 부위(sideMatrix)와 같은 부비동 × 좌/우 체크 구조를 쓰되, "체크만으로도
+// 그 부위를 꼭 수술하는 것은 아닐 수 있다"는 값 자체는 독립적으로 둔다
+// (실제 이어주는 자동 제안은 surgery-planner.tsx의 cascade가 담당).
 function sinusitisFindings(values: FieldValues): string[] {
-  return [
-    presentSidedLine("Frontal sinusitis", "n_sinusitis_frontal_present", "n_sinusitis_frontal_side", values),
-    presentSidedLine("Ethmoid sinusitis", "n_sinusitis_ethmoid_present", "n_sinusitis_ethmoid_side", values),
-    presentSidedLine("Maxillary sinusitis", "n_sinusitis_maxillary_present", "n_sinusitis_maxillary_side", values),
-    presentSidedLine("Sphenoid sinusitis", "n_sinusitis_sphenoid_present", "n_sinusitis_sphenoid_side", values),
-  ].filter((s): s is string => Boolean(s));
+  return SINUSITIS_TYPES.map(({ key, label }) => {
+    const right = bool(values, `n_sinusitis_${key}_right`);
+    const left = bool(values, `n_sinusitis_${key}_left`);
+    if (!right && !left) return "";
+    const side = right && left ? "양측" : right ? "우측" : "좌측";
+    return `${label}: ${side}`;
+  }).filter((s): s is string => Boolean(s));
 }
 
 // 예정 술식 표는 한눈에 보는 용도라 "없음/정상" 항목까지 다 나열하면 오히려

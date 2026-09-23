@@ -99,6 +99,16 @@ export function RecordForm({
       if (el instanceof HTMLInputElement) el.checked = false;
     }
   }
+
+  // Op Plan 표와 같은 모양(SideMatrixTable)으로 통일한 부비동염/비용종
+  // 표는 자체 상태 없이 이 값을 그대로 받아 그리므로, 클릭 시 DOM과
+  // liveFieldValues를 함께 갱신해줘야 화면에 반영된다.
+  function toggleLiveField(key: string) {
+    const el = formRef.current?.elements.namedItem(`field_${key}`);
+    const next = el instanceof HTMLInputElement ? !el.checked : !(liveFieldValues[key] === true);
+    if (el instanceof HTMLInputElement) el.checked = next;
+    setLiveFieldValues((v) => ({ ...v, [key]: next }));
+  }
   // f_revision_septo는 procedureFields 목록에서 숨겨진 채(hidden fallback
   // input으로) 실제 제출되고, 이 체크박스는 그 숨겨진 입력의 checked를 직접
   // 토글하는 트리거 역할만 한다 — SinusDiagram의 Revision 토글과 같은 방식.
@@ -244,8 +254,10 @@ export function RecordForm({
                 onTogglePolyp={(v) => setFindingGroupOpen(POLYP_FIELD_KEYS, v, setShowPolypFindings)}
               />
               {showAnatomicFindings && <AnatomicRiskFindingsPicker values={liveFieldValues} />}
-              {showSinusitisFindings && <SinusitisFindingsPicker values={liveFieldValues} />}
-              {showPolypFindings && <PolypPicker values={liveFieldValues} hideToggle />}
+              {showSinusitisFindings && (
+                <SinusitisFindingsPicker values={liveFieldValues} onToggle={toggleLiveField} />
+              )}
+              {showPolypFindings && <PolypPicker values={liveFieldValues} onToggle={toggleLiveField} />}
             </CollapsibleFindingSection>
           )}
           <SurgeryFieldInputs

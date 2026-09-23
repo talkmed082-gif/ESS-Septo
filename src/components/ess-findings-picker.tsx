@@ -2,6 +2,8 @@
 
 import { useRef, useState } from "react";
 import type { FieldValues } from "@/lib/field-types";
+import type { PlanSideMatrixRow } from "@/lib/op-note-generator";
+import { SideMatrixTable } from "@/components/plan-table";
 
 const SIDE_OPTIONS = ["우측", "양측", "좌측"] as const;
 
@@ -39,46 +41,28 @@ const ESS_RISK_FINDINGS: PresentSidedFinding[] = [
   },
 ];
 
-// 해부학적 이상 소견과는 별개로, 염증(부비동염) 소견도 시행 부위와 같은
-// 4개 부비동 기준으로 남긴다 — 이번 수술에서 그 부위를 다루는지 여부와
-// 무관하게(계획과 실제 시행은 다를 수 있음) 소견 자체만 기록한다.
-const SINUSITIS_FINDINGS: PresentSidedFinding[] = [
-  {
-    presentKey: "n_sinusitis_frontal_present",
-    sideKey: "n_sinusitis_frontal_side",
-    label: "Frontal sinusitis",
-    defaultSide: "",
-  },
-  {
-    presentKey: "n_sinusitis_ethmoid_present",
-    sideKey: "n_sinusitis_ethmoid_side",
-    label: "Ethmoid sinusitis",
-    defaultSide: "",
-  },
-  {
-    presentKey: "n_sinusitis_maxillary_present",
-    sideKey: "n_sinusitis_maxillary_side",
-    label: "Maxillary sinusitis",
-    defaultSide: "",
-  },
-  {
-    presentKey: "n_sinusitis_sphenoid_present",
-    sideKey: "n_sinusitis_sphenoid_side",
-    label: "Sphenoid sinusitis",
-    defaultSide: "",
-  },
-];
+// 해부학적 이상 소견과는 별개로, 염증(부비동염) 소견도 남긴다 — Op Plan의
+// FESS 시행 부위 표와 똑같이 부비동 × 좌/우 체크 모양으로 둬서, 체크하면
+// 그 부비동의 시행 부위도 자동으로 이어서 제안되게 한다(상위인
+// surgery-planner.tsx가 SINUSITIS_TO_FESS_FIELD로 처리).
+const SINUSITIS_TYPES = [
+  { key: "frontal", label: "Frontal sinusitis" },
+  { key: "ethmoid", label: "Ethmoid sinusitis" },
+  { key: "maxillary", label: "Maxillary sinusitis" },
+  { key: "sphenoid", label: "Sphenoid sinusitis" },
+] as const;
 
-export const ESS_FINDINGS_FIELD_KEYS = [...ESS_RISK_FINDINGS, ...SINUSITIS_FINDINGS].flatMap((f) => [
-  f.presentKey,
-  f.sideKey,
+export const SINUSITIS_FIELD_KEYS = SINUSITIS_TYPES.flatMap((t) => [
+  `n_sinusitis_${t.key}_right`,
+  `n_sinusitis_${t.key}_left`,
 ]);
 
+export const ESS_FINDINGS_FIELD_KEYS = [...ESS_RISK_FINDINGS.flatMap((f) => [f.presentKey, f.sideKey]), ...SINUSITIS_FIELD_KEYS];
+
 // 간략 정보 카드(NasalFindingsOverview)에서 이 그룹이 "있다"고 볼 근거이자,
-// 그룹을 접을 때 꺼야 할 체크박스 키들 — 방향(select)은 present가 꺼지면
-// 어차피 기록지 생성에서 무시되므로 같이 지울 필요가 없다.
+// 그룹을 접을 때 꺼야 할 체크박스 키들.
 export const ANATOMIC_RISK_PRESENT_KEYS = ESS_RISK_FINDINGS.map((f) => f.presentKey);
-export const SINUSITIS_PRESENT_KEYS = SINUSITIS_FINDINGS.map((f) => f.presentKey);
+export const SINUSITIS_PRESENT_KEYS = SINUSITIS_FIELD_KEYS;
 
 function findForm(el: HTMLElement | null): HTMLFormElement | null {
   return el?.closest("form") ?? null;
@@ -199,19 +183,27 @@ export function AnatomicRiskFindingsPicker({
   );
 }
 
+// Op Plan의 FESS 시행 부위 표와 같은 2칸(우측/좌측) 표 모양으로 통일한다 —
+// 이 컴포넌트는 자체 상태 없이 상위가 넘겨주는 값을 그대로 그리고, 클릭은
+// onToggle로 그대로 올려보낸다(상위가 cascade까지 처리).
 export function SinusitisFindingsPicker({
   values,
-  onChange,
+  interactive = true,
+  onToggle,
 }: {
   values?: FieldValues;
-  onChange?: () => void;
+  interactive?: boolean;
+  onToggle?: (fieldKey: string) => void;
 }) {
+  const rows: PlanSideMatrixRow[] = SINUSITIS_TYPES.map((t) => ({
+    key: t.key,
+    label: t.label,
+    right: values?.[`n_sinusitis_${t.key}_right`] === true,
+    left: values?.[`n_sinusitis_${t.key}_left`] === true,
+    rightFieldKey: `n_sinusitis_${t.key}_right`,
+    leftFieldKey: `n_sinusitis_${t.key}_left`,
+  }));
   return (
-    <PresentSidedGroup
-      title="부비동염(Sinusitis) 소견 (문제 있는 것만 체크)"
-      findings={SINUSITIS_FINDINGS}
-      values={values}
-      onChange={onChange}
-    />
+    <SideMatrixTable title="부비동염(Sinusitis) 소견" rows={rows} interactive={interactive} onToggle={onToggle} />
   );
 }

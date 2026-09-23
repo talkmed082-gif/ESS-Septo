@@ -140,37 +140,17 @@ export const essFindingFields: SurgeryFieldDef[] = [
     options: ["우측", "양측", "좌측"],
   },
   // 해부학적 이상 소견뿐 아니라 염증(부비동염) 소견도 남겨야 비강 소견이
-  // 완결된다 — 계획 단계에서 염증이 보여도 그 부위를 이번에 꼭 수술하는
-  // 것은 아니라서(수술 방법/Op Plan의 시행 부위와는 별개 값), 시행 부위와
-  // 같은 4개 부비동 기준으로 문제 있는지만 우선 체크하는 2단계 구조를 쓴다.
-  { key: "n_sinusitis_frontal_present", label: "Frontal sinusitis 있음", type: "checkbox" },
-  {
-    key: "n_sinusitis_frontal_side",
-    label: "Frontal sinusitis - 방향",
-    type: "select",
-    options: ["우측", "양측", "좌측"],
-  },
-  { key: "n_sinusitis_ethmoid_present", label: "Ethmoid sinusitis 있음", type: "checkbox" },
-  {
-    key: "n_sinusitis_ethmoid_side",
-    label: "Ethmoid sinusitis - 방향",
-    type: "select",
-    options: ["우측", "양측", "좌측"],
-  },
-  { key: "n_sinusitis_maxillary_present", label: "Maxillary sinusitis 있음", type: "checkbox" },
-  {
-    key: "n_sinusitis_maxillary_side",
-    label: "Maxillary sinusitis - 방향",
-    type: "select",
-    options: ["우측", "양측", "좌측"],
-  },
-  { key: "n_sinusitis_sphenoid_present", label: "Sphenoid sinusitis 있음", type: "checkbox" },
-  {
-    key: "n_sinusitis_sphenoid_side",
-    label: "Sphenoid sinusitis - 방향",
-    type: "select",
-    options: ["우측", "양측", "좌측"],
-  },
+  // 완결된다 — Op Plan 표(FESS 시행 부위)와 같은 4개 부비동 × 좌/우 체크
+  // 구조를 그대로 써서, 체크하면 그 부비동의 시행 부위도 자동으로 이어서
+  // 제안되게 한다(surgery-planner.tsx의 cascade 로직 참고).
+  { key: "n_sinusitis_frontal_right", label: "Frontal sinusitis - 우측", type: "checkbox" },
+  { key: "n_sinusitis_frontal_left", label: "Frontal sinusitis - 좌측", type: "checkbox" },
+  { key: "n_sinusitis_ethmoid_right", label: "Ethmoid sinusitis - 우측", type: "checkbox" },
+  { key: "n_sinusitis_ethmoid_left", label: "Ethmoid sinusitis - 좌측", type: "checkbox" },
+  { key: "n_sinusitis_maxillary_right", label: "Maxillary sinusitis - 우측", type: "checkbox" },
+  { key: "n_sinusitis_maxillary_left", label: "Maxillary sinusitis - 좌측", type: "checkbox" },
+  { key: "n_sinusitis_sphenoid_right", label: "Sphenoid sinusitis - 우측", type: "checkbox" },
+  { key: "n_sinusitis_sphenoid_left", label: "Sphenoid sinusitis - 좌측", type: "checkbox" },
   // 비용종 — 좌/우 정도(위치)가 다른 경우가 많아, 공통 "방향" 선택 없이
   // 측별로 위치 체크박스를 따로 둔다 (PolypPicker 컴포넌트가 우/좌 두 컬럼으로
   // 노출 — 한쪽이라도 위치가 체크되어 있으면 그 측에 비용종이 있는 것으로 본다).
@@ -376,3 +356,31 @@ export function isNasalFindingKey(key: string): boolean {
 // 병력에 가깝다 — 완료(DONE) 처리 이후 계획(planData)을 얼릴 때도 이 값만은
 // 계속 바로 반영되게(actualData로 빠지지 않게) 예외로 둔다.
 export const REVISION_FLAG_KEYS = ["f_revision_septo", "f_revision_ess_right", "f_revision_ess_left"] as const;
+
+// 비강 소견(염증/비용종)에서 해당 부비동을 체크하면 Op Plan의 그 부비동
+// FESS 시행 부위도 자동으로 제안(체크)되도록 이어주는 매핑 — 켤 때만
+// 제안하고, 끌 때는 이미 계획해둔 시행 부위를 임의로 지우지 않는다(surgery
+// -planner.tsx의 cascade 로직에서 씀). Ethmoid는 시행 부위 쪽에 Ant./Post.
+// 두 단계가 있는데, 소견만으로는 어느 쪽인지 알 수 없어 최소 단위인
+// Ant. ethmoidectomy만 제안한다(부족하면 직접 Post.까지 추가하면 됨).
+export const SINUSITIS_TO_FESS_FIELD: Record<string, string> = {
+  n_sinusitis_frontal_right: "f_right_frontal",
+  n_sinusitis_frontal_left: "f_left_frontal",
+  n_sinusitis_ethmoid_right: "f_right_ant_eth",
+  n_sinusitis_ethmoid_left: "f_left_ant_eth",
+  n_sinusitis_maxillary_right: "f_right_mma",
+  n_sinusitis_maxillary_left: "f_left_mma",
+  n_sinusitis_sphenoid_right: "f_right_sphenoid",
+  n_sinusitis_sphenoid_left: "f_left_sphenoid",
+};
+
+// 비용종 위치 중 중비도/후비공 연장은 특정 부비동 시행 단계와 1:1로 대응되지
+// 않아 자동 제안 대상에서 뺀다(사골동/상악동/접형동만 대응).
+export const POLYP_TO_FESS_FIELD: Record<string, string> = {
+  n_polyp_right_site_ethmoid: "f_right_ant_eth",
+  n_polyp_left_site_ethmoid: "f_left_ant_eth",
+  n_polyp_right_site_maxillary: "f_right_mma",
+  n_polyp_left_site_maxillary: "f_left_mma",
+  n_polyp_right_site_sphenoid: "f_right_sphenoid",
+  n_polyp_left_site_sphenoid: "f_left_sphenoid",
+};

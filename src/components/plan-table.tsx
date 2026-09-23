@@ -4,19 +4,19 @@ import type { PlanSideMatrixRow, PlanTable } from "@/lib/op-note-generator";
 import { CHECK_MARK, DataCell } from "@/components/check-cell";
 import { buttonStyles } from "@/lib/ui";
 
-function SideMatrixTable({
+export function SideMatrixTable({
   title,
   rows,
-  textSize,
-  cellPad,
+  textSize = "text-sm",
+  cellPad = "px-2 py-1.5",
   interactive,
   onToggle,
   onCopySide,
 }: {
   title: string;
   rows: PlanSideMatrixRow[];
-  textSize: string;
-  cellPad: string;
+  textSize?: string;
+  cellPad?: string;
   interactive: boolean;
   onToggle?: (fieldKey: string) => void;
   onCopySide?: (from: "f_left_" | "f_right_") => void;
