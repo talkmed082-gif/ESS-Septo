@@ -6,7 +6,8 @@ import { SideMatrixTable } from "@/components/plan-table";
 
 const POLYP_SITE_FIELDS = [
   { key: "site_mm", label: "중비도" },
-  { key: "site_ethmoid", label: "사골동" },
+  { key: "site_ant_ethmoid", label: "전사골동" },
+  { key: "site_post_ethmoid", label: "후사골동" },
   { key: "site_maxillary", label: "상악동 자연공" },
   { key: "site_sphenoid", label: "접형동" },
   { key: "site_choana", label: "후비공까지 연장" },

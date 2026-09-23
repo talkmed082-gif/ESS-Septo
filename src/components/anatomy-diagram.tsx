@@ -28,8 +28,9 @@ export function getAnatomyVisibility(surgeryTypeCode: string): {
   showSinus: boolean;
 } {
   return {
-    showSeptum:
-      surgeryTypeCode === "SEPTOPLASTY" || surgeryTypeCode === "ESS" || surgeryTypeCode === "COMBO",
+    // ESS 단독은 비중격교정술을 계획하지 않으므로 Septoturbinoplasty P/E를
+    // 보여주지 않는다(essFullFields도 그 필드를 아예 안 갖고 있음).
+    showSeptum: surgeryTypeCode === "SEPTOPLASTY" || surgeryTypeCode === "COMBO",
     showSinus: surgeryTypeCode === "ESS" || surgeryTypeCode === "COMBO",
   };
 }

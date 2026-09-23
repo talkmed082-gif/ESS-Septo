@@ -47,7 +47,8 @@ const ESS_RISK_FINDINGS: PresentSidedFinding[] = [
 // surgery-planner.tsx가 SINUSITIS_TO_FESS_FIELD로 처리).
 const SINUSITIS_TYPES = [
   { key: "frontal", label: "Frontal sinusitis" },
-  { key: "ethmoid", label: "Ethmoid sinusitis" },
+  { key: "ant_ethmoid", label: "Ant. Ethmoid sinusitis" },
+  { key: "post_ethmoid", label: "Post. Ethmoid sinusitis" },
   { key: "maxillary", label: "Maxillary sinusitis" },
   { key: "sphenoid", label: "Sphenoid sinusitis" },
 ] as const;

@@ -150,8 +150,12 @@ export const essFindingFields: SurgeryFieldDef[] = [
   // 제안되게 한다(surgery-planner.tsx의 cascade 로직 참고).
   { key: "n_sinusitis_frontal_right", label: "Frontal sinusitis - 우측", type: "checkbox" },
   { key: "n_sinusitis_frontal_left", label: "Frontal sinusitis - 좌측", type: "checkbox" },
-  { key: "n_sinusitis_ethmoid_right", label: "Ethmoid sinusitis - 우측", type: "checkbox" },
-  { key: "n_sinusitis_ethmoid_left", label: "Ethmoid sinusitis - 좌측", type: "checkbox" },
+  // Ethmoid는 시행 부위 쪽처럼 Ant./Post.로 나눠서, 소견 단계에서부터 시행
+  // 부위와 똑같이 어느 쪽인지 구분해 자동 제안(cascade)도 정확하게 한다.
+  { key: "n_sinusitis_ant_ethmoid_right", label: "Ant. Ethmoid sinusitis - 우측", type: "checkbox" },
+  { key: "n_sinusitis_ant_ethmoid_left", label: "Ant. Ethmoid sinusitis - 좌측", type: "checkbox" },
+  { key: "n_sinusitis_post_ethmoid_right", label: "Post. Ethmoid sinusitis - 우측", type: "checkbox" },
+  { key: "n_sinusitis_post_ethmoid_left", label: "Post. Ethmoid sinusitis - 좌측", type: "checkbox" },
   { key: "n_sinusitis_maxillary_right", label: "Maxillary sinusitis - 우측", type: "checkbox" },
   { key: "n_sinusitis_maxillary_left", label: "Maxillary sinusitis - 좌측", type: "checkbox" },
   { key: "n_sinusitis_sphenoid_right", label: "Sphenoid sinusitis - 우측", type: "checkbox" },
@@ -160,12 +164,14 @@ export const essFindingFields: SurgeryFieldDef[] = [
   // 측별로 위치 체크박스를 따로 둔다 (PolypPicker 컴포넌트가 우/좌 두 컬럼으로
   // 노출 — 한쪽이라도 위치가 체크되어 있으면 그 측에 비용종이 있는 것으로 본다).
   { key: "n_polyp_right_site_mm", label: "비용종 위치(우측) - 중비도", type: "checkbox" },
-  { key: "n_polyp_right_site_ethmoid", label: "비용종 위치(우측) - 사골동", type: "checkbox" },
+  { key: "n_polyp_right_site_ant_ethmoid", label: "비용종 위치(우측) - 전사골동", type: "checkbox" },
+  { key: "n_polyp_right_site_post_ethmoid", label: "비용종 위치(우측) - 후사골동", type: "checkbox" },
   { key: "n_polyp_right_site_maxillary", label: "비용종 위치(우측) - 상악동 자연공", type: "checkbox" },
   { key: "n_polyp_right_site_sphenoid", label: "비용종 위치(우측) - 접형동", type: "checkbox" },
   { key: "n_polyp_right_site_choana", label: "비용종 위치(우측) - 후비공까지 연장", type: "checkbox" },
   { key: "n_polyp_left_site_mm", label: "비용종 위치(좌측) - 중비도", type: "checkbox" },
-  { key: "n_polyp_left_site_ethmoid", label: "비용종 위치(좌측) - 사골동", type: "checkbox" },
+  { key: "n_polyp_left_site_ant_ethmoid", label: "비용종 위치(좌측) - 전사골동", type: "checkbox" },
+  { key: "n_polyp_left_site_post_ethmoid", label: "비용종 위치(좌측) - 후사골동", type: "checkbox" },
   { key: "n_polyp_left_site_maxillary", label: "비용종 위치(좌측) - 상악동 자연공", type: "checkbox" },
   { key: "n_polyp_left_site_sphenoid", label: "비용종 위치(좌측) - 접형동", type: "checkbox" },
   { key: "n_polyp_left_site_choana", label: "비용종 위치(좌측) - 후비공까지 연장", type: "checkbox" },
@@ -305,8 +311,11 @@ export const comboOnlyFields: SurgeryFieldDef[] = [
 ];
 
 // dermacol은 septoFieldsForCombo 쪽에 이미 포함되어 있으므로 중복 방지를 위해 fessFieldsForCombo에서는 뺀다.
+// f_side_order(좌/우 FESS 안에서의 순서)는 병행에서는 c_order(비중격까지
+// 포함한 전체 순서)가 대신하므로 겹치지 않게 뺀다 — f_side_order는 genFess
+// (ESS 단독)에서만 쓰인다.
 const septoFieldsForCombo = septoFields;
-const fessFieldsForCombo = fessFields.filter((f) => f.key !== "dermacol");
+const fessFieldsForCombo = fessFields.filter((f) => f.key !== "dermacol" && f.key !== "f_side_order");
 
 // 특정 수술 종류에서만 다르게 적용할 default 값을 덮어쓴다 — 같은 필드
 // 정의(예: CHR, P/E 시행 체크)를 여러 수술 종류가 공유하지만, 그 수술을
@@ -315,11 +324,13 @@ function withDefaults(fields: SurgeryFieldDef[], overrides: Record<string, strin
   return fields.map((f) => (f.key in overrides ? { ...f, default: overrides[f.key] } : f));
 }
 
-// ESS/병행은 비강소견 두 그룹(비중격/하비갑개 + ESS)을 모두 보여주고,
-// 비중격교정술 단독은 비중격/하비갑개 그룹만 보여준다(ESS 전용 CT 소견 불필요).
-// ESS/병행 수술명에는 항상 "ESS"가 들어가므로 ESS P/E도 기본으로 체크해둔다.
+// ESS 단독은 ESS 소견 그룹만 보여준다 — 비중격/하비갑개(Septoturbinoplasty
+// P/E)는 실제로 비중격교정술을 계획할 때(SEPTOPLASTY/COMBO)만 필요한
+// 소견이라, ESS만 체크했는데 그 섹션이 같이 뜨면 혼란스럽다. 병행(COMBO)은
+// 비중격도 같이 하므로 nasalFindingFields(두 그룹 다)를 그대로 쓴다.
+// ESS 수술명에는 항상 "ESS"가 들어가므로 ESS P/E도 기본으로 체크해둔다.
 export const essFullFields: SurgeryFieldDef[] = withDefaults(
-  [...nasalFindingFields, ...turbinoplastyFields, ...fessFields],
+  [...essFindingFields, ...turbinoplastyFields, ...fessFields],
   { [ESS_PE_DONE_KEY]: "true" },
 );
 // 비중격교정술은 하비갑개 비후(CHR)를 양측에 동반하는 경우가 대부분이고,
@@ -367,14 +378,15 @@ export const REVISION_FLAG_KEYS = ["f_revision_septo", "f_revision_ess_right", "
 // 비강 소견(염증/비용종)에서 해당 부비동을 체크하면 Op Plan의 그 부비동
 // FESS 시행 부위도 자동으로 제안(체크)되도록 이어주는 매핑 — 켤 때만
 // 제안하고, 끌 때는 이미 계획해둔 시행 부위를 임의로 지우지 않는다(surgery
-// -planner.tsx의 cascade 로직에서 씀). Ethmoid는 시행 부위 쪽에 Ant./Post.
-// 두 단계가 있는데, 소견만으로는 어느 쪽인지 알 수 없어 최소 단위인
-// Ant. ethmoidectomy만 제안한다(부족하면 직접 Post.까지 추가하면 됨).
+// -planner.tsx의 cascade 로직에서 씀). Ethmoid는 소견 쪽도 시행 부위와
+// 똑같이 Ant./Post.로 나눠서 정확히 대응시킨다.
 export const SINUSITIS_TO_FESS_FIELD: Record<string, string> = {
   n_sinusitis_frontal_right: "f_right_frontal",
   n_sinusitis_frontal_left: "f_left_frontal",
-  n_sinusitis_ethmoid_right: "f_right_ant_eth",
-  n_sinusitis_ethmoid_left: "f_left_ant_eth",
+  n_sinusitis_ant_ethmoid_right: "f_right_ant_eth",
+  n_sinusitis_ant_ethmoid_left: "f_left_ant_eth",
+  n_sinusitis_post_ethmoid_right: "f_right_post_eth",
+  n_sinusitis_post_ethmoid_left: "f_left_post_eth",
   n_sinusitis_maxillary_right: "f_right_mma",
   n_sinusitis_maxillary_left: "f_left_mma",
   n_sinusitis_sphenoid_right: "f_right_sphenoid",
@@ -382,10 +394,13 @@ export const SINUSITIS_TO_FESS_FIELD: Record<string, string> = {
 };
 
 // 비용종 위치 중 중비도/후비공 연장은 특정 부비동 시행 단계와 1:1로 대응되지
-// 않아 자동 제안 대상에서 뺀다(사골동/상악동/접형동만 대응).
+// 않아 자동 제안 대상에서 뺀다(사골동/상악동/접형동만 대응). 사골동은 소견
+// 쪽도 시행 부위와 똑같이 Ant./Post.로 나눠서 정확히 대응시킨다.
 export const POLYP_TO_FESS_FIELD: Record<string, string> = {
-  n_polyp_right_site_ethmoid: "f_right_ant_eth",
-  n_polyp_left_site_ethmoid: "f_left_ant_eth",
+  n_polyp_right_site_ant_ethmoid: "f_right_ant_eth",
+  n_polyp_left_site_ant_ethmoid: "f_left_ant_eth",
+  n_polyp_right_site_post_ethmoid: "f_right_post_eth",
+  n_polyp_left_site_post_ethmoid: "f_left_post_eth",
   n_polyp_right_site_maxillary: "f_right_mma",
   n_polyp_left_site_maxillary: "f_left_mma",
   n_polyp_right_site_sphenoid: "f_right_sphenoid",

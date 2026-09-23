@@ -26,7 +26,9 @@ const PatientPlanSchema = z.object({
 function autoPatientName(): string {
   const now = new Date();
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())} 환자`;
+  // "환자" 접미사를 붙이면 화면마다 이미 붙어있는 "환자"와 겹쳐서(예: "...
+  // 환자 환자 수술 계획") 중복돼 보이므로, 이름 자체엔 날짜·시간만 남긴다.
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
 }
 
 export interface PatientPlanFormState {

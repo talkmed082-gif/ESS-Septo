@@ -46,7 +46,7 @@ export default async function OpPlanPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h1 className="text-xl font-semibold">{plan.patient.name} 환자 수술 계획</h1>
+          <h1 className="text-xl font-semibold">{plan.patient.name} 수술 계획</h1>
           <p className="mt-1 text-sm text-slate-500">{plan.surgeryType.name}</p>
         </div>
         <div className="flex gap-2">
