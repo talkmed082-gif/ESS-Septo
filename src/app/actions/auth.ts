@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import * as z from "zod";
 import { prisma } from "@/lib/prisma";
 import { createSession, deleteSession } from "@/lib/session";
+import { isEmailAllowed } from "@/lib/signup-policy";
 
 const SignupSchema = z.object({
   name: z.string().trim().min(1, { error: "이름을 입력하세요." }),
@@ -38,6 +39,10 @@ export async function signup(
   }
 
   const { name, email, password } = validated.data;
+
+  if (!isEmailAllowed(email, process.env.ALLOWED_EMAILS)) {
+    return { errors: { email: ["가입이 허용되지 않은 이메일입니다."] } };
+  }
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
