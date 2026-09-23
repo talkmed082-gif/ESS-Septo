@@ -1,0 +1,786 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 10,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 10,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 10,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "src/app/(app)/layout.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 16,
+      "nonEmptyLines": 15,
+      "functions": [
+        {
+          "name": "AppLayout",
+          "startLine": 3,
+          "endLine": 16,
+          "params": [
+            "{\n  children,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "AppLayout",
+          "line": 3,
+          "isDefault": true
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/plans/[id]/print/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 101,
+      "nonEmptyLines": 93,
+      "functions": [
+        {
+          "name": "OpPlanPrintPage",
+          "startLine": 16,
+          "endLine": 101,
+          "params": [
+            "{\n  params,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "OpPlanPrintPage",
+          "line": 16,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "OpPlanPrintPage",
+          "callee": "getCurrentUser",
+          "lineNumber": 19
+        },
+        {
+          "caller": "OpPlanPrintPage",
+          "callee": "prisma.opPlan.findUnique",
+          "lineNumber": 22
+        },
+        {
+          "caller": "OpPlanPrintPage",
+          "callee": "notFound",
+          "lineNumber": 26
+        },
+        {
+          "caller": "OpPlanPrintPage",
+          "callee": "parseFieldValues",
+          "lineNumber": 32
+        },
+        {
+          "caller": "OpPlanPrintPage",
+          "callee": "isBuiltInSurgeryCode",
+          "lineNumber": 33
+        },
+        {
+          "caller": "OpPlanPrintPage",
+          "callee": "buildPlanTable",
+          "lineNumber": 34
+        },
+        {
+          "caller": "OpPlanPrintPage",
+          "callee": "planTableToText",
+          "lineNumber": 46
+        },
+        {
+          "caller": "OpPlanPrintPage",
+          "callee": "safeDateStr",
+          "lineNumber": 78
+        }
+      ],
+      "metrics": {
+        "importCount": 12,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/print/fess-checklist/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 250,
+      "nonEmptyLines": 237,
+      "functions": [
+        {
+          "name": "chunk",
+          "startLine": 43,
+          "endLine": 47,
+          "params": [
+            "arr",
+            "size"
+          ]
+        },
+        {
+          "name": "BlankLines",
+          "startLine": 54,
+          "endLine": 65,
+          "params": []
+        },
+        {
+          "name": "ChecklistCard",
+          "startLine": 67,
+          "endLine": 143,
+          "params": [
+            "{ data }"
+          ]
+        },
+        {
+          "name": "ChecklistPage",
+          "startLine": 145,
+          "endLine": 161,
+          "params": [
+            "{ cards }"
+          ]
+        },
+        {
+          "name": "FessChecklistPrintPage",
+          "startLine": 163,
+          "endLine": 250,
+          "params": [
+            "{\n  searchParams,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "FessChecklistPrintPage",
+          "line": 163,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "chunk",
+          "callee": "out.push",
+          "lineNumber": 45
+        },
+        {
+          "caller": "chunk",
+          "callee": "arr.slice",
+          "lineNumber": 45
+        },
+        {
+          "caller": "ChecklistCard",
+          "callee": "BLANK_ROWS.map",
+          "lineNumber": 68
+        },
+        {
+          "caller": "ChecklistCard",
+          "callee": "rows.map",
+          "lineNumber": 119
+        },
+        {
+          "caller": "ChecklistPage",
+          "callee": "cards.map",
+          "lineNumber": 154
+        },
+        {
+          "caller": "FessChecklistPrintPage",
+          "callee": "getCurrentUser",
+          "lineNumber": 166
+        },
+        {
+          "caller": "FessChecklistPrintPage",
+          "callee": "(typeof plans === \"string\" ? plans.split(\",\") : []).filter",
+          "lineNumber": 168
+        },
+        {
+          "caller": "FessChecklistPrintPage",
+          "callee": "plans.split",
+          "lineNumber": 168
+        },
+        {
+          "caller": "FessChecklistPrintPage",
+          "callee": "prisma.opPlan.findMany",
+          "lineNumber": 177
+        },
+        {
+          "caller": "FessChecklistPrintPage",
+          "callee": "opPlans.map",
+          "lineNumber": 181
+        },
+        {
+          "caller": "FessChecklistPrintPage",
+          "callee": "planIds\n      .map((id) => byId.get(id))\n      .filter((p): p is NonNullable<typeof p> => !!p)\n      .map",
+          "lineNumber": 182
+        },
+        {
+          "caller": "FessChecklistPrintPage",
+          "callee": "planIds\n      .map((id) => byId.get(id))\n      .filter",
+          "lineNumber": 182
+        },
+        {
+          "caller": "FessChecklistPrintPage",
+          "callee": "planIds\n      .map",
+          "lineNumber": 182
+        },
+        {
+          "caller": "FessChecklistPrintPage",
+          "callee": "byId.get",
+          "lineNumber": 183
+        },
+        {
+          "caller": "FessChecklistPrintPage",
+          "callee": "parseFieldValues",
+          "lineNumber": 186
+        },
+        {
+          "caller": "FessChecklistPrintPage",
+          "callee": "isBuiltInSurgeryCode",
+          "lineNumber": 188
+        },
+        {
+          "caller": "FessChecklistPrintPage",
+          "callee": "buildPlanTable",
+          "lineNumber": 188
+        },
+        {
+          "caller": "FessChecklistPrintPage",
+          "callee": "table?.sideMatrix?.rows.map",
+          "lineNumber": 190
+        },
+        {
+          "caller": "FessChecklistPrintPage",
+          "callee": "safeDateStr",
+          "lineNumber": 204
+        },
+        {
+          "caller": "FessChecklistPrintPage",
+          "callee": "hasAnyRevision",
+          "lineNumber": 206
+        },
+        {
+          "caller": "FessChecklistPrintPage",
+          "callee": "chunk(cardsData, 4).map",
+          "lineNumber": 217
+        },
+        {
+          "caller": "FessChecklistPrintPage",
+          "callee": "chunk",
+          "lineNumber": 217
+        },
+        {
+          "caller": "FessChecklistPrintPage",
+          "callee": "padded.push",
+          "lineNumber": 219
+        },
+        {
+          "caller": "FessChecklistPrintPage",
+          "callee": "pages.map",
+          "lineNumber": 242
+        }
+      ],
+      "metrics": {
+        "importCount": 10,
+        "exportCount": 1,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/records/[id]/print/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 121,
+      "nonEmptyLines": 111,
+      "functions": [
+        {
+          "name": "Row",
+          "startLine": 14,
+          "endLine": 25,
+          "params": [
+            "{ label, value }"
+          ]
+        },
+        {
+          "name": "OpRecordPrintPage",
+          "startLine": 27,
+          "endLine": 121,
+          "params": [
+            "{\n  params,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "OpRecordPrintPage",
+          "line": 27,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "OpRecordPrintPage",
+          "callee": "verifySession",
+          "lineNumber": 30
+        },
+        {
+          "caller": "OpRecordPrintPage",
+          "callee": "prisma.opRecord.findUnique",
+          "lineNumber": 33
+        },
+        {
+          "caller": "OpRecordPrintPage",
+          "callee": "notFound",
+          "lineNumber": 39
+        },
+        {
+          "caller": "OpRecordPrintPage",
+          "callee": "resolveSurgeryTypeFields",
+          "lineNumber": 42
+        },
+        {
+          "caller": "OpRecordPrintPage",
+          "callee": "parseFieldValues",
+          "lineNumber": 43
+        },
+        {
+          "caller": "OpRecordPrintPage",
+          "callee": "fields.filter",
+          "lineNumber": 45
+        },
+        {
+          "caller": "OpRecordPrintPage",
+          "callee": "fields.filter",
+          "lineNumber": 46
+        },
+        {
+          "caller": "OpRecordPrintPage",
+          "callee": "[\n    record.procedureName,\n    [record.findings, record.procedureDetail].filter(Boolean).join(\"\\n\\n\"),\n  ]\n    .filter(Boolean)\n    .join",
+          "lineNumber": 52
+        },
+        {
+          "caller": "OpRecordPrintPage",
+          "callee": "[\n    record.procedureName,\n    [record.findings, record.procedureDetail].filter(Boolean).join(\"\\n\\n\"),\n  ]\n    .filter",
+          "lineNumber": 52
+        },
+        {
+          "caller": "OpRecordPrintPage",
+          "callee": "[record.findings, record.procedureDetail].filter(Boolean).join",
+          "lineNumber": 54
+        },
+        {
+          "caller": "OpRecordPrintPage",
+          "callee": "[record.findings, record.procedureDetail].filter",
+          "lineNumber": 54
+        },
+        {
+          "caller": "OpRecordPrintPage",
+          "callee": "safeDateStr",
+          "lineNumber": 95
+        },
+        {
+          "caller": "OpRecordPrintPage",
+          "callee": "checkedFields.map((f) => f.label).join",
+          "lineNumber": 101
+        },
+        {
+          "caller": "OpRecordPrintPage",
+          "callee": "checkedFields.map",
+          "lineNumber": 101
+        },
+        {
+          "caller": "OpRecordPrintPage",
+          "callee": "otherFields.map",
+          "lineNumber": 103
+        },
+        {
+          "caller": "OpRecordPrintPage",
+          "callee": "String",
+          "lineNumber": 104
+        },
+        {
+          "caller": "OpRecordPrintPage",
+          "callee": "[record.findings, record.procedureDetail].filter(Boolean).join",
+          "lineNumber": 108
+        },
+        {
+          "caller": "OpRecordPrintPage",
+          "callee": "[record.findings, record.procedureDetail].filter",
+          "lineNumber": 108
+        }
+      ],
+      "metrics": {
+        "importCount": 10,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/app-nav-bar.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 38,
+      "nonEmptyLines": 36,
+      "functions": [
+        {
+          "name": "AppNavBar",
+          "startLine": 9,
+          "endLine": 38,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "AppNavBar",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "AppNavBar",
+          "callee": "getCurrentUser",
+          "lineNumber": 10
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/check-cell.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 28,
+      "nonEmptyLines": 26,
+      "functions": [
+        {
+          "name": "DataCell",
+          "startLine": 7,
+          "endLine": 17,
+          "params": [
+            "{ checked, className = \"\" }"
+          ]
+        },
+        {
+          "name": "CheckBox",
+          "startLine": 22,
+          "endLine": 28,
+          "params": [
+            "{ checked = false }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "CHECK_MARK",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "DataCell",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "CheckBox",
+          "line": 22,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/copy-button.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 36,
+      "nonEmptyLines": 34,
+      "functions": [
+        {
+          "name": "CopyButton",
+          "startLine": 9,
+          "endLine": 36,
+          "params": [
+            "{\n  text,\n  label = \"복사\",\n  className = buttonStyles.smallOutline,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "CopyButton",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "CopyButton",
+          "callee": "useState",
+          "lineNumber": 18
+        },
+        {
+          "caller": "CopyButton",
+          "callee": "navigator.clipboard.writeText",
+          "lineNumber": 24
+        },
+        {
+          "caller": "CopyButton",
+          "callee": "setCopied",
+          "lineNumber": 25
+        },
+        {
+          "caller": "CopyButton",
+          "callee": "setTimeout",
+          "lineNumber": 26
+        },
+        {
+          "caller": "CopyButton",
+          "callee": "setCopied",
+          "lineNumber": 26
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/patients-nav-link.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 24,
+      "nonEmptyLines": 21,
+      "functions": [
+        {
+          "name": "PatientsNavLink",
+          "startLine": 8,
+          "endLine": 24,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "PatientsNavLink",
+          "line": 8,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "PatientsNavLink",
+          "callee": "useRouter",
+          "lineNumber": 9
+        },
+        {
+          "caller": "PatientsNavLink",
+          "callee": "e.preventDefault",
+          "lineNumber": 15
+        },
+        {
+          "caller": "PatientsNavLink",
+          "callee": "router.push",
+          "lineNumber": 16
+        },
+        {
+          "caller": "PatientsNavLink",
+          "callee": "router.refresh",
+          "lineNumber": 17
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/print-button.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 11,
+      "nonEmptyLines": 9,
+      "functions": [
+        {
+          "name": "PrintButton",
+          "startLine": 5,
+          "endLine": 11,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "PrintButton",
+          "line": 5,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "PrintButton",
+          "callee": "window.print",
+          "lineNumber": 7
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/save-image-button.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 101,
+      "nonEmptyLines": 93,
+      "functions": [
+        {
+          "name": "SaveImageButton",
+          "startLine": 15,
+          "endLine": 101,
+          "params": [
+            "{\n  targetId,\n  fileName,\n  shareTitle,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SaveImageButton",
+          "line": 15,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SaveImageButton",
+          "callee": "useState",
+          "lineNumber": 24
+        },
+        {
+          "caller": "SaveImageButton",
+          "callee": "useState",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handleClick",
+          "callee": "document.getElementById",
+          "lineNumber": 28
+        },
+        {
+          "caller": "handleClick",
+          "callee": "setBusy",
+          "lineNumber": 30
+        },
+        {
+          "caller": "handleClick",
+          "callee": "setError",
+          "lineNumber": 31
+        },
+        {
+          "caller": "handleClick",
+          "callee": "import",
+          "lineNumber": 33
+        },
+        {
+          "caller": "handleClick",
+          "callee": "html2canvas",
+          "lineNumber": 34
+        },
+        {
+          "caller": "handleClick",
+          "callee": "canvas.toBlob",
+          "lineNumber": 41
+        },
+        {
+          "caller": "handleClick",
+          "callee": "nav.canShare",
+          "lineNumber": 51
+        },
+        {
+          "caller": "handleClick",
+          "callee": "nav.share",
+          "lineNumber": 53
+        },
+        {
+          "caller": "handleClick",
+          "callee": "URL.createObjectURL",
+          "lineNumber": 68
+        },
+        {
+          "caller": "handleClick",
+          "callee": "window.open",
+          "lineNumber": 69
+        },
+        {
+          "caller": "handleClick",
+          "callee": "document.createElement",
+          "lineNumber": 72
+        },
+        {
+          "caller": "handleClick",
+          "callee": "a.click",
+          "lineNumber": 75
+        },
+        {
+          "caller": "handleClick",
+          "callee": "setTimeout",
+          "lineNumber": 77
+        },
+        {
+          "caller": "handleClick",
+          "callee": "URL.revokeObjectURL",
+          "lineNumber": 77
+        },
+        {
+          "caller": "handleClick",
+          "callee": "console.error",
+          "lineNumber": 81
+        },
+        {
+          "caller": "handleClick",
+          "callee": "setError",
+          "lineNumber": 82
+        },
+        {
+          "caller": "handleClick",
+          "callee": "setBusy",
+          "lineNumber": 84
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    }
+  ]
+}

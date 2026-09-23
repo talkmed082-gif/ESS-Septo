@@ -1,0 +1,562 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 6,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 6,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 6,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "proxy.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 35,
+      "functions": [
+        {
+          "name": "proxy",
+          "startLine": 14,
+          "endLine": 40,
+          "params": [
+            "req"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "proxy",
+          "line": 14,
+          "isDefault": true
+        },
+        {
+          "name": "config",
+          "line": 42,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "proxy",
+          "callee": "publicRoutes.includes",
+          "lineNumber": 16
+        },
+        {
+          "caller": "proxy",
+          "callee": "(await cookies()).get",
+          "lineNumber": 18
+        },
+        {
+          "caller": "proxy",
+          "callee": "cookies",
+          "lineNumber": 18
+        },
+        {
+          "caller": "proxy",
+          "callee": "decrypt",
+          "lineNumber": 19
+        },
+        {
+          "caller": "proxy",
+          "callee": "NextResponse.redirect",
+          "lineNumber": 22
+        },
+        {
+          "caller": "proxy",
+          "callee": "authOnlyRoutes.includes",
+          "lineNumber": 25
+        },
+        {
+          "caller": "proxy",
+          "callee": "NextResponse.redirect",
+          "lineNumber": 26
+        },
+        {
+          "caller": "proxy",
+          "callee": "NextResponse.next",
+          "lineNumber": 29
+        },
+        {
+          "caller": "proxy",
+          "callee": "encrypt",
+          "lineNumber": 34
+        },
+        {
+          "caller": "proxy",
+          "callee": "Date.now",
+          "lineNumber": 35
+        },
+        {
+          "caller": "proxy",
+          "callee": "response.cookies.set",
+          "lineNumber": 36
+        },
+        {
+          "caller": "proxy",
+          "callee": "sessionCookieOptions",
+          "lineNumber": 36
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/actions/auth.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 92,
+      "nonEmptyLines": 76,
+      "functions": [
+        {
+          "name": "signup",
+          "startLine": 26,
+          "endLine": 54,
+          "params": [
+            "_prevState",
+            "formData"
+          ]
+        },
+        {
+          "name": "login",
+          "startLine": 61,
+          "endLine": 87,
+          "params": [
+            "_prevState",
+            "formData"
+          ]
+        },
+        {
+          "name": "logout",
+          "startLine": 89,
+          "endLine": 92,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "signup",
+          "line": 26,
+          "isDefault": false
+        },
+        {
+          "name": "login",
+          "line": 61,
+          "isDefault": false
+        },
+        {
+          "name": "logout",
+          "line": 89,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "signup",
+          "callee": "SignupSchema.safeParse",
+          "lineNumber": 30
+        },
+        {
+          "caller": "signup",
+          "callee": "formData.get",
+          "lineNumber": 31
+        },
+        {
+          "caller": "signup",
+          "callee": "formData.get",
+          "lineNumber": 32
+        },
+        {
+          "caller": "signup",
+          "callee": "formData.get",
+          "lineNumber": 33
+        },
+        {
+          "caller": "signup",
+          "callee": "z.flattenError",
+          "lineNumber": 37
+        },
+        {
+          "caller": "signup",
+          "callee": "prisma.user.findUnique",
+          "lineNumber": 42
+        },
+        {
+          "caller": "signup",
+          "callee": "bcrypt.hash",
+          "lineNumber": 47
+        },
+        {
+          "caller": "signup",
+          "callee": "prisma.user.create",
+          "lineNumber": 48
+        },
+        {
+          "caller": "signup",
+          "callee": "createSession",
+          "lineNumber": 52
+        },
+        {
+          "caller": "signup",
+          "callee": "redirect",
+          "lineNumber": 53
+        },
+        {
+          "caller": "login",
+          "callee": "LoginSchema.safeParse",
+          "lineNumber": 65
+        },
+        {
+          "caller": "login",
+          "callee": "formData.get",
+          "lineNumber": 66
+        },
+        {
+          "caller": "login",
+          "callee": "formData.get",
+          "lineNumber": 67
+        },
+        {
+          "caller": "login",
+          "callee": "z.flattenError",
+          "lineNumber": 71
+        },
+        {
+          "caller": "login",
+          "callee": "prisma.user.findUnique",
+          "lineNumber": 75
+        },
+        {
+          "caller": "login",
+          "callee": "bcrypt.compare",
+          "lineNumber": 80
+        },
+        {
+          "caller": "login",
+          "callee": "createSession",
+          "lineNumber": 85
+        },
+        {
+          "caller": "login",
+          "callee": "redirect",
+          "lineNumber": 86
+        },
+        {
+          "caller": "logout",
+          "callee": "deleteSession",
+          "lineNumber": 90
+        },
+        {
+          "caller": "logout",
+          "callee": "redirect",
+          "lineNumber": 91
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/login/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 60,
+      "nonEmptyLines": 57,
+      "functions": [
+        {
+          "name": "LoginPage",
+          "startLine": 7,
+          "endLine": 60,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "LoginPage",
+          "line": 7,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "LoginPage",
+          "callee": "useActionState",
+          "lineNumber": 8
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 10,
+      "nonEmptyLines": 9,
+      "functions": [
+        {
+          "name": "HomePage",
+          "startLine": 7,
+          "endLine": 10,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "HomePage",
+          "line": 7,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "HomePage",
+          "callee": "getSessionPayload",
+          "lineNumber": 8
+        },
+        {
+          "caller": "HomePage",
+          "callee": "redirect",
+          "lineNumber": 9
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/signup/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 89,
+      "nonEmptyLines": 86,
+      "functions": [
+        {
+          "name": "SignupPage",
+          "startLine": 7,
+          "endLine": 89,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "SignupPage",
+          "line": 7,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SignupPage",
+          "callee": "useActionState",
+          "lineNumber": 8
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/lib/session.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 71,
+      "nonEmptyLines": 61,
+      "functions": [
+        {
+          "name": "encrypt",
+          "startLine": 22,
+          "endLine": 28,
+          "params": [
+            "payload"
+          ]
+        },
+        {
+          "name": "decrypt",
+          "startLine": 30,
+          "endLine": 42,
+          "params": [
+            "session"
+          ]
+        },
+        {
+          "name": "sessionCookieOptions",
+          "startLine": 44,
+          "endLine": 52,
+          "params": [
+            "expiresAt"
+          ]
+        },
+        {
+          "name": "createSession",
+          "startLine": 54,
+          "endLine": 60,
+          "params": [
+            "userId"
+          ]
+        },
+        {
+          "name": "deleteSession",
+          "startLine": 62,
+          "endLine": 65,
+          "params": []
+        },
+        {
+          "name": "getSessionPayload",
+          "startLine": 67,
+          "endLine": 71,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "SESSION_COOKIE",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "SESSION_DURATION_MS",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "encrypt",
+          "line": 22,
+          "isDefault": false
+        },
+        {
+          "name": "decrypt",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "sessionCookieOptions",
+          "line": 44,
+          "isDefault": false
+        },
+        {
+          "name": "createSession",
+          "line": 54,
+          "isDefault": false
+        },
+        {
+          "name": "deleteSession",
+          "line": 62,
+          "isDefault": false
+        },
+        {
+          "name": "getSessionPayload",
+          "line": 67,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "encrypt",
+          "callee": "new SignJWT(payload)\n    .setProtectedHeader({ alg: \"HS256\" })\n    .setIssuedAt()\n    .setExpirationTime(\"365d\")\n    .sign",
+          "lineNumber": 23
+        },
+        {
+          "caller": "encrypt",
+          "callee": "new SignJWT(payload)\n    .setProtectedHeader({ alg: \"HS256\" })\n    .setIssuedAt()\n    .setExpirationTime",
+          "lineNumber": 23
+        },
+        {
+          "caller": "encrypt",
+          "callee": "new SignJWT(payload)\n    .setProtectedHeader({ alg: \"HS256\" })\n    .setIssuedAt",
+          "lineNumber": 23
+        },
+        {
+          "caller": "encrypt",
+          "callee": "new SignJWT(payload)\n    .setProtectedHeader",
+          "lineNumber": 23
+        },
+        {
+          "caller": "decrypt",
+          "callee": "jwtVerify",
+          "lineNumber": 35
+        },
+        {
+          "caller": "createSession",
+          "callee": "Date.now",
+          "lineNumber": 55
+        },
+        {
+          "caller": "createSession",
+          "callee": "encrypt",
+          "lineNumber": 56
+        },
+        {
+          "caller": "createSession",
+          "callee": "cookies",
+          "lineNumber": 57
+        },
+        {
+          "caller": "createSession",
+          "callee": "cookieStore.set",
+          "lineNumber": 59
+        },
+        {
+          "caller": "createSession",
+          "callee": "sessionCookieOptions",
+          "lineNumber": 59
+        },
+        {
+          "caller": "deleteSession",
+          "callee": "cookies",
+          "lineNumber": 63
+        },
+        {
+          "caller": "deleteSession",
+          "callee": "cookieStore.delete",
+          "lineNumber": 64
+        },
+        {
+          "caller": "getSessionPayload",
+          "callee": "cookies",
+          "lineNumber": 68
+        },
+        {
+          "caller": "getSessionPayload",
+          "callee": "cookieStore.get",
+          "lineNumber": 69
+        },
+        {
+          "caller": "getSessionPayload",
+          "callee": "decrypt",
+          "lineNumber": 70
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 8,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    }
+  ]
+}

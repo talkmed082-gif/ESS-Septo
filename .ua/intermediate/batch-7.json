@@ -1,0 +1,493 @@
+{
+ "nodes": [
+  {
+   "id": "config:.ua/config.json",
+   "type": "config",
+   "name": "config.json",
+   "filePath": ".ua/config.json",
+   "summary": "Understand-Anything 분석 도구의 출력 언어를 한국어(ko)로 지정하는 설정 파일.",
+   "tags": [
+    "configuration",
+    "tooling",
+    "localization"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:eslint.config.mjs",
+   "type": "file",
+   "name": "eslint.config.mjs",
+   "filePath": "eslint.config.mjs",
+   "summary": "Next.js core-web-vitals 및 TypeScript 규칙을 적용하고 빌드 산출물(.next, out, build)을 무시하는 ESLint flat config.",
+   "tags": [
+    "config",
+    "linting",
+    "build-system"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:next.config.ts",
+   "type": "file",
+   "name": "next.config.ts",
+   "filePath": "next.config.ts",
+   "summary": "기본값만 사용하는 Next.js 프레임워크 설정 파일(추가 옵션 없음).",
+   "tags": [
+    "config",
+    "nextjs",
+    "build-system"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:postcss.config.mjs",
+   "type": "file",
+   "name": "postcss.config.mjs",
+   "filePath": "postcss.config.mjs",
+   "summary": "Tailwind CSS v4 PostCSS 플러그인을 등록하는 PostCSS 설정.",
+   "tags": [
+    "config",
+    "tailwind",
+    "build-system"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:prisma7.config.ts",
+   "type": "file",
+   "name": "prisma7.config.ts",
+   "filePath": "prisma7.config.ts",
+   "summary": "Prisma 7 CLI 설정으로 스키마 경로, 마이그레이션 디렉터리, seed 명령(tsx prisma/seed.ts), DATABASE_URL 데이터소스를 지정한다.",
+   "tags": [
+    "config",
+    "database",
+    "prisma",
+    "build-system"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "config:prisma/migrations/migration_lock.toml",
+   "type": "config",
+   "name": "migration_lock.toml",
+   "filePath": "prisma/migrations/migration_lock.toml",
+   "summary": "Prisma Migrate가 생성한 잠금 파일로 마이그레이션 provider를 postgresql로 고정한다.",
+   "tags": [
+    "configuration",
+    "database",
+    "migration"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "schema:prisma/schema.prisma",
+   "type": "schema",
+   "name": "schema.prisma",
+   "filePath": "prisma/schema.prisma",
+   "summary": "User, SurgeryType, SurgeryPreset, Patient, OpPlan, OpRecord 6개 모델을 정의하는 PostgreSQL Prisma 스키마로, 수술 종류별 입력 항목과 계획/실제 데이터를 JSON 필드로 저장한다. 클라이언트는 src/generated/prisma로 생성된다.",
+   "tags": [
+    "schema-definition",
+    "database",
+    "data-model",
+    "prisma"
+   ],
+   "complexity": "moderate",
+   "languageNotes": "SurgeryType.fields, OpPlan.planData/actualData 등 Json 컬럼으로 수술 종류별 동적 필드를 코드 수정 없이 확장하는 설계."
+  },
+  {
+   "id": "table:prisma/migrations/20260918033326_init/migration.sql:User",
+   "type": "table",
+   "name": "User",
+   "filePath": "prisma/migrations/20260918033326_init/migration.sql",
+   "summary": "로그인 사용자(의사) 테이블: 이메일(unique), 이름, 비밀번호 해시 보관. 초기 마이그레이션에서 생성.",
+   "tags": [
+    "database",
+    "migration",
+    "table"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "table:prisma/migrations/20260918033326_init/migration.sql:SurgeryType",
+   "type": "table",
+   "name": "SurgeryType",
+   "filePath": "prisma/migrations/20260918033326_init/migration.sql",
+   "summary": "수술 종류 테이블: 고유 code와 입력 항목 정의(fields JSONB), 기본 제공 여부 저장. 초기 마이그레이션에서 생성.",
+   "tags": [
+    "database",
+    "migration",
+    "table"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "table:prisma/migrations/20260918033326_init/migration.sql:Patient",
+   "type": "table",
+   "name": "Patient",
+   "filePath": "prisma/migrations/20260918033326_init/migration.sql",
+   "summary": "환자 테이블: 차트번호, 이름, 성별, 생년월일, 메모와 작성자(User) FK. 초기 마이그레이션에서 생성.",
+   "tags": [
+    "database",
+    "migration",
+    "table"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "table:prisma/migrations/20260918033326_init/migration.sql:OpPlan",
+   "type": "table",
+   "name": "OpPlan",
+   "filePath": "prisma/migrations/20260918033326_init/migration.sql",
+   "summary": "수술 계획 테이블: 환자·수술종류 FK, 예정일, 측(side), 진단, planData JSONB, 상태(PLANNED 기본값). 초기 마이그레이션에서 생성.",
+   "tags": [
+    "database",
+    "migration",
+    "table"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "table:prisma/migrations/20260918033326_init/migration.sql:OpRecord",
+   "type": "table",
+   "name": "OpRecord",
+   "filePath": "prisma/migrations/20260918033326_init/migration.sql",
+   "summary": "수술기록지 테이블: OpPlan과 1:1(unique opPlanId), 집도의/보조의, 마취, 진단, 수술 소견·상세, 합병증, 출혈량 등. 초기 마이그레이션에서 생성.",
+   "tags": [
+    "database",
+    "migration",
+    "table"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "table:prisma/migrations/20260919100000_add_surgery_preset/migration.sql:SurgeryPreset",
+   "type": "table",
+   "name": "SurgeryPreset",
+   "filePath": "prisma/migrations/20260919100000_add_surgery_preset/migration.sql",
+   "summary": "자주 쓰는 수술 필드 조합(fieldValues JSONB)을 이름 붙여 저장하는 SurgeryPreset 테이블을 생성하고 SurgeryType·User에 cascade FK를 건다.",
+   "tags": [
+    "database",
+    "migration",
+    "table",
+    "preset"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "table:prisma/migrations/20260918120000_add_user_name_style_settings/migration.sql:User",
+   "type": "table",
+   "name": "User",
+   "filePath": "prisma/migrations/20260918120000_add_user_name_style_settings/migration.sql",
+   "summary": "User 테이블에 수술명 표기 설정 컬럼(sideNotation 기본 'full', abbreviateRegions)을 추가하는 마이그레이션.",
+   "tags": [
+    "database",
+    "migration",
+    "alter-table"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "table:prisma/migrations/20260918140000_add_default_assistant_name/migration.sql:User",
+   "type": "table",
+   "name": "User",
+   "filePath": "prisma/migrations/20260918140000_add_default_assistant_name/migration.sql",
+   "summary": "User 테이블에 기본 보조의 이름(defaultAssistantName) 컬럼을 추가하는 마이그레이션.",
+   "tags": [
+    "database",
+    "migration",
+    "alter-table"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "table:prisma/migrations/20260918160000_add_opplan_checklist/migration.sql:OpPlan",
+   "type": "table",
+   "name": "OpPlan",
+   "filePath": "prisma/migrations/20260918160000_add_opplan_checklist/migration.sql",
+   "summary": "OpPlan 테이블에 checklist JSONB 컬럼(기본값 '{}')을 추가하는 마이그레이션.",
+   "tags": [
+    "database",
+    "migration",
+    "alter-table"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "table:prisma/migrations/20260919090000_drop_opplan_checklist/migration.sql:OpPlan",
+   "type": "table",
+   "name": "OpPlan",
+   "filePath": "prisma/migrations/20260919090000_drop_opplan_checklist/migration.sql",
+   "summary": "이전에 추가했던 OpPlan.checklist 컬럼을 제거하는 롤백성 마이그레이션.",
+   "tags": [
+    "database",
+    "migration",
+    "alter-table"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "table:prisma/migrations/20260919150000_add_patient_age/migration.sql:Patient",
+   "type": "table",
+   "name": "Patient",
+   "filePath": "prisma/migrations/20260919150000_add_patient_age/migration.sql",
+   "summary": "Patient 테이블에 나이(age INTEGER) 컬럼을 추가하는 마이그레이션(생년월일 대신 직접 입력).",
+   "tags": [
+    "database",
+    "migration",
+    "alter-table"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "table:prisma/migrations/20260923180000_add_opplan_actual_data/migration.sql:OpPlan",
+   "type": "table",
+   "name": "OpPlan",
+   "filePath": "prisma/migrations/20260923180000_add_opplan_actual_data/migration.sql",
+   "summary": "OpPlan 테이블에 수술 후 실제 수술 방법 값을 담는 actualData JSONB 컬럼을 추가하는 마이그레이션.",
+   "tags": [
+    "database",
+    "migration",
+    "alter-table"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/app/globals.css",
+   "type": "file",
+   "name": "globals.css",
+   "filePath": "src/app/globals.css",
+   "summary": "Tailwind CSS를 import하고 배경/전경 색상 및 폰트 CSS 변수를 정의하는 전역 스타일시트.",
+   "tags": [
+    "styles",
+    "tailwind",
+    "global"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/app/icon.tsx",
+   "type": "file",
+   "name": "icon.tsx",
+   "filePath": "src/app/icon.tsx",
+   "summary": "next/og ImageResponse로 청진기 이모지 32x32 PNG 파비콘을 동적 생성하는 Next.js App Router 아이콘 라우트.",
+   "tags": [
+    "component",
+    "favicon",
+    "nextjs",
+    "image-generation"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/app/icon.tsx:Icon",
+   "type": "function",
+   "name": "Icon",
+   "filePath": "src/app/icon.tsx",
+   "summary": "중앙 정렬된 🩺 이모지를 32x32 이미지로 렌더링하는 기본 export 아이콘 생성 함수.",
+   "tags": [
+    "component",
+    "favicon",
+    "image-generation"
+   ],
+   "complexity": "simple",
+   "lineRange": [
+    6,
+    24
+   ]
+  },
+  {
+   "id": "file:src/app/layout.tsx",
+   "type": "file",
+   "name": "layout.tsx",
+   "filePath": "src/app/layout.tsx",
+   "summary": "Geist 폰트, 메타데이터('Op Plan & 수술기록지'), 라이트 color scheme를 설정하고 전역 CSS를 적용하는 앱 루트 레이아웃.",
+   "tags": [
+    "entry-point",
+    "layout",
+    "component",
+    "nextjs"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/app/layout.tsx:RootLayout",
+   "type": "function",
+   "name": "RootLayout",
+   "filePath": "src/app/layout.tsx",
+   "summary": "lang='ko' html과 slate 배경 body로 모든 페이지 children을 감싸는 루트 레이아웃 컴포넌트.",
+   "tags": [
+    "component",
+    "layout",
+    "entry-point"
+   ],
+   "complexity": "simple",
+   "lineRange": [
+    24,
+    35
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "source": "table:prisma/migrations/20260918120000_add_user_name_style_settings/migration.sql:User",
+   "target": "table:prisma/migrations/20260918033326_init/migration.sql:User",
+   "type": "migrates",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "table:prisma/migrations/20260918140000_add_default_assistant_name/migration.sql:User",
+   "target": "table:prisma/migrations/20260918033326_init/migration.sql:User",
+   "type": "migrates",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "table:prisma/migrations/20260918160000_add_opplan_checklist/migration.sql:OpPlan",
+   "target": "table:prisma/migrations/20260918033326_init/migration.sql:OpPlan",
+   "type": "migrates",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "table:prisma/migrations/20260919090000_drop_opplan_checklist/migration.sql:OpPlan",
+   "target": "table:prisma/migrations/20260918033326_init/migration.sql:OpPlan",
+   "type": "migrates",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "table:prisma/migrations/20260919150000_add_patient_age/migration.sql:Patient",
+   "target": "table:prisma/migrations/20260918033326_init/migration.sql:Patient",
+   "type": "migrates",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "table:prisma/migrations/20260923180000_add_opplan_actual_data/migration.sql:OpPlan",
+   "target": "table:prisma/migrations/20260918033326_init/migration.sql:OpPlan",
+   "type": "migrates",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "schema:prisma/schema.prisma",
+   "target": "table:prisma/migrations/20260918033326_init/migration.sql:User",
+   "type": "migrates",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "schema:prisma/schema.prisma",
+   "target": "table:prisma/migrations/20260918033326_init/migration.sql:SurgeryType",
+   "type": "migrates",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "schema:prisma/schema.prisma",
+   "target": "table:prisma/migrations/20260918033326_init/migration.sql:Patient",
+   "type": "migrates",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "schema:prisma/schema.prisma",
+   "target": "table:prisma/migrations/20260918033326_init/migration.sql:OpPlan",
+   "type": "migrates",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "schema:prisma/schema.prisma",
+   "target": "table:prisma/migrations/20260918033326_init/migration.sql:OpRecord",
+   "type": "migrates",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "schema:prisma/schema.prisma",
+   "target": "table:prisma/migrations/20260919100000_add_surgery_preset/migration.sql:SurgeryPreset",
+   "type": "migrates",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "schema:prisma/schema.prisma",
+   "target": "file:src/lib/prisma.ts",
+   "type": "defines_schema",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "schema:prisma/schema.prisma",
+   "target": "file:prisma/seed.ts",
+   "type": "defines_schema",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:prisma7.config.ts",
+   "target": "schema:prisma/schema.prisma",
+   "type": "configures",
+   "direction": "forward",
+   "weight": 0.6
+  },
+  {
+   "source": "file:prisma7.config.ts",
+   "target": "file:prisma/seed.ts",
+   "type": "configures",
+   "direction": "forward",
+   "weight": 0.6
+  },
+  {
+   "source": "config:prisma/migrations/migration_lock.toml",
+   "target": "schema:prisma/schema.prisma",
+   "type": "related",
+   "direction": "forward",
+   "weight": 0.5
+  },
+  {
+   "source": "file:postcss.config.mjs",
+   "target": "file:src/app/globals.css",
+   "type": "configures",
+   "direction": "forward",
+   "weight": 0.6
+  },
+  {
+   "source": "file:src/app/icon.tsx",
+   "target": "function:src/app/icon.tsx:Icon",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/icon.tsx",
+   "target": "function:src/app/icon.tsx:Icon",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/layout.tsx",
+   "target": "function:src/app/layout.tsx:RootLayout",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/layout.tsx",
+   "target": "function:src/app/layout.tsx:RootLayout",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/layout.tsx",
+   "target": "file:src/app/globals.css",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  }
+ ]
+}

@@ -1,0 +1,6307 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 28,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 28,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 28,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "prisma/seed.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 61,
+      "nonEmptyLines": 54,
+      "functions": [
+        {
+          "name": "toJson",
+          "startLine": 10,
+          "endLine": 12,
+          "params": [
+            "fields"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 17,
+          "endLine": 52,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "main",
+          "callee": "prisma.surgeryType.upsert",
+          "lineNumber": 18
+        },
+        {
+          "caller": "main",
+          "callee": "toJson",
+          "lineNumber": 20
+        },
+        {
+          "caller": "main",
+          "callee": "toJson",
+          "lineNumber": 24
+        },
+        {
+          "caller": "main",
+          "callee": "prisma.surgeryType.upsert",
+          "lineNumber": 29
+        },
+        {
+          "caller": "main",
+          "callee": "toJson",
+          "lineNumber": 31
+        },
+        {
+          "caller": "main",
+          "callee": "toJson",
+          "lineNumber": 35
+        },
+        {
+          "caller": "main",
+          "callee": "prisma.surgeryType.upsert",
+          "lineNumber": 40
+        },
+        {
+          "caller": "main",
+          "callee": "toJson",
+          "lineNumber": 42
+        },
+        {
+          "caller": "main",
+          "callee": "toJson",
+          "lineNumber": 46
+        },
+        {
+          "caller": "main",
+          "callee": "console.log",
+          "lineNumber": 51
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/(app)/patients/[id]/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 128,
+      "nonEmptyLines": 119,
+      "functions": [
+        {
+          "name": "PatientDetailPage",
+          "startLine": 12,
+          "endLine": 128,
+          "params": [
+            "{\n  params,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "PatientDetailPage",
+          "line": 12,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "PatientDetailPage",
+          "callee": "getCurrentUser",
+          "lineNumber": 15
+        },
+        {
+          "caller": "PatientDetailPage",
+          "callee": "prisma.patient.findUnique",
+          "lineNumber": 22
+        },
+        {
+          "caller": "PatientDetailPage",
+          "callee": "notFound",
+          "lineNumber": 37
+        },
+        {
+          "caller": "PatientDetailPage",
+          "callee": "encodeURIComponent",
+          "lineNumber": 57
+        },
+        {
+          "caller": "PatientDetailPage",
+          "callee": "patient.opPlans.map",
+          "lineNumber": 74
+        },
+        {
+          "caller": "PatientDetailPage",
+          "callee": "parseFieldValues",
+          "lineNumber": 76
+        },
+        {
+          "caller": "PatientDetailPage",
+          "callee": "isBuiltInSurgeryCode",
+          "lineNumber": 77
+        },
+        {
+          "caller": "PatientDetailPage",
+          "callee": "buildPlanTable",
+          "lineNumber": 77
+        },
+        {
+          "caller": "PatientDetailPage",
+          "callee": "safeDateStr",
+          "lineNumber": 83
+        },
+        {
+          "caller": "PatientDetailPage",
+          "callee": "[plan.opRecord.findings, plan.opRecord.procedureDetail].filter(Boolean).join",
+          "lineNumber": 119
+        },
+        {
+          "caller": "PatientDetailPage",
+          "callee": "[plan.opRecord.findings, plan.opRecord.procedureDetail].filter",
+          "lineNumber": 119
+        }
+      ],
+      "metrics": {
+        "importCount": 8,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/(app)/patients/new/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 38,
+      "nonEmptyLines": 35,
+      "functions": [
+        {
+          "name": "NewPatientPage",
+          "startLine": 7,
+          "endLine": 38,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "NewPatientPage",
+          "line": 7,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "NewPatientPage",
+          "callee": "getCurrentUser",
+          "lineNumber": 8
+        },
+        {
+          "caller": "NewPatientPage",
+          "callee": "prisma.surgeryType.findMany",
+          "lineNumber": 10
+        },
+        {
+          "caller": "NewPatientPage",
+          "callee": "surgeryTypes.map",
+          "lineNumber": 25
+        },
+        {
+          "caller": "NewPatientPage",
+          "callee": "resolveSurgeryTypeFields",
+          "lineNumber": 29
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/(app)/plans/[id]/record/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 68,
+      "nonEmptyLines": 62,
+      "functions": [
+        {
+          "name": "NewOpRecordPage",
+          "startLine": 13,
+          "endLine": 68,
+          "params": [
+            "{\n  params,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "NewOpRecordPage",
+          "line": 13,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "NewOpRecordPage",
+          "callee": "getCurrentUser",
+          "lineNumber": 16
+        },
+        {
+          "caller": "NewOpRecordPage",
+          "callee": "prisma.opPlan.findUnique",
+          "lineNumber": 19
+        },
+        {
+          "caller": "NewOpRecordPage",
+          "callee": "notFound",
+          "lineNumber": 23
+        },
+        {
+          "caller": "NewOpRecordPage",
+          "callee": "redirect",
+          "lineNumber": 25
+        },
+        {
+          "caller": "NewOpRecordPage",
+          "callee": "resolveSurgeryTypeFields",
+          "lineNumber": 32
+        },
+        {
+          "caller": "NewOpRecordPage",
+          "callee": "parseFieldValues",
+          "lineNumber": 33
+        },
+        {
+          "caller": "NewOpRecordPage",
+          "callee": "createOpRecord.bind",
+          "lineNumber": 34
+        },
+        {
+          "caller": "NewOpRecordPage",
+          "callee": "isBuiltInSurgeryCode",
+          "lineNumber": 37
+        },
+        {
+          "caller": "NewOpRecordPage",
+          "callee": "buildProcedureName",
+          "lineNumber": 38
+        },
+        {
+          "caller": "NewOpRecordPage",
+          "callee": "generateOpNote",
+          "lineNumber": 38
+        },
+        {
+          "caller": "NewOpRecordPage",
+          "callee": "safeDateStr",
+          "lineNumber": 57
+        },
+        {
+          "caller": "NewOpRecordPage",
+          "callee": "new Date().toISOString().slice",
+          "lineNumber": 57
+        },
+        {
+          "caller": "NewOpRecordPage",
+          "callee": "new Date().toISOString",
+          "lineNumber": 57
+        }
+      ],
+      "metrics": {
+        "importCount": 9,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/(app)/records/[id]/edit/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 60,
+      "nonEmptyLines": 55,
+      "functions": [
+        {
+          "name": "EditOpRecordPage",
+          "startLine": 13,
+          "endLine": 60,
+          "params": [
+            "{\n  params,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "EditOpRecordPage",
+          "line": 13,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "EditOpRecordPage",
+          "callee": "getCurrentUser",
+          "lineNumber": 16
+        },
+        {
+          "caller": "EditOpRecordPage",
+          "callee": "prisma.opRecord.findUnique",
+          "lineNumber": 19
+        },
+        {
+          "caller": "EditOpRecordPage",
+          "callee": "notFound",
+          "lineNumber": 23
+        },
+        {
+          "caller": "EditOpRecordPage",
+          "callee": "resolveSurgeryTypeFields",
+          "lineNumber": 29
+        },
+        {
+          "caller": "EditOpRecordPage",
+          "callee": "parseFieldValues",
+          "lineNumber": 30
+        },
+        {
+          "caller": "EditOpRecordPage",
+          "callee": "updateOpRecord.bind",
+          "lineNumber": 31
+        },
+        {
+          "caller": "EditOpRecordPage",
+          "callee": "safeDateStr",
+          "lineNumber": 49
+        },
+        {
+          "caller": "EditOpRecordPage",
+          "callee": "new Date().toISOString().slice",
+          "lineNumber": 49
+        },
+        {
+          "caller": "EditOpRecordPage",
+          "callee": "new Date().toISOString",
+          "lineNumber": 49
+        }
+      ],
+      "metrics": {
+        "importCount": 9,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/(app)/records/record-form.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 346,
+      "nonEmptyLines": 326,
+      "functions": [
+        {
+          "name": "RecordForm",
+          "startLine": 56,
+          "endLine": 346,
+          "params": [
+            "{\n  action,\n  surgeryTypeCode,\n  fields,\n  fieldValues,\n  defaultValues,\n  nameStyle,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "RecordForm",
+          "line": 56,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "RecordForm",
+          "callee": "useActionState",
+          "lineNumber": 71
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "useRef",
+          "lineNumber": 72
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "useState",
+          "lineNumber": 73
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "useState",
+          "lineNumber": 78
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "useState",
+          "lineNumber": 79
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "ANATOMIC_RISK_PRESENT_KEYS.some",
+          "lineNumber": 80
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "useState",
+          "lineNumber": 83
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "useState",
+          "lineNumber": 84
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "POLYP_FIELD_KEYS.some",
+          "lineNumber": 85
+        },
+        {
+          "caller": "setFindingGroupOpen",
+          "callee": "setOpen",
+          "lineNumber": 89
+        },
+        {
+          "caller": "setFindingGroupOpen",
+          "callee": "setLiveFieldValues",
+          "lineNumber": 91
+        },
+        {
+          "caller": "setFindingGroupOpen",
+          "callee": "form?.elements.namedItem",
+          "lineNumber": 98
+        },
+        {
+          "caller": "toggleLiveField",
+          "callee": "formRef.current?.elements.namedItem",
+          "lineNumber": 107
+        },
+        {
+          "caller": "toggleLiveField",
+          "callee": "setLiveFieldValues",
+          "lineNumber": 110
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "useState",
+          "lineNumber": 116
+        },
+        {
+          "caller": "toggleRevisionFlag",
+          "callee": "formRef.current?.elements.namedItem",
+          "lineNumber": 123
+        },
+        {
+          "caller": "toggleRevisionFlag",
+          "callee": "setRevisionFlags",
+          "lineNumber": 126
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "useState",
+          "lineNumber": 130
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "isBuiltInSurgeryCode",
+          "lineNumber": 130
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "getAnatomyVisibility",
+          "lineNumber": 132
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "fields.filter",
+          "lineNumber": 133
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "isNasalFindingKey",
+          "lineNumber": 133
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "fields.filter",
+          "lineNumber": 134
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "isNasalFindingKey",
+          "lineNumber": 134
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "toggleRevisionFlag",
+          "lineNumber": 162
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "toggleRevisionFlag",
+          "lineNumber": 174
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "toggleRevisionFlag",
+          "lineNumber": 183
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "[defaultValues.findings, defaultValues.procedureDetail].filter(Boolean).join",
+          "lineNumber": 222
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "[defaultValues.findings, defaultValues.procedureDetail].filter",
+          "lineNumber": 222
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "setShowDetails",
+          "lineNumber": 230
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "setStep",
+          "lineNumber": 242
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "stepButtonClass",
+          "lineNumber": 243
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "setStep",
+          "lineNumber": 249
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "stepButtonClass",
+          "lineNumber": 250
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "nasalFields.filter",
+          "lineNumber": 261
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "SEPTUM_DETAIL_FIELD_KEYS.includes",
+          "lineNumber": 261
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "nasalFields.filter",
+          "lineNumber": 269
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "UNCINATE_FIELD_KEYS.includes",
+          "lineNumber": 269
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "setFindingGroupOpen",
+          "lineNumber": 276
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "setFindingGroupOpen",
+          "lineNumber": 277
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "setFindingGroupOpen",
+          "lineNumber": 278
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "getSeptumCoveredKeys",
+          "lineNumber": 291
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "fields.filter",
+          "lineNumber": 304
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "fields.filter",
+          "lineNumber": 307
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "fields.some",
+          "lineNumber": 310
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "POST_OP_FINISH_KEYS.includes",
+          "lineNumber": 310
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "fields.filter",
+          "lineNumber": 314
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "POST_OP_FINISH_KEYS.includes",
+          "lineNumber": 314
+        },
+        {
+          "caller": "RecordForm",
+          "callee": "getSinusCoveredKeys",
+          "lineNumber": 323
+        }
+      ],
+      "metrics": {
+        "importCount": 14,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/actions/op-records.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 127,
+      "nonEmptyLines": 111,
+      "functions": [
+        {
+          "name": "parseRecordFormData",
+          "startLine": 25,
+          "endLine": 34,
+          "params": [
+            "formData"
+          ]
+        },
+        {
+          "name": "createOpRecord",
+          "startLine": 36,
+          "endLine": 82,
+          "params": [
+            "planId",
+            "_prevState",
+            "formData"
+          ]
+        },
+        {
+          "name": "updateOpRecord",
+          "startLine": 84,
+          "endLine": 127,
+          "params": [
+            "recordId",
+            "_prevState",
+            "formData"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "createOpRecord",
+          "line": 36,
+          "isDefault": false
+        },
+        {
+          "name": "updateOpRecord",
+          "line": 84,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "parseRecordFormData",
+          "callee": "OpRecordSchema.safeParse",
+          "lineNumber": 26
+        },
+        {
+          "caller": "parseRecordFormData",
+          "callee": "formData.get",
+          "lineNumber": 27
+        },
+        {
+          "caller": "parseRecordFormData",
+          "callee": "formData.get",
+          "lineNumber": 28
+        },
+        {
+          "caller": "parseRecordFormData",
+          "callee": "formData.get",
+          "lineNumber": 29
+        },
+        {
+          "caller": "parseRecordFormData",
+          "callee": "formData.get",
+          "lineNumber": 30
+        },
+        {
+          "caller": "parseRecordFormData",
+          "callee": "formData.get",
+          "lineNumber": 31
+        },
+        {
+          "caller": "parseRecordFormData",
+          "callee": "formData.get",
+          "lineNumber": 32
+        },
+        {
+          "caller": "createOpRecord",
+          "callee": "verifySession",
+          "lineNumber": 41
+        },
+        {
+          "caller": "createOpRecord",
+          "callee": "prisma.opPlan.findUnique",
+          "lineNumber": 43
+        },
+        {
+          "caller": "createOpRecord",
+          "callee": "redirect",
+          "lineNumber": 51
+        },
+        {
+          "caller": "createOpRecord",
+          "callee": "parseRecordFormData",
+          "lineNumber": 54
+        },
+        {
+          "caller": "createOpRecord",
+          "callee": "z.flattenError",
+          "lineNumber": 56
+        },
+        {
+          "caller": "createOpRecord",
+          "callee": "resolveSurgeryTypeFields",
+          "lineNumber": 60
+        },
+        {
+          "caller": "createOpRecord",
+          "callee": "fieldValuesFromFormData",
+          "lineNumber": 61
+        },
+        {
+          "caller": "createOpRecord",
+          "callee": "prisma.opRecord.create",
+          "lineNumber": 63
+        },
+        {
+          "caller": "createOpRecord",
+          "callee": "revalidatePath",
+          "lineNumber": 77
+        },
+        {
+          "caller": "createOpRecord",
+          "callee": "revalidatePath",
+          "lineNumber": 78
+        },
+        {
+          "caller": "createOpRecord",
+          "callee": "redirect",
+          "lineNumber": 81
+        },
+        {
+          "caller": "updateOpRecord",
+          "callee": "verifySession",
+          "lineNumber": 89
+        },
+        {
+          "caller": "updateOpRecord",
+          "callee": "prisma.opRecord.findUnique",
+          "lineNumber": 91
+        },
+        {
+          "caller": "updateOpRecord",
+          "callee": "parseRecordFormData",
+          "lineNumber": 99
+        },
+        {
+          "caller": "updateOpRecord",
+          "callee": "z.flattenError",
+          "lineNumber": 101
+        },
+        {
+          "caller": "updateOpRecord",
+          "callee": "resolveSurgeryTypeFields",
+          "lineNumber": 105
+        },
+        {
+          "caller": "updateOpRecord",
+          "callee": "fieldValuesFromFormData",
+          "lineNumber": 106
+        },
+        {
+          "caller": "updateOpRecord",
+          "callee": "prisma.opRecord.update",
+          "lineNumber": 108
+        },
+        {
+          "caller": "updateOpRecord",
+          "callee": "revalidatePath",
+          "lineNumber": 121
+        },
+        {
+          "caller": "updateOpRecord",
+          "callee": "revalidatePath",
+          "lineNumber": 122
+        },
+        {
+          "caller": "updateOpRecord",
+          "callee": "revalidatePath",
+          "lineNumber": 123
+        },
+        {
+          "caller": "updateOpRecord",
+          "callee": "redirect",
+          "lineNumber": 126
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 2,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/actions/patient-plan.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 124,
+      "nonEmptyLines": 111,
+      "functions": [
+        {
+          "name": "autoPatientName",
+          "startLine": 27,
+          "endLine": 33,
+          "params": []
+        },
+        {
+          "name": "parseAge",
+          "startLine": 40,
+          "endLine": 44,
+          "params": [
+            "age"
+          ]
+        },
+        {
+          "name": "createPatientWithPlan",
+          "startLine": 49,
+          "endLine": 124,
+          "params": [
+            "_prevState",
+            "formData"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "createPatientWithPlan",
+          "line": 49,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "pad",
+          "callee": "String(n).padStart",
+          "lineNumber": 29
+        },
+        {
+          "caller": "pad",
+          "callee": "String",
+          "lineNumber": 29
+        },
+        {
+          "caller": "autoPatientName",
+          "callee": "now.getFullYear",
+          "lineNumber": 32
+        },
+        {
+          "caller": "autoPatientName",
+          "callee": "pad",
+          "lineNumber": 32
+        },
+        {
+          "caller": "autoPatientName",
+          "callee": "now.getMonth",
+          "lineNumber": 32
+        },
+        {
+          "caller": "autoPatientName",
+          "callee": "pad",
+          "lineNumber": 32
+        },
+        {
+          "caller": "autoPatientName",
+          "callee": "now.getDate",
+          "lineNumber": 32
+        },
+        {
+          "caller": "autoPatientName",
+          "callee": "pad",
+          "lineNumber": 32
+        },
+        {
+          "caller": "autoPatientName",
+          "callee": "now.getHours",
+          "lineNumber": 32
+        },
+        {
+          "caller": "autoPatientName",
+          "callee": "pad",
+          "lineNumber": 32
+        },
+        {
+          "caller": "autoPatientName",
+          "callee": "now.getMinutes",
+          "lineNumber": 32
+        },
+        {
+          "caller": "parseAge",
+          "callee": "Number",
+          "lineNumber": 42
+        },
+        {
+          "caller": "parseAge",
+          "callee": "Number.isInteger",
+          "lineNumber": 43
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "verifySession",
+          "lineNumber": 53
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "PatientPlanSchema.safeParse",
+          "lineNumber": 55
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "formData.get",
+          "lineNumber": 56
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "formData.get",
+          "lineNumber": 57
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "formData.get",
+          "lineNumber": 58
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "formData.get",
+          "lineNumber": 59
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "formData.get",
+          "lineNumber": 60
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "formData.get",
+          "lineNumber": 61
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "formData.get",
+          "lineNumber": 62
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "formData.get",
+          "lineNumber": 63
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "formData.get",
+          "lineNumber": 64
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "formData.get",
+          "lineNumber": 65
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "formData.get",
+          "lineNumber": 66
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "z.flattenError",
+          "lineNumber": 69
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "prisma.surgeryType.findUnique",
+          "lineNumber": 74
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "prisma.patient.findUnique",
+          "lineNumber": 82
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "prisma.patient.create",
+          "lineNumber": 86
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "autoPatientName",
+          "lineNumber": 88
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "parseAge",
+          "lineNumber": 91
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "revalidatePath",
+          "lineNumber": 100
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "redirect",
+          "lineNumber": 101
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "resolveSurgeryTypeFields",
+          "lineNumber": 104
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "fieldValuesFromFormData",
+          "lineNumber": 105
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "prisma.opPlan.create",
+          "lineNumber": 107
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "revalidatePath",
+          "lineNumber": 119
+        },
+        {
+          "caller": "createPatientWithPlan",
+          "callee": "redirect",
+          "lineNumber": 123
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/actions/presets.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 29,
+      "nonEmptyLines": 26,
+      "functions": [
+        {
+          "name": "createSurgeryPreset",
+          "startLine": 7,
+          "endLine": 22,
+          "params": [
+            "surgeryTypeId",
+            "name",
+            "values"
+          ]
+        },
+        {
+          "name": "deleteSurgeryPreset",
+          "startLine": 24,
+          "endLine": 29,
+          "params": [
+            "id"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "createSurgeryPreset",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "deleteSurgeryPreset",
+          "line": 24,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "createSurgeryPreset",
+          "callee": "verifySession",
+          "lineNumber": 12
+        },
+        {
+          "caller": "createSurgeryPreset",
+          "callee": "prisma.surgeryPreset.create",
+          "lineNumber": 13
+        },
+        {
+          "caller": "deleteSurgeryPreset",
+          "callee": "verifySession",
+          "lineNumber": 25
+        },
+        {
+          "caller": "deleteSurgeryPreset",
+          "callee": "prisma.surgeryPreset.deleteMany",
+          "lineNumber": 26
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/anatomy-diagram.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 331,
+      "nonEmptyLines": 313,
+      "functions": [
+        {
+          "name": "getAnatomyVisibility",
+          "startLine": 26,
+          "endLine": 36,
+          "params": [
+            "surgeryTypeCode"
+          ]
+        },
+        {
+          "name": "getSeptumCoveredKeys",
+          "startLine": 43,
+          "endLine": 45,
+          "params": [
+            "surgeryTypeCode"
+          ]
+        },
+        {
+          "name": "getSinusCoveredKeys",
+          "startLine": 51,
+          "endLine": 63,
+          "params": [
+            "surgeryTypeCode"
+          ]
+        },
+        {
+          "name": "getAnatomyCoveredKeys",
+          "startLine": 65,
+          "endLine": 67,
+          "params": [
+            "surgeryTypeCode"
+          ]
+        },
+        {
+          "name": "findForm",
+          "startLine": 69,
+          "endLine": 71,
+          "params": [
+            "el"
+          ]
+        },
+        {
+          "name": "getInput",
+          "startLine": 73,
+          "endLine": 77,
+          "params": [
+            "form",
+            "name"
+          ]
+        },
+        {
+          "name": "SeptumDiagram",
+          "startLine": 79,
+          "endLine": 165,
+          "params": [
+            "{\n  values,\n  onChange,\n}"
+          ]
+        },
+        {
+          "name": "SinusDiagram",
+          "startLine": 167,
+          "endLine": 331,
+          "params": [
+            "{\n  values,\n  onChange,\n  hideRevisionToggle,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "getAnatomyVisibility",
+          "line": 26,
+          "isDefault": false
+        },
+        {
+          "name": "getSeptumCoveredKeys",
+          "line": 43,
+          "isDefault": false
+        },
+        {
+          "name": "getSinusCoveredKeys",
+          "line": 51,
+          "isDefault": false
+        },
+        {
+          "name": "getAnatomyCoveredKeys",
+          "line": 65,
+          "isDefault": false
+        },
+        {
+          "name": "SeptumDiagram",
+          "line": 79,
+          "isDefault": false
+        },
+        {
+          "name": "SinusDiagram",
+          "line": 167,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "getSeptumCoveredKeys",
+          "callee": "getAnatomyVisibility",
+          "lineNumber": 44
+        },
+        {
+          "caller": "getSinusCoveredKeys",
+          "callee": "getAnatomyVisibility",
+          "lineNumber": 52
+        },
+        {
+          "caller": "getSinusCoveredKeys",
+          "callee": "keys.push",
+          "lineNumber": 54
+        },
+        {
+          "caller": "getSinusCoveredKeys",
+          "callee": "keys.push",
+          "lineNumber": 56
+        },
+        {
+          "caller": "getSinusCoveredKeys",
+          "callee": "keys.push",
+          "lineNumber": 58
+        },
+        {
+          "caller": "getSinusCoveredKeys",
+          "callee": "keys.push",
+          "lineNumber": 59
+        },
+        {
+          "caller": "getAnatomyCoveredKeys",
+          "callee": "getSeptumCoveredKeys",
+          "lineNumber": 66
+        },
+        {
+          "caller": "getAnatomyCoveredKeys",
+          "callee": "getSinusCoveredKeys",
+          "lineNumber": 66
+        },
+        {
+          "caller": "findForm",
+          "callee": "el?.closest",
+          "lineNumber": 70
+        },
+        {
+          "caller": "getInput",
+          "callee": "form.elements.namedItem",
+          "lineNumber": 75
+        },
+        {
+          "caller": "SeptumDiagram",
+          "callee": "useRef",
+          "lineNumber": 86
+        },
+        {
+          "caller": "SeptumDiagram",
+          "callee": "useState",
+          "lineNumber": 88
+        },
+        {
+          "caller": "pick",
+          "callee": "findForm",
+          "lineNumber": 97
+        },
+        {
+          "caller": "pick",
+          "callee": "getInput",
+          "lineNumber": 98
+        },
+        {
+          "caller": "pick",
+          "callee": "setSide",
+          "lineNumber": 100
+        },
+        {
+          "caller": "pick",
+          "callee": "onChange",
+          "lineNumber": 101
+        },
+        {
+          "caller": "zone",
+          "callee": "pick",
+          "lineNumber": 108
+        },
+        {
+          "caller": "SeptumDiagram",
+          "callee": "zone",
+          "lineNumber": 142
+        },
+        {
+          "caller": "SeptumDiagram",
+          "callee": "zone",
+          "lineNumber": 150
+        },
+        {
+          "caller": "SeptumDiagram",
+          "callee": "pick",
+          "lineNumber": 154
+        },
+        {
+          "caller": "SinusDiagram",
+          "callee": "useRef",
+          "lineNumber": 179
+        },
+        {
+          "caller": "SinusDiagram",
+          "callee": "useState",
+          "lineNumber": 180
+        },
+        {
+          "caller": "SinusDiagram",
+          "callee": "useState",
+          "lineNumber": 181
+        },
+        {
+          "caller": "SinusDiagram",
+          "callee": "useState",
+          "lineNumber": 182
+        },
+        {
+          "caller": "toggle",
+          "callee": "findForm",
+          "lineNumber": 199
+        },
+        {
+          "caller": "toggle",
+          "callee": "getInput",
+          "lineNumber": 200
+        },
+        {
+          "caller": "toggle",
+          "callee": "setChecked",
+          "lineNumber": 203
+        },
+        {
+          "caller": "toggle",
+          "callee": "onChange",
+          "lineNumber": 204
+        },
+        {
+          "caller": "toggleRevision",
+          "callee": "findForm",
+          "lineNumber": 214
+        },
+        {
+          "caller": "toggleRevision",
+          "callee": "getInput",
+          "lineNumber": 215
+        },
+        {
+          "caller": "toggleRevision",
+          "callee": "setRevisionRight",
+          "lineNumber": 218
+        },
+        {
+          "caller": "toggleRevision",
+          "callee": "setRevisionLeft",
+          "lineNumber": 219
+        },
+        {
+          "caller": "toggleRevision",
+          "callee": "getInput",
+          "lineNumber": 222
+        },
+        {
+          "caller": "toggleRevision",
+          "callee": "setChecked",
+          "lineNumber": 224
+        },
+        {
+          "caller": "toggleRevision",
+          "callee": "onChange",
+          "lineNumber": 226
+        },
+        {
+          "caller": "copyToOtherSide",
+          "callee": "findForm",
+          "lineNumber": 233
+        },
+        {
+          "caller": "copyToOtherSide",
+          "callee": "setChecked",
+          "lineNumber": 234
+        },
+        {
+          "caller": "copyToOtherSide",
+          "callee": "Object.keys",
+          "lineNumber": 236
+        },
+        {
+          "caller": "copyToOtherSide",
+          "callee": "key.startsWith",
+          "lineNumber": 237
+        },
+        {
+          "caller": "copyToOtherSide",
+          "callee": "key.slice",
+          "lineNumber": 238
+        },
+        {
+          "caller": "copyToOtherSide",
+          "callee": "getInput",
+          "lineNumber": 242
+        },
+        {
+          "caller": "copyToOtherSide",
+          "callee": "onChange",
+          "lineNumber": 247
+        },
+        {
+          "caller": "column",
+          "callee": "toggle",
+          "lineNumber": 257
+        },
+        {
+          "caller": "column",
+          "callee": "SINUS_STEPS.map",
+          "lineNumber": 267
+        },
+        {
+          "caller": "column",
+          "callee": "toggle",
+          "lineNumber": 273
+        },
+        {
+          "caller": "SinusDiagram",
+          "callee": "toggleRevision",
+          "lineNumber": 301
+        },
+        {
+          "caller": "SinusDiagram",
+          "callee": "toggleRevision",
+          "lineNumber": 310
+        },
+        {
+          "caller": "SinusDiagram",
+          "callee": "copyToOtherSide",
+          "lineNumber": 318
+        },
+        {
+          "caller": "SinusDiagram",
+          "callee": "copyToOtherSide",
+          "lineNumber": 321
+        },
+        {
+          "caller": "SinusDiagram",
+          "callee": "column",
+          "lineNumber": 326
+        },
+        {
+          "caller": "SinusDiagram",
+          "callee": "column",
+          "lineNumber": 327
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 6,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/collapsible-finding-section.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 24,
+      "nonEmptyLines": 23,
+      "functions": [
+        {
+          "name": "CollapsibleFindingSection",
+          "startLine": 8,
+          "endLine": 24,
+          "params": [
+            "{\n  doneKey,\n  label,\n  children,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "CollapsibleFindingSection",
+          "line": 8,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/ess-findings-picker.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 210,
+      "nonEmptyLines": 194,
+      "functions": [
+        {
+          "name": "findForm",
+          "startLine": 68,
+          "endLine": 70,
+          "params": [
+            "el"
+          ]
+        },
+        {
+          "name": "getInput",
+          "startLine": 72,
+          "endLine": 76,
+          "params": [
+            "form",
+            "name"
+          ]
+        },
+        {
+          "name": "PresentSidedGroup",
+          "startLine": 81,
+          "endLine": 168,
+          "params": [
+            "{\n  title,\n  findings,\n  values,\n  onChange,\n}"
+          ]
+        },
+        {
+          "name": "AnatomicRiskFindingsPicker",
+          "startLine": 170,
+          "endLine": 185,
+          "params": [
+            "{\n  values,\n  onChange,\n}"
+          ]
+        },
+        {
+          "name": "SinusitisFindingsPicker",
+          "startLine": 190,
+          "endLine": 210,
+          "params": [
+            "{\n  values,\n  interactive = true,\n  onToggle,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SINUSITIS_FIELD_KEYS",
+          "line": 56,
+          "isDefault": false
+        },
+        {
+          "name": "ESS_FINDINGS_FIELD_KEYS",
+          "line": 61,
+          "isDefault": false
+        },
+        {
+          "name": "ANATOMIC_RISK_PRESENT_KEYS",
+          "line": 65,
+          "isDefault": false
+        },
+        {
+          "name": "SINUSITIS_PRESENT_KEYS",
+          "line": 66,
+          "isDefault": false
+        },
+        {
+          "name": "AnatomicRiskFindingsPicker",
+          "line": 170,
+          "isDefault": false
+        },
+        {
+          "name": "SinusitisFindingsPicker",
+          "line": 190,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "findForm",
+          "callee": "el?.closest",
+          "lineNumber": 69
+        },
+        {
+          "caller": "getInput",
+          "callee": "form.elements.namedItem",
+          "lineNumber": 74
+        },
+        {
+          "caller": "PresentSidedGroup",
+          "callee": "useRef",
+          "lineNumber": 92
+        },
+        {
+          "caller": "PresentSidedGroup",
+          "callee": "useState",
+          "lineNumber": 93
+        },
+        {
+          "caller": "togglePresent",
+          "callee": "findForm",
+          "lineNumber": 111
+        },
+        {
+          "caller": "togglePresent",
+          "callee": "getInput",
+          "lineNumber": 112
+        },
+        {
+          "caller": "togglePresent",
+          "callee": "setState",
+          "lineNumber": 115
+        },
+        {
+          "caller": "togglePresent",
+          "callee": "onChange",
+          "lineNumber": 116
+        },
+        {
+          "caller": "pickSide",
+          "callee": "findForm",
+          "lineNumber": 120
+        },
+        {
+          "caller": "pickSide",
+          "callee": "getInput",
+          "lineNumber": 121
+        },
+        {
+          "caller": "pickSide",
+          "callee": "setState",
+          "lineNumber": 123
+        },
+        {
+          "caller": "pickSide",
+          "callee": "onChange",
+          "lineNumber": 124
+        },
+        {
+          "caller": "PresentSidedGroup",
+          "callee": "findings.map",
+          "lineNumber": 131
+        },
+        {
+          "caller": "PresentSidedGroup",
+          "callee": "togglePresent",
+          "lineNumber": 139
+        },
+        {
+          "caller": "PresentSidedGroup",
+          "callee": "SIDE_OPTIONS.map",
+          "lineNumber": 146
+        },
+        {
+          "caller": "PresentSidedGroup",
+          "callee": "pickSide",
+          "lineNumber": 150
+        },
+        {
+          "caller": "SinusitisFindingsPicker",
+          "callee": "SINUSITIS_TYPES.map",
+          "lineNumber": 199
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 6,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/nasal-findings-overview.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 58,
+      "nonEmptyLines": 57,
+      "functions": [
+        {
+          "name": "NasalFindingsOverview",
+          "startLine": 9,
+          "endLine": 58,
+          "params": [
+            "{\n  showAnatomic,\n  showSinusitis,\n  showPolyp,\n  onToggleAnatomic,\n  onToggleSinusitis,\n  onTogglePolyp,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "NasalFindingsOverview",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "NasalFindingsOverview",
+          "callee": "onToggleSinusitis",
+          "lineNumber": 32
+        },
+        {
+          "caller": "NasalFindingsOverview",
+          "callee": "onTogglePolyp",
+          "lineNumber": 41
+        },
+        {
+          "caller": "NasalFindingsOverview",
+          "callee": "onToggleAnatomic",
+          "lineNumber": 50
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/op-note-generate-button.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 64,
+      "nonEmptyLines": 56,
+      "functions": [
+        {
+          "name": "setFieldValue",
+          "startLine": 9,
+          "endLine": 14,
+          "params": [
+            "form",
+            "name",
+            "value"
+          ]
+        },
+        {
+          "name": "OpNoteGenerateButton",
+          "startLine": 16,
+          "endLine": 64,
+          "params": [
+            "{\n  fields,\n  surgeryTypeCode,\n  nameStyle,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "OpNoteGenerateButton",
+          "line": 16,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "setFieldValue",
+          "callee": "form.elements.namedItem",
+          "lineNumber": 10
+        },
+        {
+          "caller": "OpNoteGenerateButton",
+          "callee": "useState",
+          "lineNumber": 25
+        },
+        {
+          "caller": "OpNoteGenerateButton",
+          "callee": "isBuiltInSurgeryCode",
+          "lineNumber": 27
+        },
+        {
+          "caller": "handleClick",
+          "callee": "e.currentTarget.closest",
+          "lineNumber": 31
+        },
+        {
+          "caller": "handleClick",
+          "callee": "fieldValuesFromFormData",
+          "lineNumber": 35
+        },
+        {
+          "caller": "handleClick",
+          "callee": "formData.get",
+          "lineNumber": 36
+        },
+        {
+          "caller": "handleClick",
+          "callee": "generateOpNote",
+          "lineNumber": 37
+        },
+        {
+          "caller": "handleClick",
+          "callee": "setFieldValue",
+          "lineNumber": 43
+        },
+        {
+          "caller": "handleClick",
+          "callee": "buildProcedureName",
+          "lineNumber": 43
+        },
+        {
+          "caller": "handleClick",
+          "callee": "setFieldValue",
+          "lineNumber": 45
+        },
+        {
+          "caller": "handleClick",
+          "callee": "[result.findings, result.procedureDetail].filter(Boolean).join",
+          "lineNumber": 48
+        },
+        {
+          "caller": "handleClick",
+          "callee": "[result.findings, result.procedureDetail].filter",
+          "lineNumber": 48
+        },
+        {
+          "caller": "handleClick",
+          "callee": "setJustGenerated",
+          "lineNumber": 51
+        },
+        {
+          "caller": "handleClick",
+          "callee": "setTimeout",
+          "lineNumber": 52
+        },
+        {
+          "caller": "handleClick",
+          "callee": "setJustGenerated",
+          "lineNumber": 52
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/plan-table.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 200,
+      "nonEmptyLines": 190,
+      "functions": [
+        {
+          "name": "SideMatrixTable",
+          "startLine": 8,
+          "endLine": 86,
+          "params": [
+            "{\n  title,\n  rows,\n  textSize = \"text-sm\",\n  cellPad = \"px-2 py-1.5\",\n  interactive,\n  onToggle,\n  onCopySide,\n}"
+          ]
+        },
+        {
+          "name": "PlanTableView",
+          "startLine": 88,
+          "endLine": 200,
+          "params": [
+            "{\n  table,\n  size = \"normal\",\n  interactive = false,\n  onToggle,\n  onCopySide,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SideMatrixTable",
+          "line": 8,
+          "isDefault": false
+        },
+        {
+          "name": "PlanTableView",
+          "line": 88,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SideMatrixTable",
+          "callee": "onCopySide",
+          "lineNumber": 29
+        },
+        {
+          "caller": "SideMatrixTable",
+          "callee": "onCopySide",
+          "lineNumber": 32
+        },
+        {
+          "caller": "SideMatrixTable",
+          "callee": "rows.map",
+          "lineNumber": 46
+        },
+        {
+          "caller": "SideMatrixTable",
+          "callee": "onToggle",
+          "lineNumber": 54
+        },
+        {
+          "caller": "SideMatrixTable",
+          "callee": "onToggle",
+          "lineNumber": 65
+        },
+        {
+          "caller": "PlanTableView",
+          "callee": "useState",
+          "lineNumber": 113
+        },
+        {
+          "caller": "PlanTableView",
+          "callee": "table.turbMatrix?.rows.some",
+          "lineNumber": 114
+        },
+        {
+          "caller": "PlanTableView",
+          "callee": "table.keyValueRows.map",
+          "lineNumber": 131
+        },
+        {
+          "caller": "PlanTableView",
+          "callee": "onToggle",
+          "lineNumber": 142
+        },
+        {
+          "caller": "PlanTableView",
+          "callee": "setTurbExpanded",
+          "lineNumber": 180
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/polyp-picker.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 47,
+      "nonEmptyLines": 43,
+      "functions": [
+        {
+          "name": "PolypPicker",
+          "startLine": 27,
+          "endLine": 47,
+          "params": [
+            "{\n  values,\n  interactive = true,\n  onToggle,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "POLYP_FIELD_KEYS",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "PolypPicker",
+          "line": 27,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "PolypPicker",
+          "callee": "POLYP_SITE_FIELDS.map",
+          "lineNumber": 36
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/preset-bar.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 92,
+      "nonEmptyLines": 86,
+      "functions": [
+        {
+          "name": "PresetBar",
+          "startLine": 16,
+          "endLine": 92,
+          "params": [
+            "{\n  surgeryTypeId,\n  fields,\n  initialPresets,\n  formRef,\n  onApply,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "PresetBar",
+          "line": 16,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "PresetBar",
+          "callee": "useState",
+          "lineNumber": 29
+        },
+        {
+          "caller": "PresetBar",
+          "callee": "useState",
+          "lineNumber": 30
+        },
+        {
+          "caller": "handleSave",
+          "callee": "window.prompt",
+          "lineNumber": 34
+        },
+        {
+          "caller": "handleSave",
+          "callee": "name.trim",
+          "lineNumber": 35
+        },
+        {
+          "caller": "handleSave",
+          "callee": "fieldValuesFromFormData",
+          "lineNumber": 36
+        },
+        {
+          "caller": "handleSave",
+          "callee": "setSaving",
+          "lineNumber": 37
+        },
+        {
+          "caller": "handleSave",
+          "callee": "createSurgeryPreset",
+          "lineNumber": 39
+        },
+        {
+          "caller": "handleSave",
+          "callee": "name.trim",
+          "lineNumber": 39
+        },
+        {
+          "caller": "handleSave",
+          "callee": "setPresets",
+          "lineNumber": 40
+        },
+        {
+          "caller": "handleSave",
+          "callee": "setSaving",
+          "lineNumber": 42
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "setPresets",
+          "lineNumber": 47
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "p.filter",
+          "lineNumber": 47
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "deleteSurgeryPreset",
+          "lineNumber": 48
+        },
+        {
+          "caller": "PresetBar",
+          "callee": "presets.map",
+          "lineNumber": 70
+        },
+        {
+          "caller": "PresetBar",
+          "callee": "onApply",
+          "lineNumber": 75
+        },
+        {
+          "caller": "PresetBar",
+          "callee": "handleDelete",
+          "lineNumber": 80
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/surgery-field-inputs.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 198,
+      "nonEmptyLines": 188,
+      "functions": [
+        {
+          "name": "multiselectValues",
+          "startLine": 3,
+          "endLine": 9,
+          "params": [
+            "value",
+            "field"
+          ]
+        },
+        {
+          "name": "HiddenFieldInput",
+          "startLine": 11,
+          "endLine": 73,
+          "params": [
+            "{\n  field,\n  value,\n}"
+          ]
+        },
+        {
+          "name": "SurgeryFieldInputs",
+          "startLine": 75,
+          "endLine": 198,
+          "params": [
+            "{\n  fields,\n  values,\n  excludeKeys,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SurgeryFieldInputs",
+          "line": 75,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "multiselectValues",
+          "callee": "raw\n    .split(\",\")\n    .map((s) => s.trim())\n    .filter",
+          "lineNumber": 5
+        },
+        {
+          "caller": "multiselectValues",
+          "callee": "raw\n    .split(\",\")\n    .map",
+          "lineNumber": 5
+        },
+        {
+          "caller": "multiselectValues",
+          "callee": "raw\n    .split",
+          "lineNumber": 5
+        },
+        {
+          "caller": "multiselectValues",
+          "callee": "s.trim",
+          "lineNumber": 7
+        },
+        {
+          "caller": "HiddenFieldInput",
+          "callee": "multiselectValues",
+          "lineNumber": 32
+        },
+        {
+          "caller": "HiddenFieldInput",
+          "callee": "(field.options ?? []).map",
+          "lineNumber": 35
+        },
+        {
+          "caller": "HiddenFieldInput",
+          "callee": "selected.includes",
+          "lineNumber": 41
+        },
+        {
+          "caller": "HiddenFieldInput",
+          "callee": "(field.options ?? []).map",
+          "lineNumber": 60
+        },
+        {
+          "caller": "SurgeryFieldInputs",
+          "callee": "fields.filter",
+          "lineNumber": 85
+        },
+        {
+          "caller": "SurgeryFieldInputs",
+          "callee": "excludeKeys.includes",
+          "lineNumber": 85
+        },
+        {
+          "caller": "SurgeryFieldInputs",
+          "callee": "fields.filter",
+          "lineNumber": 88
+        },
+        {
+          "caller": "SurgeryFieldInputs",
+          "callee": "excludeKeys.includes",
+          "lineNumber": 88
+        },
+        {
+          "caller": "SurgeryFieldInputs",
+          "callee": "hiddenFields.map",
+          "lineNumber": 93
+        },
+        {
+          "caller": "SurgeryFieldInputs",
+          "callee": "visibleFields.map",
+          "lineNumber": 99
+        },
+        {
+          "caller": "SurgeryFieldInputs",
+          "callee": "(field.options ?? []).map",
+          "lineNumber": 129
+        },
+        {
+          "caller": "SurgeryFieldInputs",
+          "callee": "multiselectValues",
+          "lineNumber": 140
+        },
+        {
+          "caller": "SurgeryFieldInputs",
+          "callee": "(field.options ?? []).map",
+          "lineNumber": 147
+        },
+        {
+          "caller": "SurgeryFieldInputs",
+          "callee": "selected.includes",
+          "lineNumber": 153
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/surgery-planner.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 849,
+      "nonEmptyLines": 813,
+      "functions": [
+        {
+          "name": "buildTexts",
+          "startLine": 88,
+          "endLine": 116,
+          "params": [
+            "code",
+            "values",
+            "anesthesiaType",
+            "nameStyle",
+            "recordMeta"
+          ]
+        },
+        {
+          "name": "proceduralFrozenOverrides",
+          "startLine": 122,
+          "endLine": 134,
+          "params": [
+            "fields",
+            "frozenPlanValues"
+          ]
+        },
+        {
+          "name": "buildTextsFrozenAware",
+          "startLine": 136,
+          "endLine": 151,
+          "params": [
+            "code",
+            "fields",
+            "values",
+            "frozenPlanValues",
+            "anesthesiaType",
+            "nameStyle",
+            "recordMeta"
+          ]
+        },
+        {
+          "name": "SurgeryPlanner",
+          "startLine": 161,
+          "endLine": 849,
+          "params": [
+            "{\n  surgeryTypes,\n  loggedIn,\n  nameStyle,\n  userEmail,\n  userName,\n  fixedPatient,\n  patientNasalFindings,\n  editPlan,\n  defaultView,\n  action,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SurgeryPlanner",
+          "line": 161,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "buildTexts",
+          "callee": "isBuiltInSurgeryCode",
+          "lineNumber": 95
+        },
+        {
+          "caller": "buildTexts",
+          "callee": "buildPlanTable",
+          "lineNumber": 101
+        },
+        {
+          "caller": "buildTexts",
+          "callee": "generateOpNote",
+          "lineNumber": 102
+        },
+        {
+          "caller": "buildTexts",
+          "callee": "buildProcedureName",
+          "lineNumber": 103
+        },
+        {
+          "caller": "proceduralFrozenOverrides",
+          "callee": "Object.fromEntries",
+          "lineNumber": 127
+        },
+        {
+          "caller": "proceduralFrozenOverrides",
+          "callee": "fields\n      .filter((f) => !isNasalFindingKey(f.key) && !(REVISION_FLAG_KEYS as readonly string[]).includes(f.key))\n      .map((f) => [f.key, frozenPlanValues[f.key]])\n      .filter",
+          "lineNumber": 128
+        },
+        {
+          "caller": "proceduralFrozenOverrides",
+          "callee": "fields\n      .filter((f) => !isNasalFindingKey(f.key) && !(REVISION_FLAG_KEYS as readonly string[]).includes(f.key))\n      .map",
+          "lineNumber": 128
+        },
+        {
+          "caller": "proceduralFrozenOverrides",
+          "callee": "fields\n      .filter",
+          "lineNumber": 128
+        },
+        {
+          "caller": "proceduralFrozenOverrides",
+          "callee": "isNasalFindingKey",
+          "lineNumber": 129
+        },
+        {
+          "caller": "proceduralFrozenOverrides",
+          "callee": "(REVISION_FLAG_KEYS as readonly string[]).includes",
+          "lineNumber": 129
+        },
+        {
+          "caller": "proceduralFrozenOverrides",
+          "callee": "Object.keys",
+          "lineNumber": 133
+        },
+        {
+          "caller": "buildTextsFrozenAware",
+          "callee": "proceduralFrozenOverrides",
+          "lineNumber": 145
+        },
+        {
+          "caller": "buildTextsFrozenAware",
+          "callee": "buildTexts",
+          "lineNumber": 148
+        },
+        {
+          "caller": "buildTextsFrozenAware",
+          "callee": "buildTexts",
+          "lineNumber": 149
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "useActionState",
+          "lineNumber": 192
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "surgeryTypes.find",
+          "lineNumber": 199
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "useState",
+          "lineNumber": 201
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "useState",
+          "lineNumber": 206
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "new Date().toISOString().slice",
+          "lineNumber": 207
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "new Date().toISOString",
+          "lineNumber": 207
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "useState",
+          "lineNumber": 209
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "buildTextsFrozenAware",
+          "lineNumber": 211
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "applyFieldDefaults",
+          "lineNumber": 214
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "new Date().toISOString().slice",
+          "lineNumber": 218
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "new Date().toISOString",
+          "lineNumber": 218
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "useRef",
+          "lineNumber": 222
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "useState",
+          "lineNumber": 226
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "useState",
+          "lineNumber": 231
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "applyFieldDefaults",
+          "lineNumber": 232
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "useState",
+          "lineNumber": 234
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "useState",
+          "lineNumber": 238
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "ANATOMIC_RISK_PRESENT_KEYS.some",
+          "lineNumber": 239
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "useState",
+          "lineNumber": 242
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "useState",
+          "lineNumber": 243
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "POLYP_FIELD_KEYS.some",
+          "lineNumber": 244
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "useState",
+          "lineNumber": 249
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "REVISION_FLAG_KEYS.some",
+          "lineNumber": 250
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "surgeryTypes.find",
+          "lineNumber": 257
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "surgeryTypes.find",
+          "lineNumber": 262
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "surgeryTypes.find",
+          "lineNumber": 263
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "surgeryTypes.find",
+          "lineNumber": 264
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "surgeryTypes.filter",
+          "lineNumber": 265
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "isBuiltInSurgeryCode",
+          "lineNumber": 265
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "isBuiltInSurgeryCode",
+          "lineNumber": 266
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "selected.fields.filter",
+          "lineNumber": 275
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "isNasalFindingKey",
+          "lineNumber": 275
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "selected.fields.filter",
+          "lineNumber": 276
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "isNasalFindingKey",
+          "lineNumber": 276
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "getAnatomyVisibility",
+          "lineNumber": 278
+        },
+        {
+          "caller": "computeTexts",
+          "callee": "buildTextsFrozenAware",
+          "lineNumber": 287
+        },
+        {
+          "caller": "handleSurgeryDateChange",
+          "callee": "e.stopPropagation",
+          "lineNumber": 303
+        },
+        {
+          "caller": "handleSurgeryDateChange",
+          "callee": "setSurgeryDate",
+          "lineNumber": 305
+        },
+        {
+          "caller": "handleSurgeryDateChange",
+          "callee": "setTexts",
+          "lineNumber": 306
+        },
+        {
+          "caller": "handleSurgeryDateChange",
+          "callee": "computeTexts",
+          "lineNumber": 306
+        },
+        {
+          "caller": "regenerateFromForm",
+          "callee": "fieldValuesFromFormData",
+          "lineNumber": 311
+        },
+        {
+          "caller": "regenerateFromForm",
+          "callee": "setTexts",
+          "lineNumber": 312
+        },
+        {
+          "caller": "regenerateFromForm",
+          "callee": "computeTexts",
+          "lineNumber": 312
+        },
+        {
+          "caller": "applyCombo",
+          "callee": "setTemplateValues",
+          "lineNumber": 316
+        },
+        {
+          "caller": "applyCombo",
+          "callee": "setTemplateKey",
+          "lineNumber": 317
+        },
+        {
+          "caller": "applyCombo",
+          "callee": "setTexts",
+          "lineNumber": 318
+        },
+        {
+          "caller": "applyCombo",
+          "callee": "computeTexts",
+          "lineNumber": 318
+        },
+        {
+          "caller": "setFindingGroupOpen",
+          "callee": "setOpen",
+          "lineNumber": 325
+        },
+        {
+          "caller": "setFindingGroupOpen",
+          "callee": "fieldValuesFromFormData",
+          "lineNumber": 327
+        },
+        {
+          "caller": "setFindingGroupOpen",
+          "callee": "applyCombo",
+          "lineNumber": 330
+        },
+        {
+          "caller": "applyPatientNasalFindings",
+          "callee": "applyCombo",
+          "lineNumber": 335
+        },
+        {
+          "caller": "toggleFessField",
+          "callee": "fieldValuesFromFormData",
+          "lineNumber": 343
+        },
+        {
+          "caller": "toggleFessField",
+          "callee": "applyCombo",
+          "lineNumber": 344
+        },
+        {
+          "caller": "toggleFindingWithCascade",
+          "callee": "fieldValuesFromFormData",
+          "lineNumber": 353
+        },
+        {
+          "caller": "toggleFindingWithCascade",
+          "callee": "applyCombo",
+          "lineNumber": 358
+        },
+        {
+          "caller": "copySideInTable",
+          "callee": "fieldValuesFromFormData",
+          "lineNumber": 366
+        },
+        {
+          "caller": "copySideInTable",
+          "callee": "applyCombo",
+          "lineNumber": 371
+        },
+        {
+          "caller": "toggleRevisionFlag",
+          "callee": "e?.stopPropagation",
+          "lineNumber": 391
+        },
+        {
+          "caller": "toggleRevisionFlag",
+          "callee": "fieldValuesFromFormData",
+          "lineNumber": 393
+        },
+        {
+          "caller": "toggleRevisionFlag",
+          "callee": "applyCombo",
+          "lineNumber": 398
+        },
+        {
+          "caller": "handleSurgeryTypeChange",
+          "callee": "e?.stopPropagation",
+          "lineNumber": 408
+        },
+        {
+          "caller": "handleSurgeryTypeChange",
+          "callee": "setSelectedId",
+          "lineNumber": 409
+        },
+        {
+          "caller": "handleSurgeryTypeChange",
+          "callee": "surgeryTypes.find",
+          "lineNumber": 410
+        },
+        {
+          "caller": "handleSurgeryTypeChange",
+          "callee": "applyFieldDefaults",
+          "lineNumber": 425
+        },
+        {
+          "caller": "handleSurgeryTypeChange",
+          "callee": "setTemplateValues",
+          "lineNumber": 426
+        },
+        {
+          "caller": "handleSurgeryTypeChange",
+          "callee": "setTemplateKey",
+          "lineNumber": 427
+        },
+        {
+          "caller": "handleSurgeryTypeChange",
+          "callee": "setTexts",
+          "lineNumber": 428
+        },
+        {
+          "caller": "handleSurgeryTypeChange",
+          "callee": "buildTextsFrozenAware",
+          "lineNumber": 430
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "setView",
+          "lineNumber": 463
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "setView",
+          "lineNumber": 467
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "handleSurgeryTypeChange",
+          "lineNumber": 478
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "idForBuiltInCombo",
+          "lineNumber": 478
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "handleSurgeryTypeChange",
+          "lineNumber": 489
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "idForBuiltInCombo",
+          "lineNumber": 489
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "handleSurgeryTypeChange",
+          "lineNumber": 502
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "customTypes.map",
+          "lineNumber": 506
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "Object.keys",
+          "lineNumber": 566
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "setView",
+          "lineNumber": 581
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "viewButtonClass",
+          "lineNumber": 581
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "setView",
+          "lineNumber": 584
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "viewButtonClass",
+          "lineNumber": 584
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "nasalFields.filter",
+          "lineNumber": 593
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "SEPTUM_DETAIL_FIELD_KEYS.includes",
+          "lineNumber": 593
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "nasalFields.filter",
+          "lineNumber": 601
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "UNCINATE_FIELD_KEYS.includes",
+          "lineNumber": 601
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "setFindingGroupOpen",
+          "lineNumber": 609
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "setFindingGroupOpen",
+          "lineNumber": 610
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "setFindingGroupOpen",
+          "lineNumber": 611
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "toggleFindingWithCascade",
+          "lineNumber": 616
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "toggleFindingWithCascade",
+          "lineNumber": 622
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "getSeptumCoveredKeys",
+          "lineNumber": 634
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "setFindingGroupOpen",
+          "lineNumber": 650
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "toggleRevisionFlag",
+          "lineNumber": 664
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "toggleRevisionFlag",
+          "lineNumber": 676
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "toggleRevisionFlag",
+          "lineNumber": 685
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "selected.fields.filter",
+          "lineNumber": 703
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "selected.fields.filter",
+          "lineNumber": 707
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "selected.fields.some",
+          "lineNumber": 716
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "POST_OP_FINISH_KEYS.includes",
+          "lineNumber": 716
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "selected.fields.filter",
+          "lineNumber": 720
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "POST_OP_FINISH_KEYS.includes",
+          "lineNumber": 720
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "getSinusCoveredKeys",
+          "lineNumber": 729
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "planTableToText",
+          "lineNumber": 753
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "encodeURIComponent",
+          "lineNumber": 786
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "encodeURIComponent",
+          "lineNumber": 786
+        },
+        {
+          "caller": "SurgeryPlanner",
+          "callee": "encodeURIComponent",
+          "lineNumber": 788
+        }
+      ],
+      "metrics": {
+        "importCount": 15,
+        "exportCount": 1,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/turbinoplasty-type-picker.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 155,
+      "nonEmptyLines": 144,
+      "functions": [
+        {
+          "name": "findForm",
+          "startLine": 23,
+          "endLine": 25,
+          "params": [
+            "el"
+          ]
+        },
+        {
+          "name": "getInput",
+          "startLine": 27,
+          "endLine": 31,
+          "params": [
+            "form",
+            "name"
+          ]
+        },
+        {
+          "name": "TurbinoplastyTypePicker",
+          "startLine": 33,
+          "endLine": 155,
+          "params": [
+            "{\n  values,\n  onChange,\n  hideCopyButtons = false,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "TURBINOPLASTY_FIELD_KEYS",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "TurbinoplastyTypePicker",
+          "line": 33,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "findForm",
+          "callee": "el?.closest",
+          "lineNumber": 24
+        },
+        {
+          "caller": "getInput",
+          "callee": "form.elements.namedItem",
+          "lineNumber": 29
+        },
+        {
+          "caller": "TurbinoplastyTypePicker",
+          "callee": "useRef",
+          "lineNumber": 44
+        },
+        {
+          "caller": "TurbinoplastyTypePicker",
+          "callee": "useState",
+          "lineNumber": 45
+        },
+        {
+          "caller": "TurbinoplastyTypePicker",
+          "callee": "useState",
+          "lineNumber": 53
+        },
+        {
+          "caller": "TurbinoplastyTypePicker",
+          "callee": "Object.values(checked).some",
+          "lineNumber": 53
+        },
+        {
+          "caller": "TurbinoplastyTypePicker",
+          "callee": "Object.values",
+          "lineNumber": 53
+        },
+        {
+          "caller": "togglePerformed",
+          "callee": "setPerformed",
+          "lineNumber": 57
+        },
+        {
+          "caller": "togglePerformed",
+          "callee": "findForm",
+          "lineNumber": 61
+        },
+        {
+          "caller": "togglePerformed",
+          "callee": "setChecked",
+          "lineNumber": 62
+        },
+        {
+          "caller": "togglePerformed",
+          "callee": "Object.keys",
+          "lineNumber": 64
+        },
+        {
+          "caller": "togglePerformed",
+          "callee": "getInput",
+          "lineNumber": 66
+        },
+        {
+          "caller": "togglePerformed",
+          "callee": "onChange",
+          "lineNumber": 72
+        },
+        {
+          "caller": "toggle",
+          "callee": "findForm",
+          "lineNumber": 76
+        },
+        {
+          "caller": "toggle",
+          "callee": "getInput",
+          "lineNumber": 77
+        },
+        {
+          "caller": "toggle",
+          "callee": "setChecked",
+          "lineNumber": 80
+        },
+        {
+          "caller": "toggle",
+          "callee": "onChange",
+          "lineNumber": 81
+        },
+        {
+          "caller": "copyToOtherSide",
+          "callee": "findForm",
+          "lineNumber": 88
+        },
+        {
+          "caller": "copyToOtherSide",
+          "callee": "setChecked",
+          "lineNumber": 89
+        },
+        {
+          "caller": "copyToOtherSide",
+          "callee": "getInput",
+          "lineNumber": 96
+        },
+        {
+          "caller": "copyToOtherSide",
+          "callee": "onChange",
+          "lineNumber": 101
+        },
+        {
+          "caller": "TurbinoplastyTypePicker",
+          "callee": "copyToOtherSide",
+          "lineNumber": 118
+        },
+        {
+          "caller": "TurbinoplastyTypePicker",
+          "callee": "copyToOtherSide",
+          "lineNumber": 121
+        },
+        {
+          "caller": "TurbinoplastyTypePicker",
+          "callee": "SIDES.map",
+          "lineNumber": 129
+        },
+        {
+          "caller": "TurbinoplastyTypePicker",
+          "callee": "TURB_TYPES.map",
+          "lineNumber": 132
+        },
+        {
+          "caller": "TurbinoplastyTypePicker",
+          "callee": "toggle",
+          "lineNumber": 138
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 2,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/uncinate-attachment-fields.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 76,
+      "nonEmptyLines": 72,
+      "functions": [
+        {
+          "name": "UncinateAttachmentFields",
+          "startLine": 7,
+          "endLine": 76,
+          "params": [
+            "{\n  fields,\n  values,\n  onChange,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "UncinateAttachmentFields",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "UncinateAttachmentFields",
+          "callee": "fields.find",
+          "lineNumber": 16
+        },
+        {
+          "caller": "UncinateAttachmentFields",
+          "callee": "fields.find",
+          "lineNumber": 17
+        },
+        {
+          "caller": "UncinateAttachmentFields",
+          "callee": "useState",
+          "lineNumber": 18
+        },
+        {
+          "caller": "UncinateAttachmentFields",
+          "callee": "useState",
+          "lineNumber": 23
+        },
+        {
+          "caller": "UncinateAttachmentFields",
+          "callee": "setRight",
+          "lineNumber": 41
+        },
+        {
+          "caller": "UncinateAttachmentFields",
+          "callee": "onChange",
+          "lineNumber": 42
+        },
+        {
+          "caller": "UncinateAttachmentFields",
+          "callee": "(rightField.options ?? []).map",
+          "lineNumber": 47
+        },
+        {
+          "caller": "UncinateAttachmentFields",
+          "callee": "setLeft",
+          "lineNumber": 60
+        },
+        {
+          "caller": "UncinateAttachmentFields",
+          "callee": "onChange",
+          "lineNumber": 61
+        },
+        {
+          "caller": "UncinateAttachmentFields",
+          "callee": "(leftField.options ?? []).map",
+          "lineNumber": 66
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/lib/field-types.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 77,
+      "nonEmptyLines": 71,
+      "functions": [
+        {
+          "name": "parseFieldDefs",
+          "startLine": 17,
+          "endLine": 34,
+          "params": [
+            "json"
+          ]
+        },
+        {
+          "name": "fieldValuesFromFormData",
+          "startLine": 38,
+          "endLine": 57,
+          "params": [
+            "formData",
+            "fields"
+          ]
+        },
+        {
+          "name": "parseFieldValues",
+          "startLine": 59,
+          "endLine": 62,
+          "params": [
+            "json"
+          ]
+        },
+        {
+          "name": "applyFieldDefaults",
+          "startLine": 70,
+          "endLine": 77,
+          "params": [
+            "values",
+            "fields"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "parseFieldDefs",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "fieldValuesFromFormData",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "parseFieldValues",
+          "line": 59,
+          "isDefault": false
+        },
+        {
+          "name": "applyFieldDefaults",
+          "line": 70,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "parseFieldDefs",
+          "callee": "Array.isArray",
+          "lineNumber": 18
+        },
+        {
+          "caller": "parseFieldDefs",
+          "callee": "json\n    .filter(\n      (f): f is SurgeryFieldDef =>\n        !!f &&\n        typeof f === \"object\" &&\n        typeof (f as SurgeryFieldDef).key === \"string\" &&\n        typeof (f as SurgeryFieldDef).label === \"string\",\n    )\n    .map",
+          "lineNumber": 19
+        },
+        {
+          "caller": "parseFieldDefs",
+          "callee": "json\n    .filter",
+          "lineNumber": 19
+        },
+        {
+          "caller": "parseFieldDefs",
+          "callee": "Array.isArray",
+          "lineNumber": 31
+        },
+        {
+          "caller": "fieldValuesFromFormData",
+          "callee": "formData.get",
+          "lineNumber": 46
+        },
+        {
+          "caller": "fieldValuesFromFormData",
+          "callee": "formData\n        .getAll(name)\n        .filter((v): v is string => typeof v === \"string\")\n        .join",
+          "lineNumber": 48
+        },
+        {
+          "caller": "fieldValuesFromFormData",
+          "callee": "formData\n        .getAll(name)\n        .filter",
+          "lineNumber": 48
+        },
+        {
+          "caller": "fieldValuesFromFormData",
+          "callee": "formData\n        .getAll",
+          "lineNumber": 48
+        },
+        {
+          "caller": "fieldValuesFromFormData",
+          "callee": "formData.get",
+          "lineNumber": 53
+        },
+        {
+          "caller": "parseFieldValues",
+          "callee": "Array.isArray",
+          "lineNumber": 60
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/lib/op-note-defs.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 74,
+      "nonEmptyLines": 65,
+      "functions": [
+        {
+          "name": "keys",
+          "startLine": 12,
+          "endLine": 14,
+          "params": [
+            "fields"
+          ]
+        },
+        {
+          "name": "defaultsOf",
+          "startLine": 16,
+          "endLine": 18,
+          "params": [
+            "fields"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "keys",
+          "callee": "fields.map",
+          "lineNumber": 13
+        },
+        {
+          "caller": "defaultsOf",
+          "callee": "applyFieldDefaults",
+          "lineNumber": 17
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/lib/op-note-defs.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 425,
+      "nonEmptyLines": 401,
+      "functions": [
+        {
+          "name": "withDefaults",
+          "startLine": 325,
+          "endLine": 327,
+          "params": [
+            "fields",
+            "overrides"
+          ]
+        },
+        {
+          "name": "isBuiltInSurgeryCode",
+          "startLine": 361,
+          "endLine": 363,
+          "params": [
+            "code"
+          ]
+        },
+        {
+          "name": "resolveSurgeryTypeFields",
+          "startLine": 371,
+          "endLine": 376,
+          "params": [
+            "surgeryType"
+          ]
+        },
+        {
+          "name": "isNasalFindingKey",
+          "startLine": 383,
+          "endLine": 385,
+          "params": [
+            "key"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SEPTO_PE_DONE_KEY",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "ESS_PE_DONE_KEY",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "POST_OP_FINISH_KEYS",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "septumTurbinateFindingFields",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "SEPTUM_DETAIL_FIELD_KEYS",
+          "line": 67,
+          "isDefault": false
+        },
+        {
+          "name": "UNCINATE_FIELD_KEYS",
+          "line": 72,
+          "isDefault": false
+        },
+        {
+          "name": "essFindingFields",
+          "line": 76,
+          "isDefault": false
+        },
+        {
+          "name": "nasalFindingFields",
+          "line": 183,
+          "isDefault": false
+        },
+        {
+          "name": "turbinoplastyFields",
+          "line": 190,
+          "isDefault": false
+        },
+        {
+          "name": "septoFields",
+          "line": 198,
+          "isDefault": false
+        },
+        {
+          "name": "fessStepFieldKeys",
+          "line": 254,
+          "isDefault": false
+        },
+        {
+          "name": "fessStepLabels",
+          "line": 256,
+          "isDefault": false
+        },
+        {
+          "name": "fessFields",
+          "line": 265,
+          "isDefault": false
+        },
+        {
+          "name": "comboOnlyFields",
+          "line": 299,
+          "isDefault": false
+        },
+        {
+          "name": "essFullFields",
+          "line": 334,
+          "isDefault": false
+        },
+        {
+          "name": "septoplastyFullFields",
+          "line": 342,
+          "isDefault": false
+        },
+        {
+          "name": "comboFullFields",
+          "line": 353,
+          "isDefault": false
+        },
+        {
+          "name": "BUILT_IN_SURGERY_CODES",
+          "line": 358,
+          "isDefault": false
+        },
+        {
+          "name": "isBuiltInSurgeryCode",
+          "line": 361,
+          "isDefault": false
+        },
+        {
+          "name": "resolveSurgeryTypeFields",
+          "line": 371,
+          "isDefault": false
+        },
+        {
+          "name": "isNasalFindingKey",
+          "line": 383,
+          "isDefault": false
+        },
+        {
+          "name": "REVISION_FLAG_KEYS",
+          "line": 391,
+          "isDefault": false
+        },
+        {
+          "name": "SINUSITIS_TO_FESS_FIELD",
+          "line": 398,
+          "isDefault": false
+        },
+        {
+          "name": "POLYP_TO_FESS_FIELD",
+          "line": 414,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "withDefaults",
+          "callee": "fields.map",
+          "lineNumber": 326
+        },
+        {
+          "caller": "isBuiltInSurgeryCode",
+          "callee": "(BUILT_IN_SURGERY_CODES as readonly string[]).includes",
+          "lineNumber": 362
+        },
+        {
+          "caller": "resolveSurgeryTypeFields",
+          "callee": "parseFieldDefs",
+          "lineNumber": 375
+        },
+        {
+          "caller": "isNasalFindingKey",
+          "callee": "NASAL_FINDING_KEY_PREFIXES.some",
+          "lineNumber": 384
+        },
+        {
+          "caller": "isNasalFindingKey",
+          "callee": "key.startsWith",
+          "lineNumber": 384
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 24,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/lib/op-note-generator.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 252,
+      "nonEmptyLines": 211,
+      "functions": [
+        {
+          "name": "fessSteps",
+          "startLine": 15,
+          "endLine": 20,
+          "params": [
+            "side",
+            "steps"
+          ]
+        },
+        {
+          "name": "lines",
+          "startLine": 22,
+          "endLine": 24,
+          "params": [
+            "text"
+          ]
+        },
+        {
+          "name": "count",
+          "startLine": 26,
+          "endLine": 28,
+          "params": [
+            "haystack",
+            "needle"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "lines",
+          "callee": "text.split",
+          "lineNumber": 23
+        },
+        {
+          "caller": "count",
+          "callee": "haystack.split",
+          "lineNumber": 27
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/lib/op-note-generator.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1125,
+      "nonEmptyLines": 990,
+      "functions": [
+        {
+          "name": "str",
+          "startLine": 11,
+          "endLine": 14,
+          "params": [
+            "values",
+            "key",
+            "fallback"
+          ]
+        },
+        {
+          "name": "bool",
+          "startLine": 16,
+          "endLine": 18,
+          "params": [
+            "values",
+            "key"
+          ]
+        },
+        {
+          "name": "numberSteps",
+          "startLine": 20,
+          "endLine": 26,
+          "params": [
+            "steps",
+            "startAt"
+          ]
+        },
+        {
+          "name": "anesthesiaLabel",
+          "startLine": 34,
+          "endLine": 37,
+          "params": [
+            "anesthesiaType"
+          ]
+        },
+        {
+          "name": "sphenopalatineBlockSentence",
+          "startLine": 41,
+          "endLine": 43,
+          "params": [
+            "sideLabel"
+          ]
+        },
+        {
+          "name": "dermacolSentence",
+          "startLine": 47,
+          "endLine": 49,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "hasAnyRevision",
+          "startLine": 53,
+          "endLine": 59,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "regionsEqual",
+          "startLine": 61,
+          "endLine": 63,
+          "params": [
+            "a",
+            "b"
+          ]
+        },
+        {
+          "name": "essRevisionLabel",
+          "startLine": 70,
+          "endLine": 95,
+          "params": [
+            "values",
+            "style",
+            "rightEss",
+            "leftEss"
+          ]
+        },
+        {
+          "name": "revisionPrefixText",
+          "startLine": 100,
+          "endLine": 107,
+          "params": [
+            "values",
+            "style"
+          ]
+        },
+        {
+          "name": "revisionSentence",
+          "startLine": 110,
+          "endLine": 121,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "septumSummaryLine",
+          "startLine": 127,
+          "endLine": 140,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "polypSideKeyPrefix",
+          "startLine": 155,
+          "endLine": 157,
+          "params": [
+            "side"
+          ]
+        },
+        {
+          "name": "polypSitesAt",
+          "startLine": 159,
+          "endLine": 162,
+          "params": [
+            "side",
+            "values"
+          ]
+        },
+        {
+          "name": "hasPolypAt",
+          "startLine": 164,
+          "endLine": 166,
+          "params": [
+            "sideName",
+            "values"
+          ]
+        },
+        {
+          "name": "hasPolyp",
+          "startLine": 168,
+          "endLine": 170,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "polypFindingText",
+          "startLine": 173,
+          "endLine": 181,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "uncinateLine",
+          "startLine": 184,
+          "endLine": 196,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "sidedFindingLine",
+          "startLine": 199,
+          "endLine": 203,
+          "params": [
+            "label",
+            "key",
+            "values"
+          ]
+        },
+        {
+          "name": "presentSidedLine",
+          "startLine": 208,
+          "endLine": 212,
+          "params": [
+            "label",
+            "presentKey",
+            "sideKey",
+            "values"
+          ]
+        },
+        {
+          "name": "nasalFindingsText",
+          "startLine": 219,
+          "endLine": 263,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "sinusitisFindings",
+          "startLine": 277,
+          "endLine": 285,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "nasalFindingsSummary",
+          "startLine": 290,
+          "endLine": 359,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "turbinateLabelsForSide",
+          "startLine": 370,
+          "endLine": 372,
+          "params": [
+            "side",
+            "values"
+          ]
+        },
+        {
+          "name": "allTurbinateItems",
+          "startLine": 374,
+          "endLine": 376,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "turbSideFlags",
+          "startLine": 388,
+          "endLine": 390,
+          "params": [
+            "type",
+            "values"
+          ]
+        },
+        {
+          "name": "turbinoplastyWordsForSide",
+          "startLine": 393,
+          "endLine": 400,
+          "params": [
+            "side",
+            "values"
+          ]
+        },
+        {
+          "name": "turbinoplastyTechniqueSentence",
+          "startLine": 405,
+          "endLine": 410,
+          "params": [
+            "type"
+          ]
+        },
+        {
+          "name": "turbTypeSideLabel",
+          "startLine": 412,
+          "endLine": 418,
+          "params": [
+            "type",
+            "values"
+          ]
+        },
+        {
+          "name": "turbinoplastyGlobalSuffix",
+          "startLine": 423,
+          "endLine": 435,
+          "params": [
+            "values",
+            "style",
+            "hasSideSegments"
+          ]
+        },
+        {
+          "name": "incisionSentence",
+          "startLine": 450,
+          "endLine": 455,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "septoCore",
+          "startLine": 457,
+          "endLine": 482,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "genSeptoplasty",
+          "startLine": 484,
+          "endLine": 498,
+          "params": [
+            "values",
+            "mode",
+            "anesLabel"
+          ]
+        },
+        {
+          "name": "fessStepFindingClauses",
+          "startLine": 536,
+          "endLine": 551,
+          "params": [
+            "key",
+            "prefix",
+            "values"
+          ]
+        },
+        {
+          "name": "fessSideBlock",
+          "startLine": 553,
+          "endLine": 607,
+          "params": [
+            "sideName",
+            "prefix",
+            "values",
+            "includeMicrodebriderSentence"
+          ]
+        },
+        {
+          "name": "silasticSheetSentence",
+          "startLine": 611,
+          "endLine": 614,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "fessCore",
+          "startLine": 616,
+          "endLine": 642,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "fessOperativeSideLabel",
+          "startLine": 646,
+          "endLine": 655,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "genFess",
+          "startLine": 657,
+          "endLine": 680,
+          "params": [
+            "values",
+            "mode",
+            "anesLabel"
+          ]
+        },
+        {
+          "name": "genCombo",
+          "startLine": 699,
+          "endLine": 744,
+          "params": [
+            "values",
+            "mode",
+            "anesLabel"
+          ]
+        },
+        {
+          "name": "generateOpNote",
+          "startLine": 746,
+          "endLine": 756,
+          "params": [
+            "surgeryCode",
+            "values",
+            "mode",
+            "anesthesiaType"
+          ]
+        },
+        {
+          "name": "septoConciseItems",
+          "startLine": 760,
+          "endLine": 774,
+          "params": [
+            "values",
+            "includePacking"
+          ]
+        },
+        {
+          "name": "formatRegionList",
+          "startLine": 803,
+          "endLine": 808,
+          "params": [
+            "regions",
+            "style"
+          ]
+        },
+        {
+          "name": "ethmoidLabelForSide",
+          "startLine": 823,
+          "endLine": 830,
+          "params": [
+            "prefix",
+            "values"
+          ]
+        },
+        {
+          "name": "regionSegment",
+          "startLine": 832,
+          "endLine": 839,
+          "params": [
+            "label",
+            "regions",
+            "style",
+            "ethmoidLabel"
+          ]
+        },
+        {
+          "name": "formatSideLabel",
+          "startLine": 841,
+          "endLine": 845,
+          "params": [
+            "side",
+            "style"
+          ]
+        },
+        {
+          "name": "fessRegionsForSide",
+          "startLine": 847,
+          "endLine": 856,
+          "params": [
+            "prefix",
+            "values"
+          ]
+        },
+        {
+          "name": "buildFessProcedureName",
+          "startLine": 858,
+          "endLine": 910,
+          "params": [
+            "values",
+            "label",
+            "style",
+            "excludeSides"
+          ]
+        },
+        {
+          "name": "septoplastyProcedureName",
+          "startLine": 917,
+          "endLine": 935,
+          "params": [
+            "values",
+            "style"
+          ]
+        },
+        {
+          "name": "buildProcedureName",
+          "startLine": 937,
+          "endLine": 963,
+          "params": [
+            "surgeryCode",
+            "values",
+            "style"
+          ]
+        },
+        {
+          "name": "fessSideMatrix",
+          "startLine": 997,
+          "endLine": 1022,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "turbinoplastySideMatrix",
+          "startLine": 1029,
+          "endLine": 1041,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "packingCellValue",
+          "startLine": 1046,
+          "endLine": 1052,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "buildPlanTable",
+          "startLine": 1054,
+          "endLine": 1106,
+          "params": [
+            "surgeryCode",
+            "values",
+            "style"
+          ]
+        },
+        {
+          "name": "planTableToText",
+          "startLine": 1109,
+          "endLine": 1125,
+          "params": [
+            "table"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "anesthesiaLabel",
+          "line": 34,
+          "isDefault": false
+        },
+        {
+          "name": "hasAnyRevision",
+          "line": 53,
+          "isDefault": false
+        },
+        {
+          "name": "nasalFindingsText",
+          "line": 219,
+          "isDefault": false
+        },
+        {
+          "name": "nasalFindingsSummary",
+          "line": 290,
+          "isDefault": false
+        },
+        {
+          "name": "generateOpNote",
+          "line": 746,
+          "isDefault": false
+        },
+        {
+          "name": "DEFAULT_NAME_STYLE",
+          "line": 785,
+          "isDefault": false
+        },
+        {
+          "name": "buildProcedureName",
+          "line": 937,
+          "isDefault": false
+        },
+        {
+          "name": "buildPlanTable",
+          "line": 1054,
+          "isDefault": false
+        },
+        {
+          "name": "planTableToText",
+          "line": 1109,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "str",
+          "callee": "v.trim",
+          "lineNumber": 13
+        },
+        {
+          "caller": "numberSteps",
+          "callee": "steps\n    .filter((s): s is string => Boolean(s))\n    .map((s) => `${n++}. ${s}`)\n    .join",
+          "lineNumber": 22
+        },
+        {
+          "caller": "numberSteps",
+          "callee": "steps\n    .filter((s): s is string => Boolean(s))\n    .map",
+          "lineNumber": 22
+        },
+        {
+          "caller": "numberSteps",
+          "callee": "steps\n    .filter",
+          "lineNumber": 22
+        },
+        {
+          "caller": "numberSteps",
+          "callee": "Boolean",
+          "lineNumber": 23
+        },
+        {
+          "caller": "dermacolSentence",
+          "callee": "bool",
+          "lineNumber": 48
+        },
+        {
+          "caller": "hasAnyRevision",
+          "callee": "bool",
+          "lineNumber": 55
+        },
+        {
+          "caller": "hasAnyRevision",
+          "callee": "bool",
+          "lineNumber": 56
+        },
+        {
+          "caller": "hasAnyRevision",
+          "callee": "bool",
+          "lineNumber": 57
+        },
+        {
+          "caller": "regionsEqual",
+          "callee": "a.every",
+          "lineNumber": 62
+        },
+        {
+          "caller": "essRevisionLabel",
+          "callee": "fessRegionsForSide",
+          "lineNumber": 71
+        },
+        {
+          "caller": "essRevisionLabel",
+          "callee": "fessRegionsForSide",
+          "lineNumber": 72
+        },
+        {
+          "caller": "essRevisionLabel",
+          "callee": "regionsEqual",
+          "lineNumber": 75
+        },
+        {
+          "caller": "essRevisionLabel",
+          "callee": "formatRegionList",
+          "lineNumber": 76
+        },
+        {
+          "caller": "essRevisionLabel",
+          "callee": "formatSideLabel",
+          "lineNumber": 77
+        },
+        {
+          "caller": "essRevisionLabel",
+          "callee": "formatSideLabel",
+          "lineNumber": 81
+        },
+        {
+          "caller": "essRevisionLabel",
+          "callee": "formatRegionList",
+          "lineNumber": 81
+        },
+        {
+          "caller": "essRevisionLabel",
+          "callee": "formatSideLabel",
+          "lineNumber": 82
+        },
+        {
+          "caller": "essRevisionLabel",
+          "callee": "formatSideLabel",
+          "lineNumber": 85
+        },
+        {
+          "caller": "essRevisionLabel",
+          "callee": "formatRegionList",
+          "lineNumber": 85
+        },
+        {
+          "caller": "essRevisionLabel",
+          "callee": "formatSideLabel",
+          "lineNumber": 86
+        },
+        {
+          "caller": "essRevisionLabel",
+          "callee": "formatSideLabel",
+          "lineNumber": 87
+        },
+        {
+          "caller": "essRevisionLabel",
+          "callee": "formatRegionList",
+          "lineNumber": 90
+        },
+        {
+          "caller": "essRevisionLabel",
+          "callee": "formatSideLabel",
+          "lineNumber": 91
+        },
+        {
+          "caller": "essRevisionLabel",
+          "callee": "formatRegionList",
+          "lineNumber": 93
+        },
+        {
+          "caller": "essRevisionLabel",
+          "callee": "formatSideLabel",
+          "lineNumber": 94
+        },
+        {
+          "caller": "revisionPrefixText",
+          "callee": "bool",
+          "lineNumber": 102
+        },
+        {
+          "caller": "revisionPrefixText",
+          "callee": "parts.push",
+          "lineNumber": 102
+        },
+        {
+          "caller": "revisionPrefixText",
+          "callee": "bool",
+          "lineNumber": 103
+        },
+        {
+          "caller": "revisionPrefixText",
+          "callee": "bool",
+          "lineNumber": 104
+        },
+        {
+          "caller": "revisionPrefixText",
+          "callee": "parts.push",
+          "lineNumber": 105
+        },
+        {
+          "caller": "revisionPrefixText",
+          "callee": "essRevisionLabel",
+          "lineNumber": 105
+        },
+        {
+          "caller": "revisionPrefixText",
+          "callee": "parts.join",
+          "lineNumber": 106
+        },
+        {
+          "caller": "revisionSentence",
+          "callee": "bool",
+          "lineNumber": 112
+        },
+        {
+          "caller": "revisionSentence",
+          "callee": "parts.push",
+          "lineNumber": 112
+        },
+        {
+          "caller": "revisionSentence",
+          "callee": "bool",
+          "lineNumber": 113
+        },
+        {
+          "caller": "revisionSentence",
+          "callee": "bool",
+          "lineNumber": 114
+        },
+        {
+          "caller": "revisionSentence",
+          "callee": "parts.push",
+          "lineNumber": 115
+        },
+        {
+          "caller": "revisionSentence",
+          "callee": "parts.push",
+          "lineNumber": 116
+        },
+        {
+          "caller": "revisionSentence",
+          "callee": "parts.push",
+          "lineNumber": 117
+        },
+        {
+          "caller": "revisionSentence",
+          "callee": "parts.join",
+          "lineNumber": 120
+        },
+        {
+          "caller": "septumSummaryLine",
+          "callee": "str",
+          "lineNumber": 128
+        },
+        {
+          "caller": "septumSummaryLine",
+          "callee": "str",
+          "lineNumber": 129
+        },
+        {
+          "caller": "septumSummaryLine",
+          "callee": "str",
+          "lineNumber": 130
+        },
+        {
+          "caller": "septumSummaryLine",
+          "callee": "str",
+          "lineNumber": 131
+        },
+        {
+          "caller": "septumSummaryLine",
+          "callee": "parts.push",
+          "lineNumber": 136
+        },
+        {
+          "caller": "septumSummaryLine",
+          "callee": "parts.push",
+          "lineNumber": 137
+        },
+        {
+          "caller": "septumSummaryLine",
+          "callee": "parts.join",
+          "lineNumber": 139
+        },
+        {
+          "caller": "polypSitesAt",
+          "callee": "polypSideKeyPrefix",
+          "lineNumber": 160
+        },
+        {
+          "caller": "polypSitesAt",
+          "callee": "polypSiteFields.filter((f) => bool(values, `${prefix}${f.key}`)).map",
+          "lineNumber": 161
+        },
+        {
+          "caller": "polypSitesAt",
+          "callee": "polypSiteFields.filter",
+          "lineNumber": 161
+        },
+        {
+          "caller": "polypSitesAt",
+          "callee": "bool",
+          "lineNumber": 161
+        },
+        {
+          "caller": "hasPolypAt",
+          "callee": "polypSitesAt",
+          "lineNumber": 165
+        },
+        {
+          "caller": "hasPolyp",
+          "callee": "hasPolypAt",
+          "lineNumber": 169
+        },
+        {
+          "caller": "hasPolyp",
+          "callee": "hasPolypAt",
+          "lineNumber": 169
+        },
+        {
+          "caller": "polypFindingText",
+          "callee": "polypSitesAt",
+          "lineNumber": 174
+        },
+        {
+          "caller": "polypFindingText",
+          "callee": "polypSitesAt",
+          "lineNumber": 175
+        },
+        {
+          "caller": "polypFindingText",
+          "callee": "parts.push",
+          "lineNumber": 178
+        },
+        {
+          "caller": "polypFindingText",
+          "callee": "right.join",
+          "lineNumber": 178
+        },
+        {
+          "caller": "polypFindingText",
+          "callee": "parts.push",
+          "lineNumber": 179
+        },
+        {
+          "caller": "polypFindingText",
+          "callee": "left.join",
+          "lineNumber": 179
+        },
+        {
+          "caller": "polypFindingText",
+          "callee": "parts.join",
+          "lineNumber": 180
+        },
+        {
+          "caller": "uncinateLine",
+          "callee": "str",
+          "lineNumber": 185
+        },
+        {
+          "caller": "uncinateLine",
+          "callee": "str",
+          "lineNumber": 186
+        },
+        {
+          "caller": "uncinateLine",
+          "callee": "parts.push",
+          "lineNumber": 193
+        },
+        {
+          "caller": "uncinateLine",
+          "callee": "parts.push",
+          "lineNumber": 194
+        },
+        {
+          "caller": "uncinateLine",
+          "callee": "parts.join",
+          "lineNumber": 195
+        },
+        {
+          "caller": "sidedFindingLine",
+          "callee": "str",
+          "lineNumber": 200
+        },
+        {
+          "caller": "presentSidedLine",
+          "callee": "bool",
+          "lineNumber": 209
+        },
+        {
+          "caller": "presentSidedLine",
+          "callee": "str",
+          "lineNumber": 210
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "bool",
+          "lineNumber": 222
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "lines.push",
+          "lineNumber": 223
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "septumSummaryLine",
+          "lineNumber": 223
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "sidedFindingLine",
+          "lineNumber": 224
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "lines.push",
+          "lineNumber": 225
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "bool",
+          "lineNumber": 228
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "uncinateLine",
+          "lineNumber": 231
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "lines.push",
+          "lineNumber": 232
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "lines.push",
+          "lineNumber": 233
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "bool",
+          "lineNumber": 234
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "str",
+          "lineNumber": 235
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "presentSidedLine",
+          "lineNumber": 238
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "lines.push",
+          "lineNumber": 239
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "presentSidedLine",
+          "lineNumber": 240
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "lines.push",
+          "lineNumber": 241
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "presentSidedLine",
+          "lineNumber": 242
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "lines.push",
+          "lineNumber": 243
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "presentSidedLine",
+          "lineNumber": 244
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "lines.push",
+          "lineNumber": 250
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "presentSidedLine",
+          "lineNumber": 251
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "lines.push",
+          "lineNumber": 257
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "sinusitisFindings",
+          "lineNumber": 258
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "lines.push",
+          "lineNumber": 258
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "lines.push",
+          "lineNumber": 259
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "polypFindingText",
+          "lineNumber": 259
+        },
+        {
+          "caller": "nasalFindingsText",
+          "callee": "lines.join",
+          "lineNumber": 262
+        },
+        {
+          "caller": "sinusitisFindings",
+          "callee": "SINUSITIS_TYPES.map(({ key, label }) => {\n    const right = bool(values, `n_sinusitis_${key}_right`);\n    const left = bool(values, `n_sinusitis_${key}_left`);\n    if (!right && !left) return \"\";\n    const side = right && left ? \"양측\" : right ? \"우측\" : \"좌측\";\n    return `${label}: ${side}`;\n  }).filter",
+          "lineNumber": 278
+        },
+        {
+          "caller": "sinusitisFindings",
+          "callee": "SINUSITIS_TYPES.map",
+          "lineNumber": 278
+        },
+        {
+          "caller": "sinusitisFindings",
+          "callee": "bool",
+          "lineNumber": 279
+        },
+        {
+          "caller": "sinusitisFindings",
+          "callee": "bool",
+          "lineNumber": 280
+        },
+        {
+          "caller": "sinusitisFindings",
+          "callee": "Boolean",
+          "lineNumber": 284
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "bool",
+          "lineNumber": 291
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "bool",
+          "lineNumber": 291
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "bool",
+          "lineNumber": 295
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "str",
+          "lineNumber": 296
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "str",
+          "lineNumber": 297
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "items.push",
+          "lineNumber": 299
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "str",
+          "lineNumber": 302
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "items.push",
+          "lineNumber": 302
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "str",
+          "lineNumber": 303
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "items.push",
+          "lineNumber": 304
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "str",
+          "lineNumber": 306
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "items.push",
+          "lineNumber": 307
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "bool",
+          "lineNumber": 310
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "items.join",
+          "lineNumber": 311
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "str",
+          "lineNumber": 317
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "str",
+          "lineNumber": 318
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "parts.push",
+          "lineNumber": 321
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "parts.push",
+          "lineNumber": 322
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "items.push",
+          "lineNumber": 323
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "parts.join",
+          "lineNumber": 323
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "bool",
+          "lineNumber": 326
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "items.push",
+          "lineNumber": 327
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "str",
+          "lineNumber": 327
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "bool",
+          "lineNumber": 330
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "items.push",
+          "lineNumber": 331
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "str",
+          "lineNumber": 331
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "bool",
+          "lineNumber": 334
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "items.push",
+          "lineNumber": 335
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "str",
+          "lineNumber": 335
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "bool",
+          "lineNumber": 338
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "items.push",
+          "lineNumber": 339
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "str",
+          "lineNumber": 339
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "bool",
+          "lineNumber": 342
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "items.push",
+          "lineNumber": 343
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "str",
+          "lineNumber": 343
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "bool",
+          "lineNumber": 346
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "items.push",
+          "lineNumber": 347
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "str",
+          "lineNumber": 347
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "sinusitisFindings",
+          "lineNumber": 350
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "items.push",
+          "lineNumber": 350
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "hasPolyp",
+          "lineNumber": 352
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "items.push",
+          "lineNumber": 353
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "polypFindingText",
+          "lineNumber": 353
+        },
+        {
+          "caller": "nasalFindingsSummary",
+          "callee": "items.join",
+          "lineNumber": 358
+        },
+        {
+          "caller": "turbinateLabelsForSide",
+          "callee": "turbinateFields.filter((f) => f.side === side && bool(values, f.key)).map",
+          "lineNumber": 371
+        },
+        {
+          "caller": "turbinateLabelsForSide",
+          "callee": "turbinateFields.filter",
+          "lineNumber": 371
+        },
+        {
+          "caller": "turbinateLabelsForSide",
+          "callee": "bool",
+          "lineNumber": 371
+        },
+        {
+          "caller": "allTurbinateItems",
+          "callee": "turbinateFields.filter((f) => bool(values, f.key)).map",
+          "lineNumber": 375
+        },
+        {
+          "caller": "allTurbinateItems",
+          "callee": "turbinateFields.filter",
+          "lineNumber": 375
+        },
+        {
+          "caller": "allTurbinateItems",
+          "callee": "bool",
+          "lineNumber": 375
+        },
+        {
+          "caller": "turbSideFlags",
+          "callee": "bool",
+          "lineNumber": 389
+        },
+        {
+          "caller": "turbSideFlags",
+          "callee": "bool",
+          "lineNumber": 389
+        },
+        {
+          "caller": "turbinoplastyWordsForSide",
+          "callee": "turbTypes\n    .filter((type) => {\n      const flags = turbSideFlags(type, values);\n      return flags.right !== flags.left && flags[side];\n    })\n    .map",
+          "lineNumber": 394
+        },
+        {
+          "caller": "turbinoplastyWordsForSide",
+          "callee": "turbTypes\n    .filter",
+          "lineNumber": 394
+        },
+        {
+          "caller": "turbinoplastyWordsForSide",
+          "callee": "turbSideFlags",
+          "lineNumber": 396
+        },
+        {
+          "caller": "turbTypeSideLabel",
+          "callee": "turbSideFlags",
+          "lineNumber": 413
+        },
+        {
+          "caller": "turbinoplastyGlobalSuffix",
+          "callee": "turbSideFlags",
+          "lineNumber": 426
+        },
+        {
+          "caller": "turbinoplastyGlobalSuffix",
+          "callee": "parts.push",
+          "lineNumber": 429
+        },
+        {
+          "caller": "turbinoplastyGlobalSuffix",
+          "callee": "formatSideLabel",
+          "lineNumber": 429
+        },
+        {
+          "caller": "turbinoplastyGlobalSuffix",
+          "callee": "parts.push",
+          "lineNumber": 431
+        },
+        {
+          "caller": "turbinoplastyGlobalSuffix",
+          "callee": "formatSideLabel",
+          "lineNumber": 431
+        },
+        {
+          "caller": "turbinoplastyGlobalSuffix",
+          "callee": "parts.join",
+          "lineNumber": 434
+        },
+        {
+          "caller": "incisionSentence",
+          "callee": "str",
+          "lineNumber": 451
+        },
+        {
+          "caller": "incisionSentence",
+          "callee": "str",
+          "lineNumber": 452
+        },
+        {
+          "caller": "septoCore",
+          "callee": "bool",
+          "lineNumber": 458
+        },
+        {
+          "caller": "septoCore",
+          "callee": "bool",
+          "lineNumber": 459
+        },
+        {
+          "caller": "septoCore",
+          "callee": "bool",
+          "lineNumber": 460
+        },
+        {
+          "caller": "septoCore",
+          "callee": "turbTypeSideLabel",
+          "lineNumber": 461
+        },
+        {
+          "caller": "septoCore",
+          "callee": "turbTypeSideLabel",
+          "lineNumber": 462
+        },
+        {
+          "caller": "septoCore",
+          "callee": "bool",
+          "lineNumber": 463
+        },
+        {
+          "caller": "septoCore",
+          "callee": "bool",
+          "lineNumber": 464
+        },
+        {
+          "caller": "septoCore",
+          "callee": "str",
+          "lineNumber": 465
+        },
+        {
+          "caller": "septoCore",
+          "callee": "str",
+          "lineNumber": 466
+        },
+        {
+          "caller": "septoCore",
+          "callee": "incisionSentence",
+          "lineNumber": 469
+        },
+        {
+          "caller": "septoCore",
+          "callee": "turbinoplastyTechniqueSentence",
+          "lineNumber": 474
+        },
+        {
+          "caller": "septoCore",
+          "callee": "turbinoplastyTechniqueSentence",
+          "lineNumber": 475
+        },
+        {
+          "caller": "septoCore",
+          "callee": "steps.filter",
+          "lineNumber": 481
+        },
+        {
+          "caller": "septoCore",
+          "callee": "Boolean",
+          "lineNumber": 481
+        },
+        {
+          "caller": "genSeptoplasty",
+          "callee": "str",
+          "lineNumber": 485
+        },
+        {
+          "caller": "genSeptoplasty",
+          "callee": "steps.push",
+          "lineNumber": 489
+        },
+        {
+          "caller": "genSeptoplasty",
+          "callee": "steps.push",
+          "lineNumber": 490
+        },
+        {
+          "caller": "genSeptoplasty",
+          "callee": "revisionSentence",
+          "lineNumber": 490
+        },
+        {
+          "caller": "genSeptoplasty",
+          "callee": "steps.push",
+          "lineNumber": 491
+        },
+        {
+          "caller": "genSeptoplasty",
+          "callee": "sphenopalatineBlockSentence",
+          "lineNumber": 491
+        },
+        {
+          "caller": "genSeptoplasty",
+          "callee": "steps.push",
+          "lineNumber": 492
+        },
+        {
+          "caller": "genSeptoplasty",
+          "callee": "steps.push",
+          "lineNumber": 494
+        },
+        {
+          "caller": "genSeptoplasty",
+          "callee": "septoCore",
+          "lineNumber": 494
+        },
+        {
+          "caller": "genSeptoplasty",
+          "callee": "steps.push",
+          "lineNumber": 495
+        },
+        {
+          "caller": "genSeptoplasty",
+          "callee": "nasalFindingsText",
+          "lineNumber": 497
+        },
+        {
+          "caller": "genSeptoplasty",
+          "callee": "numberSteps",
+          "lineNumber": 497
+        },
+        {
+          "caller": "fessStepFindingClauses",
+          "callee": "bool",
+          "lineNumber": 544
+        },
+        {
+          "caller": "fessStepFindingClauses",
+          "callee": "clauses.push",
+          "lineNumber": 545
+        },
+        {
+          "caller": "fessStepFindingClauses",
+          "callee": "fessStepPolypSiteKeys[key].some",
+          "lineNumber": 547
+        },
+        {
+          "caller": "fessStepFindingClauses",
+          "callee": "bool",
+          "lineNumber": 547
+        },
+        {
+          "caller": "fessStepFindingClauses",
+          "callee": "clauses.push",
+          "lineNumber": 548
+        },
+        {
+          "caller": "fessStepFindingClauses",
+          "callee": "clauses.join",
+          "lineNumber": 550
+        },
+        {
+          "caller": "fessSideBlock",
+          "callee": "fessStepFieldKeys.filter",
+          "lineNumber": 559
+        },
+        {
+          "caller": "fessSideBlock",
+          "callee": "bool",
+          "lineNumber": 559
+        },
+        {
+          "caller": "fessSideBlock",
+          "callee": "turbinateLabelsForSide",
+          "lineNumber": 560
+        },
+        {
+          "caller": "fessSideBlock",
+          "callee": "block.push",
+          "lineNumber": 576
+        },
+        {
+          "caller": "fessSideBlock",
+          "callee": "bool",
+          "lineNumber": 586
+        },
+        {
+          "caller": "fessSideBlock",
+          "callee": "bool",
+          "lineNumber": 588
+        },
+        {
+          "caller": "fessSideBlock",
+          "callee": "selectedSteps.some",
+          "lineNumber": 589
+        },
+        {
+          "caller": "fessSideBlock",
+          "callee": "block.push",
+          "lineNumber": 591
+        },
+        {
+          "caller": "fessSideBlock",
+          "callee": "block.push",
+          "lineNumber": 594
+        },
+        {
+          "caller": "fessSideBlock",
+          "callee": "fessStepFindingClauses",
+          "lineNumber": 594
+        },
+        {
+          "caller": "fessSideBlock",
+          "callee": "bool",
+          "lineNumber": 599
+        },
+        {
+          "caller": "fessSideBlock",
+          "callee": "block.push",
+          "lineNumber": 600
+        },
+        {
+          "caller": "fessSideBlock",
+          "callee": "turbinoplastyTechniqueSentence",
+          "lineNumber": 600
+        },
+        {
+          "caller": "fessSideBlock",
+          "callee": "bool",
+          "lineNumber": 602
+        },
+        {
+          "caller": "fessSideBlock",
+          "callee": "block.push",
+          "lineNumber": 603
+        },
+        {
+          "caller": "fessSideBlock",
+          "callee": "turbinoplastyTechniqueSentence",
+          "lineNumber": 603
+        },
+        {
+          "caller": "silasticSheetSentence",
+          "callee": "bool",
+          "lineNumber": 612
+        },
+        {
+          "caller": "fessCore",
+          "callee": "str",
+          "lineNumber": 617
+        },
+        {
+          "caller": "fessCore",
+          "callee": "bool",
+          "lineNumber": 618
+        },
+        {
+          "caller": "fessCore",
+          "callee": "fessStepFieldKeys.some",
+          "lineNumber": 623
+        },
+        {
+          "caller": "fessCore",
+          "callee": "bool",
+          "lineNumber": 623
+        },
+        {
+          "caller": "fessCore",
+          "callee": "fessStepFieldKeys.some",
+          "lineNumber": 624
+        },
+        {
+          "caller": "fessCore",
+          "callee": "bool",
+          "lineNumber": 624
+        },
+        {
+          "caller": "fessCore",
+          "callee": "steps.push",
+          "lineNumber": 628
+        },
+        {
+          "caller": "fessCore",
+          "callee": "steps.push",
+          "lineNumber": 630
+        },
+        {
+          "caller": "fessCore",
+          "callee": "fessSideBlock",
+          "lineNumber": 635
+        },
+        {
+          "caller": "fessCore",
+          "callee": "fessSideBlock",
+          "lineNumber": 636
+        },
+        {
+          "caller": "fessCore",
+          "callee": "steps.push",
+          "lineNumber": 638
+        },
+        {
+          "caller": "fessCore",
+          "callee": "steps.push",
+          "lineNumber": 639
+        },
+        {
+          "caller": "fessOperativeSideLabel",
+          "callee": "fessRegionsForSide",
+          "lineNumber": 648
+        },
+        {
+          "caller": "fessOperativeSideLabel",
+          "callee": "turbinateLabelsForSide",
+          "lineNumber": 648
+        },
+        {
+          "caller": "fessOperativeSideLabel",
+          "callee": "fessRegionsForSide",
+          "lineNumber": 650
+        },
+        {
+          "caller": "fessOperativeSideLabel",
+          "callee": "turbinateLabelsForSide",
+          "lineNumber": 650
+        },
+        {
+          "caller": "genFess",
+          "callee": "fessOperativeSideLabel",
+          "lineNumber": 658
+        },
+        {
+          "caller": "genFess",
+          "callee": "steps.push",
+          "lineNumber": 661
+        },
+        {
+          "caller": "genFess",
+          "callee": "steps.push",
+          "lineNumber": 662
+        },
+        {
+          "caller": "genFess",
+          "callee": "revisionSentence",
+          "lineNumber": 662
+        },
+        {
+          "caller": "genFess",
+          "callee": "steps.push",
+          "lineNumber": 663
+        },
+        {
+          "caller": "genFess",
+          "callee": "steps.push",
+          "lineNumber": 664
+        },
+        {
+          "caller": "genFess",
+          "callee": "sphenopalatineBlockSentence",
+          "lineNumber": 664
+        },
+        {
+          "caller": "genFess",
+          "callee": "steps.push",
+          "lineNumber": 666
+        },
+        {
+          "caller": "genFess",
+          "callee": "fessCore",
+          "lineNumber": 666
+        },
+        {
+          "caller": "genFess",
+          "callee": "steps.push",
+          "lineNumber": 667
+        },
+        {
+          "caller": "genFess",
+          "callee": "silasticSheetSentence",
+          "lineNumber": 667
+        },
+        {
+          "caller": "genFess",
+          "callee": "steps.push",
+          "lineNumber": 668
+        },
+        {
+          "caller": "genFess",
+          "callee": "bool",
+          "lineNumber": 669
+        },
+        {
+          "caller": "genFess",
+          "callee": "steps.push",
+          "lineNumber": 672
+        },
+        {
+          "caller": "genFess",
+          "callee": "dermacolSentence",
+          "lineNumber": 672
+        },
+        {
+          "caller": "genFess",
+          "callee": "steps.push",
+          "lineNumber": 673
+        },
+        {
+          "caller": "genFess",
+          "callee": "bool",
+          "lineNumber": 674
+        },
+        {
+          "caller": "genFess",
+          "callee": "nasalFindingsText",
+          "lineNumber": 679
+        },
+        {
+          "caller": "genFess",
+          "callee": "numberSteps",
+          "lineNumber": 679
+        },
+        {
+          "caller": "genCombo",
+          "callee": "bool",
+          "lineNumber": 700
+        },
+        {
+          "caller": "genCombo",
+          "callee": "str",
+          "lineNumber": 701
+        },
+        {
+          "caller": "genCombo",
+          "callee": "opening.push",
+          "lineNumber": 705
+        },
+        {
+          "caller": "genCombo",
+          "callee": "revisionSentence",
+          "lineNumber": 706
+        },
+        {
+          "caller": "genCombo",
+          "callee": "opening.push",
+          "lineNumber": 707
+        },
+        {
+          "caller": "genCombo",
+          "callee": "opening.push",
+          "lineNumber": 708
+        },
+        {
+          "caller": "genCombo",
+          "callee": "opening.push",
+          "lineNumber": 709
+        },
+        {
+          "caller": "genCombo",
+          "callee": "sphenopalatineBlockSentence",
+          "lineNumber": 709
+        },
+        {
+          "caller": "genCombo",
+          "callee": "opening.push",
+          "lineNumber": 711
+        },
+        {
+          "caller": "genCombo",
+          "callee": "septoCore",
+          "lineNumber": 714
+        },
+        {
+          "caller": "genCombo",
+          "callee": "fessSideBlock",
+          "lineNumber": 715
+        },
+        {
+          "caller": "genCombo",
+          "callee": "fessSideBlock",
+          "lineNumber": 716
+        },
+        {
+          "caller": "genCombo",
+          "callee": "parts.push",
+          "lineNumber": 723
+        },
+        {
+          "caller": "genCombo",
+          "callee": "numberSteps",
+          "lineNumber": 723
+        },
+        {
+          "caller": "genCombo",
+          "callee": "parts.push",
+          "lineNumber": 728
+        },
+        {
+          "caller": "genCombo",
+          "callee": "parts.push",
+          "lineNumber": 729
+        },
+        {
+          "caller": "genCombo",
+          "callee": "numberSteps",
+          "lineNumber": 729
+        },
+        {
+          "caller": "genCombo",
+          "callee": "parts.push",
+          "lineNumber": 732
+        },
+        {
+          "caller": "genCombo",
+          "callee": "silasticSheetSentence",
+          "lineNumber": 734
+        },
+        {
+          "caller": "genCombo",
+          "callee": "bool",
+          "lineNumber": 735
+        },
+        {
+          "caller": "genCombo",
+          "callee": "dermacolSentence",
+          "lineNumber": 736
+        },
+        {
+          "caller": "genCombo",
+          "callee": "bool",
+          "lineNumber": 737
+        },
+        {
+          "caller": "genCombo",
+          "callee": "parts.push",
+          "lineNumber": 741
+        },
+        {
+          "caller": "genCombo",
+          "callee": "numberSteps",
+          "lineNumber": 741
+        },
+        {
+          "caller": "genCombo",
+          "callee": "nasalFindingsText",
+          "lineNumber": 743
+        },
+        {
+          "caller": "genCombo",
+          "callee": "parts.join",
+          "lineNumber": 743
+        },
+        {
+          "caller": "generateOpNote",
+          "callee": "anesthesiaLabel",
+          "lineNumber": 752
+        },
+        {
+          "caller": "generateOpNote",
+          "callee": "genSeptoplasty",
+          "lineNumber": 753
+        },
+        {
+          "caller": "generateOpNote",
+          "callee": "genFess",
+          "lineNumber": 754
+        },
+        {
+          "caller": "generateOpNote",
+          "callee": "genCombo",
+          "lineNumber": 755
+        },
+        {
+          "caller": "septoConciseItems",
+          "callee": "str",
+          "lineNumber": 761
+        },
+        {
+          "caller": "septoConciseItems",
+          "callee": "str",
+          "lineNumber": 762
+        },
+        {
+          "caller": "septoConciseItems",
+          "callee": "str",
+          "lineNumber": 763
+        },
+        {
+          "caller": "septoConciseItems",
+          "callee": "bool",
+          "lineNumber": 766
+        },
+        {
+          "caller": "septoConciseItems",
+          "callee": "bool",
+          "lineNumber": 767
+        },
+        {
+          "caller": "septoConciseItems",
+          "callee": "bool",
+          "lineNumber": 768
+        },
+        {
+          "caller": "septoConciseItems",
+          "callee": "bool",
+          "lineNumber": 769
+        },
+        {
+          "caller": "septoConciseItems",
+          "callee": "bool",
+          "lineNumber": 770
+        },
+        {
+          "caller": "septoConciseItems",
+          "callee": "items.push",
+          "lineNumber": 772
+        },
+        {
+          "caller": "septoConciseItems",
+          "callee": "items.filter",
+          "lineNumber": 773
+        },
+        {
+          "caller": "septoConciseItems",
+          "callee": "Boolean",
+          "lineNumber": 773
+        },
+        {
+          "caller": "formatRegionList",
+          "callee": "regions.map((r) => regionAbbreviations[r as (typeof fessRegionOrder)[number]]).join",
+          "lineNumber": 805
+        },
+        {
+          "caller": "formatRegionList",
+          "callee": "regions.map",
+          "lineNumber": 805
+        },
+        {
+          "caller": "formatRegionList",
+          "callee": "regions.join",
+          "lineNumber": 807
+        },
+        {
+          "caller": "ethmoidLabelForSide",
+          "callee": "bool",
+          "lineNumber": 824
+        },
+        {
+          "caller": "ethmoidLabelForSide",
+          "callee": "bool",
+          "lineNumber": 825
+        },
+        {
+          "caller": "regionSegment",
+          "callee": "formatRegionList",
+          "lineNumber": 838
+        },
+        {
+          "caller": "fessRegionsForSide",
+          "callee": "bool",
+          "lineNumber": 850
+        },
+        {
+          "caller": "fessRegionsForSide",
+          "callee": "regions.add",
+          "lineNumber": 852
+        },
+        {
+          "caller": "fessRegionsForSide",
+          "callee": "fessRegionOrder.filter",
+          "lineNumber": 855
+        },
+        {
+          "caller": "fessRegionsForSide",
+          "callee": "regions.has",
+          "lineNumber": 855
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "fessRegionsForSide",
+          "lineNumber": 864
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "fessRegionsForSide",
+          "lineNumber": 865
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "turbinoplastyWordsForSide",
+          "lineNumber": 866
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "turbinoplastyWordsForSide",
+          "lineNumber": 867
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "ethmoidLabelForSide",
+          "lineNumber": 876
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "ethmoidLabelForSide",
+          "lineNumber": 877
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "left.every",
+          "lineNumber": 879
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "isEthmoidOnly",
+          "lineNumber": 883
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "isEthmoidOnly",
+          "lineNumber": 892
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "formatSideLabel",
+          "lineNumber": 893
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "regionSegment",
+          "lineNumber": 893
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "rightTurb.join",
+          "lineNumber": 898
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "parts.push",
+          "lineNumber": 899
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "formatSideLabel",
+          "lineNumber": 899
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "regionSegment",
+          "lineNumber": 899
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "parts.push",
+          "lineNumber": 901
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "formatSideLabel",
+          "lineNumber": 901
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "rightTurb.join",
+          "lineNumber": 901
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "leftTurb.join",
+          "lineNumber": 904
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "parts.push",
+          "lineNumber": 905
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "formatSideLabel",
+          "lineNumber": 905
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "regionSegment",
+          "lineNumber": 905
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "parts.push",
+          "lineNumber": 907
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "formatSideLabel",
+          "lineNumber": 907
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "leftTurb.join",
+          "lineNumber": 907
+        },
+        {
+          "caller": "buildFessProcedureName",
+          "callee": "parts.join",
+          "lineNumber": 909
+        },
+        {
+          "caller": "septoplastyProcedureName",
+          "callee": "turbSideFlags",
+          "lineNumber": 918
+        },
+        {
+          "caller": "septoplastyProcedureName",
+          "callee": "revisionPrefixText",
+          "lineNumber": 921
+        },
+        {
+          "caller": "septoplastyProcedureName",
+          "callee": "turbSideFlags",
+          "lineNumber": 924
+        },
+        {
+          "caller": "septoplastyProcedureName",
+          "callee": "parts.push",
+          "lineNumber": 927
+        },
+        {
+          "caller": "septoplastyProcedureName",
+          "callee": "formatSideLabel",
+          "lineNumber": 927
+        },
+        {
+          "caller": "septoplastyProcedureName",
+          "callee": "parts.push",
+          "lineNumber": 931
+        },
+        {
+          "caller": "septoplastyProcedureName",
+          "callee": "formatSideLabel",
+          "lineNumber": 931
+        },
+        {
+          "caller": "septoplastyProcedureName",
+          "callee": "parts.join",
+          "lineNumber": 934
+        },
+        {
+          "caller": "buildProcedureName",
+          "callee": "septoplastyProcedureName",
+          "lineNumber": 942
+        },
+        {
+          "caller": "buildProcedureName",
+          "callee": "fessRegionsForSide",
+          "lineNumber": 945
+        },
+        {
+          "caller": "buildProcedureName",
+          "callee": "fessRegionsForSide",
+          "lineNumber": 945
+        },
+        {
+          "caller": "buildProcedureName",
+          "callee": "turbinoplastyGlobalSuffix",
+          "lineNumber": 946
+        },
+        {
+          "caller": "buildProcedureName",
+          "callee": "revisionPrefixText",
+          "lineNumber": 951
+        },
+        {
+          "caller": "buildProcedureName",
+          "callee": "bool",
+          "lineNumber": 953
+        },
+        {
+          "caller": "buildProcedureName",
+          "callee": "bool",
+          "lineNumber": 954
+        },
+        {
+          "caller": "buildProcedureName",
+          "callee": "buildFessProcedureName",
+          "lineNumber": 957
+        },
+        {
+          "caller": "buildProcedureName",
+          "callee": "`${revisionPrefix}${fessName}${turbSuffix}`.replace(/\\s+/g, \" \").trim",
+          "lineNumber": 959
+        },
+        {
+          "caller": "buildProcedureName",
+          "callee": "`${revisionPrefix}${fessName}${turbSuffix}`.replace",
+          "lineNumber": 959
+        },
+        {
+          "caller": "buildProcedureName",
+          "callee": "`${revisionPrefix}${combined}${turbSuffix}`.replace(/\\s+/g, \" \").trim",
+          "lineNumber": 962
+        },
+        {
+          "caller": "buildProcedureName",
+          "callee": "`${revisionPrefix}${combined}${turbSuffix}`.replace",
+          "lineNumber": 962
+        },
+        {
+          "caller": "fessSideMatrix",
+          "callee": "bool",
+          "lineNumber": 1001
+        },
+        {
+          "caller": "fessSideMatrix",
+          "callee": "bool",
+          "lineNumber": 1001
+        },
+        {
+          "caller": "fessSideMatrix",
+          "callee": "rows.push",
+          "lineNumber": 1002
+        },
+        {
+          "caller": "fessSideMatrix",
+          "callee": "bool",
+          "lineNumber": 1005
+        },
+        {
+          "caller": "fessSideMatrix",
+          "callee": "bool",
+          "lineNumber": 1006
+        },
+        {
+          "caller": "fessSideMatrix",
+          "callee": "rows.push",
+          "lineNumber": 1011
+        },
+        {
+          "caller": "fessSideMatrix",
+          "callee": "fessStepFieldKeys.map",
+          "lineNumber": 1012
+        },
+        {
+          "caller": "fessSideMatrix",
+          "callee": "bool",
+          "lineNumber": 1015
+        },
+        {
+          "caller": "fessSideMatrix",
+          "callee": "bool",
+          "lineNumber": 1016
+        },
+        {
+          "caller": "turbinoplastySideMatrix",
+          "callee": "turbMatrixTypes.map",
+          "lineNumber": 1032
+        },
+        {
+          "caller": "turbinoplastySideMatrix",
+          "callee": "bool",
+          "lineNumber": 1035
+        },
+        {
+          "caller": "turbinoplastySideMatrix",
+          "callee": "bool",
+          "lineNumber": 1036
+        },
+        {
+          "caller": "packingCellValue",
+          "callee": "bool",
+          "lineNumber": 1048
+        },
+        {
+          "caller": "packingCellValue",
+          "callee": "parts.push",
+          "lineNumber": 1048
+        },
+        {
+          "caller": "packingCellValue",
+          "callee": "bool",
+          "lineNumber": 1049
+        },
+        {
+          "caller": "packingCellValue",
+          "callee": "parts.push",
+          "lineNumber": 1049
+        },
+        {
+          "caller": "packingCellValue",
+          "callee": "bool",
+          "lineNumber": 1050
+        },
+        {
+          "caller": "packingCellValue",
+          "callee": "parts.push",
+          "lineNumber": 1050
+        },
+        {
+          "caller": "packingCellValue",
+          "callee": "parts.join",
+          "lineNumber": 1051
+        },
+        {
+          "caller": "buildPlanTable",
+          "callee": "buildProcedureName",
+          "lineNumber": 1059
+        },
+        {
+          "caller": "buildPlanTable",
+          "callee": "nasalFindingsSummary",
+          "lineNumber": 1060
+        },
+        {
+          "caller": "buildPlanTable",
+          "callee": "allTurbinateItems",
+          "lineNumber": 1061
+        },
+        {
+          "caller": "buildPlanTable",
+          "callee": "turbItems.join",
+          "lineNumber": 1063
+        },
+        {
+          "caller": "buildPlanTable",
+          "callee": "septoConciseItems",
+          "lineNumber": 1066
+        },
+        {
+          "caller": "buildPlanTable",
+          "callee": "rest.join",
+          "lineNumber": 1072
+        },
+        {
+          "caller": "buildPlanTable",
+          "callee": "bool",
+          "lineNumber": 1084
+        },
+        {
+          "caller": "buildPlanTable",
+          "callee": "packingCellValue",
+          "lineNumber": 1085
+        },
+        {
+          "caller": "buildPlanTable",
+          "callee": "fessSideMatrix",
+          "lineNumber": 1087
+        },
+        {
+          "caller": "buildPlanTable",
+          "callee": "turbinoplastySideMatrix",
+          "lineNumber": 1088
+        },
+        {
+          "caller": "buildPlanTable",
+          "callee": "septoConciseItems",
+          "lineNumber": 1092
+        },
+        {
+          "caller": "buildPlanTable",
+          "callee": "str",
+          "lineNumber": 1097
+        },
+        {
+          "caller": "buildPlanTable",
+          "callee": "rest.join",
+          "lineNumber": 1099
+        },
+        {
+          "caller": "buildPlanTable",
+          "callee": "bool",
+          "lineNumber": 1100
+        },
+        {
+          "caller": "buildPlanTable",
+          "callee": "packingCellValue",
+          "lineNumber": 1101
+        },
+        {
+          "caller": "buildPlanTable",
+          "callee": "fessSideMatrix",
+          "lineNumber": 1103
+        },
+        {
+          "caller": "buildPlanTable",
+          "callee": "turbinoplastySideMatrix",
+          "lineNumber": 1104
+        },
+        {
+          "caller": "planTableToText",
+          "callee": "lines.push",
+          "lineNumber": 1111
+        },
+        {
+          "caller": "planTableToText",
+          "callee": "lines.push",
+          "lineNumber": 1113
+        },
+        {
+          "caller": "planTableToText",
+          "callee": "lines.push",
+          "lineNumber": 1115
+        },
+        {
+          "caller": "planTableToText",
+          "callee": "lines.push",
+          "lineNumber": 1119
+        },
+        {
+          "caller": "planTableToText",
+          "callee": "lines.push",
+          "lineNumber": 1121
+        },
+        {
+          "caller": "planTableToText",
+          "callee": "lines.join",
+          "lineNumber": 1124
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 9,
+        "functionCount": 55,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/lib/recent-combos.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 59,
+      "nonEmptyLines": 55,
+      "functions": [
+        {
+          "name": "getRecentCombosForSurgeryType",
+          "startLine": 15,
+          "endLine": 44,
+          "params": [
+            "userId",
+            "surgeryTypeId",
+            "surgeryTypeCode",
+            "nameStyle",
+            "limit"
+          ]
+        },
+        {
+          "name": "getRecentCombosForSurgeryTypes",
+          "startLine": 46,
+          "endLine": 59,
+          "params": [
+            "userId",
+            "surgeryTypes",
+            "nameStyle",
+            "limit"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "getRecentCombosForSurgeryType",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "getRecentCombosForSurgeryTypes",
+          "line": 46,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "getRecentCombosForSurgeryType",
+          "callee": "prisma.opPlan.findMany",
+          "lineNumber": 22
+        },
+        {
+          "caller": "getRecentCombosForSurgeryType",
+          "callee": "parseFieldValues",
+          "lineNumber": 32
+        },
+        {
+          "caller": "getRecentCombosForSurgeryType",
+          "callee": "Object.keys",
+          "lineNumber": 33
+        },
+        {
+          "caller": "getRecentCombosForSurgeryType",
+          "callee": "JSON.stringify",
+          "lineNumber": 34
+        },
+        {
+          "caller": "getRecentCombosForSurgeryType",
+          "callee": "seen.has",
+          "lineNumber": 35
+        },
+        {
+          "caller": "getRecentCombosForSurgeryType",
+          "callee": "seen.add",
+          "lineNumber": 36
+        },
+        {
+          "caller": "getRecentCombosForSurgeryType",
+          "callee": "isBuiltInSurgeryCode",
+          "lineNumber": 37
+        },
+        {
+          "caller": "getRecentCombosForSurgeryType",
+          "callee": "buildProcedureName",
+          "lineNumber": 38
+        },
+        {
+          "caller": "getRecentCombosForSurgeryType",
+          "callee": "combos.push",
+          "lineNumber": 40
+        },
+        {
+          "caller": "getRecentCombosForSurgeryTypes",
+          "callee": "Promise.all",
+          "lineNumber": 52
+        },
+        {
+          "caller": "getRecentCombosForSurgeryTypes",
+          "callee": "surgeryTypes.map",
+          "lineNumber": 53
+        },
+        {
+          "caller": "getRecentCombosForSurgeryTypes",
+          "callee": "getRecentCombosForSurgeryType",
+          "lineNumber": 55
+        },
+        {
+          "caller": "getRecentCombosForSurgeryTypes",
+          "callee": "Object.fromEntries",
+          "lineNumber": 58
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/lib/ui.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 25,
+      "nonEmptyLines": 25,
+      "exports": [
+        {
+          "name": "buttonStyles",
+          "line": 5,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

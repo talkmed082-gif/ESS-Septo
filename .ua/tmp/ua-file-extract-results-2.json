@@ -1,0 +1,1501 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 16,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 16,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 16,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "src/app/(app)/patients/[id]/edit/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 43,
+      "nonEmptyLines": 39,
+      "functions": [
+        {
+          "name": "EditPatientPage",
+          "startLine": 9,
+          "endLine": 43,
+          "params": [
+            "{\n  params,\n  searchParams,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "EditPatientPage",
+          "line": 9,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "EditPatientPage",
+          "callee": "verifySession",
+          "lineNumber": 13
+        },
+        {
+          "caller": "EditPatientPage",
+          "callee": "prisma.patient.findUnique",
+          "lineNumber": 18
+        },
+        {
+          "caller": "EditPatientPage",
+          "callee": "notFound",
+          "lineNumber": 19
+        },
+        {
+          "caller": "EditPatientPage",
+          "callee": "updatePatient.bind",
+          "lineNumber": 21
+        },
+        {
+          "caller": "EditPatientPage",
+          "callee": "String",
+          "lineNumber": 37
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/(app)/patients/[id]/plans/new/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 48,
+      "nonEmptyLines": 43,
+      "functions": [
+        {
+          "name": "NewOpPlanPage",
+          "startLine": 9,
+          "endLine": 48,
+          "params": [
+            "{\n  params,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "NewOpPlanPage",
+          "line": 9,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "NewOpPlanPage",
+          "callee": "getCurrentUser",
+          "lineNumber": 12
+        },
+        {
+          "caller": "NewOpPlanPage",
+          "callee": "prisma.patient.findUnique",
+          "lineNumber": 15
+        },
+        {
+          "caller": "NewOpPlanPage",
+          "callee": "notFound",
+          "lineNumber": 16
+        },
+        {
+          "caller": "NewOpPlanPage",
+          "callee": "prisma.surgeryType.findMany",
+          "lineNumber": 18
+        },
+        {
+          "caller": "NewOpPlanPage",
+          "callee": "getLatestNasalFindingsForPatient",
+          "lineNumber": 25
+        },
+        {
+          "caller": "NewOpPlanPage",
+          "callee": "surgeryTypes.map",
+          "lineNumber": 33
+        },
+        {
+          "caller": "NewOpPlanPage",
+          "callee": "resolveSurgeryTypeFields",
+          "lineNumber": 37
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/(app)/patients/patient-form.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 111,
+      "nonEmptyLines": 107,
+      "functions": [
+        {
+          "name": "PatientForm",
+          "startLine": 12,
+          "endLine": 111,
+          "params": [
+            "{\n  action,\n  defaultValues,\n  submitLabel,\n  returnTo,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "PatientForm",
+          "line": 12,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "PatientForm",
+          "callee": "useActionState",
+          "lineNumber": 31
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/(app)/settings/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 95,
+      "nonEmptyLines": 90,
+      "functions": [
+        {
+          "name": "SettingsPage",
+          "startLine": 12,
+          "endLine": 95,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "SettingsPage",
+          "line": 12,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SettingsPage",
+          "callee": "getCurrentUser",
+          "lineNumber": 13
+        },
+        {
+          "caller": "SettingsPage",
+          "callee": "new Date().toISOString().slice",
+          "lineNumber": 19
+        },
+        {
+          "caller": "SettingsPage",
+          "callee": "new Date().toISOString",
+          "lineNumber": 19
+        },
+        {
+          "caller": "SettingsPage",
+          "callee": "prisma.opPlan.findMany",
+          "lineNumber": 20
+        },
+        {
+          "caller": "SettingsPage",
+          "callee": "upcomingPlans.map",
+          "lineNumber": 51
+        },
+        {
+          "caller": "SettingsPage",
+          "callee": "parseFieldValues",
+          "lineNumber": 52
+        },
+        {
+          "caller": "SettingsPage",
+          "callee": "isBuiltInSurgeryCode",
+          "lineNumber": 53
+        },
+        {
+          "caller": "SettingsPage",
+          "callee": "buildProcedureName",
+          "lineNumber": 54
+        },
+        {
+          "caller": "SettingsPage",
+          "callee": "safeDateStr",
+          "lineNumber": 61
+        },
+        {
+          "caller": "SettingsPage",
+          "callee": "buildGoogleCalendarUrl",
+          "lineNumber": 65
+        }
+      ],
+      "metrics": {
+        "importCount": 10,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/(app)/settings/settings-form.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 106,
+      "nonEmptyLines": 97,
+      "functions": [
+        {
+          "name": "SettingsForm",
+          "startLine": 24,
+          "endLine": 106,
+          "params": [
+            "{\n  initialSideNotation,\n  initialAbbreviate,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SettingsForm",
+          "line": 24,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SettingsForm",
+          "callee": "useActionState",
+          "lineNumber": 31
+        },
+        {
+          "caller": "SettingsForm",
+          "callee": "useState",
+          "lineNumber": 35
+        },
+        {
+          "caller": "SettingsForm",
+          "callee": "useState",
+          "lineNumber": 36
+        },
+        {
+          "caller": "SettingsForm",
+          "callee": "buildProcedureName",
+          "lineNumber": 39
+        },
+        {
+          "caller": "SettingsForm",
+          "callee": "SIDE_OPTIONS.map",
+          "lineNumber": 46
+        },
+        {
+          "caller": "SettingsForm",
+          "callee": "setSideNotation",
+          "lineNumber": 53
+        },
+        {
+          "caller": "SettingsForm",
+          "callee": "setAbbreviate",
+          "lineNumber": 72
+        },
+        {
+          "caller": "SettingsForm",
+          "callee": "setAbbreviate",
+          "lineNumber": 83
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/(app)/surgery-types/field-builder.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 172,
+      "nonEmptyLines": 160,
+      "functions": [
+        {
+          "name": "emptyRow",
+          "startLine": 26,
+          "endLine": 29,
+          "params": []
+        },
+        {
+          "name": "SurgeryTypeFieldBuilder",
+          "startLine": 31,
+          "endLine": 172,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "SurgeryTypeFieldBuilder",
+          "line": 31,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "useActionState",
+          "lineNumber": 32
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "useState",
+          "lineNumber": 36
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "emptyRow",
+          "lineNumber": 36
+        },
+        {
+          "caller": "updateRow",
+          "callee": "setRows",
+          "lineNumber": 39
+        },
+        {
+          "caller": "updateRow",
+          "callee": "prev.map",
+          "lineNumber": 39
+        },
+        {
+          "caller": "removeRow",
+          "callee": "setRows",
+          "lineNumber": 43
+        },
+        {
+          "caller": "removeRow",
+          "callee": "prev.filter",
+          "lineNumber": 43
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "JSON.stringify",
+          "lineNumber": 46
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "rows\n      .filter((r) => r.key.trim() && r.label.trim())\n      .map",
+          "lineNumber": 47
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "rows\n      .filter",
+          "lineNumber": 47
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "r.key.trim",
+          "lineNumber": 48
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "r.label.trim",
+          "lineNumber": 48
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "r.key.trim",
+          "lineNumber": 50
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "r.label.trim",
+          "lineNumber": 51
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "(r.options ?? []).map((o) => o.trim()).filter",
+          "lineNumber": 55
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "(r.options ?? []).map",
+          "lineNumber": 55
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "o.trim",
+          "lineNumber": 55
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "setRows",
+          "lineNumber": 98
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "emptyRow",
+          "lineNumber": 98
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "rows.map",
+          "lineNumber": 105
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "updateRow",
+          "lineNumber": 113
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "updateRow",
+          "lineNumber": 119
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "updateRow",
+          "lineNumber": 125
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "Object.entries(TYPE_LABEL).map",
+          "lineNumber": 131
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "Object.entries",
+          "lineNumber": 131
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "(row.options ?? []).join",
+          "lineNumber": 140
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "updateRow",
+          "lineNumber": 142
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "e.target.value.split",
+          "lineNumber": 143
+        },
+        {
+          "caller": "SurgeryTypeFieldBuilder",
+          "callee": "removeRow",
+          "lineNumber": 151
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/(app)/surgery-types/surgery-types-manager.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 63,
+      "nonEmptyLines": 60,
+      "functions": [
+        {
+          "name": "SurgeryTypesManager",
+          "startLine": 6,
+          "endLine": 63,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "SurgeryTypesManager",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SurgeryTypesManager",
+          "callee": "prisma.surgeryType.findMany",
+          "lineNumber": 7
+        },
+        {
+          "caller": "SurgeryTypesManager",
+          "callee": "surgeryTypes.map",
+          "lineNumber": 25
+        },
+        {
+          "caller": "SurgeryTypesManager",
+          "callee": "resolveSurgeryTypeFields",
+          "lineNumber": 32
+        },
+        {
+          "caller": "SurgeryTypesManager",
+          "callee": "deleteSurgeryType.bind",
+          "lineNumber": 39
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/actions/patients.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 123,
+      "nonEmptyLines": 109,
+      "functions": [
+        {
+          "name": "parsePatientFormData",
+          "startLine": 28,
+          "endLine": 36,
+          "params": [
+            "formData"
+          ]
+        },
+        {
+          "name": "parseAge",
+          "startLine": 38,
+          "endLine": 42,
+          "params": [
+            "age"
+          ]
+        },
+        {
+          "name": "createPatient",
+          "startLine": 44,
+          "endLine": 68,
+          "params": [
+            "_prevState",
+            "formData"
+          ]
+        },
+        {
+          "name": "safeReturnPath",
+          "startLine": 73,
+          "endLine": 78,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "updatePatient",
+          "startLine": 80,
+          "endLine": 106,
+          "params": [
+            "patientId",
+            "_prevState",
+            "formData"
+          ]
+        },
+        {
+          "name": "deletePatient",
+          "startLine": 108,
+          "endLine": 113,
+          "params": [
+            "patientId"
+          ]
+        },
+        {
+          "name": "deletePatients",
+          "startLine": 115,
+          "endLine": 123,
+          "params": [
+            "_prevState",
+            "formData"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "createPatient",
+          "line": 44,
+          "isDefault": false
+        },
+        {
+          "name": "updatePatient",
+          "line": 80,
+          "isDefault": false
+        },
+        {
+          "name": "deletePatient",
+          "line": 108,
+          "isDefault": false
+        },
+        {
+          "name": "deletePatients",
+          "line": 115,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "parsePatientFormData",
+          "callee": "PatientSchema.safeParse",
+          "lineNumber": 29
+        },
+        {
+          "caller": "parsePatientFormData",
+          "callee": "formData.get",
+          "lineNumber": 30
+        },
+        {
+          "caller": "parsePatientFormData",
+          "callee": "formData.get",
+          "lineNumber": 31
+        },
+        {
+          "caller": "parsePatientFormData",
+          "callee": "formData.get",
+          "lineNumber": 32
+        },
+        {
+          "caller": "parsePatientFormData",
+          "callee": "formData.get",
+          "lineNumber": 33
+        },
+        {
+          "caller": "parsePatientFormData",
+          "callee": "formData.get",
+          "lineNumber": 34
+        },
+        {
+          "caller": "parseAge",
+          "callee": "Number",
+          "lineNumber": 40
+        },
+        {
+          "caller": "parseAge",
+          "callee": "Number.isInteger",
+          "lineNumber": 41
+        },
+        {
+          "caller": "createPatient",
+          "callee": "verifySession",
+          "lineNumber": 48
+        },
+        {
+          "caller": "createPatient",
+          "callee": "parsePatientFormData",
+          "lineNumber": 49
+        },
+        {
+          "caller": "createPatient",
+          "callee": "z.flattenError",
+          "lineNumber": 51
+        },
+        {
+          "caller": "createPatient",
+          "callee": "prisma.patient.create",
+          "lineNumber": 55
+        },
+        {
+          "caller": "createPatient",
+          "callee": "parseAge",
+          "lineNumber": 60
+        },
+        {
+          "caller": "createPatient",
+          "callee": "revalidatePath",
+          "lineNumber": 66
+        },
+        {
+          "caller": "createPatient",
+          "callee": "redirect",
+          "lineNumber": 67
+        },
+        {
+          "caller": "safeReturnPath",
+          "callee": "value.startsWith",
+          "lineNumber": 74
+        },
+        {
+          "caller": "safeReturnPath",
+          "callee": "value.startsWith",
+          "lineNumber": 74
+        },
+        {
+          "caller": "updatePatient",
+          "callee": "verifySession",
+          "lineNumber": 85
+        },
+        {
+          "caller": "updatePatient",
+          "callee": "parsePatientFormData",
+          "lineNumber": 86
+        },
+        {
+          "caller": "updatePatient",
+          "callee": "z.flattenError",
+          "lineNumber": 88
+        },
+        {
+          "caller": "updatePatient",
+          "callee": "prisma.patient.update",
+          "lineNumber": 92
+        },
+        {
+          "caller": "updatePatient",
+          "callee": "parseAge",
+          "lineNumber": 98
+        },
+        {
+          "caller": "updatePatient",
+          "callee": "revalidatePath",
+          "lineNumber": 103
+        },
+        {
+          "caller": "updatePatient",
+          "callee": "revalidatePath",
+          "lineNumber": 104
+        },
+        {
+          "caller": "updatePatient",
+          "callee": "redirect",
+          "lineNumber": 105
+        },
+        {
+          "caller": "updatePatient",
+          "callee": "safeReturnPath",
+          "lineNumber": 105
+        },
+        {
+          "caller": "updatePatient",
+          "callee": "formData.get",
+          "lineNumber": 105
+        },
+        {
+          "caller": "deletePatient",
+          "callee": "verifySession",
+          "lineNumber": 109
+        },
+        {
+          "caller": "deletePatient",
+          "callee": "prisma.patient.delete",
+          "lineNumber": 110
+        },
+        {
+          "caller": "deletePatient",
+          "callee": "revalidatePath",
+          "lineNumber": 111
+        },
+        {
+          "caller": "deletePatient",
+          "callee": "redirect",
+          "lineNumber": 112
+        },
+        {
+          "caller": "deletePatients",
+          "callee": "verifySession",
+          "lineNumber": 116
+        },
+        {
+          "caller": "deletePatients",
+          "callee": "formData.getAll(\"ids\").filter",
+          "lineNumber": 117
+        },
+        {
+          "caller": "deletePatients",
+          "callee": "formData.getAll",
+          "lineNumber": 117
+        },
+        {
+          "caller": "deletePatients",
+          "callee": "prisma.patient.deleteMany",
+          "lineNumber": 119
+        },
+        {
+          "caller": "deletePatients",
+          "callee": "revalidatePath",
+          "lineNumber": 121
+        },
+        {
+          "caller": "deletePatients",
+          "callee": "redirect",
+          "lineNumber": 122
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 4,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/actions/settings.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 41,
+      "nonEmptyLines": 34,
+      "functions": [
+        {
+          "name": "updateNameStyleSettings",
+          "startLine": 17,
+          "endLine": 41,
+          "params": [
+            "_prevState",
+            "formData"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "updateNameStyleSettings",
+          "line": 17,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "updateNameStyleSettings",
+          "callee": "verifySession",
+          "lineNumber": 21
+        },
+        {
+          "caller": "updateNameStyleSettings",
+          "callee": "SettingsSchema.safeParse",
+          "lineNumber": 23
+        },
+        {
+          "caller": "updateNameStyleSettings",
+          "callee": "formData.get",
+          "lineNumber": 24
+        },
+        {
+          "caller": "updateNameStyleSettings",
+          "callee": "formData.get",
+          "lineNumber": 25
+        },
+        {
+          "caller": "updateNameStyleSettings",
+          "callee": "prisma.user.update",
+          "lineNumber": 31
+        },
+        {
+          "caller": "updateNameStyleSettings",
+          "callee": "revalidatePath",
+          "lineNumber": 39
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/actions/surgery-types.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 102,
+      "nonEmptyLines": 88,
+      "functions": [
+        {
+          "name": "createSurgeryType",
+          "startLine": 39,
+          "endLine": 86,
+          "params": [
+            "_prevState",
+            "formData"
+          ]
+        },
+        {
+          "name": "deleteSurgeryType",
+          "startLine": 88,
+          "endLine": 102,
+          "params": [
+            "surgeryTypeId"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "createSurgeryType",
+          "line": 39,
+          "isDefault": false
+        },
+        {
+          "name": "deleteSurgeryType",
+          "line": 88,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "createSurgeryType",
+          "callee": "verifySession",
+          "lineNumber": 43
+        },
+        {
+          "caller": "createSurgeryType",
+          "callee": "SurgeryTypeSchema.safeParse",
+          "lineNumber": 45
+        },
+        {
+          "caller": "createSurgeryType",
+          "callee": "formData.get",
+          "lineNumber": 46
+        },
+        {
+          "caller": "createSurgeryType",
+          "callee": "formData.get",
+          "lineNumber": 47
+        },
+        {
+          "caller": "createSurgeryType",
+          "callee": "formData.get",
+          "lineNumber": 48
+        },
+        {
+          "caller": "createSurgeryType",
+          "callee": "z.flattenError",
+          "lineNumber": 52
+        },
+        {
+          "caller": "createSurgeryType",
+          "callee": "JSON.parse",
+          "lineNumber": 59
+        },
+        {
+          "caller": "createSurgeryType",
+          "callee": "z.array(FieldDefSchema).safeParse",
+          "lineNumber": 64
+        },
+        {
+          "caller": "createSurgeryType",
+          "callee": "z.array",
+          "lineNumber": 64
+        },
+        {
+          "caller": "createSurgeryType",
+          "callee": "prisma.surgeryType.findUnique",
+          "lineNumber": 70
+        },
+        {
+          "caller": "createSurgeryType",
+          "callee": "prisma.surgeryType.create",
+          "lineNumber": 75
+        },
+        {
+          "caller": "createSurgeryType",
+          "callee": "revalidatePath",
+          "lineNumber": 84
+        },
+        {
+          "caller": "createSurgeryType",
+          "callee": "redirect",
+          "lineNumber": 85
+        },
+        {
+          "caller": "deleteSurgeryType",
+          "callee": "verifySession",
+          "lineNumber": 89
+        },
+        {
+          "caller": "deleteSurgeryType",
+          "callee": "prisma.surgeryType.findUnique",
+          "lineNumber": 90
+        },
+        {
+          "caller": "deleteSurgeryType",
+          "callee": "prisma.surgeryType.delete",
+          "lineNumber": 97
+        },
+        {
+          "caller": "deleteSurgeryType",
+          "callee": "revalidatePath",
+          "lineNumber": 101
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/plans/[id]/ics/route.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 42,
+      "nonEmptyLines": 37,
+      "functions": [
+        {
+          "name": "GET",
+          "startLine": 9,
+          "endLine": 42,
+          "params": [
+            "_request",
+            "{ params }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "GET",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "GET",
+          "callee": "verifySession",
+          "lineNumber": 13
+        },
+        {
+          "caller": "GET",
+          "callee": "prisma.opPlan.findUnique",
+          "lineNumber": 16
+        },
+        {
+          "caller": "GET",
+          "callee": "NextResponse.json",
+          "lineNumber": 21
+        },
+        {
+          "caller": "GET",
+          "callee": "parseFieldValues",
+          "lineNumber": 24
+        },
+        {
+          "caller": "GET",
+          "callee": "isBuiltInSurgeryCode",
+          "lineNumber": 25
+        },
+        {
+          "caller": "GET",
+          "callee": "buildProcedureName",
+          "lineNumber": 26
+        },
+        {
+          "caller": "GET",
+          "callee": "buildIcsContent",
+          "lineNumber": 29
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/lib/calendar.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 68,
+      "nonEmptyLines": 62,
+      "functions": [
+        {
+          "name": "toIcsDate",
+          "startLine": 1,
+          "endLine": 3,
+          "params": [
+            "date"
+          ]
+        },
+        {
+          "name": "addDays",
+          "startLine": 5,
+          "endLine": 9,
+          "params": [
+            "date",
+            "days"
+          ]
+        },
+        {
+          "name": "escapeIcsText",
+          "startLine": 11,
+          "endLine": 13,
+          "params": [
+            "text"
+          ]
+        },
+        {
+          "name": "buildIcsContent",
+          "startLine": 15,
+          "endLine": 48,
+          "params": [
+            "{\n  uid,\n  title,\n  date,\n  description,\n}"
+          ]
+        },
+        {
+          "name": "buildGoogleCalendarUrl",
+          "startLine": 50,
+          "endLine": 68,
+          "params": [
+            "{\n  title,\n  date,\n  details,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "buildIcsContent",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "buildGoogleCalendarUrl",
+          "line": 50,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "toIcsDate",
+          "callee": "date.toISOString().slice(0, 10).replace",
+          "lineNumber": 2
+        },
+        {
+          "caller": "toIcsDate",
+          "callee": "date.toISOString().slice",
+          "lineNumber": 2
+        },
+        {
+          "caller": "toIcsDate",
+          "callee": "date.toISOString",
+          "lineNumber": 2
+        },
+        {
+          "caller": "addDays",
+          "callee": "d.setDate",
+          "lineNumber": 7
+        },
+        {
+          "caller": "addDays",
+          "callee": "d.getDate",
+          "lineNumber": 7
+        },
+        {
+          "caller": "escapeIcsText",
+          "callee": "text.replace(/\\\\/g, \"\\\\\\\\\").replace(/,/g, \"\\\\,\").replace(/;/g, \"\\\\;\").replace",
+          "lineNumber": 12
+        },
+        {
+          "caller": "escapeIcsText",
+          "callee": "text.replace(/\\\\/g, \"\\\\\\\\\").replace(/,/g, \"\\\\,\").replace",
+          "lineNumber": 12
+        },
+        {
+          "caller": "escapeIcsText",
+          "callee": "text.replace(/\\\\/g, \"\\\\\\\\\").replace",
+          "lineNumber": 12
+        },
+        {
+          "caller": "escapeIcsText",
+          "callee": "text.replace",
+          "lineNumber": 12
+        },
+        {
+          "caller": "buildIcsContent",
+          "callee": "toIcsDate",
+          "lineNumber": 26
+        },
+        {
+          "caller": "buildIcsContent",
+          "callee": "toIcsDate",
+          "lineNumber": 27
+        },
+        {
+          "caller": "buildIcsContent",
+          "callee": "addDays",
+          "lineNumber": 27
+        },
+        {
+          "caller": "buildIcsContent",
+          "callee": "toIcsDate",
+          "lineNumber": 28
+        },
+        {
+          "caller": "buildIcsContent",
+          "callee": "escapeIcsText",
+          "lineNumber": 40
+        },
+        {
+          "caller": "buildIcsContent",
+          "callee": "lines.push",
+          "lineNumber": 43
+        },
+        {
+          "caller": "buildIcsContent",
+          "callee": "escapeIcsText",
+          "lineNumber": 43
+        },
+        {
+          "caller": "buildIcsContent",
+          "callee": "lines.push",
+          "lineNumber": 45
+        },
+        {
+          "caller": "buildIcsContent",
+          "callee": "lines.join",
+          "lineNumber": 47
+        },
+        {
+          "caller": "buildGoogleCalendarUrl",
+          "callee": "toIcsDate",
+          "lineNumber": 59
+        },
+        {
+          "caller": "buildGoogleCalendarUrl",
+          "callee": "toIcsDate",
+          "lineNumber": 60
+        },
+        {
+          "caller": "buildGoogleCalendarUrl",
+          "callee": "addDays",
+          "lineNumber": 60
+        },
+        {
+          "caller": "buildGoogleCalendarUrl",
+          "callee": "params.set",
+          "lineNumber": 66
+        },
+        {
+          "caller": "buildGoogleCalendarUrl",
+          "callee": "params.toString",
+          "lineNumber": 67
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/lib/dal.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 32,
+      "nonEmptyLines": 30,
+      "exports": [
+        {
+          "name": "verifySession",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "getCurrentUser",
+          "line": 15,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/lib/patient-nasal-findings.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 39,
+      "functions": [
+        {
+          "name": "pickNasalFindings",
+          "startLine": 6,
+          "endLine": 14,
+          "params": [
+            "values"
+          ]
+        },
+        {
+          "name": "getLatestNasalFindingsForPatient",
+          "startLine": 20,
+          "endLine": 44,
+          "params": [
+            "patientId"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "getLatestNasalFindingsForPatient",
+          "line": 20,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "pickNasalFindings",
+          "callee": "Object.entries",
+          "lineNumber": 8
+        },
+        {
+          "caller": "pickNasalFindings",
+          "callee": "isNasalFindingKey",
+          "lineNumber": 9
+        },
+        {
+          "caller": "getLatestNasalFindingsForPatient",
+          "callee": "prisma.opPlan.findMany",
+          "lineNumber": 23
+        },
+        {
+          "caller": "getLatestNasalFindingsForPatient",
+          "callee": "pickNasalFindings",
+          "lineNumber": 35
+        },
+        {
+          "caller": "getLatestNasalFindingsForPatient",
+          "callee": "parseFieldValues",
+          "lineNumber": 35
+        },
+        {
+          "caller": "getLatestNasalFindingsForPatient",
+          "callee": "Object.keys",
+          "lineNumber": 37
+        },
+        {
+          "caller": "getLatestNasalFindingsForPatient",
+          "callee": "pickNasalFindings",
+          "lineNumber": 39
+        },
+        {
+          "caller": "getLatestNasalFindingsForPatient",
+          "callee": "parseFieldValues",
+          "lineNumber": 39
+        },
+        {
+          "caller": "getLatestNasalFindingsForPatient",
+          "callee": "Object.keys",
+          "lineNumber": 40
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/lib/presets.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 40,
+      "nonEmptyLines": 37,
+      "functions": [
+        {
+          "name": "getPresetsForSurgeryType",
+          "startLine": 11,
+          "endLine": 20,
+          "params": [
+            "userId",
+            "surgeryTypeId"
+          ]
+        },
+        {
+          "name": "getPresetsForSurgeryTypes",
+          "startLine": 22,
+          "endLine": 40,
+          "params": [
+            "userId",
+            "surgeryTypeIds"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "getPresetsForSurgeryType",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "getPresetsForSurgeryTypes",
+          "line": 22,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "getPresetsForSurgeryType",
+          "callee": "prisma.surgeryPreset.findMany",
+          "lineNumber": 15
+        },
+        {
+          "caller": "getPresetsForSurgeryType",
+          "callee": "rows.map",
+          "lineNumber": 19
+        },
+        {
+          "caller": "getPresetsForSurgeryType",
+          "callee": "parseFieldValues",
+          "lineNumber": 19
+        },
+        {
+          "caller": "getPresetsForSurgeryTypes",
+          "callee": "prisma.surgeryPreset.findMany",
+          "lineNumber": 26
+        },
+        {
+          "caller": "getPresetsForSurgeryTypes",
+          "callee": "(map[r.surgeryTypeId] ??= []).push",
+          "lineNumber": 33
+        },
+        {
+          "caller": "getPresetsForSurgeryTypes",
+          "callee": "parseFieldValues",
+          "lineNumber": 36
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/lib/prisma.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 14,
+      "nonEmptyLines": 10,
+      "exports": [
+        {
+          "name": "prisma",
+          "line": 10,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

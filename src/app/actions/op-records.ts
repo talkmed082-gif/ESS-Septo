@@ -40,8 +40,8 @@ export async function createOpRecord(
 ): Promise<OpRecordFormState> {
   const session = await verifySession();
 
-  const plan = await prisma.opPlan.findUnique({
-    where: { id: planId },
+  const plan = await prisma.opPlan.findFirst({
+    where: { id: planId, createdById: session.userId },
     include: { surgeryType: true, opRecord: true },
   });
   if (!plan) {
@@ -86,10 +86,10 @@ export async function updateOpRecord(
   _prevState: OpRecordFormState | undefined,
   formData: FormData,
 ): Promise<OpRecordFormState> {
-  await verifySession();
+  const session = await verifySession();
 
-  const record = await prisma.opRecord.findUnique({
-    where: { id: recordId },
+  const record = await prisma.opRecord.findFirst({
+    where: { id: recordId, createdById: session.userId },
     include: { opPlan: { include: { surgeryType: true } } },
   });
   if (!record) {
@@ -105,7 +105,7 @@ export async function updateOpRecord(
   const fields = resolveSurgeryTypeFields(record.opPlan.surgeryType);
   const recordData = fieldValuesFromFormData(formData, fields);
 
-  await prisma.opRecord.update({
+  await prisma.opRecord.update({ // ownership-checked above
     where: { id: recordId },
     data: {
       operationDate: new Date(data.operationDate),

@@ -1,0 +1,829 @@
+{
+ "nodes": [
+  {
+   "id": "file:src/app/(app)/patients/page.tsx",
+   "type": "file",
+   "name": "page.tsx",
+   "filePath": "src/app/(app)/patients/page.tsx",
+   "summary": "환자 목록(/patients) 서버 컴포넌트 페이지로, 다가오는 수술 계획과 검색·정렬된 환자 목록을 조회해 최신 계획의 수술명을 생성한 뒤 테이블에 전달한다.",
+   "tags": [
+    "page",
+    "server-component",
+    "patient-list",
+    "sorting",
+    "search"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/app/(app)/patients/page.tsx:PatientsPage",
+   "type": "function",
+   "name": "PatientsPage",
+   "filePath": "src/app/(app)/patients/page.tsx",
+   "lineRange": [
+    13,
+    199
+   ],
+   "summary": "현재 사용자 설정(수술명 스타일)을 반영해 예정 수술 목록과 환자 행 데이터를 만들고, 쿼리 파라미터(q/sort/dir)에 따라 정렬해 렌더링한다.",
+   "tags": [
+    "page",
+    "server-component",
+    "data-fetching",
+    "sorting"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "file:src/app/(app)/patients/patient-list-table.tsx",
+   "type": "file",
+   "name": "patient-list-table.tsx",
+   "filePath": "src/app/(app)/patients/patient-list-table.tsx",
+   "summary": "환자 목록을 표로 보여주는 클라이언트 컴포넌트로, 정렬 링크, 다중 선택 일괄 삭제, 수술 예정/완료 상태 토글(낙관적 업데이트)을 제공한다.",
+   "tags": [
+    "component",
+    "client-component",
+    "table",
+    "optimistic-ui",
+    "bulk-delete"
+   ],
+   "complexity": "complex",
+   "languageNotes": "'use client' 파일에서 useOptimistic·useActionState·useTransition으로 서버 액션을 낙관적으로 호출한다."
+  },
+  {
+   "id": "function:src/app/(app)/patients/patient-list-table.tsx:PatientListTable",
+   "type": "function",
+   "name": "PatientListTable",
+   "filePath": "src/app/(app)/patients/patient-list-table.tsx",
+   "lineRange": [
+    77,
+    319
+   ],
+   "summary": "환자 행 목록을 정렬 가능한 테이블로 렌더링하고, 체크박스 선택 후 deletePatients 일괄 삭제와 toggleOpPlanDone 상태 토글을 처리한다.",
+   "tags": [
+    "component",
+    "table",
+    "optimistic-ui",
+    "server-action"
+   ],
+   "complexity": "complex"
+  },
+  {
+   "id": "function:src/app/(app)/patients/patient-list-table.tsx:StatusBadge",
+   "type": "function",
+   "name": "StatusBadge",
+   "filePath": "src/app/(app)/patients/patient-list-table.tsx",
+   "lineRange": [
+    19,
+    41
+   ],
+   "summary": "수술 계획의 상태를 순번 옆에 표시하는 배지로, 기록이 있으면 '완료', 없으면 예정/완료 토글 버튼을 렌더링한다.",
+   "tags": [
+    "component",
+    "status-badge",
+    "ui"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/app/(app)/patients/patient-row.ts",
+   "type": "file",
+   "name": "patient-row.ts",
+   "filePath": "src/app/(app)/patients/patient-row.ts",
+   "summary": "서버 페이지와 클라이언트 테이블이 공유하는 PatientRow 인터페이스 정의 모듈로, 'use client' 경계 문제를 피하려고 분리되었다.",
+   "tags": [
+    "type-definition",
+    "data-model",
+    "shared-type"
+   ],
+   "complexity": "simple",
+   "languageNotes": "'use client' 모듈의 export를 서버에서 호출하면 클라이언트 레퍼런스가 되어 런타임 에러가 나므로 공유 타입을 일반 모듈로 분리했다."
+  },
+  {
+   "id": "file:src/app/(app)/plans/[id]/page.tsx",
+   "type": "file",
+   "name": "page.tsx",
+   "filePath": "src/app/(app)/plans/[id]/page.tsx",
+   "summary": "개별 수술 계획(/plans/[id]) 편집 페이지로, 계획·실제 입력값과 수술 종류 목록을 불러와 SurgeryPlanner에 update/delete 서버 액션과 함께 전달한다.",
+   "tags": [
+    "page",
+    "server-component",
+    "op-plan",
+    "editor"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/app/(app)/plans/[id]/page.tsx:OpPlanPage",
+   "type": "function",
+   "name": "OpPlanPage",
+   "filePath": "src/app/(app)/plans/[id]/page.tsx",
+   "lineRange": [
+    13,
+    95
+   ],
+   "summary": "OpPlan과 surgeryType 목록을 조회하고 필드 정의를 해석해 SurgeryPlanner 컴포넌트를 계획/수술후(view) 모드로 렌더링한다.",
+   "tags": [
+    "page",
+    "server-component",
+    "op-plan",
+    "data-fetching"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "file:src/app/(app)/records/[id]/page.tsx",
+   "type": "file",
+   "name": "page.tsx",
+   "filePath": "src/app/(app)/records/[id]/page.tsx",
+   "summary": "수술기록(/records/[id]) 상세 조회 페이지로, 기록 데이터와 수술 종류별 필드 정의를 이용해 입력값을 라벨-값 행으로 보여준다.",
+   "tags": [
+    "page",
+    "server-component",
+    "op-record",
+    "read-only-view"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/app/(app)/records/[id]/page.tsx:OpRecordPage",
+   "type": "function",
+   "name": "OpRecordPage",
+   "filePath": "src/app/(app)/records/[id]/page.tsx",
+   "lineRange": [
+    20,
+    104
+   ],
+   "summary": "세션 확인 후 OpRecord를 조회하고 resolveSurgeryTypeFields로 필드 목록을 얻어 기록 값을 표시한다.",
+   "tags": [
+    "page",
+    "server-component",
+    "op-record"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "file:src/app/actions/op-plans.ts",
+   "type": "file",
+   "name": "op-plans.ts",
+   "filePath": "src/app/actions/op-plans.ts",
+   "summary": "수술 계획(OpPlan)에 대한 Next.js 서버 액션 모음으로, 계획 수정(수술 종류 변경·폼 값 병합), 삭제, 완료 상태 토글을 처리하고 경로를 재검증한다.",
+   "tags": [
+    "server-action",
+    "service",
+    "op-plan",
+    "validation",
+    "mutation"
+   ],
+   "complexity": "moderate",
+   "languageNotes": "'use server' 서버 액션에서 zod 검증, revalidatePath, redirect를 조합하는 Next.js App Router 패턴."
+  },
+  {
+   "id": "function:src/app/actions/op-plans.ts:updateOpPlan",
+   "type": "function",
+   "name": "updateOpPlan",
+   "filePath": "src/app/actions/op-plans.ts",
+   "lineRange": [
+    21,
+    102
+   ],
+   "summary": "폼 데이터를 수술 종류 필드 정의에 맞춰 파싱하고 기존 계획/실제 값과 병합해 OpPlan을 갱신한 뒤, 저장 의도에 따라 계획 페이지로 리다이렉트한다.",
+   "tags": [
+    "server-action",
+    "mutation",
+    "form-handling",
+    "op-plan"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/app/actions/op-plans.ts:deleteOpPlan",
+   "type": "function",
+   "name": "deleteOpPlan",
+   "filePath": "src/app/actions/op-plans.ts",
+   "lineRange": [
+    105,
+    110
+   ],
+   "summary": "수술 계획을 삭제하고 환자 상세 경로를 재검증한 뒤 해당 환자 페이지로 리다이렉트한다.",
+   "tags": [
+    "server-action",
+    "delete",
+    "op-plan"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/app/actions/op-plans.ts:toggleOpPlanDone",
+   "type": "function",
+   "name": "toggleOpPlanDone",
+   "filePath": "src/app/actions/op-plans.ts",
+   "lineRange": [
+    115,
+    124
+   ],
+   "summary": "수술 계획의 완료(done) 플래그를 반전시키고 환자 목록 경로를 재검증한다.",
+   "tags": [
+    "server-action",
+    "toggle",
+    "op-plan"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/components/patients-list-title.tsx",
+   "type": "file",
+   "name": "patients-list-title.tsx",
+   "filePath": "src/components/patients-list-title.tsx",
+   "summary": "환자 목록 제목 링크 클라이언트 컴포넌트로, 클릭 시 검색/정렬 상태를 초기화하고 router.refresh로 캐시 없이 목록을 새로 불러온다.",
+   "tags": [
+    "component",
+    "client-component",
+    "navigation",
+    "ui"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/components/patients-list-title.tsx:PatientsListTitle",
+   "type": "function",
+   "name": "PatientsListTitle",
+   "filePath": "src/components/patients-list-title.tsx",
+   "lineRange": [
+    8,
+    26
+   ],
+   "summary": "'환자 목록' 제목을 렌더링하며 클릭 시 /patients로 이동 후 강제 새로고침한다.",
+   "tags": [
+    "component",
+    "navigation",
+    "ui"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/lib/date-format.ts",
+   "type": "file",
+   "name": "date-format.ts",
+   "filePath": "src/lib/date-format.ts",
+   "summary": "Date 값을 안전하게 YYYY-MM-DD 문자열로 변환하는 날짜 포맷 유틸리티로, 잘못 저장된 Invalid Date가 페이지를 깨뜨리지 않도록 방어한다.",
+   "tags": [
+    "utility",
+    "date",
+    "formatting",
+    "defensive"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/date-format.ts:safeDateStr",
+   "type": "function",
+   "name": "safeDateStr",
+   "filePath": "src/lib/date-format.ts",
+   "lineRange": [
+    3,
+    7
+   ],
+   "summary": "null/Invalid Date를 null로 처리하고 유효한 날짜는 ISO 문자열 앞 10자리(YYYY-MM-DD)로 반환한다.",
+   "tags": [
+    "utility",
+    "date",
+    "formatting"
+   ],
+   "complexity": "simple"
+  }
+ ],
+ "edges": [
+  {
+   "source": "file:src/app/(app)/patients/page.tsx",
+   "target": "function:src/app/(app)/patients/page.tsx:PatientsPage",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/(app)/patients/page.tsx",
+   "target": "function:src/app/(app)/patients/page.tsx:PatientsPage",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/(app)/patients/patient-list-table.tsx",
+   "target": "function:src/app/(app)/patients/patient-list-table.tsx:PatientListTable",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/(app)/patients/patient-list-table.tsx",
+   "target": "function:src/app/(app)/patients/patient-list-table.tsx:PatientListTable",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/(app)/patients/patient-list-table.tsx",
+   "target": "function:src/app/(app)/patients/patient-list-table.tsx:StatusBadge",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/(app)/plans/[id]/page.tsx",
+   "target": "function:src/app/(app)/plans/[id]/page.tsx:OpPlanPage",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/(app)/plans/[id]/page.tsx",
+   "target": "function:src/app/(app)/plans/[id]/page.tsx:OpPlanPage",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/(app)/records/[id]/page.tsx",
+   "target": "function:src/app/(app)/records/[id]/page.tsx:OpRecordPage",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/(app)/records/[id]/page.tsx",
+   "target": "function:src/app/(app)/records/[id]/page.tsx:OpRecordPage",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/actions/op-plans.ts",
+   "target": "function:src/app/actions/op-plans.ts:updateOpPlan",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/actions/op-plans.ts",
+   "target": "function:src/app/actions/op-plans.ts:updateOpPlan",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/actions/op-plans.ts",
+   "target": "function:src/app/actions/op-plans.ts:deleteOpPlan",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/actions/op-plans.ts",
+   "target": "function:src/app/actions/op-plans.ts:deleteOpPlan",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/actions/op-plans.ts",
+   "target": "function:src/app/actions/op-plans.ts:toggleOpPlanDone",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/app/actions/op-plans.ts",
+   "target": "function:src/app/actions/op-plans.ts:toggleOpPlanDone",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/components/patients-list-title.tsx",
+   "target": "function:src/components/patients-list-title.tsx:PatientsListTitle",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/patients-list-title.tsx",
+   "target": "function:src/components/patients-list-title.tsx:PatientsListTitle",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/date-format.ts",
+   "target": "function:src/lib/date-format.ts:safeDateStr",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/date-format.ts",
+   "target": "function:src/lib/date-format.ts:safeDateStr",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/(app)/patients/page.tsx",
+   "target": "file:src/app/(app)/patients/patient-list-table.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/page.tsx",
+   "target": "file:src/app/(app)/patients/patient-row.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/page.tsx",
+   "target": "file:src/components/patients-list-title.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/page.tsx",
+   "target": "file:src/lib/dal.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/page.tsx",
+   "target": "file:src/lib/date-format.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/page.tsx",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/page.tsx",
+   "target": "file:src/lib/op-note-defs.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/page.tsx",
+   "target": "file:src/lib/op-note-generator.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/page.tsx",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/page.tsx",
+   "target": "file:src/lib/ui.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/patient-list-table.tsx",
+   "target": "file:src/app/(app)/patients/patient-row.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/patient-list-table.tsx",
+   "target": "file:src/app/actions/op-plans.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/patient-list-table.tsx",
+   "target": "file:src/app/actions/patients.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/patients/patient-list-table.tsx",
+   "target": "file:src/lib/ui.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/plans/[id]/page.tsx",
+   "target": "file:src/app/actions/op-plans.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/plans/[id]/page.tsx",
+   "target": "file:src/components/surgery-planner.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/plans/[id]/page.tsx",
+   "target": "file:src/lib/dal.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/plans/[id]/page.tsx",
+   "target": "file:src/lib/date-format.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/plans/[id]/page.tsx",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/plans/[id]/page.tsx",
+   "target": "file:src/lib/op-note-defs.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/plans/[id]/page.tsx",
+   "target": "file:src/lib/op-note-generator.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/plans/[id]/page.tsx",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/plans/[id]/page.tsx",
+   "target": "file:src/lib/ui.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/records/[id]/page.tsx",
+   "target": "file:src/lib/dal.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/records/[id]/page.tsx",
+   "target": "file:src/lib/date-format.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/records/[id]/page.tsx",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/records/[id]/page.tsx",
+   "target": "file:src/lib/op-note-defs.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/records/[id]/page.tsx",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/(app)/records/[id]/page.tsx",
+   "target": "file:src/lib/ui.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/actions/op-plans.ts",
+   "target": "file:src/lib/dal.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/actions/op-plans.ts",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/actions/op-plans.ts",
+   "target": "file:src/lib/op-note-defs.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/app/actions/op-plans.ts",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "function:src/app/(app)/patients/page.tsx:PatientsPage",
+   "target": "function:src/lib/dal.ts:getCurrentUser",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/patients/page.tsx:PatientsPage",
+   "target": "function:src/lib/field-types.ts:parseFieldValues",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/patients/page.tsx:PatientsPage",
+   "target": "function:src/lib/op-note-defs.ts:isBuiltInSurgeryCode",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/patients/page.tsx:PatientsPage",
+   "target": "function:src/lib/op-note-generator.ts:buildProcedureName",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/patients/page.tsx:PatientsPage",
+   "target": "function:src/lib/date-format.ts:safeDateStr",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/patients/patient-list-table.tsx:PatientListTable",
+   "target": "function:src/app/actions/patients.ts:deletePatients",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/patients/patient-list-table.tsx:PatientListTable",
+   "target": "function:src/app/actions/op-plans.ts:toggleOpPlanDone",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/plans/[id]/page.tsx:OpPlanPage",
+   "target": "function:src/lib/dal.ts:getCurrentUser",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/plans/[id]/page.tsx:OpPlanPage",
+   "target": "function:src/lib/field-types.ts:parseFieldValues",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/plans/[id]/page.tsx:OpPlanPage",
+   "target": "function:src/lib/op-note-defs.ts:resolveSurgeryTypeFields",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/plans/[id]/page.tsx:OpPlanPage",
+   "target": "function:src/lib/date-format.ts:safeDateStr",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/records/[id]/page.tsx:OpRecordPage",
+   "target": "function:src/lib/dal.ts:verifySession",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/records/[id]/page.tsx:OpRecordPage",
+   "target": "function:src/lib/field-types.ts:parseFieldValues",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/records/[id]/page.tsx:OpRecordPage",
+   "target": "function:src/lib/op-note-defs.ts:resolveSurgeryTypeFields",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/(app)/records/[id]/page.tsx:OpRecordPage",
+   "target": "function:src/lib/date-format.ts:safeDateStr",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/actions/op-plans.ts:updateOpPlan",
+   "target": "function:src/lib/dal.ts:verifySession",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/actions/op-plans.ts:updateOpPlan",
+   "target": "function:src/lib/op-note-defs.ts:resolveSurgeryTypeFields",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/actions/op-plans.ts:updateOpPlan",
+   "target": "function:src/lib/field-types.ts:fieldValuesFromFormData",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/actions/op-plans.ts:updateOpPlan",
+   "target": "function:src/lib/field-types.ts:parseFieldValues",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/actions/op-plans.ts:updateOpPlan",
+   "target": "function:src/lib/op-note-defs.ts:isNasalFindingKey",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/actions/op-plans.ts:deleteOpPlan",
+   "target": "function:src/lib/dal.ts:verifySession",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/app/actions/op-plans.ts:toggleOpPlanDone",
+   "target": "function:src/lib/dal.ts:verifySession",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/app/(app)/plans/[id]/page.tsx",
+   "target": "function:src/components/surgery-planner.tsx:SurgeryPlanner",
+   "type": "depends_on",
+   "direction": "forward",
+   "weight": 0.6
+  },
+  {
+   "source": "file:src/app/(app)/patients/page.tsx",
+   "target": "function:src/components/patients-list-title.tsx:PatientsListTitle",
+   "type": "depends_on",
+   "direction": "forward",
+   "weight": 0.6
+  }
+ ]
+}

@@ -49,6 +49,7 @@ PostgreSQL을 사용합니다. 로컬 개발 시 `docker run -p 5432:5432 -e POS
    `DATABASE_URL`(혹은 `POSTGRES_PRISMA_URL`) 환경 변수가 연결됩니다. 서버리스 환경에서는
    반드시 커넥션 풀링이 적용된 URL을 사용하세요(Neon의 `-pooler` 호스트).
 3. `SESSION_SECRET` 환경 변수를 Vercel 프로젝트 설정에 추가합니다 (`openssl rand -base64 32`).
+   `ALLOWED_EMAILS`(가입을 허용할 이메일, 쉼표 구분)도 추가하세요. 비어 있으면 회원가입이 차단됩니다.
 4. 빌드 시 `prisma migrate deploy`가 자동 실행되도록 `package.json`의 `build` 스크립트가
    구성되어 있습니다. 최초 배포 후 `npx prisma db seed`를 로컬에서 프로덕션 `DATABASE_URL`로
    한 번 실행해 기본 수술 종류(ESS/비중격교정술)를 넣어주세요.

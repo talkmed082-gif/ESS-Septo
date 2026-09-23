@@ -1,0 +1,965 @@
+{
+ "nodes": [
+  {
+   "id": "file:src/components/collapsible-finding-section.tsx",
+   "type": "file",
+   "name": "collapsible-finding-section.tsx",
+   "filePath": "src/components/collapsible-finding-section.tsx",
+   "summary": "Septoturbinoplasty/ESS P/E 소견 그룹을 감싸는 섹션 컴포넌트로, P/E 시행 키를 hidden 값 true로 제출한다.",
+   "tags": [
+    "component",
+    "layout",
+    "findings"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/components/collapsible-finding-section.tsx:CollapsibleFindingSection",
+   "type": "function",
+   "name": "CollapsibleFindingSection",
+   "filePath": "src/components/collapsible-finding-section.tsx",
+   "lineRange": [
+    8,
+    24
+   ],
+   "summary": "P/E 소견 그룹 섹션 래퍼.",
+   "tags": [
+    "function",
+    "exported",
+    "react-component"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/components/ess-findings-picker.tsx",
+   "type": "file",
+   "name": "ess-findings-picker.tsx",
+   "filePath": "src/components/ess-findings-picker.tsx",
+   "summary": "ESS 소견 중 해부학적 위험 요인과 부비동염을 좌/우 방향별로 선택하는 피커 컴포넌트와 관련 필드 키 상수를 제공한다.",
+   "tags": [
+    "component",
+    "picker",
+    "findings",
+    "ess",
+    "client-component"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/components/ess-findings-picker.tsx:PresentSidedGroup",
+   "type": "function",
+   "name": "PresentSidedGroup",
+   "filePath": "src/components/ess-findings-picker.tsx",
+   "lineRange": [
+    81,
+    168
+   ],
+   "summary": "있음/없음 선택 후 좌/우 방향을 고르는 소견 그룹 내부 컴포넌트.",
+   "tags": [
+    "function",
+    "internal",
+    "react-component"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/components/ess-findings-picker.tsx:AnatomicRiskFindingsPicker",
+   "type": "function",
+   "name": "AnatomicRiskFindingsPicker",
+   "filePath": "src/components/ess-findings-picker.tsx",
+   "lineRange": [
+    170,
+    185
+   ],
+   "summary": "해부학적 위험 요인 소견 피커.",
+   "tags": [
+    "function",
+    "exported",
+    "react-component"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/components/ess-findings-picker.tsx:SinusitisFindingsPicker",
+   "type": "function",
+   "name": "SinusitisFindingsPicker",
+   "filePath": "src/components/ess-findings-picker.tsx",
+   "lineRange": [
+    190,
+    210
+   ],
+   "summary": "부비동별 부비동염 소견 피커.",
+   "tags": [
+    "function",
+    "exported",
+    "react-component"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/components/nasal-findings-overview.tsx",
+   "type": "file",
+   "name": "nasal-findings-overview.tsx",
+   "filePath": "src/components/nasal-findings-overview.tsx",
+   "summary": "ESS P/E의 간략 소견(해부학적 이상/부비동염/비용종) 체크로 어떤 상세 그룹을 펼칠지 알려주는 개요 컴포넌트.",
+   "tags": [
+    "component",
+    "findings",
+    "ui-toggle"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/components/nasal-findings-overview.tsx:NasalFindingsOverview",
+   "type": "function",
+   "name": "NasalFindingsOverview",
+   "filePath": "src/components/nasal-findings-overview.tsx",
+   "lineRange": [
+    9,
+    58
+   ],
+   "summary": "간략 소견 그룹 체크 UI.",
+   "tags": [
+    "function",
+    "exported",
+    "react-component"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "file:src/components/op-note-generate-button.tsx",
+   "type": "file",
+   "name": "op-note-generate-button.tsx",
+   "filePath": "src/components/op-note-generate-button.tsx",
+   "summary": "현재 폼 값으로 generateOpNote·buildProcedureName을 호출해 기록지 수술명/소견/수술 과정 textarea를 자동으로 채우는 버튼.",
+   "tags": [
+    "component",
+    "op-note",
+    "generator",
+    "client-component"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/components/op-note-generate-button.tsx:OpNoteGenerateButton",
+   "type": "function",
+   "name": "OpNoteGenerateButton",
+   "filePath": "src/components/op-note-generate-button.tsx",
+   "lineRange": [
+    16,
+    64
+   ],
+   "summary": "폼 값으로 기록지 문장을 생성해 textarea에 채우는 버튼.",
+   "tags": [
+    "function",
+    "exported",
+    "react-component"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "file:src/components/plan-table.tsx",
+   "type": "file",
+   "name": "plan-table.tsx",
+   "filePath": "src/components/plan-table.tsx",
+   "summary": "Op Plan 표(좌/우 매트릭스 포함)를 렌더링하는 컴포넌트로, 인터랙티브 모드에서는 셀 토글과 좌우 복사를 지원한다.",
+   "tags": [
+    "component",
+    "table",
+    "op-plan",
+    "visualization"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/components/plan-table.tsx:SideMatrixTable",
+   "type": "function",
+   "name": "SideMatrixTable",
+   "filePath": "src/components/plan-table.tsx",
+   "lineRange": [
+    8,
+    86
+   ],
+   "summary": "좌/우 체크 매트릭스 표를 렌더링한다.",
+   "tags": [
+    "function",
+    "exported",
+    "react-component"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/components/plan-table.tsx:PlanTableView",
+   "type": "function",
+   "name": "PlanTableView",
+   "filePath": "src/components/plan-table.tsx",
+   "lineRange": [
+    88,
+    200
+   ],
+   "summary": "PlanTable 데이터를 Op Plan 표 형태로 렌더링한다.",
+   "tags": [
+    "function",
+    "exported",
+    "react-component"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "file:src/components/polyp-picker.tsx",
+   "type": "file",
+   "name": "polyp-picker.tsx",
+   "filePath": "src/components/polyp-picker.tsx",
+   "summary": "비용종 위치를 좌/우 매트릭스 표로 선택하는 피커 컴포넌트와 POLYP_FIELD_KEYS 상수를 제공한다.",
+   "tags": [
+    "component",
+    "picker",
+    "findings",
+    "polyp"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/components/polyp-picker.tsx:PolypPicker",
+   "type": "function",
+   "name": "PolypPicker",
+   "filePath": "src/components/polyp-picker.tsx",
+   "lineRange": [
+    27,
+    47
+   ],
+   "summary": "비용종 위치 매트릭스 선택 컴포넌트.",
+   "tags": [
+    "function",
+    "exported",
+    "react-component"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/components/preset-bar.tsx",
+   "type": "file",
+   "name": "preset-bar.tsx",
+   "filePath": "src/components/preset-bar.tsx",
+   "summary": "이름 붙인 필드 조합 프리셋을 저장·불러오기·삭제하는 바 컴포넌트로, 클릭 한 번에 폼 전체 값을 채운다.",
+   "tags": [
+    "component",
+    "preset",
+    "client-component"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/components/preset-bar.tsx:PresetBar",
+   "type": "function",
+   "name": "PresetBar",
+   "filePath": "src/components/preset-bar.tsx",
+   "lineRange": [
+    16,
+    92
+   ],
+   "summary": "프리셋 저장/적용/삭제 UI 바.",
+   "tags": [
+    "function",
+    "exported",
+    "react-component"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "file:src/components/surgery-field-inputs.tsx",
+   "type": "file",
+   "name": "surgery-field-inputs.tsx",
+   "filePath": "src/components/surgery-field-inputs.tsx",
+   "summary": "SurgeryFieldDef 목록을 받아 text/select/checkbox/multiselect 등 타입별 입력 요소를 동적으로 렌더링하는 컴포넌트.",
+   "tags": [
+    "component",
+    "form",
+    "dynamic-fields"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/components/surgery-field-inputs.tsx:HiddenFieldInput",
+   "type": "function",
+   "name": "HiddenFieldInput",
+   "filePath": "src/components/surgery-field-inputs.tsx",
+   "lineRange": [
+    11,
+    73
+   ],
+   "summary": "화면에 보이지 않는 필드 값을 hidden input으로 유지한다.",
+   "tags": [
+    "function",
+    "internal",
+    "react-component"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/components/surgery-field-inputs.tsx:SurgeryFieldInputs",
+   "type": "function",
+   "name": "SurgeryFieldInputs",
+   "filePath": "src/components/surgery-field-inputs.tsx",
+   "lineRange": [
+    75,
+    198
+   ],
+   "summary": "필드 정의별 입력 요소를 동적으로 렌더링한다.",
+   "tags": [
+    "function",
+    "exported",
+    "react-component"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "file:src/components/surgery-planner.tsx",
+   "type": "file",
+   "name": "surgery-planner.tsx",
+   "filePath": "src/components/surgery-planner.tsx",
+   "summary": "퀵 도구·새 환자 등록·새 계획 작성을 통합한 핵심 수술 계획 컴포넌트로, 소견→시행 부위 cascade, Op Plan 표 미리보기와 기록지 초안 생성을 담당한다.",
+   "tags": [
+    "component",
+    "op-plan",
+    "client-component",
+    "core-ui"
+   ],
+   "complexity": "complex",
+   "languageNotes": "useActionState 기반 Server Action 폼과 DOM 직접 조작(ref)으로 필드 값을 연동한다."
+  },
+  {
+   "id": "function:src/components/surgery-planner.tsx:buildTexts",
+   "type": "function",
+   "name": "buildTexts",
+   "filePath": "src/components/surgery-planner.tsx",
+   "lineRange": [
+    88,
+    116
+   ],
+   "summary": "Op Plan 표와 기록지 초안 텍스트(수술명·소견·과정)를 생성한다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/components/surgery-planner.tsx:proceduralFrozenOverrides",
+   "type": "function",
+   "name": "proceduralFrozenOverrides",
+   "filePath": "src/components/surgery-planner.tsx",
+   "lineRange": [
+    122,
+    134
+   ],
+   "summary": "완료된 계획의 원래 절차 값을 표 생성용으로 덮어쓸 값을 계산한다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/components/surgery-planner.tsx:buildTextsFrozenAware",
+   "type": "function",
+   "name": "buildTextsFrozenAware",
+   "filePath": "src/components/surgery-planner.tsx",
+   "lineRange": [
+    136,
+    151
+   ],
+   "summary": "동결된 계획 값을 반영해 표와 기록지 텍스트를 생성한다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/components/surgery-planner.tsx:SurgeryPlanner",
+   "type": "function",
+   "name": "SurgeryPlanner",
+   "filePath": "src/components/surgery-planner.tsx",
+   "lineRange": [
+    161,
+    849
+   ],
+   "summary": "환자 정보·수술 종류·소견·술식 입력과 미리보기를 통합한 계획 작성 컴포넌트.",
+   "tags": [
+    "function",
+    "exported",
+    "react-component"
+   ],
+   "complexity": "complex"
+  },
+  {
+   "id": "file:src/components/turbinoplasty-type-picker.tsx",
+   "type": "file",
+   "name": "turbinoplasty-type-picker.tsx",
+   "filePath": "src/components/turbinoplasty-type-picker.tsx",
+   "summary": "하비갑개 축소술 대상 갑개와 술식 종류를 좌/우별로 선택하는 피커 컴포넌트.",
+   "tags": [
+    "component",
+    "picker",
+    "turbinoplasty",
+    "client-component"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/components/turbinoplasty-type-picker.tsx:TurbinoplastyTypePicker",
+   "type": "function",
+   "name": "TurbinoplastyTypePicker",
+   "filePath": "src/components/turbinoplasty-type-picker.tsx",
+   "lineRange": [
+    33,
+    155
+   ],
+   "summary": "좌/우 갑개와 축소술 종류 선택 UI.",
+   "tags": [
+    "function",
+    "exported",
+    "react-component"
+   ],
+   "complexity": "moderate"
+  }
+ ],
+ "edges": [
+  {
+   "source": "file:src/components/collapsible-finding-section.tsx",
+   "target": "function:src/components/collapsible-finding-section.tsx:CollapsibleFindingSection",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/collapsible-finding-section.tsx",
+   "target": "function:src/components/collapsible-finding-section.tsx:CollapsibleFindingSection",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/components/ess-findings-picker.tsx",
+   "target": "file:src/components/plan-table.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/ess-findings-picker.tsx",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/ess-findings-picker.tsx",
+   "target": "file:src/lib/op-note-generator.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/ess-findings-picker.tsx",
+   "target": "function:src/components/ess-findings-picker.tsx:PresentSidedGroup",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/ess-findings-picker.tsx",
+   "target": "function:src/components/ess-findings-picker.tsx:AnatomicRiskFindingsPicker",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/ess-findings-picker.tsx",
+   "target": "function:src/components/ess-findings-picker.tsx:AnatomicRiskFindingsPicker",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/components/ess-findings-picker.tsx",
+   "target": "function:src/components/ess-findings-picker.tsx:SinusitisFindingsPicker",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/ess-findings-picker.tsx",
+   "target": "function:src/components/ess-findings-picker.tsx:SinusitisFindingsPicker",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/components/nasal-findings-overview.tsx",
+   "target": "function:src/components/nasal-findings-overview.tsx:NasalFindingsOverview",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/nasal-findings-overview.tsx",
+   "target": "function:src/components/nasal-findings-overview.tsx:NasalFindingsOverview",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/components/op-note-generate-button.tsx",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/op-note-generate-button.tsx",
+   "target": "file:src/lib/op-note-defs.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/op-note-generate-button.tsx",
+   "target": "file:src/lib/op-note-generator.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/op-note-generate-button.tsx",
+   "target": "file:src/lib/ui.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/op-note-generate-button.tsx",
+   "target": "function:src/components/op-note-generate-button.tsx:OpNoteGenerateButton",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/op-note-generate-button.tsx",
+   "target": "function:src/components/op-note-generate-button.tsx:OpNoteGenerateButton",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/components/plan-table.tsx",
+   "target": "file:src/components/check-cell.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/plan-table.tsx",
+   "target": "file:src/lib/op-note-generator.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/plan-table.tsx",
+   "target": "file:src/lib/ui.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/plan-table.tsx",
+   "target": "function:src/components/plan-table.tsx:SideMatrixTable",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/plan-table.tsx",
+   "target": "function:src/components/plan-table.tsx:SideMatrixTable",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/components/plan-table.tsx",
+   "target": "function:src/components/plan-table.tsx:PlanTableView",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/plan-table.tsx",
+   "target": "function:src/components/plan-table.tsx:PlanTableView",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/components/polyp-picker.tsx",
+   "target": "file:src/components/plan-table.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/polyp-picker.tsx",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/polyp-picker.tsx",
+   "target": "file:src/lib/op-note-generator.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/polyp-picker.tsx",
+   "target": "function:src/components/polyp-picker.tsx:PolypPicker",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/polyp-picker.tsx",
+   "target": "function:src/components/polyp-picker.tsx:PolypPicker",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/components/preset-bar.tsx",
+   "target": "file:src/app/actions/presets.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/preset-bar.tsx",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/preset-bar.tsx",
+   "target": "function:src/components/preset-bar.tsx:PresetBar",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/preset-bar.tsx",
+   "target": "function:src/components/preset-bar.tsx:PresetBar",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/components/surgery-field-inputs.tsx",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/surgery-field-inputs.tsx",
+   "target": "function:src/components/surgery-field-inputs.tsx:HiddenFieldInput",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/surgery-field-inputs.tsx",
+   "target": "function:src/components/surgery-field-inputs.tsx:SurgeryFieldInputs",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/surgery-field-inputs.tsx",
+   "target": "function:src/components/surgery-field-inputs.tsx:SurgeryFieldInputs",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "file:src/app/actions/patient-plan.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "file:src/components/anatomy-diagram.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "file:src/components/collapsible-finding-section.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "file:src/components/copy-button.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "file:src/components/ess-findings-picker.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "file:src/components/nasal-findings-overview.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "file:src/components/plan-table.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "file:src/components/polyp-picker.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "file:src/components/surgery-field-inputs.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "file:src/components/turbinoplasty-type-picker.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "file:src/components/uncinate-attachment-fields.tsx",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "file:src/lib/op-note-defs.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "file:src/lib/op-note-generator.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "file:src/lib/ui.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "function:src/components/surgery-planner.tsx:buildTexts",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "function:src/components/surgery-planner.tsx:proceduralFrozenOverrides",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "function:src/components/surgery-planner.tsx:buildTextsFrozenAware",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "function:src/components/surgery-planner.tsx:SurgeryPlanner",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/surgery-planner.tsx",
+   "target": "function:src/components/surgery-planner.tsx:SurgeryPlanner",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/components/turbinoplasty-type-picker.tsx",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/turbinoplasty-type-picker.tsx",
+   "target": "file:src/lib/ui.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/turbinoplasty-type-picker.tsx",
+   "target": "function:src/components/turbinoplasty-type-picker.tsx:TurbinoplastyTypePicker",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/turbinoplasty-type-picker.tsx",
+   "target": "function:src/components/turbinoplasty-type-picker.tsx:TurbinoplastyTypePicker",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/components/op-note-generate-button.tsx:OpNoteGenerateButton",
+   "target": "function:src/lib/op-note-generator.ts:generateOpNote",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/components/op-note-generate-button.tsx:OpNoteGenerateButton",
+   "target": "function:src/lib/op-note-generator.ts:buildProcedureName",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/components/preset-bar.tsx:PresetBar",
+   "target": "function:src/app/actions/presets.ts:createSurgeryPreset",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/components/preset-bar.tsx:PresetBar",
+   "target": "function:src/app/actions/presets.ts:deleteSurgeryPreset",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/components/preset-bar.tsx:PresetBar",
+   "target": "function:src/lib/field-types.ts:fieldValuesFromFormData",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/components/surgery-planner.tsx:buildTexts",
+   "target": "function:src/lib/op-note-generator.ts:buildPlanTable",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/components/surgery-planner.tsx:buildTexts",
+   "target": "function:src/lib/op-note-generator.ts:generateOpNote",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/components/surgery-planner.tsx:buildTexts",
+   "target": "function:src/lib/op-note-generator.ts:buildProcedureName",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/components/surgery-planner.tsx:buildTexts",
+   "target": "function:src/lib/op-note-defs.ts:isBuiltInSurgeryCode",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/components/surgery-planner.tsx:buildTextsFrozenAware",
+   "target": "function:src/components/surgery-planner.tsx:buildTexts",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/components/surgery-planner.tsx:buildTextsFrozenAware",
+   "target": "function:src/components/surgery-planner.tsx:proceduralFrozenOverrides",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/components/surgery-planner.tsx:SurgeryPlanner",
+   "target": "function:src/components/surgery-planner.tsx:buildTextsFrozenAware",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/components/surgery-planner.tsx:SurgeryPlanner",
+   "target": "function:src/app/actions/patient-plan.ts:createPatientWithPlan",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/components/surgery-planner.tsx:proceduralFrozenOverrides",
+   "target": "function:src/lib/op-note-defs.ts:isNasalFindingKey",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  }
+ ]
+}

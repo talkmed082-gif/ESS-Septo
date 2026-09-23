@@ -27,11 +27,11 @@ function Row({ label, value }: { label: string; value?: string | null }) {
 export default async function OpRecordPrintPage({
   params,
 }: PageProps<"/records/[id]/print">) {
-  await verifySession();
+  const session = await verifySession();
   const { id } = await params;
 
-  const record = await prisma.opRecord.findUnique({
-    where: { id },
+  const record = await prisma.opRecord.findFirst({
+    where: { id, createdById: session.userId },
     include: {
       opPlan: { include: { patient: true, surgeryType: true } },
     },

@@ -1,0 +1,3126 @@
+{
+  "schemaVersion": 1,
+  "algorithm": "louvain",
+  "totalFiles": 92,
+  "totalBatches": 7,
+  "exportsByPath": {
+    "eslint.config.mjs": [],
+    "next.config.ts": [],
+    "postcss.config.mjs": [],
+    "prisma/seed.ts": [],
+    "prisma7.config.ts": [],
+    "proxy.ts": [
+      "proxy",
+      "config"
+    ],
+    "src/app/(app)/layout.tsx": [
+      "AppLayout"
+    ],
+    "src/app/(app)/patients/[id]/edit/page.tsx": [
+      "EditPatientPage"
+    ],
+    "src/app/(app)/patients/[id]/page.tsx": [
+      "PatientDetailPage"
+    ],
+    "src/app/(app)/patients/[id]/plans/new/page.tsx": [
+      "NewOpPlanPage"
+    ],
+    "src/app/(app)/patients/new/page.tsx": [
+      "NewPatientPage"
+    ],
+    "src/app/(app)/patients/page.tsx": [
+      "PatientsPage"
+    ],
+    "src/app/(app)/patients/patient-form.tsx": [
+      "PatientForm"
+    ],
+    "src/app/(app)/patients/patient-list-table.tsx": [
+      "PatientRow",
+      "PatientListTable"
+    ],
+    "src/app/(app)/patients/patient-row.ts": [],
+    "src/app/(app)/plans/[id]/page.tsx": [
+      "OpPlanPage"
+    ],
+    "src/app/(app)/plans/[id]/record/page.tsx": [
+      "NewOpRecordPage"
+    ],
+    "src/app/(app)/records/[id]/edit/page.tsx": [
+      "EditOpRecordPage"
+    ],
+    "src/app/(app)/records/[id]/page.tsx": [
+      "OpRecordPage"
+    ],
+    "src/app/(app)/records/record-form.tsx": [
+      "RecordForm"
+    ],
+    "src/app/(app)/settings/page.tsx": [
+      "SettingsPage"
+    ],
+    "src/app/(app)/settings/settings-form.tsx": [
+      "SettingsForm"
+    ],
+    "src/app/(app)/surgery-types/field-builder.tsx": [
+      "SurgeryTypeFieldBuilder"
+    ],
+    "src/app/(app)/surgery-types/surgery-types-manager.tsx": [
+      "SurgeryTypesManager"
+    ],
+    "src/app/actions/auth.ts": [
+      "signup",
+      "login",
+      "logout"
+    ],
+    "src/app/actions/op-plans.ts": [
+      "updateOpPlan",
+      "deleteOpPlan",
+      "toggleOpPlanDone"
+    ],
+    "src/app/actions/op-records.ts": [
+      "createOpRecord",
+      "updateOpRecord"
+    ],
+    "src/app/actions/patient-plan.ts": [
+      "createPatientWithPlan"
+    ],
+    "src/app/actions/patients.ts": [
+      "createPatient",
+      "updatePatient",
+      "deletePatient",
+      "deletePatients"
+    ],
+    "src/app/actions/presets.ts": [
+      "createSurgeryPreset",
+      "deleteSurgeryPreset"
+    ],
+    "src/app/actions/settings.ts": [
+      "updateNameStyleSettings"
+    ],
+    "src/app/actions/surgery-types.ts": [
+      "createSurgeryType",
+      "deleteSurgeryType"
+    ],
+    "src/app/icon.tsx": [
+      "size",
+      "contentType",
+      "Icon"
+    ],
+    "src/app/layout.tsx": [
+      "metadata",
+      "viewport",
+      "RootLayout"
+    ],
+    "src/app/login/page.tsx": [
+      "LoginPage"
+    ],
+    "src/app/page.tsx": [
+      "HomePage"
+    ],
+    "src/app/plans/[id]/ics/route.ts": [
+      "GET"
+    ],
+    "src/app/plans/[id]/print/page.tsx": [
+      "OpPlanPrintPage"
+    ],
+    "src/app/print/fess-checklist/page.tsx": [
+      "FessChecklistPrintPage"
+    ],
+    "src/app/records/[id]/print/page.tsx": [
+      "OpRecordPrintPage"
+    ],
+    "src/app/signup/page.tsx": [
+      "SignupPage"
+    ],
+    "src/components/anatomy-diagram.tsx": [
+      "getAnatomyVisibility",
+      "getSeptumCoveredKeys",
+      "getSinusCoveredKeys",
+      "getAnatomyCoveredKeys",
+      "SeptumDiagram",
+      "SinusDiagram"
+    ],
+    "src/components/app-nav-bar.tsx": [
+      "AppNavBar"
+    ],
+    "src/components/check-cell.tsx": [
+      "CHECK_MARK",
+      "DataCell",
+      "CheckBox"
+    ],
+    "src/components/collapsible-finding-section.tsx": [
+      "CollapsibleFindingSection"
+    ],
+    "src/components/copy-button.tsx": [
+      "CopyButton"
+    ],
+    "src/components/ess-findings-picker.tsx": [
+      "SINUSITIS_FIELD_KEYS",
+      "ESS_FINDINGS_FIELD_KEYS",
+      "ANATOMIC_RISK_PRESENT_KEYS",
+      "SINUSITIS_PRESENT_KEYS",
+      "AnatomicRiskFindingsPicker",
+      "SinusitisFindingsPicker"
+    ],
+    "src/components/nasal-findings-overview.tsx": [
+      "NasalFindingsOverview"
+    ],
+    "src/components/op-note-generate-button.tsx": [
+      "OpNoteGenerateButton"
+    ],
+    "src/components/patients-list-title.tsx": [
+      "PatientsListTitle"
+    ],
+    "src/components/patients-nav-link.tsx": [
+      "PatientsNavLink"
+    ],
+    "src/components/plan-table.tsx": [
+      "SideMatrixTable",
+      "PlanTableView"
+    ],
+    "src/components/polyp-picker.tsx": [
+      "POLYP_FIELD_KEYS",
+      "PolypPicker"
+    ],
+    "src/components/preset-bar.tsx": [
+      "PresetBar"
+    ],
+    "src/components/print-button.tsx": [
+      "PrintButton"
+    ],
+    "src/components/save-image-button.tsx": [
+      "SaveImageButton"
+    ],
+    "src/components/surgery-field-inputs.tsx": [
+      "SurgeryFieldInputs"
+    ],
+    "src/components/surgery-planner.tsx": [
+      "SurgeryPlanner"
+    ],
+    "src/components/turbinoplasty-type-picker.tsx": [
+      "TURBINOPLASTY_FIELD_KEYS",
+      "TurbinoplastyTypePicker"
+    ],
+    "src/components/uncinate-attachment-fields.tsx": [
+      "UncinateAttachmentFields"
+    ],
+    "src/lib/calendar.ts": [
+      "buildIcsContent",
+      "buildGoogleCalendarUrl"
+    ],
+    "src/lib/dal.ts": [
+      "verifySession",
+      "getCurrentUser"
+    ],
+    "src/lib/date-format.ts": [
+      "safeDateStr"
+    ],
+    "src/lib/field-types.ts": [
+      "parseFieldDefs",
+      "fieldValuesFromFormData",
+      "parseFieldValues",
+      "applyFieldDefaults"
+    ],
+    "src/lib/op-note-defs.test.ts": [],
+    "src/lib/op-note-defs.ts": [
+      "SEPTO_PE_DONE_KEY",
+      "ESS_PE_DONE_KEY",
+      "POST_OP_FINISH_KEYS",
+      "septumTurbinateFindingFields",
+      "SEPTUM_DETAIL_FIELD_KEYS",
+      "UNCINATE_FIELD_KEYS",
+      "essFindingFields",
+      "nasalFindingFields",
+      "turbinoplastyFields",
+      "septoFields",
+      "fessStepFieldKeys",
+      "fessStepLabels",
+      "fessFields",
+      "comboOnlyFields",
+      "essFullFields",
+      "septoplastyFullFields",
+      "comboFullFields",
+      "BUILT_IN_SURGERY_CODES",
+      "isBuiltInSurgeryCode",
+      "resolveSurgeryTypeFields",
+      "isNasalFindingKey",
+      "REVISION_FLAG_KEYS",
+      "SINUSITIS_TO_FESS_FIELD",
+      "POLYP_TO_FESS_FIELD"
+    ],
+    "src/lib/op-note-generator.test.ts": [],
+    "src/lib/op-note-generator.ts": [
+      "anesthesiaLabel",
+      "hasAnyRevision",
+      "nasalFindingsText",
+      "nasalFindingsSummary",
+      "generateOpNote",
+      "DEFAULT_NAME_STYLE",
+      "buildProcedureName",
+      "buildPlanTable",
+      "planTableToText"
+    ],
+    "src/lib/patient-nasal-findings.ts": [
+      "getLatestNasalFindingsForPatient"
+    ],
+    "src/lib/presets.ts": [
+      "getPresetsForSurgeryType",
+      "getPresetsForSurgeryTypes"
+    ],
+    "src/lib/prisma.ts": [
+      "prisma"
+    ],
+    "src/lib/recent-combos.ts": [
+      "getRecentCombosForSurgeryType",
+      "getRecentCombosForSurgeryTypes"
+    ],
+    "src/lib/session.ts": [
+      "SESSION_COOKIE",
+      "SESSION_DURATION_MS",
+      "encrypt",
+      "decrypt",
+      "sessionCookieOptions",
+      "createSession",
+      "deleteSession",
+      "getSessionPayload"
+    ],
+    "src/lib/ui.ts": [
+      "buttonStyles"
+    ]
+  },
+  "batches": [
+    {
+      "batchIndex": 1,
+      "files": [
+        {
+          "path": "prisma/seed.ts",
+          "language": "typescript",
+          "sizeLines": 61,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/(app)/patients/[id]/page.tsx",
+          "language": "typescript",
+          "sizeLines": 128,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/(app)/patients/new/page.tsx",
+          "language": "typescript",
+          "sizeLines": 38,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/(app)/plans/[id]/record/page.tsx",
+          "language": "typescript",
+          "sizeLines": 68,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/(app)/records/[id]/edit/page.tsx",
+          "language": "typescript",
+          "sizeLines": 60,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/(app)/records/record-form.tsx",
+          "language": "typescript",
+          "sizeLines": 346,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/actions/op-records.ts",
+          "language": "typescript",
+          "sizeLines": 127,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/actions/patient-plan.ts",
+          "language": "typescript",
+          "sizeLines": 124,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/actions/presets.ts",
+          "language": "typescript",
+          "sizeLines": 29,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/components/anatomy-diagram.tsx",
+          "language": "typescript",
+          "sizeLines": 331,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/components/collapsible-finding-section.tsx",
+          "language": "typescript",
+          "sizeLines": 24,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/components/ess-findings-picker.tsx",
+          "language": "typescript",
+          "sizeLines": 210,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/components/nasal-findings-overview.tsx",
+          "language": "typescript",
+          "sizeLines": 58,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/components/op-note-generate-button.tsx",
+          "language": "typescript",
+          "sizeLines": 64,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/components/plan-table.tsx",
+          "language": "typescript",
+          "sizeLines": 200,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/components/polyp-picker.tsx",
+          "language": "typescript",
+          "sizeLines": 47,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/components/preset-bar.tsx",
+          "language": "typescript",
+          "sizeLines": 92,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/components/surgery-field-inputs.tsx",
+          "language": "typescript",
+          "sizeLines": 198,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/components/surgery-planner.tsx",
+          "language": "typescript",
+          "sizeLines": 849,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/components/turbinoplasty-type-picker.tsx",
+          "language": "typescript",
+          "sizeLines": 155,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/components/uncinate-attachment-fields.tsx",
+          "language": "typescript",
+          "sizeLines": 76,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/lib/field-types.ts",
+          "language": "typescript",
+          "sizeLines": 77,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/lib/op-note-defs.test.ts",
+          "language": "typescript",
+          "sizeLines": 74,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/lib/op-note-defs.ts",
+          "language": "typescript",
+          "sizeLines": 425,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/lib/op-note-generator.test.ts",
+          "language": "typescript",
+          "sizeLines": 252,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/lib/op-note-generator.ts",
+          "language": "typescript",
+          "sizeLines": 1125,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/lib/recent-combos.ts",
+          "language": "typescript",
+          "sizeLines": 59,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/lib/ui.ts",
+          "language": "typescript",
+          "sizeLines": 25,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "prisma/seed.ts": [
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts"
+        ],
+        "src/app/(app)/patients/[id]/page.tsx": [
+          "src/components/plan-table.tsx",
+          "src/lib/dal.ts",
+          "src/lib/date-format.ts",
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/op-note-generator.ts",
+          "src/lib/prisma.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/app/(app)/patients/new/page.tsx": [
+          "src/components/surgery-planner.tsx",
+          "src/lib/dal.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/op-note-generator.ts",
+          "src/lib/prisma.ts"
+        ],
+        "src/app/(app)/plans/[id]/record/page.tsx": [
+          "src/app/(app)/records/record-form.tsx",
+          "src/app/actions/op-records.ts",
+          "src/lib/dal.ts",
+          "src/lib/date-format.ts",
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/op-note-generator.ts",
+          "src/lib/prisma.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/app/(app)/records/[id]/edit/page.tsx": [
+          "src/app/(app)/records/record-form.tsx",
+          "src/app/actions/op-records.ts",
+          "src/lib/dal.ts",
+          "src/lib/date-format.ts",
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/op-note-generator.ts",
+          "src/lib/prisma.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/app/(app)/records/record-form.tsx": [
+          "src/app/actions/op-records.ts",
+          "src/components/anatomy-diagram.tsx",
+          "src/components/collapsible-finding-section.tsx",
+          "src/components/ess-findings-picker.tsx",
+          "src/components/nasal-findings-overview.tsx",
+          "src/components/op-note-generate-button.tsx",
+          "src/components/polyp-picker.tsx",
+          "src/components/surgery-field-inputs.tsx",
+          "src/components/turbinoplasty-type-picker.tsx",
+          "src/components/uncinate-attachment-fields.tsx",
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/op-note-generator.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/app/actions/op-records.ts": [
+          "src/lib/dal.ts",
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/prisma.ts"
+        ],
+        "src/app/actions/patient-plan.ts": [
+          "src/lib/dal.ts",
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/prisma.ts"
+        ],
+        "src/app/actions/presets.ts": [
+          "src/lib/dal.ts",
+          "src/lib/field-types.ts",
+          "src/lib/prisma.ts"
+        ],
+        "src/components/anatomy-diagram.tsx": [
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/components/collapsible-finding-section.tsx": [],
+        "src/components/ess-findings-picker.tsx": [
+          "src/components/plan-table.tsx",
+          "src/lib/field-types.ts",
+          "src/lib/op-note-generator.ts"
+        ],
+        "src/components/nasal-findings-overview.tsx": [],
+        "src/components/op-note-generate-button.tsx": [
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/op-note-generator.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/components/plan-table.tsx": [
+          "src/components/check-cell.tsx",
+          "src/lib/op-note-generator.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/components/polyp-picker.tsx": [
+          "src/components/plan-table.tsx",
+          "src/lib/field-types.ts",
+          "src/lib/op-note-generator.ts"
+        ],
+        "src/components/preset-bar.tsx": [
+          "src/app/actions/presets.ts",
+          "src/lib/field-types.ts"
+        ],
+        "src/components/surgery-field-inputs.tsx": [
+          "src/lib/field-types.ts"
+        ],
+        "src/components/surgery-planner.tsx": [
+          "src/app/actions/patient-plan.ts",
+          "src/components/anatomy-diagram.tsx",
+          "src/components/collapsible-finding-section.tsx",
+          "src/components/copy-button.tsx",
+          "src/components/ess-findings-picker.tsx",
+          "src/components/nasal-findings-overview.tsx",
+          "src/components/plan-table.tsx",
+          "src/components/polyp-picker.tsx",
+          "src/components/surgery-field-inputs.tsx",
+          "src/components/turbinoplasty-type-picker.tsx",
+          "src/components/uncinate-attachment-fields.tsx",
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/op-note-generator.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/components/turbinoplasty-type-picker.tsx": [
+          "src/lib/field-types.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/components/uncinate-attachment-fields.tsx": [
+          "src/lib/field-types.ts"
+        ],
+        "src/lib/field-types.ts": [],
+        "src/lib/op-note-defs.test.ts": [
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts"
+        ],
+        "src/lib/op-note-defs.ts": [
+          "src/lib/field-types.ts"
+        ],
+        "src/lib/op-note-generator.test.ts": [
+          "src/lib/field-types.ts",
+          "src/lib/op-note-generator.ts"
+        ],
+        "src/lib/op-note-generator.ts": [
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts"
+        ],
+        "src/lib/recent-combos.ts": [
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/op-note-generator.ts",
+          "src/lib/prisma.ts"
+        ],
+        "src/lib/ui.ts": []
+      },
+      "neighborMap": {
+        "src/app/(app)/patients/[id]/page.tsx": [
+          {
+            "path": "src/lib/dal.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "verifySession",
+              "getCurrentUser"
+            ]
+          },
+          {
+            "path": "src/lib/date-format.ts",
+            "batchIndex": 4,
+            "symbols": [
+              "safeDateStr"
+            ]
+          },
+          {
+            "path": "src/lib/prisma.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "prisma"
+            ]
+          }
+        ],
+        "src/app/(app)/patients/new/page.tsx": [
+          {
+            "path": "src/lib/dal.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "verifySession",
+              "getCurrentUser"
+            ]
+          },
+          {
+            "path": "src/lib/prisma.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "prisma"
+            ]
+          }
+        ],
+        "src/app/(app)/plans/[id]/record/page.tsx": [
+          {
+            "path": "src/lib/dal.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "verifySession",
+              "getCurrentUser"
+            ]
+          },
+          {
+            "path": "src/lib/date-format.ts",
+            "batchIndex": 4,
+            "symbols": [
+              "safeDateStr"
+            ]
+          },
+          {
+            "path": "src/lib/prisma.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "prisma"
+            ]
+          }
+        ],
+        "src/app/(app)/records/[id]/edit/page.tsx": [
+          {
+            "path": "src/lib/dal.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "verifySession",
+              "getCurrentUser"
+            ]
+          },
+          {
+            "path": "src/lib/date-format.ts",
+            "batchIndex": 4,
+            "symbols": [
+              "safeDateStr"
+            ]
+          },
+          {
+            "path": "src/lib/prisma.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "prisma"
+            ]
+          }
+        ],
+        "src/app/actions/op-records.ts": [
+          {
+            "path": "src/lib/dal.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "verifySession",
+              "getCurrentUser"
+            ]
+          },
+          {
+            "path": "src/lib/prisma.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "prisma"
+            ]
+          }
+        ],
+        "src/app/actions/patient-plan.ts": [
+          {
+            "path": "src/lib/dal.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "verifySession",
+              "getCurrentUser"
+            ]
+          },
+          {
+            "path": "src/lib/prisma.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "prisma"
+            ]
+          }
+        ],
+        "src/app/actions/presets.ts": [
+          {
+            "path": "src/lib/dal.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "verifySession",
+              "getCurrentUser"
+            ]
+          },
+          {
+            "path": "src/lib/prisma.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "prisma"
+            ]
+          }
+        ],
+        "src/components/plan-table.tsx": [
+          {
+            "path": "src/components/check-cell.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "CHECK_MARK",
+              "DataCell",
+              "CheckBox"
+            ]
+          },
+          {
+            "path": "src/app/plans/[id]/print/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "OpPlanPrintPage"
+            ]
+          }
+        ],
+        "src/components/surgery-planner.tsx": [
+          {
+            "path": "src/components/copy-button.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "CopyButton"
+            ]
+          },
+          {
+            "path": "src/app/(app)/patients/[id]/plans/new/page.tsx",
+            "batchIndex": 2,
+            "symbols": [
+              "NewOpPlanPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/plans/[id]/page.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "OpPlanPage"
+            ]
+          }
+        ],
+        "src/lib/field-types.ts": [
+          {
+            "path": "src/app/(app)/patients/page.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "PatientsPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/plans/[id]/page.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "OpPlanPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/records/[id]/page.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "OpRecordPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/settings/page.tsx",
+            "batchIndex": 2,
+            "symbols": [
+              "SettingsPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/surgery-types/field-builder.tsx",
+            "batchIndex": 2,
+            "symbols": [
+              "SurgeryTypeFieldBuilder"
+            ]
+          },
+          {
+            "path": "src/app/actions/op-plans.ts",
+            "batchIndex": 4,
+            "symbols": [
+              "updateOpPlan",
+              "deleteOpPlan",
+              "toggleOpPlanDone"
+            ]
+          },
+          {
+            "path": "src/app/actions/surgery-types.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "createSurgeryType",
+              "deleteSurgeryType"
+            ]
+          },
+          {
+            "path": "src/app/plans/[id]/ics/route.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "GET"
+            ]
+          },
+          {
+            "path": "src/app/plans/[id]/print/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "OpPlanPrintPage"
+            ]
+          },
+          {
+            "path": "src/app/print/fess-checklist/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "FessChecklistPrintPage"
+            ]
+          },
+          {
+            "path": "src/app/records/[id]/print/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "OpRecordPrintPage"
+            ]
+          },
+          {
+            "path": "src/lib/patient-nasal-findings.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "getLatestNasalFindingsForPatient"
+            ]
+          },
+          {
+            "path": "src/lib/presets.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "getPresetsForSurgeryType",
+              "getPresetsForSurgeryTypes"
+            ]
+          }
+        ],
+        "src/lib/op-note-defs.ts": [
+          {
+            "path": "src/app/(app)/patients/[id]/plans/new/page.tsx",
+            "batchIndex": 2,
+            "symbols": [
+              "NewOpPlanPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/patients/page.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "PatientsPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/plans/[id]/page.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "OpPlanPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/records/[id]/page.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "OpRecordPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/settings/page.tsx",
+            "batchIndex": 2,
+            "symbols": [
+              "SettingsPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/surgery-types/surgery-types-manager.tsx",
+            "batchIndex": 2,
+            "symbols": [
+              "SurgeryTypesManager"
+            ]
+          },
+          {
+            "path": "src/app/actions/op-plans.ts",
+            "batchIndex": 4,
+            "symbols": [
+              "updateOpPlan",
+              "deleteOpPlan",
+              "toggleOpPlanDone"
+            ]
+          },
+          {
+            "path": "src/app/plans/[id]/ics/route.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "GET"
+            ]
+          },
+          {
+            "path": "src/app/plans/[id]/print/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "OpPlanPrintPage"
+            ]
+          },
+          {
+            "path": "src/app/print/fess-checklist/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "FessChecklistPrintPage"
+            ]
+          },
+          {
+            "path": "src/app/records/[id]/print/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "OpRecordPrintPage"
+            ]
+          },
+          {
+            "path": "src/lib/patient-nasal-findings.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "getLatestNasalFindingsForPatient"
+            ]
+          }
+        ],
+        "src/lib/op-note-generator.ts": [
+          {
+            "path": "src/app/(app)/patients/[id]/plans/new/page.tsx",
+            "batchIndex": 2,
+            "symbols": [
+              "NewOpPlanPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/patients/page.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "PatientsPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/plans/[id]/page.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "OpPlanPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/settings/page.tsx",
+            "batchIndex": 2,
+            "symbols": [
+              "SettingsPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/settings/settings-form.tsx",
+            "batchIndex": 2,
+            "symbols": [
+              "SettingsForm"
+            ]
+          },
+          {
+            "path": "src/app/plans/[id]/ics/route.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "GET"
+            ]
+          },
+          {
+            "path": "src/app/plans/[id]/print/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "OpPlanPrintPage"
+            ]
+          },
+          {
+            "path": "src/app/print/fess-checklist/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "FessChecklistPrintPage"
+            ]
+          }
+        ],
+        "src/lib/recent-combos.ts": [
+          {
+            "path": "src/lib/prisma.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "prisma"
+            ]
+          }
+        ],
+        "src/lib/ui.ts": [
+          {
+            "path": "src/app/(app)/patients/[id]/edit/page.tsx",
+            "batchIndex": 2,
+            "symbols": [
+              "EditPatientPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/patients/page.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "PatientsPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/patients/patient-form.tsx",
+            "batchIndex": 2,
+            "symbols": [
+              "PatientForm"
+            ]
+          },
+          {
+            "path": "src/app/(app)/patients/patient-list-table.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "PatientRow",
+              "PatientListTable"
+            ]
+          },
+          {
+            "path": "src/app/(app)/plans/[id]/page.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "OpPlanPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/records/[id]/page.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "OpRecordPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/settings/page.tsx",
+            "batchIndex": 2,
+            "symbols": [
+              "SettingsPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/settings/settings-form.tsx",
+            "batchIndex": 2,
+            "symbols": [
+              "SettingsForm"
+            ]
+          },
+          {
+            "path": "src/app/(app)/surgery-types/field-builder.tsx",
+            "batchIndex": 2,
+            "symbols": [
+              "SurgeryTypeFieldBuilder"
+            ]
+          },
+          {
+            "path": "src/app/plans/[id]/print/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "OpPlanPrintPage"
+            ]
+          },
+          {
+            "path": "src/app/print/fess-checklist/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "FessChecklistPrintPage"
+            ]
+          },
+          {
+            "path": "src/app/records/[id]/print/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "OpRecordPrintPage"
+            ]
+          },
+          {
+            "path": "src/components/copy-button.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "CopyButton"
+            ]
+          },
+          {
+            "path": "src/components/print-button.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "PrintButton"
+            ]
+          },
+          {
+            "path": "src/components/save-image-button.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "SaveImageButton"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "batchIndex": 2,
+      "files": [
+        {
+          "path": "src/app/(app)/patients/[id]/edit/page.tsx",
+          "language": "typescript",
+          "sizeLines": 43,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/(app)/patients/[id]/plans/new/page.tsx",
+          "language": "typescript",
+          "sizeLines": 48,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/(app)/patients/patient-form.tsx",
+          "language": "typescript",
+          "sizeLines": 111,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/(app)/settings/page.tsx",
+          "language": "typescript",
+          "sizeLines": 95,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/(app)/settings/settings-form.tsx",
+          "language": "typescript",
+          "sizeLines": 106,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/(app)/surgery-types/field-builder.tsx",
+          "language": "typescript",
+          "sizeLines": 172,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/(app)/surgery-types/surgery-types-manager.tsx",
+          "language": "typescript",
+          "sizeLines": 63,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/actions/patients.ts",
+          "language": "typescript",
+          "sizeLines": 123,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/actions/settings.ts",
+          "language": "typescript",
+          "sizeLines": 41,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/actions/surgery-types.ts",
+          "language": "typescript",
+          "sizeLines": 102,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/plans/[id]/ics/route.ts",
+          "language": "typescript",
+          "sizeLines": 42,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/lib/calendar.ts",
+          "language": "typescript",
+          "sizeLines": 68,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/lib/dal.ts",
+          "language": "typescript",
+          "sizeLines": 32,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/lib/patient-nasal-findings.ts",
+          "language": "typescript",
+          "sizeLines": 44,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/lib/presets.ts",
+          "language": "typescript",
+          "sizeLines": 40,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/lib/prisma.ts",
+          "language": "typescript",
+          "sizeLines": 14,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "src/app/(app)/patients/[id]/edit/page.tsx": [
+          "src/app/(app)/patients/patient-form.tsx",
+          "src/app/actions/patients.ts",
+          "src/lib/dal.ts",
+          "src/lib/prisma.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/app/(app)/patients/[id]/plans/new/page.tsx": [
+          "src/components/surgery-planner.tsx",
+          "src/lib/dal.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/op-note-generator.ts",
+          "src/lib/patient-nasal-findings.ts",
+          "src/lib/prisma.ts"
+        ],
+        "src/app/(app)/patients/patient-form.tsx": [
+          "src/app/actions/patients.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/app/(app)/settings/page.tsx": [
+          "src/app/(app)/settings/settings-form.tsx",
+          "src/app/(app)/surgery-types/surgery-types-manager.tsx",
+          "src/lib/calendar.ts",
+          "src/lib/dal.ts",
+          "src/lib/date-format.ts",
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/op-note-generator.ts",
+          "src/lib/prisma.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/app/(app)/settings/settings-form.tsx": [
+          "src/app/actions/settings.ts",
+          "src/lib/op-note-generator.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/app/(app)/surgery-types/field-builder.tsx": [
+          "src/app/actions/surgery-types.ts",
+          "src/lib/field-types.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/app/(app)/surgery-types/surgery-types-manager.tsx": [
+          "src/app/(app)/surgery-types/field-builder.tsx",
+          "src/app/actions/surgery-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/prisma.ts"
+        ],
+        "src/app/actions/patients.ts": [
+          "src/lib/dal.ts",
+          "src/lib/prisma.ts"
+        ],
+        "src/app/actions/settings.ts": [
+          "src/lib/dal.ts",
+          "src/lib/prisma.ts"
+        ],
+        "src/app/actions/surgery-types.ts": [
+          "src/lib/dal.ts",
+          "src/lib/field-types.ts",
+          "src/lib/prisma.ts"
+        ],
+        "src/app/plans/[id]/ics/route.ts": [
+          "src/lib/calendar.ts",
+          "src/lib/dal.ts",
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/op-note-generator.ts",
+          "src/lib/prisma.ts"
+        ],
+        "src/lib/calendar.ts": [],
+        "src/lib/dal.ts": [
+          "src/lib/prisma.ts",
+          "src/lib/session.ts"
+        ],
+        "src/lib/patient-nasal-findings.ts": [
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/prisma.ts"
+        ],
+        "src/lib/presets.ts": [
+          "src/lib/field-types.ts",
+          "src/lib/prisma.ts"
+        ],
+        "src/lib/prisma.ts": []
+      },
+      "neighborMap": {
+        "src/app/(app)/patients/[id]/edit/page.tsx": [
+          {
+            "path": "src/lib/ui.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "buttonStyles"
+            ]
+          }
+        ],
+        "src/app/(app)/patients/[id]/plans/new/page.tsx": [
+          {
+            "path": "src/components/surgery-planner.tsx",
+            "batchIndex": 1,
+            "symbols": [
+              "SurgeryPlanner"
+            ]
+          },
+          {
+            "path": "src/lib/op-note-defs.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "SEPTO_PE_DONE_KEY",
+              "ESS_PE_DONE_KEY",
+              "POST_OP_FINISH_KEYS",
+              "septumTurbinateFindingFields",
+              "SEPTUM_DETAIL_FIELD_KEYS",
+              "UNCINATE_FIELD_KEYS",
+              "essFindingFields",
+              "nasalFindingFields",
+              "turbinoplastyFields",
+              "septoFields",
+              "fessStepFieldKeys",
+              "fessStepLabels",
+              "fessFields",
+              "comboOnlyFields",
+              "essFullFields",
+              "septoplastyFullFields",
+              "comboFullFields",
+              "BUILT_IN_SURGERY_CODES",
+              "isBuiltInSurgeryCode",
+              "resolveSurgeryTypeFields",
+              "isNasalFindingKey",
+              "REVISION_FLAG_KEYS",
+              "SINUSITIS_TO_FESS_FIELD",
+              "POLYP_TO_FESS_FIELD"
+            ]
+          },
+          {
+            "path": "src/lib/op-note-generator.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "anesthesiaLabel",
+              "hasAnyRevision",
+              "nasalFindingsText",
+              "nasalFindingsSummary",
+              "generateOpNote",
+              "DEFAULT_NAME_STYLE",
+              "buildProcedureName",
+              "buildPlanTable",
+              "planTableToText"
+            ]
+          }
+        ],
+        "src/app/(app)/patients/patient-form.tsx": [
+          {
+            "path": "src/lib/ui.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "buttonStyles"
+            ]
+          }
+        ],
+        "src/app/(app)/settings/page.tsx": [
+          {
+            "path": "src/lib/date-format.ts",
+            "batchIndex": 4,
+            "symbols": [
+              "safeDateStr"
+            ]
+          },
+          {
+            "path": "src/lib/field-types.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "parseFieldDefs",
+              "fieldValuesFromFormData",
+              "parseFieldValues",
+              "applyFieldDefaults"
+            ]
+          },
+          {
+            "path": "src/lib/op-note-defs.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "SEPTO_PE_DONE_KEY",
+              "ESS_PE_DONE_KEY",
+              "POST_OP_FINISH_KEYS",
+              "septumTurbinateFindingFields",
+              "SEPTUM_DETAIL_FIELD_KEYS",
+              "UNCINATE_FIELD_KEYS",
+              "essFindingFields",
+              "nasalFindingFields",
+              "turbinoplastyFields",
+              "septoFields",
+              "fessStepFieldKeys",
+              "fessStepLabels",
+              "fessFields",
+              "comboOnlyFields",
+              "essFullFields",
+              "septoplastyFullFields",
+              "comboFullFields",
+              "BUILT_IN_SURGERY_CODES",
+              "isBuiltInSurgeryCode",
+              "resolveSurgeryTypeFields",
+              "isNasalFindingKey",
+              "REVISION_FLAG_KEYS",
+              "SINUSITIS_TO_FESS_FIELD",
+              "POLYP_TO_FESS_FIELD"
+            ]
+          },
+          {
+            "path": "src/lib/op-note-generator.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "anesthesiaLabel",
+              "hasAnyRevision",
+              "nasalFindingsText",
+              "nasalFindingsSummary",
+              "generateOpNote",
+              "DEFAULT_NAME_STYLE",
+              "buildProcedureName",
+              "buildPlanTable",
+              "planTableToText"
+            ]
+          },
+          {
+            "path": "src/lib/ui.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "buttonStyles"
+            ]
+          }
+        ],
+        "src/app/(app)/settings/settings-form.tsx": [
+          {
+            "path": "src/lib/op-note-generator.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "anesthesiaLabel",
+              "hasAnyRevision",
+              "nasalFindingsText",
+              "nasalFindingsSummary",
+              "generateOpNote",
+              "DEFAULT_NAME_STYLE",
+              "buildProcedureName",
+              "buildPlanTable",
+              "planTableToText"
+            ]
+          },
+          {
+            "path": "src/lib/ui.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "buttonStyles"
+            ]
+          }
+        ],
+        "src/app/(app)/surgery-types/field-builder.tsx": [
+          {
+            "path": "src/lib/field-types.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "parseFieldDefs",
+              "fieldValuesFromFormData",
+              "parseFieldValues",
+              "applyFieldDefaults"
+            ]
+          },
+          {
+            "path": "src/lib/ui.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "buttonStyles"
+            ]
+          }
+        ],
+        "src/app/(app)/surgery-types/surgery-types-manager.tsx": [
+          {
+            "path": "src/lib/op-note-defs.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "SEPTO_PE_DONE_KEY",
+              "ESS_PE_DONE_KEY",
+              "POST_OP_FINISH_KEYS",
+              "septumTurbinateFindingFields",
+              "SEPTUM_DETAIL_FIELD_KEYS",
+              "UNCINATE_FIELD_KEYS",
+              "essFindingFields",
+              "nasalFindingFields",
+              "turbinoplastyFields",
+              "septoFields",
+              "fessStepFieldKeys",
+              "fessStepLabels",
+              "fessFields",
+              "comboOnlyFields",
+              "essFullFields",
+              "septoplastyFullFields",
+              "comboFullFields",
+              "BUILT_IN_SURGERY_CODES",
+              "isBuiltInSurgeryCode",
+              "resolveSurgeryTypeFields",
+              "isNasalFindingKey",
+              "REVISION_FLAG_KEYS",
+              "SINUSITIS_TO_FESS_FIELD",
+              "POLYP_TO_FESS_FIELD"
+            ]
+          }
+        ],
+        "src/app/actions/patients.ts": [
+          {
+            "path": "src/app/(app)/patients/patient-list-table.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "PatientRow",
+              "PatientListTable"
+            ]
+          }
+        ],
+        "src/app/actions/surgery-types.ts": [
+          {
+            "path": "src/lib/field-types.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "parseFieldDefs",
+              "fieldValuesFromFormData",
+              "parseFieldValues",
+              "applyFieldDefaults"
+            ]
+          }
+        ],
+        "src/app/plans/[id]/ics/route.ts": [
+          {
+            "path": "src/lib/field-types.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "parseFieldDefs",
+              "fieldValuesFromFormData",
+              "parseFieldValues",
+              "applyFieldDefaults"
+            ]
+          },
+          {
+            "path": "src/lib/op-note-defs.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "SEPTO_PE_DONE_KEY",
+              "ESS_PE_DONE_KEY",
+              "POST_OP_FINISH_KEYS",
+              "septumTurbinateFindingFields",
+              "SEPTUM_DETAIL_FIELD_KEYS",
+              "UNCINATE_FIELD_KEYS",
+              "essFindingFields",
+              "nasalFindingFields",
+              "turbinoplastyFields",
+              "septoFields",
+              "fessStepFieldKeys",
+              "fessStepLabels",
+              "fessFields",
+              "comboOnlyFields",
+              "essFullFields",
+              "septoplastyFullFields",
+              "comboFullFields",
+              "BUILT_IN_SURGERY_CODES",
+              "isBuiltInSurgeryCode",
+              "resolveSurgeryTypeFields",
+              "isNasalFindingKey",
+              "REVISION_FLAG_KEYS",
+              "SINUSITIS_TO_FESS_FIELD",
+              "POLYP_TO_FESS_FIELD"
+            ]
+          },
+          {
+            "path": "src/lib/op-note-generator.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "anesthesiaLabel",
+              "hasAnyRevision",
+              "nasalFindingsText",
+              "nasalFindingsSummary",
+              "generateOpNote",
+              "DEFAULT_NAME_STYLE",
+              "buildProcedureName",
+              "buildPlanTable",
+              "planTableToText"
+            ]
+          }
+        ],
+        "src/lib/dal.ts": [
+          {
+            "path": "src/lib/session.ts",
+            "batchIndex": 5,
+            "symbols": [
+              "SESSION_COOKIE",
+              "SESSION_DURATION_MS",
+              "encrypt",
+              "decrypt",
+              "sessionCookieOptions",
+              "createSession",
+              "deleteSession",
+              "getSessionPayload"
+            ]
+          },
+          {
+            "path": "src/app/(app)/patients/[id]/page.tsx",
+            "batchIndex": 1,
+            "symbols": [
+              "PatientDetailPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/patients/new/page.tsx",
+            "batchIndex": 1,
+            "symbols": [
+              "NewPatientPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/patients/page.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "PatientsPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/plans/[id]/page.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "OpPlanPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/plans/[id]/record/page.tsx",
+            "batchIndex": 1,
+            "symbols": [
+              "NewOpRecordPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/records/[id]/edit/page.tsx",
+            "batchIndex": 1,
+            "symbols": [
+              "EditOpRecordPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/records/[id]/page.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "OpRecordPage"
+            ]
+          },
+          {
+            "path": "src/app/actions/op-plans.ts",
+            "batchIndex": 4,
+            "symbols": [
+              "updateOpPlan",
+              "deleteOpPlan",
+              "toggleOpPlanDone"
+            ]
+          },
+          {
+            "path": "src/app/actions/op-records.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "createOpRecord",
+              "updateOpRecord"
+            ]
+          },
+          {
+            "path": "src/app/actions/patient-plan.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "createPatientWithPlan"
+            ]
+          },
+          {
+            "path": "src/app/actions/presets.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "createSurgeryPreset",
+              "deleteSurgeryPreset"
+            ]
+          },
+          {
+            "path": "src/app/plans/[id]/print/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "OpPlanPrintPage"
+            ]
+          },
+          {
+            "path": "src/app/print/fess-checklist/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "FessChecklistPrintPage"
+            ]
+          },
+          {
+            "path": "src/app/records/[id]/print/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "OpRecordPrintPage"
+            ]
+          },
+          {
+            "path": "src/components/app-nav-bar.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "AppNavBar"
+            ]
+          }
+        ],
+        "src/lib/patient-nasal-findings.ts": [
+          {
+            "path": "src/lib/field-types.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "parseFieldDefs",
+              "fieldValuesFromFormData",
+              "parseFieldValues",
+              "applyFieldDefaults"
+            ]
+          },
+          {
+            "path": "src/lib/op-note-defs.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "SEPTO_PE_DONE_KEY",
+              "ESS_PE_DONE_KEY",
+              "POST_OP_FINISH_KEYS",
+              "septumTurbinateFindingFields",
+              "SEPTUM_DETAIL_FIELD_KEYS",
+              "UNCINATE_FIELD_KEYS",
+              "essFindingFields",
+              "nasalFindingFields",
+              "turbinoplastyFields",
+              "septoFields",
+              "fessStepFieldKeys",
+              "fessStepLabels",
+              "fessFields",
+              "comboOnlyFields",
+              "essFullFields",
+              "septoplastyFullFields",
+              "comboFullFields",
+              "BUILT_IN_SURGERY_CODES",
+              "isBuiltInSurgeryCode",
+              "resolveSurgeryTypeFields",
+              "isNasalFindingKey",
+              "REVISION_FLAG_KEYS",
+              "SINUSITIS_TO_FESS_FIELD",
+              "POLYP_TO_FESS_FIELD"
+            ]
+          }
+        ],
+        "src/lib/presets.ts": [
+          {
+            "path": "src/lib/field-types.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "parseFieldDefs",
+              "fieldValuesFromFormData",
+              "parseFieldValues",
+              "applyFieldDefaults"
+            ]
+          }
+        ],
+        "src/lib/prisma.ts": [
+          {
+            "path": "src/app/(app)/patients/[id]/page.tsx",
+            "batchIndex": 1,
+            "symbols": [
+              "PatientDetailPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/patients/new/page.tsx",
+            "batchIndex": 1,
+            "symbols": [
+              "NewPatientPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/patients/page.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "PatientsPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/plans/[id]/page.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "OpPlanPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/plans/[id]/record/page.tsx",
+            "batchIndex": 1,
+            "symbols": [
+              "NewOpRecordPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/records/[id]/edit/page.tsx",
+            "batchIndex": 1,
+            "symbols": [
+              "EditOpRecordPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/records/[id]/page.tsx",
+            "batchIndex": 4,
+            "symbols": [
+              "OpRecordPage"
+            ]
+          },
+          {
+            "path": "src/app/actions/auth.ts",
+            "batchIndex": 5,
+            "symbols": [
+              "signup",
+              "login",
+              "logout"
+            ]
+          },
+          {
+            "path": "src/app/actions/op-plans.ts",
+            "batchIndex": 4,
+            "symbols": [
+              "updateOpPlan",
+              "deleteOpPlan",
+              "toggleOpPlanDone"
+            ]
+          },
+          {
+            "path": "src/app/actions/op-records.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "createOpRecord",
+              "updateOpRecord"
+            ]
+          },
+          {
+            "path": "src/app/actions/patient-plan.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "createPatientWithPlan"
+            ]
+          },
+          {
+            "path": "src/app/actions/presets.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "createSurgeryPreset",
+              "deleteSurgeryPreset"
+            ]
+          },
+          {
+            "path": "src/app/plans/[id]/print/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "OpPlanPrintPage"
+            ]
+          },
+          {
+            "path": "src/app/print/fess-checklist/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "FessChecklistPrintPage"
+            ]
+          },
+          {
+            "path": "src/app/records/[id]/print/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "OpRecordPrintPage"
+            ]
+          },
+          {
+            "path": "src/lib/recent-combos.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "getRecentCombosForSurgeryType",
+              "getRecentCombosForSurgeryTypes"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "batchIndex": 3,
+      "files": [
+        {
+          "path": "src/app/(app)/layout.tsx",
+          "language": "typescript",
+          "sizeLines": 16,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/plans/[id]/print/page.tsx",
+          "language": "typescript",
+          "sizeLines": 101,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/print/fess-checklist/page.tsx",
+          "language": "typescript",
+          "sizeLines": 250,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/records/[id]/print/page.tsx",
+          "language": "typescript",
+          "sizeLines": 121,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/components/app-nav-bar.tsx",
+          "language": "typescript",
+          "sizeLines": 38,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/components/check-cell.tsx",
+          "language": "typescript",
+          "sizeLines": 28,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/components/copy-button.tsx",
+          "language": "typescript",
+          "sizeLines": 36,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/components/patients-nav-link.tsx",
+          "language": "typescript",
+          "sizeLines": 24,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/components/print-button.tsx",
+          "language": "typescript",
+          "sizeLines": 11,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/components/save-image-button.tsx",
+          "language": "typescript",
+          "sizeLines": 101,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "src/app/(app)/layout.tsx": [
+          "src/components/app-nav-bar.tsx"
+        ],
+        "src/app/plans/[id]/print/page.tsx": [
+          "src/components/app-nav-bar.tsx",
+          "src/components/copy-button.tsx",
+          "src/components/plan-table.tsx",
+          "src/components/print-button.tsx",
+          "src/components/save-image-button.tsx",
+          "src/lib/dal.ts",
+          "src/lib/date-format.ts",
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/op-note-generator.ts",
+          "src/lib/prisma.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/app/print/fess-checklist/page.tsx": [
+          "src/components/app-nav-bar.tsx",
+          "src/components/check-cell.tsx",
+          "src/components/print-button.tsx",
+          "src/lib/dal.ts",
+          "src/lib/date-format.ts",
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/op-note-generator.ts",
+          "src/lib/prisma.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/app/records/[id]/print/page.tsx": [
+          "src/components/app-nav-bar.tsx",
+          "src/components/copy-button.tsx",
+          "src/components/print-button.tsx",
+          "src/components/save-image-button.tsx",
+          "src/lib/dal.ts",
+          "src/lib/date-format.ts",
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/prisma.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/components/app-nav-bar.tsx": [
+          "src/app/actions/auth.ts",
+          "src/components/patients-nav-link.tsx",
+          "src/lib/dal.ts"
+        ],
+        "src/components/check-cell.tsx": [],
+        "src/components/copy-button.tsx": [
+          "src/lib/ui.ts"
+        ],
+        "src/components/patients-nav-link.tsx": [],
+        "src/components/print-button.tsx": [
+          "src/lib/ui.ts"
+        ],
+        "src/components/save-image-button.tsx": [
+          "src/lib/ui.ts"
+        ]
+      },
+      "neighborMap": {
+        "src/app/plans/[id]/print/page.tsx": [
+          {
+            "path": "src/components/plan-table.tsx",
+            "batchIndex": 1,
+            "symbols": [
+              "SideMatrixTable",
+              "PlanTableView"
+            ]
+          },
+          {
+            "path": "src/lib/dal.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "verifySession",
+              "getCurrentUser"
+            ]
+          },
+          {
+            "path": "src/lib/date-format.ts",
+            "batchIndex": 4,
+            "symbols": [
+              "safeDateStr"
+            ]
+          },
+          {
+            "path": "src/lib/field-types.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "parseFieldDefs",
+              "fieldValuesFromFormData",
+              "parseFieldValues",
+              "applyFieldDefaults"
+            ]
+          },
+          {
+            "path": "src/lib/op-note-defs.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "SEPTO_PE_DONE_KEY",
+              "ESS_PE_DONE_KEY",
+              "POST_OP_FINISH_KEYS",
+              "septumTurbinateFindingFields",
+              "SEPTUM_DETAIL_FIELD_KEYS",
+              "UNCINATE_FIELD_KEYS",
+              "essFindingFields",
+              "nasalFindingFields",
+              "turbinoplastyFields",
+              "septoFields",
+              "fessStepFieldKeys",
+              "fessStepLabels",
+              "fessFields",
+              "comboOnlyFields",
+              "essFullFields",
+              "septoplastyFullFields",
+              "comboFullFields",
+              "BUILT_IN_SURGERY_CODES",
+              "isBuiltInSurgeryCode",
+              "resolveSurgeryTypeFields",
+              "isNasalFindingKey",
+              "REVISION_FLAG_KEYS",
+              "SINUSITIS_TO_FESS_FIELD",
+              "POLYP_TO_FESS_FIELD"
+            ]
+          },
+          {
+            "path": "src/lib/op-note-generator.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "anesthesiaLabel",
+              "hasAnyRevision",
+              "nasalFindingsText",
+              "nasalFindingsSummary",
+              "generateOpNote",
+              "DEFAULT_NAME_STYLE",
+              "buildProcedureName",
+              "buildPlanTable",
+              "planTableToText"
+            ]
+          },
+          {
+            "path": "src/lib/prisma.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "prisma"
+            ]
+          },
+          {
+            "path": "src/lib/ui.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "buttonStyles"
+            ]
+          }
+        ],
+        "src/app/print/fess-checklist/page.tsx": [
+          {
+            "path": "src/lib/dal.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "verifySession",
+              "getCurrentUser"
+            ]
+          },
+          {
+            "path": "src/lib/date-format.ts",
+            "batchIndex": 4,
+            "symbols": [
+              "safeDateStr"
+            ]
+          },
+          {
+            "path": "src/lib/field-types.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "parseFieldDefs",
+              "fieldValuesFromFormData",
+              "parseFieldValues",
+              "applyFieldDefaults"
+            ]
+          },
+          {
+            "path": "src/lib/op-note-defs.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "SEPTO_PE_DONE_KEY",
+              "ESS_PE_DONE_KEY",
+              "POST_OP_FINISH_KEYS",
+              "septumTurbinateFindingFields",
+              "SEPTUM_DETAIL_FIELD_KEYS",
+              "UNCINATE_FIELD_KEYS",
+              "essFindingFields",
+              "nasalFindingFields",
+              "turbinoplastyFields",
+              "septoFields",
+              "fessStepFieldKeys",
+              "fessStepLabels",
+              "fessFields",
+              "comboOnlyFields",
+              "essFullFields",
+              "septoplastyFullFields",
+              "comboFullFields",
+              "BUILT_IN_SURGERY_CODES",
+              "isBuiltInSurgeryCode",
+              "resolveSurgeryTypeFields",
+              "isNasalFindingKey",
+              "REVISION_FLAG_KEYS",
+              "SINUSITIS_TO_FESS_FIELD",
+              "POLYP_TO_FESS_FIELD"
+            ]
+          },
+          {
+            "path": "src/lib/op-note-generator.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "anesthesiaLabel",
+              "hasAnyRevision",
+              "nasalFindingsText",
+              "nasalFindingsSummary",
+              "generateOpNote",
+              "DEFAULT_NAME_STYLE",
+              "buildProcedureName",
+              "buildPlanTable",
+              "planTableToText"
+            ]
+          },
+          {
+            "path": "src/lib/prisma.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "prisma"
+            ]
+          },
+          {
+            "path": "src/lib/ui.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "buttonStyles"
+            ]
+          }
+        ],
+        "src/app/records/[id]/print/page.tsx": [
+          {
+            "path": "src/lib/dal.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "verifySession",
+              "getCurrentUser"
+            ]
+          },
+          {
+            "path": "src/lib/date-format.ts",
+            "batchIndex": 4,
+            "symbols": [
+              "safeDateStr"
+            ]
+          },
+          {
+            "path": "src/lib/field-types.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "parseFieldDefs",
+              "fieldValuesFromFormData",
+              "parseFieldValues",
+              "applyFieldDefaults"
+            ]
+          },
+          {
+            "path": "src/lib/op-note-defs.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "SEPTO_PE_DONE_KEY",
+              "ESS_PE_DONE_KEY",
+              "POST_OP_FINISH_KEYS",
+              "septumTurbinateFindingFields",
+              "SEPTUM_DETAIL_FIELD_KEYS",
+              "UNCINATE_FIELD_KEYS",
+              "essFindingFields",
+              "nasalFindingFields",
+              "turbinoplastyFields",
+              "septoFields",
+              "fessStepFieldKeys",
+              "fessStepLabels",
+              "fessFields",
+              "comboOnlyFields",
+              "essFullFields",
+              "septoplastyFullFields",
+              "comboFullFields",
+              "BUILT_IN_SURGERY_CODES",
+              "isBuiltInSurgeryCode",
+              "resolveSurgeryTypeFields",
+              "isNasalFindingKey",
+              "REVISION_FLAG_KEYS",
+              "SINUSITIS_TO_FESS_FIELD",
+              "POLYP_TO_FESS_FIELD"
+            ]
+          },
+          {
+            "path": "src/lib/prisma.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "prisma"
+            ]
+          },
+          {
+            "path": "src/lib/ui.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "buttonStyles"
+            ]
+          }
+        ],
+        "src/components/app-nav-bar.tsx": [
+          {
+            "path": "src/app/actions/auth.ts",
+            "batchIndex": 5,
+            "symbols": [
+              "signup",
+              "login",
+              "logout"
+            ]
+          },
+          {
+            "path": "src/lib/dal.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "verifySession",
+              "getCurrentUser"
+            ]
+          }
+        ],
+        "src/components/check-cell.tsx": [
+          {
+            "path": "src/components/plan-table.tsx",
+            "batchIndex": 1,
+            "symbols": [
+              "SideMatrixTable",
+              "PlanTableView"
+            ]
+          }
+        ],
+        "src/components/copy-button.tsx": [
+          {
+            "path": "src/lib/ui.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "buttonStyles"
+            ]
+          },
+          {
+            "path": "src/components/surgery-planner.tsx",
+            "batchIndex": 1,
+            "symbols": [
+              "SurgeryPlanner"
+            ]
+          }
+        ],
+        "src/components/print-button.tsx": [
+          {
+            "path": "src/lib/ui.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "buttonStyles"
+            ]
+          }
+        ],
+        "src/components/save-image-button.tsx": [
+          {
+            "path": "src/lib/ui.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "buttonStyles"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "batchIndex": 4,
+      "files": [
+        {
+          "path": "src/app/(app)/patients/page.tsx",
+          "language": "typescript",
+          "sizeLines": 199,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/(app)/patients/patient-list-table.tsx",
+          "language": "typescript",
+          "sizeLines": 319,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/(app)/patients/patient-row.ts",
+          "language": "typescript",
+          "sizeLines": 18,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/(app)/plans/[id]/page.tsx",
+          "language": "typescript",
+          "sizeLines": 95,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/(app)/records/[id]/page.tsx",
+          "language": "typescript",
+          "sizeLines": 104,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/actions/op-plans.ts",
+          "language": "typescript",
+          "sizeLines": 124,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/components/patients-list-title.tsx",
+          "language": "typescript",
+          "sizeLines": 26,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/lib/date-format.ts",
+          "language": "typescript",
+          "sizeLines": 7,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "src/app/(app)/patients/page.tsx": [
+          "src/app/(app)/patients/patient-list-table.tsx",
+          "src/app/(app)/patients/patient-row.ts",
+          "src/components/patients-list-title.tsx",
+          "src/lib/dal.ts",
+          "src/lib/date-format.ts",
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/op-note-generator.ts",
+          "src/lib/prisma.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/app/(app)/patients/patient-list-table.tsx": [
+          "src/app/(app)/patients/patient-row.ts",
+          "src/app/actions/op-plans.ts",
+          "src/app/actions/patients.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/app/(app)/patients/patient-row.ts": [],
+        "src/app/(app)/plans/[id]/page.tsx": [
+          "src/app/actions/op-plans.ts",
+          "src/components/surgery-planner.tsx",
+          "src/lib/dal.ts",
+          "src/lib/date-format.ts",
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/op-note-generator.ts",
+          "src/lib/prisma.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/app/(app)/records/[id]/page.tsx": [
+          "src/lib/dal.ts",
+          "src/lib/date-format.ts",
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/prisma.ts",
+          "src/lib/ui.ts"
+        ],
+        "src/app/actions/op-plans.ts": [
+          "src/lib/dal.ts",
+          "src/lib/field-types.ts",
+          "src/lib/op-note-defs.ts",
+          "src/lib/prisma.ts"
+        ],
+        "src/components/patients-list-title.tsx": [],
+        "src/lib/date-format.ts": []
+      },
+      "neighborMap": {
+        "src/app/(app)/patients/page.tsx": [
+          {
+            "path": "src/lib/dal.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "verifySession",
+              "getCurrentUser"
+            ]
+          },
+          {
+            "path": "src/lib/field-types.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "parseFieldDefs",
+              "fieldValuesFromFormData",
+              "parseFieldValues",
+              "applyFieldDefaults"
+            ]
+          },
+          {
+            "path": "src/lib/op-note-defs.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "SEPTO_PE_DONE_KEY",
+              "ESS_PE_DONE_KEY",
+              "POST_OP_FINISH_KEYS",
+              "septumTurbinateFindingFields",
+              "SEPTUM_DETAIL_FIELD_KEYS",
+              "UNCINATE_FIELD_KEYS",
+              "essFindingFields",
+              "nasalFindingFields",
+              "turbinoplastyFields",
+              "septoFields",
+              "fessStepFieldKeys",
+              "fessStepLabels",
+              "fessFields",
+              "comboOnlyFields",
+              "essFullFields",
+              "septoplastyFullFields",
+              "comboFullFields",
+              "BUILT_IN_SURGERY_CODES",
+              "isBuiltInSurgeryCode",
+              "resolveSurgeryTypeFields",
+              "isNasalFindingKey",
+              "REVISION_FLAG_KEYS",
+              "SINUSITIS_TO_FESS_FIELD",
+              "POLYP_TO_FESS_FIELD"
+            ]
+          },
+          {
+            "path": "src/lib/op-note-generator.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "anesthesiaLabel",
+              "hasAnyRevision",
+              "nasalFindingsText",
+              "nasalFindingsSummary",
+              "generateOpNote",
+              "DEFAULT_NAME_STYLE",
+              "buildProcedureName",
+              "buildPlanTable",
+              "planTableToText"
+            ]
+          },
+          {
+            "path": "src/lib/prisma.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "prisma"
+            ]
+          },
+          {
+            "path": "src/lib/ui.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "buttonStyles"
+            ]
+          }
+        ],
+        "src/app/(app)/patients/patient-list-table.tsx": [
+          {
+            "path": "src/app/actions/patients.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "createPatient",
+              "updatePatient",
+              "deletePatient",
+              "deletePatients"
+            ]
+          },
+          {
+            "path": "src/lib/ui.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "buttonStyles"
+            ]
+          }
+        ],
+        "src/app/(app)/plans/[id]/page.tsx": [
+          {
+            "path": "src/components/surgery-planner.tsx",
+            "batchIndex": 1,
+            "symbols": [
+              "SurgeryPlanner"
+            ]
+          },
+          {
+            "path": "src/lib/dal.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "verifySession",
+              "getCurrentUser"
+            ]
+          },
+          {
+            "path": "src/lib/field-types.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "parseFieldDefs",
+              "fieldValuesFromFormData",
+              "parseFieldValues",
+              "applyFieldDefaults"
+            ]
+          },
+          {
+            "path": "src/lib/op-note-defs.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "SEPTO_PE_DONE_KEY",
+              "ESS_PE_DONE_KEY",
+              "POST_OP_FINISH_KEYS",
+              "septumTurbinateFindingFields",
+              "SEPTUM_DETAIL_FIELD_KEYS",
+              "UNCINATE_FIELD_KEYS",
+              "essFindingFields",
+              "nasalFindingFields",
+              "turbinoplastyFields",
+              "septoFields",
+              "fessStepFieldKeys",
+              "fessStepLabels",
+              "fessFields",
+              "comboOnlyFields",
+              "essFullFields",
+              "septoplastyFullFields",
+              "comboFullFields",
+              "BUILT_IN_SURGERY_CODES",
+              "isBuiltInSurgeryCode",
+              "resolveSurgeryTypeFields",
+              "isNasalFindingKey",
+              "REVISION_FLAG_KEYS",
+              "SINUSITIS_TO_FESS_FIELD",
+              "POLYP_TO_FESS_FIELD"
+            ]
+          },
+          {
+            "path": "src/lib/op-note-generator.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "anesthesiaLabel",
+              "hasAnyRevision",
+              "nasalFindingsText",
+              "nasalFindingsSummary",
+              "generateOpNote",
+              "DEFAULT_NAME_STYLE",
+              "buildProcedureName",
+              "buildPlanTable",
+              "planTableToText"
+            ]
+          },
+          {
+            "path": "src/lib/prisma.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "prisma"
+            ]
+          },
+          {
+            "path": "src/lib/ui.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "buttonStyles"
+            ]
+          }
+        ],
+        "src/app/(app)/records/[id]/page.tsx": [
+          {
+            "path": "src/lib/dal.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "verifySession",
+              "getCurrentUser"
+            ]
+          },
+          {
+            "path": "src/lib/field-types.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "parseFieldDefs",
+              "fieldValuesFromFormData",
+              "parseFieldValues",
+              "applyFieldDefaults"
+            ]
+          },
+          {
+            "path": "src/lib/op-note-defs.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "SEPTO_PE_DONE_KEY",
+              "ESS_PE_DONE_KEY",
+              "POST_OP_FINISH_KEYS",
+              "septumTurbinateFindingFields",
+              "SEPTUM_DETAIL_FIELD_KEYS",
+              "UNCINATE_FIELD_KEYS",
+              "essFindingFields",
+              "nasalFindingFields",
+              "turbinoplastyFields",
+              "septoFields",
+              "fessStepFieldKeys",
+              "fessStepLabels",
+              "fessFields",
+              "comboOnlyFields",
+              "essFullFields",
+              "septoplastyFullFields",
+              "comboFullFields",
+              "BUILT_IN_SURGERY_CODES",
+              "isBuiltInSurgeryCode",
+              "resolveSurgeryTypeFields",
+              "isNasalFindingKey",
+              "REVISION_FLAG_KEYS",
+              "SINUSITIS_TO_FESS_FIELD",
+              "POLYP_TO_FESS_FIELD"
+            ]
+          },
+          {
+            "path": "src/lib/prisma.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "prisma"
+            ]
+          },
+          {
+            "path": "src/lib/ui.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "buttonStyles"
+            ]
+          }
+        ],
+        "src/app/actions/op-plans.ts": [
+          {
+            "path": "src/lib/dal.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "verifySession",
+              "getCurrentUser"
+            ]
+          },
+          {
+            "path": "src/lib/field-types.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "parseFieldDefs",
+              "fieldValuesFromFormData",
+              "parseFieldValues",
+              "applyFieldDefaults"
+            ]
+          },
+          {
+            "path": "src/lib/op-note-defs.ts",
+            "batchIndex": 1,
+            "symbols": [
+              "SEPTO_PE_DONE_KEY",
+              "ESS_PE_DONE_KEY",
+              "POST_OP_FINISH_KEYS",
+              "septumTurbinateFindingFields",
+              "SEPTUM_DETAIL_FIELD_KEYS",
+              "UNCINATE_FIELD_KEYS",
+              "essFindingFields",
+              "nasalFindingFields",
+              "turbinoplastyFields",
+              "septoFields",
+              "fessStepFieldKeys",
+              "fessStepLabels",
+              "fessFields",
+              "comboOnlyFields",
+              "essFullFields",
+              "septoplastyFullFields",
+              "comboFullFields",
+              "BUILT_IN_SURGERY_CODES",
+              "isBuiltInSurgeryCode",
+              "resolveSurgeryTypeFields",
+              "isNasalFindingKey",
+              "REVISION_FLAG_KEYS",
+              "SINUSITIS_TO_FESS_FIELD",
+              "POLYP_TO_FESS_FIELD"
+            ]
+          },
+          {
+            "path": "src/lib/prisma.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "prisma"
+            ]
+          }
+        ],
+        "src/lib/date-format.ts": [
+          {
+            "path": "src/app/(app)/patients/[id]/page.tsx",
+            "batchIndex": 1,
+            "symbols": [
+              "PatientDetailPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/plans/[id]/record/page.tsx",
+            "batchIndex": 1,
+            "symbols": [
+              "NewOpRecordPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/records/[id]/edit/page.tsx",
+            "batchIndex": 1,
+            "symbols": [
+              "EditOpRecordPage"
+            ]
+          },
+          {
+            "path": "src/app/(app)/settings/page.tsx",
+            "batchIndex": 2,
+            "symbols": [
+              "SettingsPage"
+            ]
+          },
+          {
+            "path": "src/app/plans/[id]/print/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "OpPlanPrintPage"
+            ]
+          },
+          {
+            "path": "src/app/print/fess-checklist/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "FessChecklistPrintPage"
+            ]
+          },
+          {
+            "path": "src/app/records/[id]/print/page.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "OpRecordPrintPage"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "batchIndex": 5,
+      "files": [
+        {
+          "path": "proxy.ts",
+          "language": "typescript",
+          "sizeLines": 44,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/actions/auth.ts",
+          "language": "typescript",
+          "sizeLines": 92,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/login/page.tsx",
+          "language": "typescript",
+          "sizeLines": 60,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/page.tsx",
+          "language": "typescript",
+          "sizeLines": 10,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/signup/page.tsx",
+          "language": "typescript",
+          "sizeLines": 89,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/lib/session.ts",
+          "language": "typescript",
+          "sizeLines": 71,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "proxy.ts": [
+          "src/lib/session.ts"
+        ],
+        "src/app/actions/auth.ts": [
+          "src/lib/prisma.ts",
+          "src/lib/session.ts"
+        ],
+        "src/app/login/page.tsx": [
+          "src/app/actions/auth.ts"
+        ],
+        "src/app/page.tsx": [
+          "src/lib/session.ts"
+        ],
+        "src/app/signup/page.tsx": [
+          "src/app/actions/auth.ts"
+        ],
+        "src/lib/session.ts": []
+      },
+      "neighborMap": {
+        "src/app/actions/auth.ts": [
+          {
+            "path": "src/lib/prisma.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "prisma"
+            ]
+          },
+          {
+            "path": "src/components/app-nav-bar.tsx",
+            "batchIndex": 3,
+            "symbols": [
+              "AppNavBar"
+            ]
+          }
+        ],
+        "src/lib/session.ts": [
+          {
+            "path": "src/lib/dal.ts",
+            "batchIndex": 2,
+            "symbols": [
+              "verifySession",
+              "getCurrentUser"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "batchIndex": 6,
+      "files": [
+        {
+          "path": ".env.example",
+          "language": "config",
+          "sizeLines": 5,
+          "fileCategory": "config"
+        },
+        {
+          "path": "AGENTS.md",
+          "language": "markdown",
+          "sizeLines": 9,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "CLAUDE.md",
+          "language": "markdown",
+          "sizeLines": 1,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "README.md",
+          "language": "markdown",
+          "sizeLines": 54,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "package.json",
+          "language": "json",
+          "sizeLines": 42,
+          "fileCategory": "config"
+        },
+        {
+          "path": "tsconfig.json",
+          "language": "json",
+          "sizeLines": 34,
+          "fileCategory": "config"
+        }
+      ],
+      "batchImportData": {
+        ".env.example": [],
+        "AGENTS.md": [],
+        "CLAUDE.md": [],
+        "README.md": [],
+        "package.json": [],
+        "tsconfig.json": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 7,
+      "files": [
+        {
+          "path": ".ua/config.json",
+          "language": "json",
+          "sizeLines": 1,
+          "fileCategory": "config"
+        },
+        {
+          "path": "eslint.config.mjs",
+          "language": "javascript",
+          "sizeLines": 18,
+          "fileCategory": "code"
+        },
+        {
+          "path": "next.config.ts",
+          "language": "typescript",
+          "sizeLines": 7,
+          "fileCategory": "code"
+        },
+        {
+          "path": "postcss.config.mjs",
+          "language": "javascript",
+          "sizeLines": 7,
+          "fileCategory": "code"
+        },
+        {
+          "path": "prisma/migrations/20260918033326_init/migration.sql",
+          "language": "sql",
+          "sizeLines": 107,
+          "fileCategory": "data"
+        },
+        {
+          "path": "prisma/migrations/20260918120000_add_user_name_style_settings/migration.sql",
+          "language": "sql",
+          "sizeLines": 3,
+          "fileCategory": "data"
+        },
+        {
+          "path": "prisma/migrations/20260918140000_add_default_assistant_name/migration.sql",
+          "language": "sql",
+          "sizeLines": 2,
+          "fileCategory": "data"
+        },
+        {
+          "path": "prisma/migrations/20260918160000_add_opplan_checklist/migration.sql",
+          "language": "sql",
+          "sizeLines": 2,
+          "fileCategory": "data"
+        },
+        {
+          "path": "prisma/migrations/20260919090000_drop_opplan_checklist/migration.sql",
+          "language": "sql",
+          "sizeLines": 2,
+          "fileCategory": "data"
+        },
+        {
+          "path": "prisma/migrations/20260919100000_add_surgery_preset/migration.sql",
+          "language": "sql",
+          "sizeLines": 17,
+          "fileCategory": "data"
+        },
+        {
+          "path": "prisma/migrations/20260919150000_add_patient_age/migration.sql",
+          "language": "sql",
+          "sizeLines": 2,
+          "fileCategory": "data"
+        },
+        {
+          "path": "prisma/migrations/20260923180000_add_opplan_actual_data/migration.sql",
+          "language": "sql",
+          "sizeLines": 2,
+          "fileCategory": "data"
+        },
+        {
+          "path": "prisma/migrations/migration_lock.toml",
+          "language": "toml",
+          "sizeLines": 3,
+          "fileCategory": "config"
+        },
+        {
+          "path": "prisma/schema.prisma",
+          "language": "prisma",
+          "sizeLines": 120,
+          "fileCategory": "data"
+        },
+        {
+          "path": "prisma7.config.ts",
+          "language": "typescript",
+          "sizeLines": 15,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/globals.css",
+          "language": "css",
+          "sizeLines": 24,
+          "fileCategory": "markup"
+        },
+        {
+          "path": "src/app/icon.tsx",
+          "language": "typescript",
+          "sizeLines": 24,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/app/layout.tsx",
+          "language": "typescript",
+          "sizeLines": 35,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        ".ua/config.json": [],
+        "eslint.config.mjs": [],
+        "next.config.ts": [],
+        "postcss.config.mjs": [],
+        "prisma/migrations/20260918033326_init/migration.sql": [],
+        "prisma/migrations/20260918120000_add_user_name_style_settings/migration.sql": [],
+        "prisma/migrations/20260918140000_add_default_assistant_name/migration.sql": [],
+        "prisma/migrations/20260918160000_add_opplan_checklist/migration.sql": [],
+        "prisma/migrations/20260919090000_drop_opplan_checklist/migration.sql": [],
+        "prisma/migrations/20260919100000_add_surgery_preset/migration.sql": [],
+        "prisma/migrations/20260919150000_add_patient_age/migration.sql": [],
+        "prisma/migrations/20260923180000_add_opplan_actual_data/migration.sql": [],
+        "prisma/migrations/migration_lock.toml": [],
+        "prisma/schema.prisma": [],
+        "prisma7.config.ts": [],
+        "src/app/globals.css": [],
+        "src/app/icon.tsx": [],
+        "src/app/layout.tsx": [
+          "src/app/globals.css"
+        ]
+      },
+      "neighborMap": {}
+    }
+  ]
+}

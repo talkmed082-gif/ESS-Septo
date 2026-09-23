@@ -10,11 +10,11 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  await verifySession();
+  const session = await verifySession();
   const { id } = await params;
 
-  const plan = await prisma.opPlan.findUnique({
-    where: { id },
+  const plan = await prisma.opPlan.findFirst({
+    where: { id, createdById: session.userId },
     include: { patient: true, surgeryType: true },
   });
   if (!plan || !plan.plannedDate) {

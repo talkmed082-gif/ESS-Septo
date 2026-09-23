@@ -1,0 +1,1413 @@
+{
+ "nodes": [
+  {
+   "id": "file:src/components/uncinate-attachment-fields.tsx",
+   "type": "file",
+   "name": "uncinate-attachment-fields.tsx",
+   "filePath": "src/components/uncinate-attachment-fields.tsx",
+   "summary": "구상돌기 부착 형태 필드를 좌/우로 입력하는 전용 입력 컴포넌트.",
+   "tags": [
+    "component",
+    "form",
+    "ess",
+    "anatomy"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/components/uncinate-attachment-fields.tsx:UncinateAttachmentFields",
+   "type": "function",
+   "name": "UncinateAttachmentFields",
+   "filePath": "src/components/uncinate-attachment-fields.tsx",
+   "lineRange": [
+    7,
+    76
+   ],
+   "summary": "좌/우 구상돌기 부착 형태 입력.",
+   "tags": [
+    "function",
+    "exported",
+    "react-component"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "file:src/lib/field-types.ts",
+   "type": "file",
+   "name": "field-types.ts",
+   "filePath": "src/lib/field-types.ts",
+   "summary": "수술 필드 정의(SurgeryFieldDef)·필드 값 타입과, FormData/JSON 파싱 및 기본값 적용 유틸리티를 제공하는 공용 타입 모듈.",
+   "tags": [
+    "type-definition",
+    "utility",
+    "parsing",
+    "form"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/lib/field-types.ts:parseFieldDefs",
+   "type": "function",
+   "name": "parseFieldDefs",
+   "filePath": "src/lib/field-types.ts",
+   "lineRange": [
+    17,
+    34
+   ],
+   "summary": "unknown JSON을 SurgeryFieldDef 배열로 안전하게 파싱한다.",
+   "tags": [
+    "function",
+    "exported",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/field-types.ts:fieldValuesFromFormData",
+   "type": "function",
+   "name": "fieldValuesFromFormData",
+   "filePath": "src/lib/field-types.ts",
+   "lineRange": [
+    38,
+    57
+   ],
+   "summary": "필드 정의에 따라 FormData에서 필드 값을 추출한다.",
+   "tags": [
+    "function",
+    "exported",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/field-types.ts:parseFieldValues",
+   "type": "function",
+   "name": "parseFieldValues",
+   "filePath": "src/lib/field-types.ts",
+   "lineRange": [
+    59,
+    62
+   ],
+   "summary": "저장된 JSON을 FieldValues 객체로 파싱한다.",
+   "tags": [
+    "function",
+    "exported",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/field-types.ts:applyFieldDefaults",
+   "type": "function",
+   "name": "applyFieldDefaults",
+   "filePath": "src/lib/field-types.ts",
+   "lineRange": [
+    70,
+    77
+   ],
+   "summary": "값이 없는 필드에 정의된 기본값을 채운다.",
+   "tags": [
+    "function",
+    "exported",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/lib/op-note-defs.test.ts",
+   "type": "file",
+   "name": "op-note-defs.test.ts",
+   "filePath": "src/lib/op-note-defs.test.ts",
+   "summary": "수술 종류별 기본값과 resolveSurgeryTypeFields 동작을 검증하는 Vitest 테스트.",
+   "tags": [
+    "test",
+    "vitest",
+    "op-note-defs"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "file:src/lib/op-note-defs.ts",
+   "type": "file",
+   "name": "op-note-defs.ts",
+   "filePath": "src/lib/op-note-defs.ts",
+   "summary": "ESS/비중격교정술/병행 수술의 비강 소견·술식 입력 필드 정의와 기본값, 소견→FESS 부위 매핑 등 도메인 상수를 모아둔 핵심 정의 모듈.",
+   "tags": [
+    "data-model",
+    "domain-definition",
+    "config",
+    "surgery-fields"
+   ],
+   "complexity": "complex",
+   "languageNotes": "withDefaults로 공유 필드 정의에 수술 종류별 기본값을 덮어쓰는 조합형 정의 방식."
+  },
+  {
+   "id": "function:src/lib/op-note-defs.ts:isBuiltInSurgeryCode",
+   "type": "function",
+   "name": "isBuiltInSurgeryCode",
+   "filePath": "src/lib/op-note-defs.ts",
+   "lineRange": [
+    361,
+    363
+   ],
+   "summary": "코드가 기본 수술 종류(ESS/SEPTOPLASTY/COMBO)인지 판별하는 타입 가드.",
+   "tags": [
+    "function",
+    "exported",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-defs.ts:resolveSurgeryTypeFields",
+   "type": "function",
+   "name": "resolveSurgeryTypeFields",
+   "filePath": "src/lib/op-note-defs.ts",
+   "lineRange": [
+    371,
+    376
+   ],
+   "summary": "기본 수술 종류는 코드 정의를, 커스텀은 DB 정의를 반환한다.",
+   "tags": [
+    "function",
+    "exported",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-defs.ts:isNasalFindingKey",
+   "type": "function",
+   "name": "isNasalFindingKey",
+   "filePath": "src/lib/op-note-defs.ts",
+   "lineRange": [
+    383,
+    385
+   ],
+   "summary": "필드 키가 비강/영상 소견 페이지에 속하는지 판별한다.",
+   "tags": [
+    "function",
+    "exported",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/lib/op-note-generator.test.ts",
+   "type": "file",
+   "name": "op-note-generator.test.ts",
+   "filePath": "src/lib/op-note-generator.test.ts",
+   "summary": "generateOpNote(ESS/비중격/병행), 비강 소견 문장, 수술명, Op Plan 표 생성을 검증하는 Vitest 테스트.",
+   "tags": [
+    "test",
+    "vitest",
+    "op-note-generator"
+   ],
+   "complexity": "complex"
+  },
+  {
+   "id": "file:src/lib/op-note-generator.ts",
+   "type": "file",
+   "name": "op-note-generator.ts",
+   "filePath": "src/lib/op-note-generator.ts",
+   "summary": "필드 값으로부터 수술기록지 소견/수술 과정 서술 문장, 수술명, Op Plan 표를 생성하는 핵심 도메인 로직 모듈.",
+   "tags": [
+    "core-logic",
+    "generator",
+    "op-note",
+    "text-generation",
+    "domain"
+   ],
+   "complexity": "complex",
+   "languageNotes": "문자열 템플릿과 (string|false)[] 배열 필터링으로 번호 매긴 한국어 수술 서술 문장을 조립하는 패턴."
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:anesthesiaLabel",
+   "type": "function",
+   "name": "anesthesiaLabel",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    34,
+    37
+   ],
+   "summary": "마취 종류 코드를 기록지용 라벨로 변환한다.",
+   "tags": [
+    "function",
+    "exported",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:hasAnyRevision",
+   "type": "function",
+   "name": "hasAnyRevision",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    53,
+    59
+   ],
+   "summary": "재수술 플래그 존재 여부를 확인한다.",
+   "tags": [
+    "function",
+    "exported",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:essRevisionLabel",
+   "type": "function",
+   "name": "essRevisionLabel",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    70,
+    95
+   ],
+   "summary": "좌/우 ESS 재수술 라벨을 만든다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:revisionSentence",
+   "type": "function",
+   "name": "revisionSentence",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    110,
+    121
+   ],
+   "summary": "이전 수술력 서술 문장을 생성한다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:septumSummaryLine",
+   "type": "function",
+   "name": "septumSummaryLine",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    127,
+    140
+   ],
+   "summary": "비중격 소견 요약 줄을 만든다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:uncinateLine",
+   "type": "function",
+   "name": "uncinateLine",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    184,
+    196
+   ],
+   "summary": "구상돌기 부착 소견 문장을 만든다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:nasalFindingsText",
+   "type": "function",
+   "name": "nasalFindingsText",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    219,
+    263
+   ],
+   "summary": "기록지용 비강/CT 소견 서술 텍스트를 생성한다.",
+   "tags": [
+    "function",
+    "exported",
+    "helper"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:nasalFindingsSummary",
+   "type": "function",
+   "name": "nasalFindingsSummary",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    290,
+    359
+   ],
+   "summary": "Op Plan용 짧은 비강 소견 요약을 생성한다.",
+   "tags": [
+    "function",
+    "exported",
+    "helper"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:turbinoplastyGlobalSuffix",
+   "type": "function",
+   "name": "turbinoplastyGlobalSuffix",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    423,
+    435
+   ],
+   "summary": "하비갑개 축소술 전역 문구를 조립한다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:septoCore",
+   "type": "function",
+   "name": "septoCore",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    457,
+    482
+   ],
+   "summary": "비중격교정술 핵심 수술 과정 단계들을 생성한다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:genSeptoplasty",
+   "type": "function",
+   "name": "genSeptoplasty",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    484,
+    498
+   ],
+   "summary": "비중격교정술 단독 기록지 결과를 생성한다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:fessStepFindingClauses",
+   "type": "function",
+   "name": "fessStepFindingClauses",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    536,
+    551
+   ],
+   "summary": "FESS 단계별 소견 문구를 만든다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:fessSideBlock",
+   "type": "function",
+   "name": "fessSideBlock",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    553,
+    607
+   ],
+   "summary": "한쪽 FESS 수술 과정 단계 블록을 생성한다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:fessCore",
+   "type": "function",
+   "name": "fessCore",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    616,
+    642
+   ],
+   "summary": "양측 FESS 핵심 과정을 시행 순서대로 조립한다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:fessOperativeSideLabel",
+   "type": "function",
+   "name": "fessOperativeSideLabel",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    646,
+    655
+   ],
+   "summary": "FESS 시행 측 라벨을 결정한다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:genFess",
+   "type": "function",
+   "name": "genFess",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    657,
+    680
+   ],
+   "summary": "ESS 단독 기록지 결과를 생성한다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:genCombo",
+   "type": "function",
+   "name": "genCombo",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    699,
+    744
+   ],
+   "summary": "비중격+FESS 병행 수술 기록지를 시행 순서대로 조립한다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:generateOpNote",
+   "type": "function",
+   "name": "generateOpNote",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    746,
+    756
+   ],
+   "summary": "수술 종류에 따라 기록지 소견/수술 과정을 생성하는 공개 진입 함수.",
+   "tags": [
+    "function",
+    "exported",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:septoConciseItems",
+   "type": "function",
+   "name": "septoConciseItems",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    760,
+    774
+   ],
+   "summary": "Op Plan용 비중격 술식 요약 항목을 만든다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:fessRegionsForSide",
+   "type": "function",
+   "name": "fessRegionsForSide",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    847,
+    856
+   ],
+   "summary": "한쪽의 FESS 시행 부위 목록을 수술명용으로 정리한다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:buildFessProcedureName",
+   "type": "function",
+   "name": "buildFessProcedureName",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    858,
+    910
+   ],
+   "summary": "시행 부위에 따라 FESS 수술명을 생성한다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:septoplastyProcedureName",
+   "type": "function",
+   "name": "septoplastyProcedureName",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    917,
+    935
+   ],
+   "summary": "비중격교정술(+하비갑개) 수술명을 생성한다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:buildProcedureName",
+   "type": "function",
+   "name": "buildProcedureName",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    937,
+    963
+   ],
+   "summary": "수술 종류와 이름 스타일에 따라 최종 수술명을 생성한다.",
+   "tags": [
+    "function",
+    "exported",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:fessSideMatrix",
+   "type": "function",
+   "name": "fessSideMatrix",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    997,
+    1022
+   ],
+   "summary": "Op Plan 표의 FESS 좌/우 매트릭스 행을 만든다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:turbinoplastySideMatrix",
+   "type": "function",
+   "name": "turbinoplastySideMatrix",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    1029,
+    1041
+   ],
+   "summary": "Op Plan 표의 하비갑개 좌/우 매트릭스 행을 만든다.",
+   "tags": [
+    "function",
+    "internal",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:buildPlanTable",
+   "type": "function",
+   "name": "buildPlanTable",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    1054,
+    1106
+   ],
+   "summary": "필드 값으로 Op Plan 표 데이터 구조를 생성한다.",
+   "tags": [
+    "function",
+    "exported",
+    "helper"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/lib/op-note-generator.ts:planTableToText",
+   "type": "function",
+   "name": "planTableToText",
+   "filePath": "src/lib/op-note-generator.ts",
+   "lineRange": [
+    1109,
+    1125
+   ],
+   "summary": "Op Plan 표를 복사용 텍스트로 변환한다.",
+   "tags": [
+    "function",
+    "exported",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/lib/recent-combos.ts",
+   "type": "file",
+   "name": "recent-combos.ts",
+   "filePath": "src/lib/recent-combos.ts",
+   "summary": "사용자가 수술 종류별로 최근 사용한 서로 다른 계획 필드 조합을 조회해 수술명 라벨과 함께 반환하는 서버 전용 유틸리티.",
+   "tags": [
+    "server-only",
+    "query",
+    "utility",
+    "recent-combos"
+   ],
+   "complexity": "moderate"
+  },
+  {
+   "id": "function:src/lib/recent-combos.ts:getRecentCombosForSurgeryType",
+   "type": "function",
+   "name": "getRecentCombosForSurgeryType",
+   "filePath": "src/lib/recent-combos.ts",
+   "lineRange": [
+    15,
+    44
+   ],
+   "summary": "한 수술 종류의 최근 고유 필드 조합을 조회한다.",
+   "tags": [
+    "function",
+    "exported",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "function:src/lib/recent-combos.ts:getRecentCombosForSurgeryTypes",
+   "type": "function",
+   "name": "getRecentCombosForSurgeryTypes",
+   "filePath": "src/lib/recent-combos.ts",
+   "lineRange": [
+    46,
+    59
+   ],
+   "summary": "여러 수술 종류의 최근 조합을 한 번에 조회한다.",
+   "tags": [
+    "function",
+    "exported",
+    "helper"
+   ],
+   "complexity": "simple"
+  },
+  {
+   "id": "file:src/lib/ui.ts",
+   "type": "file",
+   "name": "ui.ts",
+   "filePath": "src/lib/ui.ts",
+   "summary": "화면 전반의 버튼 크기·색을 통일하기 위한 Tailwind 클래스 모음(buttonStyles) 상수.",
+   "tags": [
+    "utility",
+    "styles",
+    "tailwind",
+    "design-system"
+   ],
+   "complexity": "simple"
+  }
+ ],
+ "edges": [
+  {
+   "source": "file:src/components/uncinate-attachment-fields.tsx",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/components/uncinate-attachment-fields.tsx",
+   "target": "function:src/components/uncinate-attachment-fields.tsx:UncinateAttachmentFields",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/components/uncinate-attachment-fields.tsx",
+   "target": "function:src/components/uncinate-attachment-fields.tsx:UncinateAttachmentFields",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/field-types.ts",
+   "target": "function:src/lib/field-types.ts:parseFieldDefs",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/field-types.ts",
+   "target": "function:src/lib/field-types.ts:parseFieldDefs",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/field-types.ts",
+   "target": "function:src/lib/field-types.ts:fieldValuesFromFormData",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/field-types.ts",
+   "target": "function:src/lib/field-types.ts:fieldValuesFromFormData",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/field-types.ts",
+   "target": "function:src/lib/field-types.ts:parseFieldValues",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/field-types.ts",
+   "target": "function:src/lib/field-types.ts:parseFieldValues",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/field-types.ts",
+   "target": "function:src/lib/field-types.ts:applyFieldDefaults",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/field-types.ts",
+   "target": "function:src/lib/field-types.ts:applyFieldDefaults",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/op-note-defs.test.ts",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/lib/op-note-defs.test.ts",
+   "target": "file:src/lib/op-note-defs.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/lib/op-note-defs.ts",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/lib/op-note-defs.ts",
+   "target": "function:src/lib/op-note-defs.ts:isBuiltInSurgeryCode",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-defs.ts",
+   "target": "function:src/lib/op-note-defs.ts:isBuiltInSurgeryCode",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/op-note-defs.ts",
+   "target": "function:src/lib/op-note-defs.ts:resolveSurgeryTypeFields",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-defs.ts",
+   "target": "function:src/lib/op-note-defs.ts:resolveSurgeryTypeFields",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/op-note-defs.ts",
+   "target": "function:src/lib/op-note-defs.ts:isNasalFindingKey",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-defs.ts",
+   "target": "function:src/lib/op-note-defs.ts:isNasalFindingKey",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/op-note-generator.test.ts",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/lib/op-note-generator.test.ts",
+   "target": "file:src/lib/op-note-generator.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "file:src/lib/op-note-defs.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:anesthesiaLabel",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:anesthesiaLabel",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:hasAnyRevision",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:hasAnyRevision",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:essRevisionLabel",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:revisionSentence",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:septumSummaryLine",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:uncinateLine",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:nasalFindingsText",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:nasalFindingsText",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:nasalFindingsSummary",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:nasalFindingsSummary",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:turbinoplastyGlobalSuffix",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:septoCore",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:genSeptoplasty",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:fessStepFindingClauses",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:fessSideBlock",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:fessCore",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:fessOperativeSideLabel",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:genFess",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:genCombo",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:generateOpNote",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:generateOpNote",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:septoConciseItems",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:fessRegionsForSide",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:buildFessProcedureName",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:septoplastyProcedureName",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:buildProcedureName",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:buildProcedureName",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:fessSideMatrix",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:turbinoplastySideMatrix",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:buildPlanTable",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:buildPlanTable",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:planTableToText",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "function:src/lib/op-note-generator.ts:planTableToText",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/recent-combos.ts",
+   "target": "file:src/lib/field-types.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/lib/recent-combos.ts",
+   "target": "file:src/lib/op-note-defs.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/lib/recent-combos.ts",
+   "target": "file:src/lib/op-note-generator.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/lib/recent-combos.ts",
+   "target": "file:src/lib/prisma.ts",
+   "type": "imports",
+   "direction": "forward",
+   "weight": 0.7
+  },
+  {
+   "source": "file:src/lib/recent-combos.ts",
+   "target": "function:src/lib/recent-combos.ts:getRecentCombosForSurgeryType",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/recent-combos.ts",
+   "target": "function:src/lib/recent-combos.ts:getRecentCombosForSurgeryType",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/recent-combos.ts",
+   "target": "function:src/lib/recent-combos.ts:getRecentCombosForSurgeryTypes",
+   "type": "contains",
+   "direction": "forward",
+   "weight": 1.0
+  },
+  {
+   "source": "file:src/lib/recent-combos.ts",
+   "target": "function:src/lib/recent-combos.ts:getRecentCombosForSurgeryTypes",
+   "type": "exports",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:genSeptoplasty",
+   "target": "function:src/lib/op-note-generator.ts:septoCore",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:genCombo",
+   "target": "function:src/lib/op-note-generator.ts:septoCore",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:genCombo",
+   "target": "function:src/lib/op-note-generator.ts:fessSideBlock",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:genCombo",
+   "target": "function:src/lib/op-note-generator.ts:nasalFindingsText",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:genCombo",
+   "target": "function:src/lib/op-note-generator.ts:revisionSentence",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:fessCore",
+   "target": "function:src/lib/op-note-generator.ts:fessSideBlock",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:genFess",
+   "target": "function:src/lib/op-note-generator.ts:fessCore",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:genFess",
+   "target": "function:src/lib/op-note-generator.ts:nasalFindingsText",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:fessSideBlock",
+   "target": "function:src/lib/op-note-generator.ts:fessStepFindingClauses",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:generateOpNote",
+   "target": "function:src/lib/op-note-generator.ts:genSeptoplasty",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:generateOpNote",
+   "target": "function:src/lib/op-note-generator.ts:genFess",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:generateOpNote",
+   "target": "function:src/lib/op-note-generator.ts:genCombo",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:generateOpNote",
+   "target": "function:src/lib/op-note-generator.ts:anesthesiaLabel",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:buildProcedureName",
+   "target": "function:src/lib/op-note-generator.ts:buildFessProcedureName",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:buildProcedureName",
+   "target": "function:src/lib/op-note-generator.ts:septoplastyProcedureName",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:buildPlanTable",
+   "target": "function:src/lib/op-note-generator.ts:fessSideMatrix",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:buildPlanTable",
+   "target": "function:src/lib/op-note-generator.ts:turbinoplastySideMatrix",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:buildPlanTable",
+   "target": "function:src/lib/op-note-generator.ts:nasalFindingsSummary",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:nasalFindingsText",
+   "target": "function:src/lib/op-note-generator.ts:septumSummaryLine",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:nasalFindingsText",
+   "target": "function:src/lib/op-note-generator.ts:uncinateLine",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-generator.ts:revisionSentence",
+   "target": "function:src/lib/op-note-generator.ts:essRevisionLabel",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/recent-combos.ts:getRecentCombosForSurgeryType",
+   "target": "function:src/lib/op-note-generator.ts:buildProcedureName",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/recent-combos.ts:getRecentCombosForSurgeryType",
+   "target": "function:src/lib/op-note-defs.ts:isBuiltInSurgeryCode",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/recent-combos.ts:getRecentCombosForSurgeryType",
+   "target": "function:src/lib/field-types.ts:parseFieldValues",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/recent-combos.ts:getRecentCombosForSurgeryTypes",
+   "target": "function:src/lib/recent-combos.ts:getRecentCombosForSurgeryType",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "function:src/lib/op-note-defs.ts:resolveSurgeryTypeFields",
+   "target": "function:src/lib/field-types.ts:parseFieldDefs",
+   "type": "calls",
+   "direction": "forward",
+   "weight": 0.8
+  },
+  {
+   "source": "file:src/lib/op-note-defs.ts",
+   "target": "file:src/lib/op-note-defs.test.ts",
+   "type": "tested_by",
+   "direction": "forward",
+   "weight": 0.5
+  },
+  {
+   "source": "file:src/lib/op-note-generator.ts",
+   "target": "file:src/lib/op-note-generator.test.ts",
+   "type": "tested_by",
+   "direction": "forward",
+   "weight": 0.5
+  }
+ ]
+}

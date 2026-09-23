@@ -23,7 +23,7 @@ export default async function PatientsPage({
   const upcomingPlans = await prisma.opPlan.findMany({
     // "완료"로 표시해둔 계획은 기록지를 아직 안 썼어도 더 이상 "다가오는
     // 수술"이 아니므로 제외한다.
-    where: { plannedDate: { gte: todayUtc }, opRecord: null, status: { not: "DONE" } },
+    where: { createdById: user.id, plannedDate: { gte: todayUtc }, opRecord: null, status: { not: "DONE" } },
     orderBy: { plannedDate: "asc" },
     take: 10,
     include: { patient: true, surgeryType: true },
@@ -35,14 +35,12 @@ export default async function PatientsPage({
   const dir = dirParam === "asc" ? "asc" : dirParam === "desc" ? "desc" : "desc";
 
   const patients = await prisma.patient.findMany({
-    where: query
-      ? {
-          OR: [
-            { name: { contains: query } },
-            { chartNo: { contains: query } },
-          ],
-        }
-      : undefined,
+    where: {
+      createdById: user.id,
+      ...(query
+        ? { OR: [{ name: { contains: query } }, { chartNo: { contains: query } }] }
+        : {}),
+    },
     orderBy: { createdAt: "desc" },
     include: {
       opPlans: {

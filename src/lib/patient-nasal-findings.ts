@@ -19,9 +19,10 @@ function pickNasalFindings(values: FieldValues): FieldValues {
 // 비강/영상 소견만 골라 재사용할 수 있게 돌려준다.
 export async function getLatestNasalFindingsForPatient(
   patientId: string,
+  userId: string,
 ): Promise<FieldValues> {
   const plans = await prisma.opPlan.findMany({
-    where: { patientId },
+    where: { patientId, createdById: userId },
     orderBy: { createdAt: "desc" },
     take: 20,
     select: {

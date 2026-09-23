@@ -23,10 +23,10 @@ export async function updateOpPlan(
   _prevState: OpPlanFormState | undefined,
   formData: FormData,
 ): Promise<OpPlanFormState> {
-  await verifySession();
+  const session = await verifySession();
 
-  const plan = await prisma.opPlan.findUnique({
-    where: { id: planId },
+  const plan = await prisma.opPlan.findFirst({
+    where: { id: planId, createdById: session.userId },
     include: { surgeryType: true },
   });
   if (!plan) {
@@ -82,7 +82,7 @@ export async function updateOpPlan(
     actualData = { ...existingActualValues, ...procedurePart };
   }
 
-  await prisma.opPlan.update({
+  await prisma.opPlan.update({ // ownership-checked above
     where: { id: planId },
     data: {
       surgeryTypeId: surgeryType.id,
@@ -103,8 +103,8 @@ export async function updateOpPlan(
 
 
 export async function deleteOpPlan(planId: string, patientId: string) {
-  await verifySession();
-  await prisma.opPlan.delete({ where: { id: planId } });
+  const session = await verifySession();
+  await prisma.opPlan.deleteMany({ where: { id: planId, createdById: session.userId } });
   revalidatePath(`/patients/${patientId}`);
   redirect(`/patients/${patientId}`);
 }
@@ -113,10 +113,10 @@ export async function deleteOpPlan(planId: string, patientId: string) {
 // 환자 목록의 "예정)" 표시를 수술 완료 시점에 바로 지울 수 있게 하는
 // 수동 토글. OpPlan.status 컬럼은 있었지만 그동안 아무 데서도 안 쓰였음.
 export async function toggleOpPlanDone(planId: string) {
-  await verifySession();
-  const plan = await prisma.opPlan.findUnique({ where: { id: planId } });
+  const session = await verifySession();
+  const plan = await prisma.opPlan.findFirst({ where: { id: planId, createdById: session.userId } });
   if (!plan) return;
-  await prisma.opPlan.update({
+  await prisma.opPlan.update({ // ownership-checked above
     where: { id: planId },
     data: { status: plan.status === "DONE" ? "PLANNED" : "DONE" },
   });

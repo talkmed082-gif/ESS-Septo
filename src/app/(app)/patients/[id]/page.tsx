@@ -19,8 +19,8 @@ export default async function PatientDetailPage({
     abbreviateRegions: user.abbreviateRegions,
   };
 
-  const patient = await prisma.patient.findUnique({
-    where: { id },
+  const patient = await prisma.patient.findFirst({
+    where: { id, createdById: user.id },
     include: {
       opPlans: {
         orderBy: { createdAt: "desc" },

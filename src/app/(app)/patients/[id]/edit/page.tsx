@@ -10,12 +10,12 @@ export default async function EditPatientPage({
   params,
   searchParams,
 }: PageProps<"/patients/[id]/edit">) {
-  await verifySession();
+  const session = await verifySession();
   const { id } = await params;
   const { from } = await searchParams;
   const backHref = typeof from === "string" ? from : "/patients";
 
-  const patient = await prisma.patient.findUnique({ where: { id } });
+  const patient = await prisma.patient.findFirst({ where: { id, createdById: session.userId } });
   if (!patient) notFound();
 
   const updatePatientWithId = updatePatient.bind(null, patient.id);
