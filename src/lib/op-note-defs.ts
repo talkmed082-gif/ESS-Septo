@@ -139,6 +139,38 @@ export const essFindingFields: SurgeryFieldDef[] = [
     type: "select",
     options: ["우측", "양측", "좌측"],
   },
+  // 해부학적 이상 소견뿐 아니라 염증(부비동염) 소견도 남겨야 비강 소견이
+  // 완결된다 — 계획 단계에서 염증이 보여도 그 부위를 이번에 꼭 수술하는
+  // 것은 아니라서(수술 방법/Op Plan의 시행 부위와는 별개 값), 시행 부위와
+  // 같은 4개 부비동 기준으로 문제 있는지만 우선 체크하는 2단계 구조를 쓴다.
+  { key: "n_sinusitis_frontal_present", label: "Frontal sinusitis 있음", type: "checkbox" },
+  {
+    key: "n_sinusitis_frontal_side",
+    label: "Frontal sinusitis - 방향",
+    type: "select",
+    options: ["우측", "양측", "좌측"],
+  },
+  { key: "n_sinusitis_ethmoid_present", label: "Ethmoid sinusitis 있음", type: "checkbox" },
+  {
+    key: "n_sinusitis_ethmoid_side",
+    label: "Ethmoid sinusitis - 방향",
+    type: "select",
+    options: ["우측", "양측", "좌측"],
+  },
+  { key: "n_sinusitis_maxillary_present", label: "Maxillary sinusitis 있음", type: "checkbox" },
+  {
+    key: "n_sinusitis_maxillary_side",
+    label: "Maxillary sinusitis - 방향",
+    type: "select",
+    options: ["우측", "양측", "좌측"],
+  },
+  { key: "n_sinusitis_sphenoid_present", label: "Sphenoid sinusitis 있음", type: "checkbox" },
+  {
+    key: "n_sinusitis_sphenoid_side",
+    label: "Sphenoid sinusitis - 방향",
+    type: "select",
+    options: ["우측", "양측", "좌측"],
+  },
   // 비용종 — 좌/우 정도(위치)가 다른 경우가 많아, 공통 "방향" 선택 없이
   // 측별로 위치 체크박스를 따로 둔다 (PolypPicker 컴포넌트가 우/좌 두 컬럼으로
   // 노출 — 한쪽이라도 위치가 체크되어 있으면 그 측에 비용종이 있는 것으로 본다).
