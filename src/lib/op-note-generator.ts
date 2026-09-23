@@ -380,6 +380,7 @@ function incisionSentence(values: FieldValues): string {
 
 function septoCore(values: FieldValues): string[] {
   const caudal = bool(values, "s_caudal");
+  const ansRelease = bool(values, "s_ans_release");
   const spur = bool(values, "s_spur");
   const turbMiddleSide = turbTypeSideLabel("middle", values);
   const turbInferiorSide = turbTypeSideLabel("inferior", values);
@@ -390,6 +391,7 @@ function septoCore(values: FieldValues): string[] {
   const steps: (string | false)[] = [
     incisionSentence(values),
     caudal && "Caudal septum의 편위 부위에 대해 함께 교정을 시행함",
+    ansRelease && "ANS(Anterior nasal spine) 부위에서 septum을 분리한 후 절제하고 PDS 5-0로 고정함",
     spur && "골성 비중격(perpendicular plate of ethmoid, vomer)에서 bony spur를 확인하고 제거함",
     "확인된 편위 부위의 변형된 septal cartilage 및 골성 비중격 일부를 절제 및 교정하여 straightening 후 정중앙에 위치시킴",
     turbMiddleSide && `${turbMiddleSide} ${turbinoplastyTechniqueSentence("middle")}`,
@@ -606,10 +608,15 @@ export function generateOpNote(
 function septoConciseItems(values: FieldValues, includePacking: boolean): string[] {
   const incision = str(values, "s_incision", "Hemitransfixion incision");
   const incisionSide = str(values, "s_incision_side", "");
+  const quiltingSuture = str(values, "s_quilting_suture", "4-0 Vicryl");
   const items: (string | false)[] = [
     incisionSide ? `${incisionSide} ${incision}` : incision,
     bool(values, "s_caudal") && "Caudal septum 편위 교정",
+    bool(values, "s_ans_release") && "ANS 부위 비중격 분리·절제 후 PDS 5-0 고정",
     bool(values, "s_spur") && "Bony spur 제거",
+    // Quilting suture는 시행 여부를 따로 고르는 항목이 아니라 항상 하는
+    // 기본 과정이라, 다른 조건부 항목과 달리 값과 무관하게 항상 넣는다.
+    `Quilting suture (${quiltingSuture})`,
     bool(values, "s_splint") && "Silastic splint 삽입",
   ];
   if (includePacking) items.push("Nasocel + Rhinocel packing 예정");

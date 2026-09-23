@@ -194,6 +194,9 @@ export const septoFields: SurgeryFieldDef[] = [
     options: ["우측", "좌측"],
   },
   { key: "s_caudal", label: "Caudal septum 편위 동반 교정", type: "checkbox" },
+  // ANS(Anterior nasal spine) 부위 편위가 심한 경우 선택적으로 시행하는
+  // 술식 — septum을 ANS에서 분리한 후 절제하고 PDS 5-0로 고정한다.
+  { key: "s_ans_release", label: "ANS 부위 비중격 분리·절제 후 PDS 5-0 고정", type: "checkbox" },
   { key: "s_spur", label: "Bony spur 제거", type: "checkbox" },
   { key: "s_splint", label: "Silastic splint 삽입", type: "checkbox", default: "true" },
   { key: "dermacol", label: "Dermacol 도포", type: "checkbox", default: "true" },
