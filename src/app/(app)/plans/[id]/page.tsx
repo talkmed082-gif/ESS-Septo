@@ -91,6 +91,9 @@ export default async function OpPlanPage({
         recentCombosByType={recentCombosByType}
         presetsByType={presetsByType}
         fixedPatient={{ id: plan.patient.id, name: plan.patient.name }}
+        // 완료로 표시된 계획은 "수술 후" 화면(수술 방법/기록지)을 기본으로
+        // 열어서, 이미 끝난 수술의 소견 입력 화면부터 다시 보여주지 않게 한다.
+        defaultView={plan.status === "DONE" ? "post" : "pre"}
         editPlan={{
           surgeryTypeId: plan.surgeryTypeId,
           // 화면에 더 이상 날짜 입력란이 없으므로, 없던 날짜를 오늘 날짜로

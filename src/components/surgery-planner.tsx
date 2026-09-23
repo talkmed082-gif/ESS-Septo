@@ -112,6 +112,7 @@ export function SurgeryPlanner({
   fixedPatient,
   patientNasalFindings,
   editPlan,
+  defaultView,
   action,
 }: {
   surgeryTypes: SurgeryTypeOption[];
@@ -124,6 +125,10 @@ export function SurgeryPlanner({
   patientNasalFindings?: FieldValues;
   // 기존 계획 수정 모드 — 넘기면 수술 종류가 고정되고 값들이 미리 채워진다.
   editPlan?: EditPlanContext;
+  // 화면을 "수술 전"(비강 소견 + Op Plan 요약)과 "수술 후"(수술 방법 +
+  // 수술기록지)로 나눠서 보여줄 때, 어느 쪽을 기본으로 열지 — 보통 계획의
+  // 완료 여부(OpPlan.status)에 맞춰 호출하는 쪽에서 정해서 넘겨준다.
+  defaultView?: "pre" | "post";
   // 저장 시 호출할 서버 액션 — 생략하면 새 환자+계획 생성(createPatientWithPlan).
   // 계획 수정 시엔 updateOpPlan.bind(null, planId)처럼 넘긴다.
   action?: SurgeryPlannerAction;
@@ -152,7 +157,10 @@ export function SurgeryPlanner({
       : { planTable: null, recordText: "" },
   );
   const formRef = useRef<HTMLFormElement>(null);
-  const [step, setStep] = useState<1 | 2>(1);
+  // "수술 전" 화면(비강 소견 입력 + Op Plan 요약)과 "수술 후" 화면(수술 방법
+  // 입력 + 수술기록지 초안)을 하나의 토글로 오간다 — 계획이 완료 상태면
+  // 수술 후 화면을 기본으로 열어서, 매번 수동으로 넘길 필요가 없게 한다.
+  const [view, setView] = useState<"pre" | "post">(defaultView ?? "pre");
   // 필드 default(예: Septoturbinoplasty P/E 기본 체크, CHR 양측 등)가 실제
   // 체크박스/선택값에도 바로 반영되도록, 초기값에도 applyFieldDefaults를
   // 거친다 — 그냥 editPlan?.values(빈 값)만 넘기면 CollapsibleFindingSection
@@ -174,8 +182,8 @@ export function SurgeryPlanner({
   const { showSeptum, showSinus } = selected
     ? getAnatomyVisibility(selected.code)
     : { showSeptum: false, showSinus: false };
-  const stepButtonClass = (active: boolean) =>
-    `rounded-md px-3 py-2 text-sm font-medium ${
+  const viewButtonClass = (active: boolean) =>
+    `flex-1 rounded-md px-3 py-2 text-sm font-medium ${
       active ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
     }`;
 
@@ -497,14 +505,14 @@ export function SurgeryPlanner({
               </div>
             )}
             <div className="flex gap-2 border-b border-slate-200 pb-3">
-              <button type="button" onClick={() => setStep(1)} className={stepButtonClass(step === 1)}>
-                1. 비강 소견
+              <button type="button" onClick={() => setView("pre")} className={viewButtonClass(view === "pre")}>
+                수술 전 (비강 소견 · Op Plan)
               </button>
-              <button type="button" onClick={() => setStep(2)} className={stepButtonClass(step === 2)}>
-                2. 수술 방법
+              <button type="button" onClick={() => setView("post")} className={viewButtonClass(view === "post")}>
+                수술 후 (수술 방법 · 기록지)
               </button>
             </div>
-            <div className={step === 1 ? "space-y-4" : "hidden"}>
+            <div className={view === "pre" ? "space-y-4" : "hidden"}>
               {showSeptum && (
                 <CollapsibleFindingSection
                   doneKey={SEPTO_PE_DONE_KEY}
@@ -549,7 +557,7 @@ export function SurgeryPlanner({
                 ]}
               />
             </div>
-            <div className={step === 2 ? "space-y-4" : "hidden"}>
+            <div className={view === "post" ? "space-y-4" : "hidden"}>
               {showSinus && (
                 <SinusDiagram values={templateValues} onChange={regenerateFromForm} hideRevisionToggle />
               )}
@@ -597,29 +605,33 @@ export function SurgeryPlanner({
       </form>
 
       <div className="space-y-4">
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-700">Op Plan 요약</h2>
-            {planTable && <CopyButton text={planTableToText(planTable)} />}
+        {view === "pre" && (
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-slate-700">Op Plan 요약</h2>
+              {planTable && <CopyButton text={planTableToText(planTable)} />}
+            </div>
+            {planTable ? (
+              <PlanTableView
+                table={planTable}
+                interactive
+                onToggle={toggleFessField}
+                onCopySide={copySideInTable}
+              />
+            ) : (
+              <p className="text-sm text-slate-500">수술 종류를 선택하면 여기에 요약이 표시됩니다.</p>
+            )}
           </div>
-          {planTable ? (
-            <PlanTableView
-              table={planTable}
-              interactive
-              onToggle={toggleFessField}
-              onCopySide={copySideInTable}
-            />
-          ) : (
-            <p className="text-sm text-slate-500">수술 종류를 선택하면 여기에 요약이 표시됩니다.</p>
-          )}
-        </div>
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-700">수술기록지 초안</h2>
-            <CopyButton text={recordText} />
+        )}
+        {view === "post" && (
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-slate-700">수술기록지 초안</h2>
+              <CopyButton text={recordText} />
+            </div>
+            <pre className="whitespace-pre-wrap font-sans text-sm text-slate-800">{recordText}</pre>
           </div>
-          <pre className="whitespace-pre-wrap font-sans text-sm text-slate-800">{recordText}</pre>
-        </div>
+        )}
         <p className="text-xs text-slate-500">
           자동 생성된 초안입니다. 실제 소견에 맞게 검토 후 사용해주세요.
           {!loggedIn && (
