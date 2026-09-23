@@ -6,8 +6,8 @@ import { parseFieldDefs, parseFieldValues } from "@/lib/field-types";
 import { deleteOpPlan, updateOpPlan } from "@/app/actions/op-plans";
 import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
-import { getRecentCombosForSurgeryType } from "@/lib/recent-combos";
-import { getPresetsForSurgeryType } from "@/lib/presets";
+import { getRecentCombosForSurgeryTypes } from "@/lib/recent-combos";
+import { getPresetsForSurgeryTypes } from "@/lib/presets";
 import { SurgeryPlanner } from "@/components/surgery-planner";
 import { buttonStyles } from "@/lib/ui";
 
@@ -27,15 +27,22 @@ export default async function OpPlanPage({
     sideNotation: user.sideNotation as SideNotation,
     abbreviateRegions: user.abbreviateRegions,
   };
-  const fields = parseFieldDefs(plan.surgeryType.fields);
   const values = parseFieldValues(plan.planData);
-  const recentCombos = await getRecentCombosForSurgeryType(
+  // 계획을 만든 뒤에도 수술 종류를 바꿀 수 있어야 해서(예: ESS로 만들었다가
+  // Septoplasty로 정정), 현재 종류 하나만이 아니라 전체 수술 종류 목록을
+  // 새 계획 작성 화면과 똑같이 넘긴다.
+  const surgeryTypes = await prisma.surgeryType.findMany({
+    orderBy: [{ isBuiltIn: "desc" }, { createdAt: "asc" }],
+  });
+  const recentCombosByType = await getRecentCombosForSurgeryTypes(
     user.id,
-    plan.surgeryTypeId,
-    plan.surgeryType.code,
+    surgeryTypes.map((st) => ({ id: st.id, code: st.code })),
     nameStyle,
   );
-  const presets = await getPresetsForSurgeryType(user.id, plan.surgeryTypeId);
+  const presetsByType = await getPresetsForSurgeryTypes(
+    user.id,
+    surgeryTypes.map((st) => st.id),
+  );
 
   return (
     <div className="space-y-6">
@@ -73,18 +80,16 @@ export default async function OpPlanPage({
       </div>
 
       <SurgeryPlanner
-        surgeryTypes={[
-          {
-            id: plan.surgeryTypeId,
-            code: plan.surgeryType.code,
-            name: plan.surgeryType.name,
-            fields,
-          },
-        ]}
+        surgeryTypes={surgeryTypes.map((st) => ({
+          id: st.id,
+          code: st.code,
+          name: st.name,
+          fields: parseFieldDefs(st.fields),
+        }))}
         loggedIn
         nameStyle={nameStyle}
-        recentCombosByType={{ [plan.surgeryTypeId]: recentCombos }}
-        presetsByType={{ [plan.surgeryTypeId]: presets }}
+        recentCombosByType={recentCombosByType}
+        presetsByType={presetsByType}
         fixedPatient={{ id: plan.patient.id, name: plan.patient.name }}
         editPlan={{
           surgeryTypeId: plan.surgeryTypeId,

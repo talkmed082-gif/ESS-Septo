@@ -255,7 +255,11 @@ export function SurgeryPlanner({
     e?.stopPropagation();
     setSelectedId(id);
     const next = surgeryTypes.find((st) => st.id === id);
-    const nextValues = next ? applyFieldDefaults({}, next.fields) : undefined;
+    // 이전 종류에서 이미 입력해둔 값(겹치는 키, 예: 비강 소견/turbinoplasty)은
+    // 그대로 유지하고, 새 종류에만 있는 필드는 default로 채운다 — 종류를
+    // 바꿨다고 이미 적어둔 소견까지 통째로 날아가면 계획 수정 중 종류를
+    // 바로잡을 때 처음부터 다시 입력해야 해서 불편하다.
+    const nextValues = next ? applyFieldDefaults({ ...templateValues }, next.fields) : undefined;
     setTemplateValues(nextValues);
     setTemplateKey((k) => k + 1);
     setTexts(
@@ -380,24 +384,24 @@ export function SurgeryPlanner({
 
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">수술 종류</label>
-          {editPlan ? (
-            <p className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
-              {selected?.name ?? "-"}
+          <select
+            name="surgeryTypeId"
+            value={selectedId}
+            onChange={(e) => handleSurgeryTypeChange(e.target.value, e)}
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+          >
+            {!fixedPatient && !editPlan && <option value="">계획은 나중에 작성 (환자만 등록)</option>}
+            {surgeryTypes.map((st) => (
+              <option key={st.id} value={st.id}>
+                {st.name}
+              </option>
+            ))}
+          </select>
+          {editPlan && (
+            <p className="mt-1 text-xs text-slate-400">
+              종류를 바꾸면 그 종류의 입력 항목으로 다시 표시됩니다. 겹치는 항목(비강 소견 등)은 유지되고,
+              새 종류에 없는 값은 사라집니다.
             </p>
-          ) : (
-            <select
-              name="surgeryTypeId"
-              value={selectedId}
-              onChange={(e) => handleSurgeryTypeChange(e.target.value, e)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-            >
-              {!fixedPatient && <option value="">계획은 나중에 작성 (환자만 등록)</option>}
-              {surgeryTypes.map((st) => (
-                <option key={st.id} value={st.id}>
-                  {st.name}
-                </option>
-              ))}
-            </select>
           )}
         </div>
 

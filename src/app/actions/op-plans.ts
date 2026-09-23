@@ -40,12 +40,27 @@ export async function updateOpPlan(
   }
   const { plannedDate, planNote } = validated.data;
 
-  const fields = parseFieldDefs(plan.surgeryType.fields);
+  // 계획을 만든 뒤에도 수술 종류를 바꿀 수 있게 한다 — 화면(SurgeryPlanner)에서
+  // 종류를 바꾸면 그 종류의 필드로 폼이 다시 그려지므로, formData도 이미 새
+  // 종류에 맞는 값들로 채워져 있다. 기존 planData 중 새 종류에 없는 키는
+  // 그냥 무시되고, 겹치는 키(비강 소견 등)는 그대로 유지된다.
+  const requestedTypeId = formData.get("surgeryTypeId");
+  let surgeryType = plan.surgeryType;
+  if (typeof requestedTypeId === "string" && requestedTypeId && requestedTypeId !== plan.surgeryTypeId) {
+    const newType = await prisma.surgeryType.findUnique({ where: { id: requestedTypeId } });
+    if (!newType) {
+      return { message: "수술 종류를 다시 선택하세요." };
+    }
+    surgeryType = newType;
+  }
+
+  const fields = parseFieldDefs(surgeryType.fields);
   const planData = fieldValuesFromFormData(formData, fields);
 
   await prisma.opPlan.update({
     where: { id: planId },
     data: {
+      surgeryTypeId: surgeryType.id,
       plannedDate: plannedDate ? new Date(plannedDate) : null,
       planNote: planNote || null,
       planData,
