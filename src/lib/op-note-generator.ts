@@ -58,14 +58,40 @@ export function hasAnyRevision(values: FieldValues): boolean {
   );
 }
 
-// ESS revision 부분의 "rev>" 표기 — 시행하는 sinus 상세 내역(FEMS 등)은
-// 바로 뒤에 이어지는 실제 수술명(buildFessProcedureName)이 어차피 다시
-// 풀어서 보여주므로, 여기서는 "어느 side가 재수술인지"만 짧게 표기해
-// 뒤의 실제 수술명과 내용이 그대로 겹쳐 찍히지 않게 한다.
-function essRevisionLabel(style: NameStyle, rightEss: boolean, leftEss: boolean): string {
-  if (rightEss && leftEss) return `${formatSideLabel("B", style)} ESS`;
-  if (rightEss) return `${formatSideLabel("R", style)} ESS`;
-  return `${formatSideLabel("L", style)} ESS`;
+function regionsEqual(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((r, i) => r === b[i]);
+}
+
+// ESS revision 부분의 "rev>" 표기 — 실제로 시행하는 sinus까지 이 태그
+// 안에서 다 밝히고, buildFessProcedureName 쪽에서는 revision이 걸린
+// side를 건너뛰어서(buildProcedureName 참고) 같은 내용이 두 번 나오지
+// 않게 한다. side 표기는 이름 전체에서 쓰는 것과 같은 표기(formatSideLabel)를
+// 그대로 재사용해 "Rt./Lt." 같은 다른 표기가 섞이지 않게 한다.
+function essRevisionLabel(values: FieldValues, style: NameStyle, rightEss: boolean, leftEss: boolean): string {
+  const rightRegions = fessRegionsForSide("f_right_", values);
+  const leftRegions = fessRegionsForSide("f_left_", values);
+
+  if (rightEss && leftEss) {
+    if (regionsEqual(rightRegions, leftRegions)) {
+      const regionText = rightRegions.length > 0 ? ` (${formatRegionList(rightRegions, style)})` : "";
+      return `${formatSideLabel("B", style)} ESS${regionText}`;
+    }
+    const rightText =
+      rightRegions.length > 0
+        ? `${formatSideLabel("R", style)} ${formatRegionList(rightRegions, style)}`
+        : formatSideLabel("R", style);
+    const leftText =
+      leftRegions.length > 0
+        ? `${formatSideLabel("L", style)} ${formatRegionList(leftRegions, style)}`
+        : formatSideLabel("L", style);
+    return `${formatSideLabel("B", style)} ESS (${rightText}, ${leftText})`;
+  }
+  if (rightEss) {
+    const regionText = rightRegions.length > 0 ? ` (${formatRegionList(rightRegions, style)})` : "";
+    return `${formatSideLabel("R", style)} ESS${regionText}`;
+  }
+  const regionText = leftRegions.length > 0 ? ` (${formatRegionList(leftRegions, style)})` : "";
+  return `${formatSideLabel("L", style)} ESS${regionText}`;
 }
 
 // 수술명 맨 앞에 "이전에 무엇에 대한 재수술인지"를 "rev> 부위" 형태로 짧게
@@ -76,7 +102,7 @@ function revisionPrefixText(values: FieldValues, style: NameStyle): string {
   if (bool(values, "f_revision_septo")) parts.push("Septo");
   const rightEss = bool(values, "f_revision_ess_right");
   const leftEss = bool(values, "f_revision_ess_left");
-  if (rightEss || leftEss) parts.push(essRevisionLabel(style, rightEss, leftEss));
+  if (rightEss || leftEss) parts.push(essRevisionLabel(values, style, rightEss, leftEss));
   return parts.length > 0 ? `rev> ${parts.join(", ")} ` : "";
 }
 
@@ -729,13 +755,23 @@ function fessRegionsForSide(prefix: "f_left_" | "f_right_", values: FieldValues)
   return fessRegionOrder.filter((r) => regions.has(r));
 }
 
-function buildFessProcedureName(values: FieldValues, label: string, style: NameStyle): string {
-  const left = fessRegionsForSide("f_left_", values);
-  const right = fessRegionsForSide("f_right_", values);
+function buildFessProcedureName(
+  values: FieldValues,
+  label: string,
+  style: NameStyle,
+  excludeSides: { left: boolean; right: boolean } = { left: false, right: false },
+): string {
+  const left = excludeSides.left ? [] : fessRegionsForSide("f_left_", values);
+  const right = excludeSides.right ? [] : fessRegionsForSide("f_right_", values);
   const leftTurb = turbinoplastyWordsForSide("left", values);
   const rightTurb = turbinoplastyWordsForSide("right", values);
 
-  if (left.length === 0 && right.length === 0) return label;
+  if (left.length === 0 && right.length === 0) {
+    // revision 태그(rev>)가 이미 해당 side의 sinus를 다 밝힌 경우(excludeSides로
+    // 가려짐)에는 여기서 또 label만 덧붙이면 "... FEM) ESS"처럼 뒤에 군더더기가
+    // 남으므로 빈 문자열을 돌려준다. 그 외에는 기존처럼 label만 표기한다.
+    return excludeSides.left || excludeSides.right ? "" : label;
+  }
 
   const leftEthmoidLabel = ethmoidLabelForSide("f_left_", values);
   const rightEthmoidLabel = ethmoidLabelForSide("f_right_", values);
@@ -809,11 +845,21 @@ export function buildProcedureName(
     fessRegionsForSide("f_left_", values).length > 0 || fessRegionsForSide("f_right_", values).length > 0;
   const turbSuffix = turbinoplastyGlobalSuffix(values, style, hasFessRegions);
   // Revision case(재수술)는 수술명 맨 앞에 어느 부위의 재수술인지와 함께
-  // "rev> 부위" 형태로 표기한다.
+  // "rev> 부위(시행 sinus)" 형태로 표기한다 — 그 side의 sinus 내역은 이미 이
+  // 태그 안에 다 들어있으므로, 실제 수술명 쪽에서는 revision이 걸린 side를
+  // 건너뛰어(excludeSides) 같은 내용이 두 번 나오지 않게 한다.
   const revisionPrefix = revisionPrefixText(values, style);
+  const excludeSides = {
+    left: bool(values, "f_revision_ess_left"),
+    right: bool(values, "f_revision_ess_right"),
+  };
 
-  if (surgeryCode === "ESS") return `${revisionPrefix}${buildFessProcedureName(values, "ESS", style)}${turbSuffix}`;
-  return `${revisionPrefix}Septoplasty + ${buildFessProcedureName(values, "ESS", style)}${turbSuffix}`;
+  const fessName = buildFessProcedureName(values, "ESS", style, excludeSides);
+  if (surgeryCode === "ESS") {
+    return `${revisionPrefix}${fessName}${turbSuffix}`.replace(/\s+/g, " ").trim();
+  }
+  const combined = fessName ? `Septoplasty + ${fessName}` : "Septoplasty";
+  return `${revisionPrefix}${combined}${turbSuffix}`.replace(/\s+/g, " ").trim();
 }
 
 // ---------- Op Plan 표 형식 (인쇄용 — 내시경 앞에 붙여두고 한눈에 보는 용도) ----------
