@@ -689,7 +689,17 @@ export function SurgeryPlanner({
           <div className="rounded-lg border border-slate-200 bg-white p-4">
             <div className="mb-2 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-700">수술기록지 초안</h2>
-              <CopyButton text={recordText} />
+              <div className="flex gap-2">
+                <CopyButton text={recordText} />
+                <a
+                  href={`mailto:?subject=${encodeURIComponent(
+                    `수술기록지${fixedPatient ? ` - ${fixedPatient.name}` : ""}`,
+                  )}&body=${encodeURIComponent(recordText)}`}
+                  className={buttonStyles.smallOutline}
+                >
+                  메일로 보내기
+                </a>
+              </div>
             </div>
             <pre className="whitespace-pre-wrap font-sans text-sm text-slate-800">{recordText}</pre>
           </div>

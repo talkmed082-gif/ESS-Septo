@@ -43,6 +43,30 @@ export function TurbinoplastyTypePicker({
     for (const key of TURBINOPLASTY_FIELD_KEYS) next[key] = values?.[key] === true;
     return next;
   });
+  // 시행 여부부터 체크 → 체크해야 어떤 turbinate인지 고르는 4칸이 열리는
+  // 2단계 구조. 기존 값 중 하나라도 체크돼 있으면 이미 시행한 것이므로
+  // 처음부터 열어서 보여준다.
+  const [performed, setPerformed] = useState(() => Object.values(checked).some(Boolean));
+
+  function togglePerformed() {
+    const next = !performed;
+    setPerformed(next);
+    if (!next) {
+      // 시행 안 함으로 되돌리면 감춰지는 세부 선택도 실제로 다 꺼서, 화면에
+      // 안 보이는 체크가 폼에 남아 있지 않게 한다.
+      const form = findForm(rootRef.current);
+      setChecked((c) => {
+        const cleared: Record<string, boolean> = {};
+        for (const key of Object.keys(c)) {
+          cleared[key] = false;
+          const el = getInput(form, `field_${key}`);
+          if (el) el.checked = false;
+        }
+        return cleared;
+      });
+    }
+    onChange?.();
+  }
 
   function toggle(key: string) {
     const form = findForm(rootRef.current);
@@ -75,41 +99,53 @@ export function TurbinoplastyTypePicker({
 
   return (
     <div ref={rootRef} className="rounded-md border border-slate-200 p-3">
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <span className="text-xs font-medium text-slate-600">터비노플라스티 시행 부위</span>
-        <div className="flex gap-1">
-          <button type="button" onClick={() => copyToOtherSide("right")} className={buttonStyles.pill}>
-            우→좌 동일
-          </button>
-          <button type="button" onClick={() => copyToOtherSide("left")} className={buttonStyles.pill}>
-            좌→우 동일
-          </button>
-        </div>
-      </div>
-      <div className="flex gap-8">
-        {SIDES.map((side) => (
-          <div key={side.prefix} className="flex flex-col gap-2">
-            <span className="text-xs font-medium text-slate-500">{side.label}</span>
-            {TURB_TYPES.map((t) => {
-              const key = `turb_${t.key}_${side.prefix}`;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => toggle(key)}
-                  className={`min-h-[36px] touch-manipulation rounded-md border px-3 py-1.5 text-xs leading-tight active:scale-95 ${
-                    checked[key]
-                      ? "border-emerald-600 bg-emerald-600 text-white"
-                      : "border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              );
-            })}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <label className="flex items-center gap-2 text-xs font-medium text-slate-600">
+          <input
+            type="checkbox"
+            checked={performed}
+            onChange={togglePerformed}
+            className="h-4 w-4 rounded border-slate-300"
+          />
+          터비노플라스티 시행
+        </label>
+        {performed && (
+          <div className="flex gap-1">
+            <button type="button" onClick={() => copyToOtherSide("right")} className={buttonStyles.pill}>
+              우→좌 동일
+            </button>
+            <button type="button" onClick={() => copyToOtherSide("left")} className={buttonStyles.pill}>
+              좌→우 동일
+            </button>
           </div>
-        ))}
+        )}
       </div>
+      {performed && (
+        <div className="mt-2 flex gap-8">
+          {SIDES.map((side) => (
+            <div key={side.prefix} className="flex flex-col gap-2">
+              <span className="text-xs font-medium text-slate-500">{side.label}</span>
+              {TURB_TYPES.map((t) => {
+                const key = `turb_${t.key}_${side.prefix}`;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => toggle(key)}
+                    className={`min-h-[36px] touch-manipulation rounded-md border px-3 py-1.5 text-xs leading-tight active:scale-95 ${
+                      checked[key]
+                        ? "border-emerald-600 bg-emerald-600 text-white"
+                        : "border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
