@@ -192,6 +192,7 @@ export const septoFields: SurgeryFieldDef[] = [
     label: "절개 방향 (시작 측)",
     type: "select",
     options: ["우측", "좌측"],
+    default: "좌측",
   },
   { key: "s_caudal", label: "Caudal septum 편위 동반 교정", type: "checkbox" },
   // ANS(Anterior nasal spine) 부위 편위가 심한 경우 선택적으로 시행하는
