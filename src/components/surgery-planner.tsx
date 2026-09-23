@@ -226,6 +226,12 @@ export function SurgeryPlanner({
   const [showPolypFindings, setShowPolypFindings] = useState(() =>
     POLYP_FIELD_KEYS.some((k) => templateValues?.[k] === true),
   );
+  // 이전 수술력도 대부분 해당 없는 경우라 기본은 숨겨두고, 체크해야 구체적인
+  // 부위(Septo/Rt.ESS/Lt.ESS) 선택지가 열리게 한다 — 매번 체크박스 3개가
+  // 항상 떠 있으면 재수술이 아닌 환자에게도 계속 헷갈렸다.
+  const [showRevisionHistory, setShowRevisionHistory] = useState(
+    () => REVISION_FLAG_KEYS.some((k) => templateValues?.[k] === true),
+  );
 
   if (!first) {
     return <p className="text-sm text-slate-500">등록된 수술 종류가 없습니다.</p>;
@@ -605,44 +611,59 @@ export function SurgeryPlanner({
               />
               {(showSeptum || showSinus) && (
                 <div className="space-y-1.5 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
-                  <p className="text-xs font-medium text-slate-500">
-                    이전 수술력 — 해당하는 부위를 선택하세요
-                  </p>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium text-slate-700">
-                    {showSeptum && (
-                      <label className="flex items-center gap-1.5">
-                        <input
-                          type="checkbox"
-                          checked={templateValues?.f_revision_septo === true}
-                          onChange={(e) => toggleRevisionFlag("f_revision_septo", e)}
-                          className="h-4 w-4 rounded border-slate-300"
-                        />
-                        Septoturbinoplasty
-                      </label>
-                    )}
-                    {showSinus && (
-                      <>
-                        <label className="flex items-center gap-1.5">
-                          <input
-                            type="checkbox"
-                            checked={templateValues?.f_revision_ess_right === true}
-                            onChange={(e) => toggleRevisionFlag("f_revision_ess_right", e)}
-                            className="h-4 w-4 rounded border-slate-300"
-                          />
-                          Rt. ESS
-                        </label>
-                        <label className="flex items-center gap-1.5">
-                          <input
-                            type="checkbox"
-                            checked={templateValues?.f_revision_ess_left === true}
-                            onChange={(e) => toggleRevisionFlag("f_revision_ess_left", e)}
-                            className="h-4 w-4 rounded border-slate-300"
-                          />
-                          Lt. ESS
-                        </label>
-                      </>
-                    )}
-                  </div>
+                  <label className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                    <input
+                      type="checkbox"
+                      checked={showRevisionHistory}
+                      onChange={(e) =>
+                        setFindingGroupOpen([...REVISION_FLAG_KEYS], e.target.checked, setShowRevisionHistory)
+                      }
+                      className="h-4 w-4 rounded border-slate-300"
+                    />
+                    이전 수술력
+                  </label>
+                  {showRevisionHistory && (
+                    <>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium text-slate-700">
+                        {showSeptum && (
+                          <label className="flex items-center gap-1.5">
+                            <input
+                              type="checkbox"
+                              checked={templateValues?.f_revision_septo === true}
+                              onChange={(e) => toggleRevisionFlag("f_revision_septo", e)}
+                              className="h-4 w-4 rounded border-slate-300"
+                            />
+                            Septoturbinoplasty
+                          </label>
+                        )}
+                        {showSinus && (
+                          <>
+                            <label className="flex items-center gap-1.5">
+                              <input
+                                type="checkbox"
+                                checked={templateValues?.f_revision_ess_right === true}
+                                onChange={(e) => toggleRevisionFlag("f_revision_ess_right", e)}
+                                className="h-4 w-4 rounded border-slate-300"
+                              />
+                              Rt. ESS
+                            </label>
+                            <label className="flex items-center gap-1.5">
+                              <input
+                                type="checkbox"
+                                checked={templateValues?.f_revision_ess_left === true}
+                                onChange={(e) => toggleRevisionFlag("f_revision_ess_left", e)}
+                                className="h-4 w-4 rounded border-slate-300"
+                              />
+                              Lt. ESS
+                            </label>
+                          </>
+                        )}
+                      </div>
+                      {planTable && (
+                        <p className="text-xs text-slate-500">수술명: {planTable.procedureName}</p>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
             </div>

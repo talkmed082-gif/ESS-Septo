@@ -5,12 +5,13 @@ import type { PlanSideMatrixRow } from "@/lib/op-note-generator";
 import { SideMatrixTable } from "@/components/plan-table";
 
 const POLYP_SITE_FIELDS = [
-  { key: "site_mm", label: "중비도" },
-  { key: "site_ant_ethmoid", label: "전사골동" },
-  { key: "site_post_ethmoid", label: "후사골동" },
-  { key: "site_maxillary", label: "상악동 자연공" },
-  { key: "site_sphenoid", label: "접형동" },
-  { key: "site_choana", label: "후비공까지 연장" },
+  { key: "site_mm", label: "Middle meatus" },
+  { key: "site_ant_ethmoid", label: "Ant. ethmoid" },
+  { key: "site_post_ethmoid", label: "Post. ethmoid" },
+  { key: "site_frontal", label: "Frontal sinus" },
+  { key: "site_maxillary", label: "Maxillary ostium" },
+  { key: "site_sphenoid", label: "Sphenoid" },
+  { key: "site_choana", label: "Extension to choana" },
 ] as const;
 
 // 모식도(AnatomyPicker)와 마찬가지로 이 컴포넌트가 대신 입력을 담당하는 필드 —

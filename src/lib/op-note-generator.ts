@@ -39,7 +39,7 @@ export function anesthesiaLabel(anesthesiaType: string | undefined): string {
 // 마취 유도 직후 항상 시행하는 국소 처치라 선택 항목 없이 기록지에 기본으로
 // 포함시킨다. 주입 방향은 실제 수술 범위(편측/양측)에 맞춰 표기한다.
 function sphenopalatineBlockSentence(sideLabel: string): string {
-  return `${sideLabel} sphenopalatine fossa 부위에 epinephrine/lidocaine mixture를 주입하여 국소마취를 추가 시행함`;
+  return `${sideLabel} sphenopalatine fossa 및 middle turbinate attachment 부위에 epinephrine/lidocaine mixture를 주입하여 국소마취를 추가 시행함`;
 }
 
 // Dermacol은 packing 재료가 아니라 창상 회복을 돕는 보조제라, packing 시행
@@ -143,12 +143,13 @@ function septumSummaryLine(values: FieldValues): string {
 // 위치 체크박스가 하나라도 있으면 그 측에 비용종이 있는 것으로 본다
 // (별도의 "방향" 선택 없이 위치 선택만으로 존재 여부까지 표현).
 const polypSiteFields: { key: string; label: string }[] = [
-  { key: "site_mm", label: "중비도" },
-  { key: "site_ant_ethmoid", label: "전사골동" },
-  { key: "site_post_ethmoid", label: "후사골동" },
-  { key: "site_maxillary", label: "상악동 자연공" },
-  { key: "site_sphenoid", label: "접형동" },
-  { key: "site_choana", label: "후비공까지 연장" },
+  { key: "site_mm", label: "Middle meatus" },
+  { key: "site_ant_ethmoid", label: "Ant. ethmoid" },
+  { key: "site_post_ethmoid", label: "Post. ethmoid" },
+  { key: "site_frontal", label: "Frontal sinus" },
+  { key: "site_maxillary", label: "Maxillary ostium" },
+  { key: "site_sphenoid", label: "Sphenoid" },
+  { key: "site_choana", label: "Extension to choana" },
 ];
 
 function polypSideKeyPrefix(side: "좌측" | "우측"): string {
@@ -506,7 +507,55 @@ const fessStepSentences: Record<(typeof fessStepFieldKeys)[number], string> = {
   frontal: "Frontal sinusotomy 시행함",
 };
 
-function fessSideBlock(sideName: "좌측" | "우측", prefix: "f_left_" | "f_right_", values: FieldValues): string[] {
+// 비강 소견(부비동염/비용종) 단계에서 남긴 정보가 수술 과정 서술에도 그대로
+// 이어지게 한다 — 해당 부비동을 시행하는 단계 문장 뒤에 실제 소견/처치
+// 내용을 덧붙인다. Frontal은 별도 부비동이라 site_frontal 하나만, MMA는
+// 중비도(site_mm)와 상악동 자연공(site_maxillary) 둘 다 여기 속한다고 본다.
+const fessStepSiteLabel: Record<(typeof fessStepFieldKeys)[number], string> = {
+  mma: "Maxillary sinus",
+  ant_eth: "Ant. ethmoid",
+  post_eth: "Post. ethmoid",
+  sphenoid: "Sphenoid sinus",
+  frontal: "Frontal sinus",
+};
+const fessStepSinusitisKey: Record<(typeof fessStepFieldKeys)[number], string> = {
+  mma: "maxillary",
+  ant_eth: "ant_ethmoid",
+  post_eth: "post_ethmoid",
+  sphenoid: "sphenoid",
+  frontal: "frontal",
+};
+const fessStepPolypSiteKeys: Record<(typeof fessStepFieldKeys)[number], string[]> = {
+  mma: ["site_mm", "site_maxillary"],
+  ant_eth: ["site_ant_ethmoid"],
+  post_eth: ["site_post_ethmoid"],
+  sphenoid: ["site_sphenoid"],
+  frontal: ["site_frontal"],
+};
+
+function fessStepFindingClauses(
+  key: (typeof fessStepFieldKeys)[number],
+  prefix: "f_left_" | "f_right_",
+  values: FieldValues,
+): string {
+  const sideSuffix = prefix === "f_left_" ? "left" : "right";
+  const siteLabel = fessStepSiteLabel[key];
+  const clauses: string[] = [];
+  if (bool(values, `n_sinusitis_${fessStepSinusitisKey[key]}_${sideSuffix}`)) {
+    clauses.push(`${siteLabel}에서 discharge가 drainage됨을 확인함`);
+  }
+  if (fessStepPolypSiteKeys[key].some((site) => bool(values, `n_polyp_${sideSuffix}_${site}`))) {
+    clauses.push(`${siteLabel} 내 비용종을 제거함`);
+  }
+  return clauses.length > 0 ? `. ${clauses.join(". ")}` : "";
+}
+
+function fessSideBlock(
+  sideName: "좌측" | "우측",
+  prefix: "f_left_" | "f_right_",
+  values: FieldValues,
+  includeMicrodebriderSentence: boolean = true,
+): string[] {
   const selectedSteps = fessStepFieldKeys.filter((key) => bool(values, `${prefix}${key}`));
   const turbLabels = turbinateLabelsForSide(sideName, values);
   // 해당 측에 실제로 시행한 것이 하나도 없으면(반대측만 시행한 편측 FESS 등)
@@ -521,9 +570,13 @@ function fessSideBlock(sideName: "좌측" | "우측", prefix: "f_left_" | "f_rig
     // Microdebrider는 비용종이 있을 때만 쓰는 게 아니라 ESS 전반의 점막/조직
     // 정리에 기본적으로 쓰이므로, 비용종 유무와 무관하게 기본 문구로 넣는다.
     // Cutting forceps/cuff forceps도 함께 병용하는 것을 기본값으로 서술한다.
-    block.push(
-      `[${sideName}] Microdebrider와 cutting forceps, cuff forceps를 이용하여 점막 및 병변 조직을 정리하며 수술을 진행함`,
-    );
+    // 양측 다 시행하면(fessCore) 이 문장이 위에서 [양측]으로 한 번만 나가므로
+    // 여기서는 중복해서 안 넣는다.
+    if (includeMicrodebriderSentence) {
+      block.push(
+        `[${sideName}] Microdebrider와 cutting forceps, cuff forceps를 이용하여 점막 및 병변 조직을 정리하며 수술을 진행함`,
+      );
+    }
     // Uncinectomy는 MMA/Ant.&Post. ethmoidectomy/Frontal sinusotomy를 할 때는
     // 선행되는 조작이라 자동으로 포함시키지만, Sphenoidotomy만 단독으로 할
     // 때는 uncinectomy 없이도 접근 가능해서 자동으로 넣지 않는다. Revision
@@ -538,7 +591,7 @@ function fessSideBlock(sideName: "좌측" | "우측", prefix: "f_left_" | "f_rig
       block.push(`[${sideName}] Uncinectomy 시행`);
     }
     for (const key of selectedSteps) {
-      block.push(`[${sideName}] ${fessStepSentences[key]}`);
+      block.push(`[${sideName}] ${fessStepSentences[key]}${fessStepFindingClauses(key, prefix, values)}`);
     }
   }
 
@@ -564,11 +617,23 @@ function fessCore(values: FieldValues): string[] {
   const order = str(values, "f_side_order", "우측 먼저 → 좌측");
   const nav = bool(values, "f_nav");
 
+  // 양쪽 다 시행하면 "Microdebrider..." 문장이 좌/우 블록에서 그대로
+  // 두 번 반복돼 장황해지므로, 양측일 때는 앞에서 [양측]으로 한 번만
+  // 서술하고 각 side 블록에서는 생략한다.
+  const rightHasSteps = fessStepFieldKeys.some((key) => bool(values, `f_right_${key}`));
+  const leftHasSteps = fessStepFieldKeys.some((key) => bool(values, `f_left_${key}`));
+  const bothSides = rightHasSteps && leftHasSteps;
+
   const steps: string[] = [];
   if (nav) steps.push("Image-guided navigation system을 병용하여 해부학적 구조물을 확인함");
+  if (bothSides) {
+    steps.push(
+      "[양측] Microdebrider와 cutting forceps, cuff forceps를 이용하여 점막 및 병변 조직을 정리하며 수술을 진행함",
+    );
+  }
 
-  const leftBlock = fessSideBlock("좌측", "f_left_", values);
-  const rightBlock = fessSideBlock("우측", "f_right_", values);
+  const leftBlock = fessSideBlock("좌측", "f_left_", values, !bothSides);
+  const rightBlock = fessSideBlock("우측", "f_right_", values, !bothSides);
 
   if (order === "좌측 먼저 → 우측") steps.push(...leftBlock, ...rightBlock);
   else steps.push(...rightBlock, ...leftBlock);

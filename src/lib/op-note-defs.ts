@@ -163,18 +163,20 @@ export const essFindingFields: SurgeryFieldDef[] = [
   // 비용종 — 좌/우 정도(위치)가 다른 경우가 많아, 공통 "방향" 선택 없이
   // 측별로 위치 체크박스를 따로 둔다 (PolypPicker 컴포넌트가 우/좌 두 컬럼으로
   // 노출 — 한쪽이라도 위치가 체크되어 있으면 그 측에 비용종이 있는 것으로 본다).
-  { key: "n_polyp_right_site_mm", label: "비용종 위치(우측) - 중비도", type: "checkbox" },
-  { key: "n_polyp_right_site_ant_ethmoid", label: "비용종 위치(우측) - 전사골동", type: "checkbox" },
-  { key: "n_polyp_right_site_post_ethmoid", label: "비용종 위치(우측) - 후사골동", type: "checkbox" },
-  { key: "n_polyp_right_site_maxillary", label: "비용종 위치(우측) - 상악동 자연공", type: "checkbox" },
-  { key: "n_polyp_right_site_sphenoid", label: "비용종 위치(우측) - 접형동", type: "checkbox" },
-  { key: "n_polyp_right_site_choana", label: "비용종 위치(우측) - 후비공까지 연장", type: "checkbox" },
-  { key: "n_polyp_left_site_mm", label: "비용종 위치(좌측) - 중비도", type: "checkbox" },
-  { key: "n_polyp_left_site_ant_ethmoid", label: "비용종 위치(좌측) - 전사골동", type: "checkbox" },
-  { key: "n_polyp_left_site_post_ethmoid", label: "비용종 위치(좌측) - 후사골동", type: "checkbox" },
-  { key: "n_polyp_left_site_maxillary", label: "비용종 위치(좌측) - 상악동 자연공", type: "checkbox" },
-  { key: "n_polyp_left_site_sphenoid", label: "비용종 위치(좌측) - 접형동", type: "checkbox" },
-  { key: "n_polyp_left_site_choana", label: "비용종 위치(좌측) - 후비공까지 연장", type: "checkbox" },
+  { key: "n_polyp_right_site_mm", label: "Polyp site (Rt.) - Middle meatus", type: "checkbox" },
+  { key: "n_polyp_right_site_ant_ethmoid", label: "Polyp site (Rt.) - Ant. ethmoid", type: "checkbox" },
+  { key: "n_polyp_right_site_post_ethmoid", label: "Polyp site (Rt.) - Post. ethmoid", type: "checkbox" },
+  { key: "n_polyp_right_site_frontal", label: "Polyp site (Rt.) - Frontal sinus", type: "checkbox" },
+  { key: "n_polyp_right_site_maxillary", label: "Polyp site (Rt.) - Maxillary ostium", type: "checkbox" },
+  { key: "n_polyp_right_site_sphenoid", label: "Polyp site (Rt.) - Sphenoid", type: "checkbox" },
+  { key: "n_polyp_right_site_choana", label: "Polyp site (Rt.) - Extension to choana", type: "checkbox" },
+  { key: "n_polyp_left_site_mm", label: "Polyp site (Lt.) - Middle meatus", type: "checkbox" },
+  { key: "n_polyp_left_site_ant_ethmoid", label: "Polyp site (Lt.) - Ant. ethmoid", type: "checkbox" },
+  { key: "n_polyp_left_site_post_ethmoid", label: "Polyp site (Lt.) - Post. ethmoid", type: "checkbox" },
+  { key: "n_polyp_left_site_frontal", label: "Polyp site (Lt.) - Frontal sinus", type: "checkbox" },
+  { key: "n_polyp_left_site_maxillary", label: "Polyp site (Lt.) - Maxillary ostium", type: "checkbox" },
+  { key: "n_polyp_left_site_sphenoid", label: "Polyp site (Lt.) - Sphenoid", type: "checkbox" },
+  { key: "n_polyp_left_site_choana", label: "Polyp site (Lt.) - Extension to choana", type: "checkbox" },
 ];
 
 // 비강 소견(공통, ESS/병행용) — 비중격/하비갑개 그룹 + ESS 그룹을 모두 포함
@@ -401,6 +403,8 @@ export const POLYP_TO_FESS_FIELD: Record<string, string> = {
   n_polyp_left_site_ant_ethmoid: "f_left_ant_eth",
   n_polyp_right_site_post_ethmoid: "f_right_post_eth",
   n_polyp_left_site_post_ethmoid: "f_left_post_eth",
+  n_polyp_right_site_frontal: "f_right_frontal",
+  n_polyp_left_site_frontal: "f_left_frontal",
   n_polyp_right_site_maxillary: "f_right_mma",
   n_polyp_left_site_maxillary: "f_left_mma",
   n_polyp_right_site_sphenoid: "f_right_sphenoid",
