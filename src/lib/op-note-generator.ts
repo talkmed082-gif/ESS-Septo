@@ -58,19 +58,44 @@ export function hasAnyRevision(values: FieldValues): boolean {
   );
 }
 
+function regionsEqual(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((r, i) => r === b[i]);
+}
+
+// ESS revision 부분의 "rev>" 표기 — 양쪽 다 revision이고 이번에 시행하는
+// 부위(sinus)가 같으면 "B) ESS(FEM)"처럼 한 번만 묶어서 쓰고, 양쪽 부위가
+// 다르면 "B) ESS(Rt. FEMS, Lt. FEM)"처럼 side별로 나눠서 밝힌다. 한쪽만
+// revision이면 그 side만 표기한다.
+function essRevisionLabel(values: FieldValues, style: NameStyle, rightEss: boolean, leftEss: boolean): string {
+  const rightRegions = fessRegionsForSide("f_right_", values);
+  const leftRegions = fessRegionsForSide("f_left_", values);
+
+  if (rightEss && leftEss) {
+    if (regionsEqual(rightRegions, leftRegions)) {
+      const regionText = rightRegions.length > 0 ? `(${formatRegionList(rightRegions, style)})` : "";
+      return `${formatSideLabel("B", style)} ESS${regionText}`;
+    }
+    const rightText = rightRegions.length > 0 ? `Rt. ${formatRegionList(rightRegions, style)}` : "Rt.";
+    const leftText = leftRegions.length > 0 ? `Lt. ${formatRegionList(leftRegions, style)}` : "Lt.";
+    return `${formatSideLabel("B", style)} ESS(${rightText}, ${leftText})`;
+  }
+  if (rightEss) {
+    const regionText = rightRegions.length > 0 ? `(${formatRegionList(rightRegions, style)})` : "";
+    return `${formatSideLabel("R", style)} ESS${regionText}`;
+  }
+  const regionText = leftRegions.length > 0 ? `(${formatRegionList(leftRegions, style)})` : "";
+  return `${formatSideLabel("L", style)} ESS${regionText}`;
+}
+
 // 수술명 맨 앞에 "이전에 무엇에 대한 재수술인지"를 "rev> 부위" 형태로 짧게
 // 표기한다 — 그냥 "Revision"이라고만 쓰면 어떤 부위의 재수술인지 이름만
-// 봐서는 알 수 없어서, 어느 부위(들)인지 이름 자체에 남긴다. 좌/우/양측
-// 표기는 나머지 수술명과 같은 스타일(formatSideLabel)로 맞춘다 — 양측이면
-// "Rt. ESS, Lt. ESS"처럼 나열하지 않고 다른 곳과 똑같이 "B) ESS"로 합친다.
+// 봐서는 알 수 없어서, 어느 부위(들)인지(ESS는 시행 sinus까지) 이름 자체에 남긴다.
 function revisionPrefixText(values: FieldValues, style: NameStyle): string {
   const parts: string[] = [];
   if (bool(values, "f_revision_septo")) parts.push("Septo");
   const rightEss = bool(values, "f_revision_ess_right");
   const leftEss = bool(values, "f_revision_ess_left");
-  if (rightEss && leftEss) parts.push(`${formatSideLabel("B", style)} ESS`);
-  else if (rightEss) parts.push(`${formatSideLabel("R", style)} ESS`);
-  else if (leftEss) parts.push(`${formatSideLabel("L", style)} ESS`);
+  if (rightEss || leftEss) parts.push(essRevisionLabel(values, style, rightEss, leftEss));
   return parts.length > 0 ? `rev> ${parts.join(", ")} ` : "";
 }
 
@@ -340,12 +365,12 @@ function turbinoplastyWordsForSide(side: "right" | "left", values: FieldValues):
     .map((type) => turbTypeWord[type]);
 }
 
-// 축소술 기본 술기 — 중비갑개는 15번 scalpel로 절개 후 cutting forceps로
+// 축소술 기본 술기 — 중비갑개는 15번 blade로 절개 후 cutting forceps로
 // lateral side를 제거하는 방식, 하비갑개는 coblator를 이용하는 것을
 // 기본값으로 서술한다.
 function turbinoplastyTechniqueSentence(type: TurbType): string {
   if (type === "middle") {
-    return "중비갑개에 대해 15번 scalpel로 절개 후 cutting forceps로 lateral side를 제거하는 방식으로 축소술(Mturbinoplasty)을 시행함";
+    return "중비갑개에 대해 15번 blade로 절개 후 cutting forceps로 lateral side를 제거하는 방식으로 축소술(Mturbinoplasty)을 시행함";
   }
   return "하비갑개에 대해 coblator를 이용하여 축소술(Turbinoplasty)을 시행함";
 }
