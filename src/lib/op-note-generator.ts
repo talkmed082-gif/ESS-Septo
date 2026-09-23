@@ -472,7 +472,7 @@ function septoCore(values: FieldValues): string[] {
     turbInferiorSide && `${turbInferiorSide} ${turbinoplastyTechniqueSentence("inferior")}`,
     quilting
       ? `Flap을 원위치로 정복한 후 ${quiltingSuture}를 사용하여 quilting suture 시행`
-      : "Flap을 원위치로 정복함",
+      : "Incision 부위 Vicryl로 suture 시행함",
     splint && `양측 비강에 silastic splint를 삽입하고 ${splintSuture}로 관통 봉합하여 고정함`,
   ];
   return steps.filter((s): s is string => Boolean(s));

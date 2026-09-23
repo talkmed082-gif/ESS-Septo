@@ -110,18 +110,21 @@ export function RecordForm({
     if (el instanceof HTMLInputElement) el.checked = next;
     setLiveFieldValues((v) => ({ ...v, [key]: next }));
   }
-  // f_revision_septo는 procedureFields 목록에서 숨겨진 채(hidden fallback
-  // input으로) 실제 제출되고, 이 체크박스는 그 숨겨진 입력의 checked를 직접
-  // 토글하는 트리거 역할만 한다 — SinusDiagram의 Revision 토글과 같은 방식.
-  const revisionSeptoRef = useRef<HTMLLabelElement>(null);
-  const [revisionSepto, setRevisionSepto] = useState<boolean>(() => fieldValues?.f_revision_septo === true);
+  // f_revision_septo/f_revision_ess_right/f_revision_ess_left는 procedureFields
+  // 목록에서 숨겨진 채(hidden fallback input으로) 실제 제출되고, 이 체크박스들은
+  // 그 숨겨진 입력의 checked를 직접 토글하는 트리거 역할만 한다 —
+  // SinusDiagram의 Revision 토글과 같은 방식.
+  const [revisionFlags, setRevisionFlags] = useState<Record<string, boolean>>(() => ({
+    f_revision_septo: fieldValues?.f_revision_septo === true,
+    f_revision_ess_right: fieldValues?.f_revision_ess_right === true,
+    f_revision_ess_left: fieldValues?.f_revision_ess_left === true,
+  }));
 
-  function toggleRevisionSepto() {
-    const form = revisionSeptoRef.current?.closest("form");
-    const el = form?.elements.namedItem("field_f_revision_septo");
-    const nextVal = el instanceof HTMLInputElement ? !el.checked : !revisionSepto;
+  function toggleRevisionFlag(key: string) {
+    const el = formRef.current?.elements.namedItem(`field_${key}`);
+    const nextVal = el instanceof HTMLInputElement ? !el.checked : !revisionFlags[key];
     if (el instanceof HTMLInputElement) el.checked = nextVal;
-    setRevisionSepto(nextVal);
+    setRevisionFlags((r) => ({ ...r, [key]: nextVal }));
   }
   // 자동 생성을 지원하지 않는 커스텀 수술 종류는 검토할 초안 문구 자체가
   // 없으므로 세부 항목을 접어둘 이유가 없다 — 처음부터 펼쳐둔다.
@@ -148,6 +151,45 @@ export function RecordForm({
           {pending ? "저장 중..." : "기록 저장"}
         </button>
       </div>
+
+      {(showSeptum || showSinus) && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700">
+          <span className="text-xs font-medium text-slate-500">이전 수술력</span>
+          {showSeptum && (
+            <label className="flex items-center gap-1.5">
+              <input
+                type="checkbox"
+                checked={revisionFlags.f_revision_septo}
+                onChange={() => toggleRevisionFlag("f_revision_septo")}
+                className="h-4 w-4 rounded border-slate-300"
+              />
+              Septoturbinoplasty
+            </label>
+          )}
+          {showSinus && (
+            <>
+              <label className="flex items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={revisionFlags.f_revision_ess_right}
+                  onChange={() => toggleRevisionFlag("f_revision_ess_right")}
+                  className="h-4 w-4 rounded border-slate-300"
+                />
+                Rt. ESS
+              </label>
+              <label className="flex items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={revisionFlags.f_revision_ess_left}
+                  onChange={() => toggleRevisionFlag("f_revision_ess_left")}
+                  className="h-4 w-4 rounded border-slate-300"
+                />
+                Lt. ESS
+              </label>
+            </>
+          )}
+        </div>
+      )}
 
       {/* 수술일은 환자 등록/수술 계획 단계에서 이미 입력받으므로 기록지에서
           다시 받지 않는다. 마취는 항상 전신마취(General)가 기본이라 선택
@@ -195,20 +237,6 @@ export function RecordForm({
       </button>
 
       <div className={showDetails ? "space-y-4" : "hidden"}>
-        {showSeptum && (
-          <label
-            ref={revisionSeptoRef}
-            className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700"
-          >
-            <input
-              type="checkbox"
-              checked={revisionSepto}
-              onChange={toggleRevisionSepto}
-              className="h-4 w-4 rounded border-slate-300"
-            />
-            Septoturbinoplasty Revision case (재수술)
-          </label>
-        )}
         <div className="flex gap-2 border-b border-slate-200 pb-3">
           <button
             type="button"
@@ -279,7 +307,7 @@ export function RecordForm({
           />
           <SurgeryFieldInputs fields={fields.filter((f) => f.key === "f_nav")} values={liveFieldValues} />
           {showSinus && <SinusDiagram values={liveFieldValues} />}
-          <TurbinoplastyTypePicker values={liveFieldValues} />
+          {surgeryTypeCode !== "SEPTOPLASTY" && <TurbinoplastyTypePicker values={liveFieldValues} />}
           {fields.some((f) => POST_OP_FINISH_KEYS.includes(f.key)) && (
             <div className="rounded-md border border-slate-200 p-3">
               <p className="mb-2 text-sm font-medium text-slate-700">수술후 마무리</p>
@@ -301,10 +329,19 @@ export function RecordForm({
               ...POST_OP_FINISH_KEYS,
             ]}
           />
+          {/* Septoturbinoplasty는 기본이 양측 시행이라 좌우 복사 버튼이 불필요하고,
+              수술 순서상으로도 비중격 처치 다음에 하는 것이라 맨 아래에 둔다. */}
+          {surgeryTypeCode === "SEPTOPLASTY" && (
+            <TurbinoplastyTypePicker values={liveFieldValues} hideCopyButtons />
+          )}
         </div>
 
         <OpNoteGenerateButton fields={fields} surgeryTypeCode={surgeryTypeCode} nameStyle={nameStyle} />
       </div>
+
+      <button type="submit" disabled={pending} className={`w-full ${buttonStyles.primary}`}>
+        {pending ? "저장 중..." : "기록 저장"}
+      </button>
     </form>
   );
 }

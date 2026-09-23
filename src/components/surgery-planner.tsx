@@ -376,8 +376,18 @@ export function SurgeryPlanner({
     // 이전 종류에서 이미 입력해둔 값(겹치는 키, 예: 비강 소견/turbinoplasty)은
     // 그대로 유지하고, 새 종류에만 있는 필드는 default로 채운다 — 종류를
     // 바꿨다고 이미 적어둔 소견까지 통째로 날아가면 계획 수정 중 종류를
-    // 바로잡을 때 처음부터 다시 입력해야 해서 불편하다.
-    const nextValues = next ? applyFieldDefaults({ ...templateValues }, next.fields) : undefined;
+    // 바로잡을 때 처음부터 다시 입력해야 해서 불편하다. 다만 지금 값이
+    // "이전 종류의 default 그대로"인 필드(사용자가 실제로 건드리지 않은
+    // 값)는 지워서 새 종류의 default(예: CHR 양측)가 다시 채워지게 한다 —
+    // 안 그러면 ESS로 시작했다가 Septo로 바꿀 때 CHR이 ESS의 기본값
+    // "없음"에 그대로 눌러앉아 있었다.
+    const carried: FieldValues = { ...templateValues };
+    for (const f of selected?.fields ?? []) {
+      if (!f.default) continue;
+      const defaultValue = f.type === "checkbox" ? f.default === "true" : f.default;
+      if (carried[f.key] === defaultValue) delete carried[f.key];
+    }
+    const nextValues = next ? applyFieldDefaults(carried, next.fields) : undefined;
     setTemplateValues(nextValues);
     setTemplateKey((k) => k + 1);
     setTexts(
@@ -648,7 +658,9 @@ export function SurgeryPlanner({
               {showSinus && (
                 <SinusDiagram values={templateValues} onChange={regenerateFromForm} hideRevisionToggle />
               )}
-              <TurbinoplastyTypePicker values={templateValues} onChange={regenerateFromForm} />
+              {selected.code !== "SEPTOPLASTY" && (
+                <TurbinoplastyTypePicker values={templateValues} onChange={regenerateFromForm} />
+              )}
               {selected.fields.some((f) => POST_OP_FINISH_KEYS.includes(f.key)) && (
                 <div className="rounded-md border border-slate-200 p-3">
                   <p className="mb-2 text-sm font-medium text-slate-700">수술후 마무리</p>
@@ -670,6 +682,11 @@ export function SurgeryPlanner({
                   ...POST_OP_FINISH_KEYS,
                 ]}
               />
+              {/* Septoturbinoplasty는 기본이 양측 시행이라 좌우 복사 버튼이 불필요하고,
+                  수술 순서상으로도 비중격 처치 다음에 하는 것이라 맨 아래에 둔다. */}
+              {selected.code === "SEPTOPLASTY" && (
+                <TurbinoplastyTypePicker values={templateValues} onChange={regenerateFromForm} hideCopyButtons />
+              )}
             </div>
           </div>
         )}

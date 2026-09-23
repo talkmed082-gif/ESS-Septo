@@ -33,9 +33,13 @@ function getInput(form: HTMLFormElement | null, name: string) {
 export function TurbinoplastyTypePicker({
   values,
   onChange,
+  hideCopyButtons = false,
 }: {
   values?: FieldValues;
   onChange?: () => void;
+  // Septoturbinoplasty는 기본이 양측 시행이라 좌우 복사 버튼이 필요 없어서
+  // 숨길 수 있게 한다.
+  hideCopyButtons?: boolean;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [checked, setChecked] = useState<Record<string, boolean>>(() => {
@@ -109,7 +113,7 @@ export function TurbinoplastyTypePicker({
           />
           Turbinoplasty 시행
         </label>
-        {performed && (
+        {performed && !hideCopyButtons && (
           <div className="flex gap-1">
             <button type="button" onClick={() => copyToOtherSide("right")} className={buttonStyles.pill}>
               우→좌 동일
