@@ -169,6 +169,23 @@ export function SurgeryPlanner({
   }
 
   const selected = surgeryTypes.find((st) => st.id === selectedId);
+  // 기본 3종(ESS/비중격교정술/병행)은 체크박스 두 개(Septo/ESS)의 조합으로
+  // 고르게 하고, 사용자가 직접 추가한 커스텀 수술 종류는 그 아래 별도
+  // 목록(단일 선택)으로 남겨둔다 — 둘을 억지로 같은 체크박스 방식에 넣으면
+  // 커스텀끼리, 또는 커스텀과 기본 3종 사이의 조합 규칙이 애매해진다.
+  const septoType = surgeryTypes.find((st) => st.code === "SEPTOPLASTY");
+  const essType = surgeryTypes.find((st) => st.code === "ESS");
+  const comboType = surgeryTypes.find((st) => st.code === "COMBO");
+  const customTypes = surgeryTypes.filter((st) => !isBuiltInSurgeryCode(st.code));
+  const isCustomSelected = selected ? !isBuiltInSurgeryCode(selected.code) : false;
+  const septoChecked = selected?.code === "SEPTOPLASTY" || selected?.code === "COMBO";
+  const essChecked = selected?.code === "ESS" || selected?.code === "COMBO";
+  function idForBuiltInCombo(nextSepto: boolean, nextEss: boolean): string {
+    if (nextSepto && nextEss) return comboType?.id ?? "";
+    if (nextSepto) return septoType?.id ?? "";
+    if (nextEss) return essType?.id ?? "";
+    return "";
+  }
   const nasalFields = selected ? selected.fields.filter((f) => isNasalFindingKey(f.key)) : [];
   const procedureFields = selected ? selected.fields.filter((f) => !isNasalFindingKey(f.key)) : [];
   const { showSeptum, showSinus } = selected
@@ -245,7 +262,7 @@ export function SurgeryPlanner({
     applyCombo(updated);
   }
 
-  function handleSurgeryTypeChange(id: string, e?: ChangeEvent<HTMLSelectElement>) {
+  function handleSurgeryTypeChange(id: string, e?: ChangeEvent<HTMLSelectElement | HTMLInputElement>) {
     // 이 select도 <form onChange={regenerateFromForm}> 안에 있어서, 바뀌면
     // change 이벤트가 폼까지 버블링된다. 아래 setTexts로 이미 새 수술
     // 종류에 맞는 올바른 미리보기를 계산해뒀는데, regenerateFromForm이 뒤이어
@@ -401,19 +418,51 @@ export function SurgeryPlanner({
 
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">수술 종류</label>
-          <select
-            name="surgeryTypeId"
-            value={selectedId}
-            onChange={(e) => handleSurgeryTypeChange(e.target.value, e)}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-          >
-            {!fixedPatient && !editPlan && <option value="">계획은 나중에 작성 (환자만 등록)</option>}
-            {surgeryTypes.map((st) => (
-              <option key={st.id} value={st.id}>
-                {st.name}
-              </option>
-            ))}
-          </select>
+          <input type="hidden" name="surgeryTypeId" value={selectedId} />
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium text-slate-700">
+            {septoType && (
+              <label className="flex items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={septoChecked}
+                  onChange={(e) => handleSurgeryTypeChange(idForBuiltInCombo(e.target.checked, essChecked), e)}
+                  className="h-4 w-4 rounded border-slate-300"
+                />
+                Septo
+              </label>
+            )}
+            {essType && (
+              <label className="flex items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={essChecked}
+                  onChange={(e) => handleSurgeryTypeChange(idForBuiltInCombo(septoChecked, e.target.checked), e)}
+                  className="h-4 w-4 rounded border-slate-300"
+                />
+                ESS
+              </label>
+            )}
+          </div>
+          {!fixedPatient && !editPlan && !septoChecked && !essChecked && !isCustomSelected && (
+            <p className="mt-1 text-xs text-slate-400">체크하지 않으면 계획 없이 환자만 등록됩니다.</p>
+          )}
+          {customTypes.length > 0 && (
+            <div className="mt-2">
+              <label className="mb-1 block text-xs font-medium text-slate-500">기타 수술 종류</label>
+              <select
+                value={isCustomSelected ? selectedId : ""}
+                onChange={(e) => handleSurgeryTypeChange(e.target.value, e)}
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              >
+                <option value="">선택 안 함</option>
+                {customTypes.map((st) => (
+                  <option key={st.id} value={st.id}>
+                    {st.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           {editPlan && (
             <p className="mt-1 text-xs text-slate-400">
               종류를 바꾸면 그 종류의 입력 항목으로 다시 표시됩니다. 겹치는 항목(비강 소견 등)은 유지되고,
