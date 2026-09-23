@@ -3,8 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
 import { parseFieldDefs } from "@/lib/field-types";
 import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
-import { getRecentCombosForSurgeryTypes } from "@/lib/recent-combos";
-import { getPresetsForSurgeryTypes } from "@/lib/presets";
 import { getLatestNasalFindingsForPatient } from "@/lib/patient-nasal-findings";
 import { SurgeryPlanner } from "@/components/surgery-planner";
 
@@ -24,15 +22,6 @@ export default async function NewOpPlanPage({
     sideNotation: user.sideNotation as SideNotation,
     abbreviateRegions: user.abbreviateRegions,
   };
-  const recentCombosByType = await getRecentCombosForSurgeryTypes(
-    user.id,
-    surgeryTypes.map((st) => ({ id: st.id, code: st.code })),
-    nameStyle,
-  );
-  const presetsByType = await getPresetsForSurgeryTypes(
-    user.id,
-    surgeryTypes.map((st) => st.id),
-  );
   const patientNasalFindings = await getLatestNasalFindingsForPatient(patientId);
 
   return (
@@ -49,8 +38,6 @@ export default async function NewOpPlanPage({
         }))}
         loggedIn
         nameStyle={nameStyle}
-        recentCombosByType={recentCombosByType}
-        presetsByType={presetsByType}
         fixedPatient={{ id: patient.id, name: patient.name }}
         patientNasalFindings={patientNasalFindings}
       />

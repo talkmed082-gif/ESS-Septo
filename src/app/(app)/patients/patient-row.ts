@@ -16,9 +16,3 @@ export interface PatientRow {
   recordId: string | null;
   planDone: boolean;
 }
-
-// 기록지가 이미 있으면 그 자체로 완료고, 없으면 "완료" 체크(며칠 뒤에
-// 몰아서 기록지를 쓰는 경우가 많아 수동으로 표시)를 따른다.
-export function isPlanDone(p: PatientRow): boolean {
-  return Boolean(p.recordId) || p.planDone;
-}

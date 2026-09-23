@@ -18,6 +18,7 @@ const PatientPlanSchema = z
     surgeryTypeId: z.string().trim().optional(),
     plannedDate: z.string().trim().optional(),
     planNote: z.string().trim().optional(),
+    planStatus: z.enum(["PLANNED", "DONE"]).optional(),
   })
   .refine((data) => data.existingPatientId || (data.name && data.name.length > 0), {
     error: "환자를 선택하거나 이름을 입력하세요.",
@@ -54,6 +55,7 @@ export async function createPatientWithPlan(
     surgeryTypeId: formData.get("surgeryTypeId") ?? "",
     plannedDate: formData.get("plannedDate") ?? "",
     planNote: formData.get("planNote") ?? "",
+    planStatus: formData.get("planStatus") || undefined,
   });
   if (!validated.success) {
     return { errors: z.flattenError(validated.error).fieldErrors };
@@ -101,6 +103,7 @@ export async function createPatientWithPlan(
       plannedDate: data.plannedDate ? new Date(data.plannedDate) : null,
       planNote: data.planNote || null,
       planData,
+      status: data.planStatus ?? "PLANNED",
       createdById: session.userId,
     },
   });

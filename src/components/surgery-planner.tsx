@@ -16,8 +16,6 @@ import { EssFindingsPicker, ESS_FINDINGS_FIELD_KEYS } from "@/components/ess-fin
 import { CollapsibleFindingSection } from "@/components/collapsible-finding-section";
 import { UncinateAttachmentFields } from "@/components/uncinate-attachment-fields";
 import { TurbinoplastyTypePicker, TURBINOPLASTY_FIELD_KEYS } from "@/components/turbinoplasty-type-picker";
-import { PresetBar, type PresetItem } from "@/components/preset-bar";
-import type { RecentCombo } from "@/lib/recent-combos";
 import { PlanTableView } from "@/components/plan-table";
 import { CopyButton } from "@/components/copy-button";
 import { buttonStyles } from "@/lib/ui";
@@ -106,8 +104,6 @@ export function SurgeryPlanner({
   surgeryTypes,
   loggedIn,
   nameStyle,
-  presetsByType,
-  recentCombosByType,
   existingPatients,
   fixedPatient,
   patientNasalFindings,
@@ -118,8 +114,6 @@ export function SurgeryPlanner({
   surgeryTypes: SurgeryTypeOption[];
   loggedIn: boolean;
   nameStyle?: NameStyle;
-  presetsByType?: Record<string, PresetItem[]>;
-  recentCombosByType?: Record<string, RecentCombo[]>;
   existingPatients?: ExistingPatientOption[];
   fixedPatient?: { id: string; name: string };
   patientNasalFindings?: FieldValues;
@@ -175,8 +169,6 @@ export function SurgeryPlanner({
   }
 
   const selected = surgeryTypes.find((st) => st.id === selectedId);
-  const presets = selected ? presetsByType?.[selected.id] ?? [] : [];
-  const recentCombos = selected ? recentCombosByType?.[selected.id] ?? [] : [];
   const nasalFields = selected ? selected.fields.filter((f) => isNasalFindingKey(f.key)) : [];
   const procedureFields = selected ? selected.fields.filter((f) => !isNasalFindingKey(f.key)) : [];
   const { showSeptum, showSinus } = selected
@@ -281,8 +273,9 @@ export function SurgeryPlanner({
   const canSave = loggedIn;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <form ref={formRef} action={formAction} onChange={regenerateFromForm} className="space-y-4">
+    <form ref={formRef} action={formAction} onChange={regenerateFromForm}>
+      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="space-y-4">
         {fixedPatient && <input type="hidden" name="existingPatientId" value={fixedPatient.id} />}
 
         {fixedPatient && (
@@ -378,12 +371,28 @@ export function SurgeryPlanner({
                   </div>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">메모</label>
-                  <textarea
-                    name="memo"
-                    rows={2}
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-                  />
+                  <label className="mb-1 block text-sm font-medium text-slate-700">환자 상태</label>
+                  <div className="flex gap-4 text-sm">
+                    <label className="flex items-center gap-1.5">
+                      <input
+                        type="radio"
+                        name="planStatus"
+                        value="PLANNED"
+                        defaultChecked
+                        onChange={() => setView("pre")}
+                      />
+                      수술 전 환자
+                    </label>
+                    <label className="flex items-center gap-1.5">
+                      <input
+                        type="radio"
+                        name="planStatus"
+                        value="DONE"
+                        onChange={() => setView("post")}
+                      />
+                      수술 후 환자
+                    </label>
+                  </div>
                 </div>
               </>
             )}
@@ -422,32 +431,6 @@ export function SurgeryPlanner({
 
         {selected && (
           <div key={`${selected.id}-${templateKey}`} className="space-y-4">
-            {loggedIn && (
-              <PresetBar
-                surgeryTypeId={selected.id}
-                fields={selected.fields}
-                initialPresets={presets}
-                formRef={formRef}
-                onApply={applyCombo}
-              />
-            )}
-            {recentCombos.length > 0 && (
-              <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
-                <p className="mb-2 text-xs font-medium text-slate-500">최근 사용한 조합</p>
-                <div className="flex flex-wrap gap-2">
-                  {recentCombos.map((combo, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => applyCombo(combo.values)}
-                      className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 hover:border-emerald-400 hover:bg-emerald-50"
-                    >
-                      {combo.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
             {patientNasalFindings && Object.keys(patientNasalFindings).length > 0 && (
               <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3">
                 <p className="mb-2 text-xs font-medium text-emerald-700">
@@ -460,48 +443,6 @@ export function SurgeryPlanner({
                 >
                   저장된 비강 소견 불러오기
                 </button>
-              </div>
-            )}
-            {(showSeptum || showSinus) && (
-              <div className="space-y-1.5 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
-                <p className="text-xs font-medium text-slate-500">
-                  Revision case (재수술) — 해당하는 부위를 선택하세요
-                </p>
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium text-slate-700">
-                  {showSeptum && (
-                    <label className="flex items-center gap-1.5">
-                      <input
-                        type="checkbox"
-                        checked={templateValues?.f_revision_septo === true}
-                        onChange={(e) => toggleRevisionFlag("f_revision_septo", e)}
-                        className="h-4 w-4 rounded border-slate-300"
-                      />
-                      Septoturbinoplasty
-                    </label>
-                  )}
-                  {showSinus && (
-                    <>
-                      <label className="flex items-center gap-1.5">
-                        <input
-                          type="checkbox"
-                          checked={templateValues?.f_revision_ess_right === true}
-                          onChange={(e) => toggleRevisionFlag("f_revision_ess_right", e)}
-                          className="h-4 w-4 rounded border-slate-300"
-                        />
-                        Rt. ESS
-                      </label>
-                      <label className="flex items-center gap-1.5">
-                        <input
-                          type="checkbox"
-                          checked={templateValues?.f_revision_ess_left === true}
-                          onChange={(e) => toggleRevisionFlag("f_revision_ess_left", e)}
-                          className="h-4 w-4 rounded border-slate-300"
-                        />
-                        Lt. ESS
-                      </label>
-                    </>
-                  )}
-                </div>
               </div>
             )}
             <div className="flex gap-2 border-b border-slate-200 pb-3">
@@ -556,6 +497,48 @@ export function SurgeryPlanner({
                   ...ESS_FINDINGS_FIELD_KEYS,
                 ]}
               />
+              {(showSeptum || showSinus) && (
+                <div className="space-y-1.5 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+                  <p className="text-xs font-medium text-slate-500">
+                    이전 수술력 — 해당하는 부위를 선택하세요
+                  </p>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium text-slate-700">
+                    {showSeptum && (
+                      <label className="flex items-center gap-1.5">
+                        <input
+                          type="checkbox"
+                          checked={templateValues?.f_revision_septo === true}
+                          onChange={(e) => toggleRevisionFlag("f_revision_septo", e)}
+                          className="h-4 w-4 rounded border-slate-300"
+                        />
+                        Septoturbinoplasty
+                      </label>
+                    )}
+                    {showSinus && (
+                      <>
+                        <label className="flex items-center gap-1.5">
+                          <input
+                            type="checkbox"
+                            checked={templateValues?.f_revision_ess_right === true}
+                            onChange={(e) => toggleRevisionFlag("f_revision_ess_right", e)}
+                            className="h-4 w-4 rounded border-slate-300"
+                          />
+                          Rt. ESS
+                        </label>
+                        <label className="flex items-center gap-1.5">
+                          <input
+                            type="checkbox"
+                            checked={templateValues?.f_revision_ess_left === true}
+                            onChange={(e) => toggleRevisionFlag("f_revision_ess_left", e)}
+                            className="h-4 w-4 rounded border-slate-300"
+                          />
+                          Lt. ESS
+                        </label>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
             <div className={view === "post" ? "space-y-4" : "hidden"}>
               {showSinus && (
@@ -571,38 +554,7 @@ export function SurgeryPlanner({
           </div>
         )}
 
-        {selected && (
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">계획 메모</label>
-            <textarea
-              name="planNote"
-              rows={3}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-            />
-          </div>
-        )}
-
-        {state?.message && <p className="text-sm text-red-600">{state.message}</p>}
-        {state?.errors?.name && patientMode === "existing" && (
-          <p className="text-sm text-red-600">{state.errors.name[0]}</p>
-        )}
-
-        {canSave ? (
-          <button type="submit" disabled={pending} className={`w-full ${buttonStyles.primary}`}>
-            {pending
-              ? "저장 중..."
-              : editPlan
-                ? "저장"
-                : fixedPatient || patientMode === "existing"
-                  ? "계획 저장"
-                  : "환자 등록 + 계획 저장"}
-          </button>
-        ) : (
-          <button type="button" onClick={regenerateFromForm} className={`w-full ${buttonStyles.accentOutline}`}>
-            위 항목으로 미리보기 새로고침
-          </button>
-        )}
-      </form>
+      </div>
 
       <div className="space-y-4">
         {view === "pre" && (
@@ -650,6 +602,41 @@ export function SurgeryPlanner({
           )}
         </p>
       </div>
-    </div>
+      </div>
+
+      <div className="mt-6 space-y-3">
+        {selected && (
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">계획 메모</label>
+            <textarea
+              name="planNote"
+              rows={3}
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            />
+          </div>
+        )}
+
+        {state?.message && <p className="text-sm text-red-600">{state.message}</p>}
+        {state?.errors?.name && patientMode === "existing" && (
+          <p className="text-sm text-red-600">{state.errors.name[0]}</p>
+        )}
+
+        {canSave ? (
+          <button type="submit" disabled={pending} className={`w-full ${buttonStyles.primary}`}>
+            {pending
+              ? "저장 중..."
+              : editPlan
+                ? "저장"
+                : fixedPatient || patientMode === "existing"
+                  ? "계획 저장"
+                  : "환자 등록 + 계획 저장"}
+          </button>
+        ) : (
+          <button type="button" onClick={regenerateFromForm} className={`w-full ${buttonStyles.accentOutline}`}>
+            위 항목으로 미리보기 새로고침
+          </button>
+        )}
+      </div>
+    </form>
   );
 }

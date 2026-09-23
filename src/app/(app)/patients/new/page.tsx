@@ -2,8 +2,6 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
 import { parseFieldDefs } from "@/lib/field-types";
 import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
-import { getRecentCombosForSurgeryTypes } from "@/lib/recent-combos";
-import { getPresetsForSurgeryTypes } from "@/lib/presets";
 import { SurgeryPlanner, type ExistingPatientOption } from "@/components/surgery-planner";
 
 export default async function NewPatientPage() {
@@ -16,15 +14,6 @@ export default async function NewPatientPage() {
     sideNotation: user.sideNotation as SideNotation,
     abbreviateRegions: user.abbreviateRegions,
   };
-  const recentCombosByType = await getRecentCombosForSurgeryTypes(
-    user.id,
-    surgeryTypes.map((st) => ({ id: st.id, code: st.code })),
-    nameStyle,
-  );
-  const presetsByType = await getPresetsForSurgeryTypes(
-    user.id,
-    surgeryTypes.map((st) => st.id),
-  );
   const existingPatients: ExistingPatientOption[] = await prisma.patient.findMany({
     orderBy: { createdAt: "desc" },
     select: { id: true, name: true, chartNo: true },
@@ -45,8 +34,6 @@ export default async function NewPatientPage() {
         }))}
         loggedIn
         nameStyle={nameStyle}
-        recentCombosByType={recentCombosByType}
-        presetsByType={presetsByType}
         existingPatients={existingPatients}
       />
     </div>
