@@ -312,19 +312,16 @@ export function SurgeryPlanner({
   }
 
   // 비강 소견(부비동염/비용종)에서 체크하면 그 부비동의 Op Plan 시행 부위도
-  // 자동으로 이어서 제안한다 — 비강 소견 -> Op Plan -> 수술 방법 -> 수술
-  // 기록지까지 하나의 데이터(templateValues)로 이어져 있어서, applyCombo로
-  // 한 번에 반영하면 넷 다 같이 갱신된다. 켤 때만 제안하고 끌 때는 이미
-  // 계획해둔 시행 부위를 임의로 지우지 않는다.
+  // 자동으로 같이 켜지고, 체크 해제하면 같이 꺼진다 — 비강 소견 -> Op Plan
+  // -> 수술 방법 -> 수술 기록지까지 하나의 데이터(templateValues)로 이어져
+  // 있어서, applyCombo로 한 번에 반영하면 넷 다 같이 갱신된다.
   function toggleFindingWithCascade(fieldKey: string, cascadeMap: Record<string, string>) {
     if (!selected || !formRef.current) return;
     const current = fieldValuesFromFormData(new FormData(formRef.current), selected.fields);
     const next = !current[fieldKey];
     const updated: FieldValues = { ...current, [fieldKey]: next };
-    if (next) {
-      const fessKey = cascadeMap[fieldKey];
-      if (fessKey) updated[fessKey] = true;
-    }
+    const fessKey = cascadeMap[fieldKey];
+    if (fessKey) updated[fessKey] = next;
     applyCombo(updated);
   }
 
