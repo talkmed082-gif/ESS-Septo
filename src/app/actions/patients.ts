@@ -82,15 +82,15 @@ export async function updatePatient(
   _prevState: PatientFormState | undefined,
   formData: FormData,
 ): Promise<PatientFormState> {
-  await verifySession();
+  const session = await verifySession();
   const validated = parsePatientFormData(formData);
   if (!validated.success) {
     return { errors: z.flattenError(validated.error).fieldErrors };
   }
   const { name, chartNo, sex, age, memo } = validated.data;
 
-  await prisma.patient.update({
-    where: { id: patientId },
+  await prisma.patient.updateMany({
+    where: { id: patientId, createdById: session.userId },
     data: {
       name,
       chartNo: chartNo || null,
@@ -106,17 +106,17 @@ export async function updatePatient(
 }
 
 export async function deletePatient(patientId: string) {
-  await verifySession();
-  await prisma.patient.delete({ where: { id: patientId } });
+  const session = await verifySession();
+  await prisma.patient.deleteMany({ where: { id: patientId, createdById: session.userId } });
   revalidatePath("/patients");
   redirect("/patients");
 }
 
 export async function deletePatients(_prevState: unknown, formData: FormData) {
-  await verifySession();
+  const session = await verifySession();
   const ids = formData.getAll("ids").filter((v): v is string => typeof v === "string");
   if (ids.length > 0) {
-    await prisma.patient.deleteMany({ where: { id: { in: ids } } });
+    await prisma.patient.deleteMany({ where: { id: { in: ids }, createdById: session.userId } });
   }
   revalidatePath("/patients");
   redirect("/patients");

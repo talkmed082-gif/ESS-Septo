@@ -79,7 +79,7 @@ export async function createPatientWithPlan(
 
   let patientId: string;
   if (data.existingPatientId) {
-    const existing = await prisma.patient.findUnique({ where: { id: data.existingPatientId } });
+    const existing = await prisma.patient.findFirst({ where: { id: data.existingPatientId, createdById: session.userId } });
     if (!existing) return { message: "환자를 다시 선택하세요." };
     patientId = existing.id;
   } else {
