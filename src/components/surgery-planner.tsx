@@ -25,7 +25,6 @@ import { UncinateAttachmentFields } from "@/components/uncinate-attachment-field
 import { TurbinoplastyTypePicker, TURBINOPLASTY_FIELD_KEYS } from "@/components/turbinoplasty-type-picker";
 import { PlanTableView } from "@/components/plan-table";
 import { CopyButton } from "@/components/copy-button";
-import { TapDebug } from "@/components/tap-debug";
 import { buttonStyles } from "@/lib/ui";
 import {
   applyFieldDefaults,
@@ -481,7 +480,6 @@ export function SurgeryPlanner({
 
   return (
     <form ref={formRef} action={formAction} onChange={regenerateFromForm}>
-      <TapDebug />
       <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-4">
         {fixedPatient && <input type="hidden" name="existingPatientId" value={fixedPatient.id} />}
