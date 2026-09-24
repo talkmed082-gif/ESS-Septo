@@ -13,8 +13,8 @@ import { fessStepFieldKeys } from "@/lib/op-note-defs";
 // Frontal이 마지막인 실제 수술 순서)가 서로 달라 "뒤죽박죽"으로 보였다.
 const SINUS_STEP_LABELS: Record<(typeof fessStepFieldKeys)[number], string> = {
   mma: "Maxillary",
-  ant_eth: "Ant. Ethmoid",
-  post_eth: "Post. Ethmoid",
+  ant_eth: "Ant. ethmoid",
+  post_eth: "Post. ethmoid",
   sphenoid: "Sphenoid",
   frontal: "Frontal",
 };

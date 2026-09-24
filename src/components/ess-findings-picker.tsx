@@ -60,8 +60,8 @@ const ESS_RISK_FINDINGS: PresentSidedFinding[] = [
 // 순서(Maxillary → Ant. → Post. → Sphenoid → Frontal)로 통일한다.
 const SINUSITIS_TYPES = [
   { key: "maxillary", label: "Maxillary sinusitis" },
-  { key: "ant_ethmoid", label: "Ant. Ethmoid sinusitis" },
-  { key: "post_ethmoid", label: "Post. Ethmoid sinusitis" },
+  { key: "ant_ethmoid", label: "Ant. ethmoid sinusitis" },
+  { key: "post_ethmoid", label: "Post. ethmoid sinusitis" },
   { key: "sphenoid", label: "Sphenoid sinusitis" },
   { key: "frontal", label: "Frontal sinusitis" },
 ] as const;

@@ -295,7 +295,7 @@ describe("부비동염/비용종 소견 문구의 순서", () => {
     const order = lines(nasalFindingsText(all))
       .filter((l) => l.includes("sinusitis"))
       .map((l) => l.split(" sinusitis")[0]);
-    expect(order).toEqual(["Maxillary", "Ant. Ethmoid", "Post. Ethmoid", "Sphenoid", "Frontal"]);
+    expect(order).toEqual(["Maxillary", "Ant. ethmoid", "Post. ethmoid", "Sphenoid", "Frontal"]);
   });
 
   it("비용종 위치도 같은 순서(Middle meatus·Maxillary ostium이 먼저, Frontal은 뒤)로 쓴다", () => {

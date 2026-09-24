@@ -43,7 +43,7 @@ describe("부비동염 셀 연속 클릭", () => {
   it("화면이 다시 그려지기 전에 연달아 눌러도 모든 클릭이 반영된다", () => {
     const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
     act(() => {
-      sinusitisButtons(container)[4].click(); // Post. Ethmoid 우측
+      sinusitisButtons(container)[4].click(); // Post. ethmoid 우측
       sinusitisButtons(container)[6].click(); // Maxillary 우측
     });
     expect(sinusitisState(container)).toBe("0000101000");
@@ -79,14 +79,14 @@ describe("부비동염 셀 연속 클릭", () => {
 
   it("교체 없이 바뀐 값이 Op Plan 표와 저장될 폼 값에도 반영된다", () => {
     const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
-    fireEvent.click(sinusitisButtons(container)[4]); // Post. Ethmoid 우측
+    fireEvent.click(sinusitisButtons(container)[4]); // Post. ethmoid 우측
     const form = container.querySelector("form") as HTMLFormElement;
     const hidden = (name: string) => form.elements.namedItem(`field_${name}`) as HTMLInputElement;
     expect(hidden("n_sinusitis_post_ethmoid_right").checked).toBe(true);
     expect(hidden("f_right_post_eth").checked).toBe(true);
     const fessTable = Array.from(container.querySelectorAll("table")).find((t) => t.textContent?.includes("FESS 시행"));
     expect(fessTable?.textContent).toContain("Post. ethmoidectomy");
-    expect(container.textContent).toContain("Post. Ethmoid sinusitis: 우측");
+    expect(container.textContent).toContain("Post. ethmoid sinusitis: 우측");
     fireEvent.click(sinusitisButtons(container)[4]); // 다시 눌러 해제
     expect(hidden("n_sinusitis_post_ethmoid_right").checked).toBe(false);
     expect(hidden("f_right_post_eth").checked).toBe(false);
@@ -94,10 +94,10 @@ describe("부비동염 셀 연속 클릭", () => {
 
   it("수술 후 화면의 모식도도 소견에서 켠 부위를 그대로 보여준다", () => {
     const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
-    fireEvent.click(sinusitisButtons(container)[4]); // Post. Ethmoid 우측
+    fireEvent.click(sinusitisButtons(container)[4]); // Post. ethmoid 우측
     fireEvent.click(byText(container, "수술 후 (수술 방법 · 기록지)")); // 모식도는 수술 후 화면에서만 그린다
-    expect(postCell(container, "Post. Ethmoid", "right").className).toContain("emerald");
-    expect(postCell(container, "Post. Ethmoid", "left").className).not.toContain("emerald");
+    expect(postCell(container, "Post. ethmoid", "right").className).toContain("emerald");
+    expect(postCell(container, "Post. ethmoid", "left").className).not.toContain("emerald");
   });
 
   it("Op Plan 표의 셀을 눌러도 교체 없이 소견 폼 값이 바뀐다", () => {
@@ -118,7 +118,7 @@ describe("부비동염 셀 연속 클릭", () => {
   it("수술 후 화면에서 고른 부위가 수술 전 화면으로 돌아와도 유지된다", () => {
     const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
     fireEvent.click(byText(container, "수술 후 (수술 방법 · 기록지)"));
-    fireEvent.click(postCell(container, "Post. Ethmoid", "right"));
+    fireEvent.click(postCell(container, "Post. ethmoid", "right"));
     fireEvent.click(byText(container, "수술 전 (비강 소견 · Op Plan)"));
     const form = container.querySelector("form") as HTMLFormElement;
     expect((form.elements.namedItem("field_f_right_post_eth") as HTMLInputElement).checked).toBe(true);
@@ -269,7 +269,7 @@ function rowLabels(table: HTMLTableElement | undefined): string[] {
 }
 
 describe("부비동 표 순서·모양 통일", () => {
-  const SURGICAL = ["Maxillary", "Ant. Ethmoid", "Post. Ethmoid", "Sphenoid", "Frontal"];
+  const SURGICAL = ["Maxillary", "Ant. ethmoid", "Post. ethmoid", "Sphenoid", "Frontal"];
 
   it("부비동염 표, Op Plan 시행 부위 표, 수술 후 ESS 시행 부위 표가 같은 순서다", () => {
     const { container } = render(<SurgeryPlanner surgeryTypes={allTypes} loggedIn />);
@@ -310,7 +310,7 @@ describe("부비동 표 순서·모양 통일", () => {
   it("수술 후 표의 셀을 눌러도 폼 값이 바뀌고 수술 전 표에도 반영된다", () => {
     const { container } = render(<SurgeryPlanner surgeryTypes={allTypes} loggedIn />);
     fireEvent.click(byText(container, "수술 후 (수술 방법 · 기록지)"));
-    const row = Array.from(tableByTitle(container, "ESS 시행 부위")!.querySelectorAll("tbody tr"))[2]; // Post. Ethmoid
+    const row = Array.from(tableByTitle(container, "ESS 시행 부위")!.querySelectorAll("tbody tr"))[2]; // Post. ethmoid
     fireEvent.click(row.querySelectorAll("button")[0]); // 우측
     const form = container.querySelector("form") as HTMLFormElement;
     expect((form.elements.namedItem("field_f_right_post_eth") as HTMLInputElement).checked).toBe(true);

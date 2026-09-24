@@ -278,8 +278,8 @@ export function nasalFindingsText(values: FieldValues): string {
 
 const SINUSITIS_TYPES = [
   { key: "maxillary", label: "Maxillary sinusitis" },
-  { key: "ant_ethmoid", label: "Ant. Ethmoid sinusitis" },
-  { key: "post_ethmoid", label: "Post. Ethmoid sinusitis" },
+  { key: "ant_ethmoid", label: "Ant. ethmoid sinusitis" },
+  { key: "post_ethmoid", label: "Post. ethmoid sinusitis" },
   { key: "sphenoid", label: "Sphenoid sinusitis" },
   { key: "frontal", label: "Frontal sinusitis" },
 ] as const;
