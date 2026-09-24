@@ -5,7 +5,7 @@ import { act, cleanup, fireEvent, render } from "@testing-library/react";
 vi.mock("@/app/actions/patient-plan", () => ({ createPatientWithPlan: vi.fn() }));
 
 import { SurgeryPlanner } from "./surgery-planner";
-import { essFullFields } from "@/lib/op-note-defs";
+import { comboFullFields, essFullFields, septoplastyFullFields } from "@/lib/op-note-defs";
 
 const types = [{ id: "1", code: "ESS", name: "ESS", fields: essFullFields }];
 
@@ -162,3 +162,95 @@ describe("부비동염 셀 연속 클릭", () => {
     expect((form.elements.namedItem("field_n_sinusitis_post_ethmoid_right") as HTMLInputElement).checked).toBe(false);
   });
 });
+
+const allTypes = [
+  { id: "1", code: "ESS", name: "ESS", fields: essFullFields },
+  { id: "2", code: "SEPTOPLASTY", name: "Septo", fields: septoplastyFullFields },
+  { id: "3", code: "COMBO", name: "Combo", fields: comboFullFields },
+];
+
+function dsn(container: HTMLElement, kind: "side" | "degree", value: string): HTMLButtonElement {
+  return container.querySelector(`[data-dsn="${kind}:${value}"]`) as HTMLButtonElement;
+}
+
+function openAnatomic(container: HTMLElement) {
+  const box = Array.from(container.querySelectorAll("label")).find((l) => l.textContent?.includes("해부학적 이상 소견"))!.querySelector("input") as HTMLInputElement;
+  if (!box.checked) fireEvent.click(box);
+}
+
+function fieldEls(container: HTMLElement, key: string): (HTMLInputElement | HTMLSelectElement)[] {
+  return Array.from(container.querySelectorAll(`[name="field_${key}"]`));
+}
+
+describe("상단 수술 종류 체크박스 순서", () => {
+  it("ESS가 왼쪽(먼저), Septo가 오른쪽(나중)에 있다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={allTypes} loggedIn />);
+    const labels = Array.from(container.querySelectorAll("label")).map((l) => l.textContent?.trim());
+    expect(labels.indexOf("ESS")).toBeGreaterThan(-1);
+    expect(labels.indexOf("ESS")).toBeLessThan(labels.indexOf("Septo"));
+  });
+});
+
+describe("ESS 해부학적 이상 소견의 DSN", () => {
+  it("ESS에서 방향과 정도를 고르면 폼 값과 요약에 반영된다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={allTypes} loggedIn />);
+    openAnatomic(container);
+    fireEvent.click(dsn(container, "side", "좌측"));
+    fireEvent.click(dsn(container, "degree", "중등도"));
+    expect(fieldEls(container, "n_dev_side")[0].value).toBe("좌측");
+    expect(fieldEls(container, "n_deviation")[0].value).toBe("중등도");
+    expect(container.textContent).toContain("DSN 좌측 중등도");
+    expect(dsn(container, "side", "좌측").className).toContain("emerald");
+  });
+
+  it("고른 값을 다시 누르면 기본값(없음)으로 돌아간다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={allTypes} loggedIn />);
+    openAnatomic(container);
+    fireEvent.click(dsn(container, "side", "우측"));
+    fireEvent.click(dsn(container, "side", "우측"));
+    expect(fieldEls(container, "n_dev_side")[0].value).toBe("특이 만곡 없음");
+  });
+
+  it("ESS 소견 폼에 비중격 만곡 방향 select가 따로 노출되지 않는다(숨은 입력만)", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={allTypes} loggedIn />);
+    const visible = fieldEls(container, "n_dev_side").filter((el) => !el.className.includes("hidden"));
+    expect(visible).toHaveLength(0);
+  });
+});
+
+describe("병행: Septo DSN과 ESS DSN 연동", () => {
+  const renderCombo = () => {
+    const utils = render(<SurgeryPlanner surgeryTypes={allTypes} loggedIn />);
+    // 상단 체크박스로 Septo도 함께 선택 → 병행
+    const septo = Array.from(utils.container.querySelectorAll("label")).find((l) => l.textContent?.trim() === "Septo")!.querySelector("input") as HTMLInputElement;
+    fireEvent.click(septo);
+    openAnatomic(utils.container);
+    return utils;
+  };
+
+  it("ESS의 DSN 방향을 바꾸면 Septo 모식도가 따라 바뀐다", () => {
+    const { container } = renderCombo();
+    fireEvent.click(dsn(container, "side", "양측(C자형)"));
+    const cShape = Array.from(container.querySelectorAll("button")).find((b) => b.textContent?.trim() === "양측(C자형)" && !b.hasAttribute("data-dsn")) as HTMLButtonElement;
+    expect(cShape.className).toContain("emerald");
+  });
+
+  it("Septo 모식도에서 방향을 바꾸면 ESS의 DSN 행이 따라 바뀐다", () => {
+    const { container } = renderCombo();
+    const cShape = Array.from(container.querySelectorAll("button")).find((b) => b.textContent?.trim() === "양측(C자형)" && !b.hasAttribute("data-dsn")) as HTMLButtonElement;
+    fireEvent.click(cShape);
+    expect(dsn(container, "side", "양측(C자형)").className).toContain("emerald");
+  });
+
+  it("ESS에서 정도를 고르면 Septo의 정도 select도 바뀌고, 반대로도 따라간다", () => {
+    const { container } = renderCombo();
+    fireEvent.click(dsn(container, "degree", "경도"));
+    for (const el of fieldEls(container, "n_deviation")) expect(el.value).toBe("경도");
+    const visibleSelect = fieldEls(container, "n_deviation").find((el) => !el.className.includes("hidden")) as HTMLSelectElement;
+    visibleSelect.value = "고도";
+    fireEvent.change(visibleSelect);
+    expect(dsn(container, "degree", "고도").className).toContain("emerald");
+    expect(dsn(container, "degree", "경도").className).not.toContain("emerald");
+  });
+});
+

@@ -5,6 +5,16 @@ import { useRef, useState } from "react";
 import type { FieldValues } from "@/lib/field-types";
 import type { PlanSideMatrixRow } from "@/lib/op-note-generator";
 import { SideMatrixTable } from "@/components/plan-table";
+import {
+  DSN_DEGREES,
+  DSN_NO_DEGREE,
+  DSN_NO_SIDE,
+  DSN_SIDES,
+  readDsn,
+  useDsnSync,
+  writeDsn,
+  type DsnKind,
+} from "@/components/dsn-sync";
 
 const SIDE_OPTIONS = ["우측", "양측", "좌측"] as const;
 
@@ -84,11 +94,13 @@ function PresentSidedGroup({
   findings,
   values,
   onChange,
+  header,
 }: {
   title: string;
   findings: PresentSidedFinding[];
   values?: FieldValues;
   onChange?: () => void;
+  header?: React.ReactNode;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<Record<string, { present: boolean; side: string }>>(() => {
@@ -128,6 +140,7 @@ function PresentSidedGroup({
   return (
     <div ref={rootRef} className="rounded-md border border-slate-200 p-3">
       <p className="mb-2 text-xs font-medium text-slate-600">{title}</p>
+      {header}
       <div className="space-y-2">
         {findings.map((f) => {
           const entry = state[f.presentKey];
@@ -167,6 +180,62 @@ function PresentSidedGroup({
   );
 }
 
+const DSN_SIDE_LABEL: Record<string, string> = { [DSN_NO_SIDE]: "없음", "양측(C자형)": "양측(C)" };
+const DSN_DEGREE_LABEL: Record<string, string> = { [DSN_NO_DEGREE]: "없음" };
+
+// DSN(비중격 만곡) — Septoturbinoplasty의 비중격 편위 방향/정도와 같은 값을 쓰는
+// 연동 행. 여기서는 방향과 정도만 고른다(천공·특이사항 등은 Septo 쪽에서 입력).
+function DsnRow({ values, onChange }: { values?: FieldValues; onChange?: () => void }) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [state, setState] = useState<{ side: string; degree: string }>(() => ({
+    side: typeof values?.n_dev_side === "string" && values.n_dev_side ? values.n_dev_side : DSN_NO_SIDE,
+    degree: typeof values?.n_deviation === "string" && values.n_deviation ? values.n_deviation : DSN_NO_DEGREE,
+  }));
+
+  useDsnSync(rootRef, () => setState(readDsn(rootRef.current?.closest("form") ?? null)));
+
+  function pick(kind: DsnKind, value: string, none: string) {
+    const current = kind === "side" ? state.side : state.degree;
+    // 이미 고른 값을 다시 누르면 기본값(없음)으로 되돌린다.
+    const next = current === value ? none : value;
+    writeDsn(rootRef.current?.closest("form") ?? null, kind, next);
+    setState((s) => ({ ...s, [kind]: next }));
+    onChange?.();
+  }
+
+  const pill = (kind: DsnKind, value: string, label: string, none: string) => {
+    const active = (kind === "side" ? state.side : state.degree) === value;
+    return (
+      <TapButton
+        key={value}
+        data-dsn={`${kind}:${value}`}
+        onTap={() => pick(kind, value, none)}
+        className={`rounded-full border px-3 py-2 text-xs ${
+          active
+            ? "border-emerald-600 bg-emerald-600 text-white"
+            : "border-slate-300 text-slate-600 hover:bg-slate-50"
+        }`}
+      >
+        {label}
+      </TapButton>
+    );
+  };
+
+  return (
+    <div ref={rootRef} className="mb-3 space-y-1.5 rounded-md bg-slate-50 p-2">
+      <p className="text-sm font-medium text-slate-700">DSN (비중격 만곡)</p>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="w-8 text-xs text-slate-500">방향</span>
+        {DSN_SIDES.map((v) => pill("side", v, DSN_SIDE_LABEL[v] ?? v, DSN_NO_SIDE))}
+      </div>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="w-8 text-xs text-slate-500">정도</span>
+        {DSN_DEGREES.map((v) => pill("degree", v, DSN_DEGREE_LABEL[v] ?? v, DSN_NO_DEGREE))}
+      </div>
+    </div>
+  );
+}
+
 export function AnatomicRiskFindingsPicker({
   values,
   onChange,
@@ -180,6 +249,7 @@ export function AnatomicRiskFindingsPicker({
       findings={ESS_RISK_FINDINGS}
       values={values}
       onChange={onChange}
+      header={<DsnRow values={values} onChange={onChange} />}
     />
   );
 }

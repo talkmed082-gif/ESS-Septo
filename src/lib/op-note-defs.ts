@@ -62,6 +62,16 @@ export const septumTurbinateFindingFields: SurgeryFieldDef[] = [
   },
 ];
 
+// DSN(Deviated nasal septum, 비중격 만곡)의 방향/정도 — 비중격교정술의 비강 소견과
+// ESS의 해부학적 이상 소견이 같은 값을 공유한다(한쪽에서 바꾸면 다른 쪽도 바뀜).
+// ESS 단독은 Septoturbinoplasty P/E 그룹을 갖지 않지만 이 두 필드만은 갖는다.
+export const DSN_SIDE_KEY = "n_dev_side";
+export const DSN_DEGREE_KEY = "n_deviation";
+export const DSN_FIELD_KEYS = [DSN_SIDE_KEY, DSN_DEGREE_KEY];
+export const dsnFields: SurgeryFieldDef[] = septumTurbinateFindingFields.filter((f) =>
+  DSN_FIELD_KEYS.includes(f.key),
+);
+
 // SeptumDiagram과 한 화면에 묶어서 보여줄 비중격 상세 필드 — 방향(n_dev_side)은
 // 모식도가 담당하고, 나머지는 모식도 바로 아래 이어서 보여준다.
 export const SEPTUM_DETAIL_FIELD_KEYS = ["n_deviation", "n_septal_perforation", "n_septum_note", "n_chr"];
@@ -332,7 +342,7 @@ function withDefaults(fields: SurgeryFieldDef[], overrides: Record<string, strin
 // 비중격도 같이 하므로 nasalFindingFields(두 그룹 다)를 그대로 쓴다.
 // ESS 수술명에는 항상 "ESS"가 들어가므로 ESS P/E도 기본으로 체크해둔다.
 export const essFullFields: SurgeryFieldDef[] = withDefaults(
-  [...essFindingFields, ...turbinoplastyFields, ...fessFields],
+  [...essFindingFields, ...dsnFields, ...turbinoplastyFields, ...fessFields],
   { [ESS_PE_DONE_KEY]: "true" },
 );
 // 비중격교정술은 하비갑개 비후(CHR)를 양측에 동반하는 경우가 대부분이고,

@@ -250,3 +250,41 @@ describe("buildPlanTable", () => {
     expect(table.keyValueRows.find((r) => r.label === "Packing / Material")?.value).toBe("Nasocel + Dermacol");
   });
 });
+
+describe("ESS의 DSN(비중격 만곡) 소견", () => {
+  const ess = { n_ess_pe_done: true, n_uncinate_left: "LP", n_uncinate_right: "LP" };
+
+  it("ESS만 기록할 때는 UP attach 다음, Concha bullosa 앞에 DSN 방향/정도를 쓴다", () => {
+    const text = nasalFindingsText({ ...ess, n_dev_side: "좌측", n_deviation: "중등도" });
+    expect(lines(text).slice(0, 3)).toEqual(["UP attach: 양측 LP", "DSN: 좌측 중등도", "Concha bullosa 없음"]);
+  });
+
+  it("방향만 또는 정도만 있어도 있는 것만 쓴다", () => {
+    expect(nasalFindingsText({ ...ess, n_dev_side: "우측" })).toContain("DSN: 우측");
+    expect(nasalFindingsText({ ...ess, n_deviation: "고도" })).toContain("DSN: 고도");
+  });
+
+  it("기본값(특이 만곡 없음/해당없음)이면 DSN 줄을 쓰지 않는다", () => {
+    const text = nasalFindingsText({ ...ess, n_dev_side: "특이 만곡 없음", n_deviation: "해당없음" });
+    expect(text).not.toContain("DSN");
+  });
+
+  it("요약에도 의미 있는 DSN만 넣는다", () => {
+    expect(nasalFindingsSummary({ ...ess, n_dev_side: "양측(C자형)", n_deviation: "경도" })).toContain("DSN 양측(C자형) 경도");
+    expect(nasalFindingsSummary({ ...ess, n_dev_side: "특이 만곡 없음", n_deviation: "해당없음" })).not.toContain("DSN");
+  });
+
+  it("Septo 소견도 함께 기록하면 기존 '비중격' 줄만 쓰고 DSN을 중복해서 쓰지 않는다", () => {
+    const both = { ...ess, n_septo_pe_done: true, n_dev_side: "좌측", n_deviation: "중등도" };
+    const text = nasalFindingsText(both);
+    expect(text).toContain("비중격: 좌측 중등도 편위");
+    expect(text).not.toContain("DSN");
+    expect(nasalFindingsSummary(both)).not.toContain("DSN");
+  });
+
+  it("병행이라도 Septo P/E를 안 했으면 ESS 쪽에서 DSN을 쓴다", () => {
+    const text = nasalFindingsText({ ...ess, n_septo_pe_done: false, n_dev_side: "우측", n_deviation: "경도" });
+    expect(text).toContain("DSN: 우측 경도");
+  });
+});
+

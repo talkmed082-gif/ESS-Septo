@@ -11,14 +11,17 @@ export function TapButton({
   onTap,
   className = "",
   children,
+  ...dataAttrs
 }: {
   onTap: () => void;
   className?: string;
   children: ReactNode;
+  // 테스트/스타일 훅용 data-* 속성
+  [key: `data-${string}`]: string | undefined;
 }) {
   const tap = useTap(onTap);
   return (
-    <button type="button" {...tap} className={`touch-manipulation active:brightness-90 ${className}`}>
+    <button type="button" {...dataAttrs} {...tap} className={`touch-manipulation active:brightness-90 ${className}`}>
       {children}
     </button>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { TapButton } from "@/components/tap-button";
+import { readDsn, useDsnSync, writeDsn } from "@/components/dsn-sync";
 import { useRef, useState } from "react";
 import type { FieldValues } from "@/lib/field-types";
 import { fessStepFieldKeys } from "@/lib/op-note-defs";
@@ -96,11 +97,13 @@ export function SeptumDiagram({
     // requestAnimationFrame으로 다음 페인트 이후에 미뤘더니, onChange가
     // 그보다 먼저 실행되어 미리보기가 한 클릭씩 뒤처지는 문제가 있었다.
     const form = findForm(rootRef.current);
-    const el = getInput(form, "field_n_dev_side");
-    if (el) el.value = value;
+    writeDsn(form, "side", value);
     setSide(value);
     onChange?.();
   }
+
+  // ESS의 DSN 행이나 다른 곳에서 방향을 바꾸면 이 모식도도 따라간다.
+  useDsnSync(rootRef, () => setSide(readDsn(findForm(rootRef.current)).side));
 
   const zone = (label: string, value: string, x: number) => {
     const active = side === value || (value !== "특이 만곡 없음" && side === "양측(C자형)");
