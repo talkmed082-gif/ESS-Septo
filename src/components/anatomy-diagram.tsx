@@ -1,5 +1,6 @@
 "use client";
 
+import { TapButton } from "@/components/tap-button";
 import { useRef, useState } from "react";
 import type { FieldValues } from "@/lib/field-types";
 import { fessStepFieldKeys } from "@/lib/op-note-defs";
@@ -197,6 +198,8 @@ export function SinusDiagram({
   if (values !== prevValues) {
     setPrevValues(values);
     setChecked(sinusCheckedFromValues(values));
+    setRevisionRight(values?.f_revision_ess_right === true);
+    setRevisionLeft(values?.f_revision_ess_left === true);
   }
 
   function toggle(prefix: "f_left_" | "f_right_", key: string) {
@@ -261,33 +264,31 @@ export function SinusDiagram({
       <span className="text-xs font-medium text-slate-600">{label}</span>
       <div className="flex flex-col gap-2">
         {(prefix === "f_right_" ? revisionRight : revisionLeft) && (
-          <button
-            type="button"
-            onClick={() => toggle(prefix, "uncinectomy")}
-            className={`min-h-[44px] w-28 touch-manipulation rounded-md border px-3 py-2.5 text-xs leading-tight select-none active:scale-95 ${
+          <TapButton
+            onTap={() => toggle(prefix, "uncinectomy")}
+            className={`min-h-[44px] w-28 rounded-md border px-3 py-2.5 text-xs leading-tight select-none ${
               checked[`${prefix}uncinectomy`]
                 ? "border-emerald-600 bg-emerald-600 text-white"
                 : "border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100"
             }`}
           >
             Uncinectomy
-          </button>
+          </TapButton>
         )}
         {SINUS_STEPS.map((s) => {
           const active = checked[`${prefix}${s.key}`];
           return (
-            <button
-              type="button"
+            <TapButton
               key={s.key}
-              onClick={() => toggle(prefix, s.key)}
-              className={`min-h-[44px] w-28 touch-manipulation rounded-md border px-3 py-2.5 text-xs leading-tight select-none active:scale-95 ${
+              onTap={() => toggle(prefix, s.key)}
+              className={`min-h-[44px] w-28 rounded-md border px-3 py-2.5 text-xs leading-tight select-none ${
                 active
                   ? "border-emerald-600 bg-emerald-600 text-white"
                   : "border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100"
               }`}
             >
               {s.label}
-            </button>
+            </TapButton>
           );
         })}
       </div>
@@ -324,12 +325,12 @@ export function SinusDiagram({
         </div>
       )}
       <div className="mb-2 flex justify-center gap-2">
-        <button type="button" onClick={() => copyToOtherSide("f_right_")} className={buttonStyles.pill}>
+        <TapButton onTap={() => copyToOtherSide("f_right_")} className={buttonStyles.pill}>
           우→좌 동일
-        </button>
-        <button type="button" onClick={() => copyToOtherSide("f_left_")} className={buttonStyles.pill}>
+        </TapButton>
+        <TapButton onTap={() => copyToOtherSide("f_left_")} className={buttonStyles.pill}>
           좌→우 동일
-        </button>
+        </TapButton>
       </div>
       <div className="flex items-start justify-center gap-8">
         {column("f_right_", "우측 (Rt.)")}

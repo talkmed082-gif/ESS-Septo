@@ -307,6 +307,19 @@ export function SurgeryPlanner({
   // 버블링되는데, 그건 방금 바뀐 날짜 state를 아직 못 본 채로
   // regenerateFromForm이 실행돼(리렌더 전) 미리보기가 한 박자 늦게 바뀐다 —
   // 버블링을 막고 새 날짜를 직접 넘겨서 바로 반영한다.
+  // 수술 전/후 화면은 보이는 쪽의 입력만 그린다(안 보이는 쪽까지 탭마다 다시 그리지
+  // 않도록). 그래서 화면을 바꿀 때 폼의 최신 값을 읽어서 새로 그려지는 쪽에 넘긴다.
+  function changeView(next: "pre" | "post") {
+    if (next !== view) {
+      const current = readCurrentValues();
+      if (current) {
+        setTemplateValues(current);
+        setTexts(computeTexts(current));
+      }
+    }
+    setView(next);
+  }
+
   function handleSurgeryDateChange(e: ChangeEvent<HTMLInputElement>) {
     e.stopPropagation();
     const next = e.target.value;
@@ -354,11 +367,9 @@ export function SurgeryPlanner({
   function setFindingGroupOpen(clearKeys: string[], open: boolean, setOpen: (v: boolean) => void) {
     setOpen(open);
     if (open || !selected || !formRef.current) return;
-    const current = readCurrentValues();
-    if (!current) return;
-    const updated: FieldValues = { ...current };
-    for (const key of clearKeys) updated[key] = false;
-    applyCombo(updated);
+    const patch: Record<string, boolean> = {};
+    for (const key of clearKeys) patch[key] = false;
+    patchFieldValues(patch);
   }
 
   function applyPatientNasalFindings() {
@@ -398,11 +409,11 @@ export function SurgeryPlanner({
     const to = from === "f_left_" ? "f_right_" : "f_left_";
     const current = readCurrentValues();
     if (!current) return;
-    const updated: FieldValues = { ...current };
+    const patch: Record<string, boolean> = {};
     for (const row of planTable.sideMatrix.rows) {
-      updated[`${to}${row.key}`] = current[`${from}${row.key}`];
+      patch[`${to}${row.key}`] = current[`${from}${row.key}`] === true;
     }
-    applyCombo(updated);
+    patchFieldValues(patch);
   }
 
   // Revision case(재수술)를 "수술 방법" 탭 안 모식도까지 들어가야만 보이던
@@ -427,10 +438,10 @@ export function SurgeryPlanner({
     const current = readCurrentValues();
     if (!current) return;
     const next = !(current[key] === true);
-    const updated: FieldValues = { ...current, [key]: next };
-    if (next && key === "f_revision_ess_right") updated.f_right_uncinectomy = true;
-    if (next && key === "f_revision_ess_left") updated.f_left_uncinectomy = true;
-    applyCombo(updated);
+    const patch: Record<string, boolean> = { [key]: next };
+    if (next && key === "f_revision_ess_right") patch.f_right_uncinectomy = true;
+    if (next && key === "f_revision_ess_left") patch.f_left_uncinectomy = true;
+    patchFieldValues(patch);
   }
 
   function handleSurgeryTypeChange(id: string, e?: ChangeEvent<HTMLSelectElement | HTMLInputElement>) {
@@ -495,11 +506,11 @@ export function SurgeryPlanner({
           {showPatientSection && (
             <div className="flex items-center gap-3">
               <label className="flex items-center gap-1.5">
-                <input type="radio" name="planStatus" value="PLANNED" defaultChecked onChange={() => setView("pre")} />
+                <input type="radio" name="planStatus" value="PLANNED" defaultChecked onChange={() => changeView("pre")} />
                 수술 전
               </label>
               <label className="flex items-center gap-1.5">
-                <input type="radio" name="planStatus" value="DONE" onChange={() => setView("post")} />
+                <input type="radio" name="planStatus" value="DONE" onChange={() => changeView("post")} />
                 수술 후
               </label>
             </div>
@@ -613,10 +624,10 @@ export function SurgeryPlanner({
               </div>
             )}
             <div className="flex gap-2 border-b border-slate-200 pb-3">
-              <button type="button" onClick={() => setView("pre")} className={viewButtonClass(view === "pre")}>
+              <button type="button" onClick={() => changeView("pre")} className={viewButtonClass(view === "pre")}>
                 수술 전 (비강 소견 · Op Plan)
               </button>
-              <button type="button" onClick={() => setView("post")} className={viewButtonClass(view === "post")}>
+              <button type="button" onClick={() => changeView("post")} className={viewButtonClass(view === "post")}>
                 수술 후 (수술 방법 · 기록지)
               </button>
             </div>
@@ -637,27 +648,29 @@ export function SurgeryPlanner({
                     values={templateValues}
                     onChange={regenerateFromForm}
                   />
-                  <NasalFindingsOverview
-                    showAnatomic={showAnatomicFindings}
-                    showSinusitis={showSinusitisFindings}
-                    showPolyp={showPolypFindings}
-                    onToggleAnatomic={(v) => setFindingGroupOpen(ANATOMIC_RISK_PRESENT_KEYS, v, setShowAnatomicFindings)}
-                    onToggleSinusitis={(v) => setFindingGroupOpen(SINUSITIS_PRESENT_KEYS, v, setShowSinusitisFindings)}
-                    onTogglePolyp={(v) => setFindingGroupOpen(POLYP_FIELD_KEYS, v, setShowPolypFindings)}
-                  />
-                  {showSinusitisFindings && (
+                  {view === "pre" && (
+                    <NasalFindingsOverview
+                      showAnatomic={showAnatomicFindings}
+                      showSinusitis={showSinusitisFindings}
+                      showPolyp={showPolypFindings}
+                      onToggleAnatomic={(v) => setFindingGroupOpen(ANATOMIC_RISK_PRESENT_KEYS, v, setShowAnatomicFindings)}
+                      onToggleSinusitis={(v) => setFindingGroupOpen(SINUSITIS_PRESENT_KEYS, v, setShowSinusitisFindings)}
+                      onTogglePolyp={(v) => setFindingGroupOpen(POLYP_FIELD_KEYS, v, setShowPolypFindings)}
+                    />
+                  )}
+                  {view === "pre" && showSinusitisFindings && (
                     <SinusitisFindingsPicker
                       values={templateValues}
                       onToggle={(key) => toggleFindingWithCascade(key, SINUSITIS_TO_FESS_FIELD)}
                     />
                   )}
-                  {showPolypFindings && (
+                  {view === "pre" && showPolypFindings && (
                     <PolypPicker
                       values={templateValues}
                       onToggle={(key) => toggleFindingWithCascade(key, POLYP_TO_FESS_FIELD)}
                     />
                   )}
-                  {showAnatomicFindings && (
+                  {view === "pre" && showAnatomicFindings && (
                     <AnatomicRiskFindingsPicker values={templateValues} onChange={regenerateFromForm} />
                   )}
                 </CollapsibleFindingSection>
@@ -742,10 +755,10 @@ export function SurgeryPlanner({
                 fields={selected.fields.filter((f) => f.key === "f_nav")}
                 values={templateValues}
               />
-              {showSinus && (
+              {view === "post" && showSinus && (
                 <SinusDiagram values={templateValues} onChange={regenerateFromForm} hideRevisionToggle />
               )}
-              {selected.code !== "SEPTOPLASTY" && (
+              {view === "post" && selected.code !== "SEPTOPLASTY" && (
                 <TurbinoplastyTypePicker values={templateValues} onChange={regenerateFromForm} />
               )}
               {selected.fields.some((f) => POST_OP_FINISH_KEYS.includes(f.key)) && (
@@ -771,7 +784,7 @@ export function SurgeryPlanner({
               />
               {/* Septoturbinoplasty는 기본이 양측 시행이라 좌우 복사 버튼이 불필요하고,
                   수술 순서상으로도 비중격 처치 다음에 하는 것이라 맨 아래에 둔다. */}
-              {selected.code === "SEPTOPLASTY" && (
+              {view === "post" && selected.code === "SEPTOPLASTY" && (
                 <TurbinoplastyTypePicker values={templateValues} onChange={regenerateFromForm} hideCopyButtons />
               )}
             </div>

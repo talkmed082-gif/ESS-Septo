@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { FieldValues, SurgeryFieldDef } from "@/lib/field-types";
 
 function multiselectValues(value: string | boolean | undefined, field: SurgeryFieldDef): string[] {
@@ -72,7 +73,7 @@ function HiddenFieldInput({
   );
 }
 
-export function SurgeryFieldInputs({
+function SurgeryFieldInputsImpl({
   fields,
   values,
   excludeKeys,
@@ -196,3 +197,24 @@ export function SurgeryFieldInputs({
     </>
   );
 }
+
+function sameKeys(a: { key: string }[] | undefined, b: { key: string }[] | undefined): boolean {
+  if (a === b) return true;
+  if (!a || !b || a.length !== b.length) return false;
+  return a.every((f, i) => f.key === b[i].key);
+}
+
+function sameStrings(a: string[] | undefined, b: string[] | undefined): boolean {
+  if (a === b) return true;
+  if (!a || !b || a.length !== b.length) return false;
+  return a.every((v, i) => v === b[i]);
+}
+
+// 이 입력들은 값을 defaultChecked/defaultValue로만 쓰는 비제어 입력이라, 마운트
+// 이후에 values가 바뀌어도 화면이 달라지지 않는다(값이 바뀌면 부모가 key를 바꿔
+// 새로 마운트한다). 그래서 values 변화로는 다시 그리지 않고, 필드 구성이 실제로
+// 달라졌을 때만 다시 그린다 — 셀을 누를 때마다 수십 개 입력을 헛되이 다시 그리던
+// 비용을 없앤다.
+export const SurgeryFieldInputs = memo(SurgeryFieldInputsImpl, (prev, next) =>
+  sameKeys(prev.fields, next.fields) && sameStrings(prev.excludeKeys, next.excludeKeys),
+);

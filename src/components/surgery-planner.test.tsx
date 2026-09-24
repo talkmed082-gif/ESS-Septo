@@ -23,6 +23,15 @@ function sinusitisButtons(container: HTMLElement): HTMLButtonElement[] {
 
 afterEach(cleanup);
 
+function byText(container: HTMLElement, text: string): HTMLButtonElement {
+  return Array.from(container.querySelectorAll("button")).find((b) => b.textContent?.trim() === text) as HTMLButtonElement;
+}
+
+function fessTable(container: HTMLElement): HTMLTableElement {
+  return Array.from(container.querySelectorAll("table")).find((t) => t.textContent?.includes("FESS 시행")) as HTMLTableElement;
+}
+
+
 // 버튼 순서: Frontal(0,1) Ant(2,3) Post(4,5) Max(6,7) Sphenoid(8,9) — 각 행 우측/좌측
 describe("부비동염 셀 연속 클릭", () => {
   it("화면이 다시 그려지기 전에 연달아 눌러도 모든 클릭이 반영된다", () => {
@@ -80,6 +89,7 @@ describe("부비동염 셀 연속 클릭", () => {
   it("수술 후 화면의 모식도도 소견에서 켠 부위를 그대로 보여준다", () => {
     const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
     fireEvent.click(sinusitisButtons(container)[4]); // Post. Ethmoid 우측
+    fireEvent.click(byText(container, "수술 후 (수술 방법 · 기록지)")); // 모식도는 수술 후 화면에서만 그린다
     const diagramPost = Array.from(container.querySelectorAll("button")).filter((b) => b.textContent?.trim() === "Post. Ethmoid");
     // 모식도 버튼은 우측 열이 먼저
     expect(diagramPost[0].className).toContain("emerald");
@@ -94,5 +104,61 @@ describe("부비동염 셀 연속 클릭", () => {
     expect(cell.isConnected).toBe(true);
     const form = container.querySelector("form") as HTMLFormElement;
     expect((form.elements.namedItem("field_f_right_post_eth") as HTMLInputElement).checked).toBe(true);
+  });
+
+  it("화면에 보이지 않는 쪽(수술 후 모식도)은 수술 전 화면에서 그리지 않는다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
+    expect(Array.from(container.querySelectorAll("button")).some((b) => b.textContent?.trim() === "Uncinectomy" || b.textContent?.trim() === "Post. Ethmoid")).toBe(false);
+  });
+
+  it("수술 후 화면에서 고른 부위가 수술 전 화면으로 돌아와도 유지된다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
+    fireEvent.click(byText(container, "수술 후 (수술 방법 · 기록지)"));
+    const post = Array.from(container.querySelectorAll("button")).filter((b) => b.textContent?.trim() === "Post. Ethmoid");
+    fireEvent.click(post[0]); // 우측 Post. Ethmoid
+    fireEvent.click(byText(container, "수술 전 (비강 소견 · Op Plan)"));
+    const form = container.querySelector("form") as HTMLFormElement;
+    expect((form.elements.namedItem("field_f_right_post_eth") as HTMLInputElement).checked).toBe(true);
+    const row = Array.from(fessTable(container).querySelectorAll("tbody tr"))[2];
+    expect(row.querySelectorAll("button")[0].className).toContain("emerald");
+  });
+
+  it("우→좌 동일 복사도 표를 다시 만들지 않고 값을 옮긴다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
+    const before = sinusitisButtons(container);
+    const opCell = fessTable(container).querySelectorAll("tbody tr")[1].querySelectorAll("button")[0] as HTMLButtonElement; // Ant. ethmoidectomy 우측
+    fireEvent.click(opCell);
+    fireEvent.click(byText(container, "우→좌 동일"));
+    const left = fessTable(container).querySelectorAll("tbody tr")[1].querySelectorAll("button")[1] as HTMLButtonElement;
+    expect(left.className).toContain("emerald");
+    expect(before[0].isConnected).toBe(true); // 소견 표의 버튼도 그대로
+    const form = container.querySelector("form") as HTMLFormElement;
+    expect((form.elements.namedItem("field_f_left_ant_eth") as HTMLInputElement).checked).toBe(true);
+  });
+
+  it("이전 수술력(Revision)을 켜도 표가 교체되지 않고 uncinectomy가 함께 켜진다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
+    const before = sinusitisButtons(container);
+    const box = Array.from(container.querySelectorAll("label")).find((l) => l.textContent?.includes("이전 수술력"))!.querySelector("input") as HTMLInputElement;
+    fireEvent.click(box);
+    const rt = Array.from(container.querySelectorAll("label")).find((l) => l.textContent?.trim() === "Rt. ESS")!.querySelector("input") as HTMLInputElement;
+    fireEvent.click(rt);
+    expect(before[0].isConnected).toBe(true);
+    const form = container.querySelector("form") as HTMLFormElement;
+    expect((form.elements.namedItem("field_f_revision_ess_right") as HTMLInputElement).checked).toBe(true);
+    expect((form.elements.namedItem("field_f_right_uncinectomy") as HTMLInputElement).checked).toBe(true);
+    // 수술 후 화면의 모식도에도 Uncinectomy 버튼이 생긴다
+    fireEvent.click(byText(container, "수술 후 (수술 방법 · 기록지)"));
+    expect(byText(container, "Uncinectomy")).toBeTruthy();
+  });
+
+  it("부비동염 그룹을 접으면 그 안의 체크가 모두 꺼진다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
+    fireEvent.click(sinusitisButtons(container)[4]);
+    const form = container.querySelector("form") as HTMLFormElement;
+    expect((form.elements.namedItem("field_n_sinusitis_post_ethmoid_right") as HTMLInputElement).checked).toBe(true);
+    const groupBox = Array.from(container.querySelectorAll("label")).find((l) => l.textContent?.includes("부비동염"))!.querySelector("input") as HTMLInputElement;
+    fireEvent.click(groupBox); // 접기
+    expect((form.elements.namedItem("field_n_sinusitis_post_ethmoid_right") as HTMLInputElement).checked).toBe(false);
   });
 });

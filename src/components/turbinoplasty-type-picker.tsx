@@ -1,5 +1,6 @@
 "use client";
 
+import { TapButton } from "@/components/tap-button";
 import { useRef, useState } from "react";
 import type { FieldValues } from "@/lib/field-types";
 import { buttonStyles } from "@/lib/ui";
@@ -115,12 +116,12 @@ export function TurbinoplastyTypePicker({
         </label>
         {performed && !hideCopyButtons && (
           <div className="flex gap-1">
-            <button type="button" onClick={() => copyToOtherSide("right")} className={buttonStyles.pill}>
+            <TapButton onTap={() => copyToOtherSide("right")} className={buttonStyles.pill}>
               우→좌 동일
-            </button>
-            <button type="button" onClick={() => copyToOtherSide("left")} className={buttonStyles.pill}>
+            </TapButton>
+            <TapButton onTap={() => copyToOtherSide("left")} className={buttonStyles.pill}>
               좌→우 동일
-            </button>
+            </TapButton>
           </div>
         )}
       </div>
@@ -132,18 +133,17 @@ export function TurbinoplastyTypePicker({
               {TURB_TYPES.map((t) => {
                 const key = `turb_${t.key}_${side.prefix}`;
                 return (
-                  <button
+                  <TapButton
                     key={key}
-                    type="button"
-                    onClick={() => toggle(key)}
-                    className={`min-h-[36px] touch-manipulation rounded-md border px-3 py-1.5 text-xs leading-tight active:scale-95 ${
+                    onTap={() => toggle(key)}
+                    className={`min-h-[36px] rounded-md border px-3 py-1.5 text-xs leading-tight ${
                       checked[key]
                         ? "border-emerald-600 bg-emerald-600 text-white"
                         : "border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100"
                     }`}
                   >
                     {t.label}
-                  </button>
+                  </TapButton>
                 );
               })}
             </div>
