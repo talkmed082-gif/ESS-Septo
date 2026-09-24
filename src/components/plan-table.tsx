@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { PlanSideMatrixRow, PlanTable } from "@/lib/op-note-generator";
 import { DataCell } from "@/components/check-cell";
 import { MatrixCellButton } from "@/components/matrix-cell-button";
+import { TapButton } from "@/components/tap-button";
 import { buttonStyles } from "@/lib/ui";
 
 export function SideMatrixTable({
@@ -122,17 +123,16 @@ export function PlanTableView({
                 </th>
                 <td className={`border border-slate-400 ${cellPad} align-top`}>
                   {interactive && row.toggleKey ? (
-                    <button
-                      type="button"
-                      onClick={() => onToggle?.(row.toggleKey!)}
-                      className={`touch-manipulation rounded px-2 py-0.5 font-medium active:scale-95 ${
+                    <TapButton
+                      onTap={() => onToggle?.(row.toggleKey!)}
+                      className={`rounded px-2 py-0.5 font-medium ${
                         row.value === "사용"
                           ? "bg-emerald-600 text-white"
                           : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                       }`}
                     >
                       {row.value}
-                    </button>
+                    </TapButton>
                   ) : (
                     row.value
                   )}

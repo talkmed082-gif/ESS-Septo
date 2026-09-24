@@ -1,5 +1,6 @@
 "use client";
 
+import { TapButton } from "@/components/tap-button";
 import { useRef, useState } from "react";
 import type { FieldValues } from "@/lib/field-types";
 import type { PlanSideMatrixRow } from "@/lib/op-note-generator";
@@ -144,18 +145,17 @@ function PresentSidedGroup({
               {entry.present && (
                 <div className="flex gap-1.5">
                   {SIDE_OPTIONS.map((side) => (
-                    <button
+                    <TapButton
                       key={side}
-                      type="button"
-                      onClick={() => pickSide(f.presentKey, f.sideKey, side)}
-                      className={`rounded-full border px-2.5 py-1 text-xs touch-manipulation active:scale-95 ${
+                      onTap={() => pickSide(f.presentKey, f.sideKey, side)}
+                      className={`rounded-full border px-3 py-2 text-xs ${
                         entry.side === side
                           ? "border-emerald-600 bg-emerald-600 text-white"
                           : "border-slate-300 text-slate-600 hover:bg-slate-50"
                       }`}
                     >
                       {side}
-                    </button>
+                    </TapButton>
                   ))}
                 </div>
               )}
