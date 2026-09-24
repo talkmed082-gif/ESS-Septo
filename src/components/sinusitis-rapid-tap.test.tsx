@@ -9,7 +9,7 @@ import { comboFullFields, essFullFields } from "@/lib/op-note-defs";
 
 afterEach(cleanup);
 
-const CELLS = 10; // Frontal/Ant/Post/Max/Sphenoid × 우측/좌측
+const CELLS = 10; // Maxillary/Ant/Post/Sphenoid/Frontal × 우측/좌측
 const TYPES = [
   { code: "ESS", fields: essFullFields },
   { code: "COMBO", fields: comboFullFields },
@@ -22,11 +22,11 @@ function setup(code: string, fields: typeof essFullFields) {
   const form = utils.container.querySelector("form") as HTMLFormElement;
   const state = () => buttons().map((b) => (b.className.includes("emerald") ? "1" : "0")).join("");
   // 화면의 체크 → FESS 시행 부위 숨은 체크박스 (행/열이 같은 부위)
-  const fessKeys = ["frontal", "ant_eth", "post_eth", "mma", "sphenoid"];
+  const fessKeys = ["mma", "ant_eth", "post_eth", "sphenoid", "frontal"];
   const fessHidden = () =>
     fessKeys.flatMap((k) => ["right", "left"].map((s) => ((form.elements.namedItem(`field_f_${s}_${k}`) as HTMLInputElement).checked ? "1" : "0"))).join("");
   const sinusHidden = () =>
-    ["frontal", "ant_ethmoid", "post_ethmoid", "maxillary", "sphenoid"]
+    ["maxillary", "ant_ethmoid", "post_ethmoid", "sphenoid", "frontal"]
       .flatMap((k) => ["right", "left"].map((s) => ((form.elements.namedItem(`field_n_sinusitis_${k}_${s}`) as HTMLInputElement).checked ? "1" : "0")))
       .join("");
   return { ...utils, buttons, state, fessHidden, sinusHidden };
@@ -80,7 +80,7 @@ describe("터치 영역", () => {
     for (const b of t.buttons()) {
       // 칸 안에서 조금 빗나가게 눌러도(폰) 탭이 무시되지 않게 하는 확장 영역
       expect(b.className).toContain("before:-inset-x-7");
-      expect(b.className).toContain("before:-inset-y-2");
+      expect(b.className).toContain("before:-inset-y-1.5");
     }
   });
 });

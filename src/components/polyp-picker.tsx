@@ -6,11 +6,11 @@ import { SideMatrixTable } from "@/components/plan-table";
 
 const POLYP_SITE_FIELDS = [
   { key: "site_mm", label: "Middle meatus" },
+  { key: "site_maxillary", label: "Maxillary ostium" },
   { key: "site_ant_ethmoid", label: "Ant. ethmoid" },
   { key: "site_post_ethmoid", label: "Post. ethmoid" },
-  { key: "site_frontal", label: "Frontal sinus" },
-  { key: "site_maxillary", label: "Maxillary ostium" },
   { key: "site_sphenoid", label: "Sphenoid" },
+  { key: "site_frontal", label: "Frontal sinus" },
   { key: "site_choana", label: "Extension to choana" },
 ] as const;
 

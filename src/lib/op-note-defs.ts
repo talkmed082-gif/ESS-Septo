@@ -162,10 +162,10 @@ export const essFindingFields: SurgeryFieldDef[] = [
   { key: "n_sinusitis_frontal_left", label: "Frontal sinusitis - 좌측", type: "checkbox" },
   // Ethmoid는 시행 부위 쪽처럼 Ant./Post.로 나눠서, 소견 단계에서부터 시행
   // 부위와 똑같이 어느 쪽인지 구분해 자동 제안(cascade)도 정확하게 한다.
-  { key: "n_sinusitis_ant_ethmoid_right", label: "Ant. Ethmoid sinusitis - 우측", type: "checkbox" },
-  { key: "n_sinusitis_ant_ethmoid_left", label: "Ant. Ethmoid sinusitis - 좌측", type: "checkbox" },
-  { key: "n_sinusitis_post_ethmoid_right", label: "Post. Ethmoid sinusitis - 우측", type: "checkbox" },
-  { key: "n_sinusitis_post_ethmoid_left", label: "Post. Ethmoid sinusitis - 좌측", type: "checkbox" },
+  { key: "n_sinusitis_ant_ethmoid_right", label: "Ant. ethmoid sinusitis - 우측", type: "checkbox" },
+  { key: "n_sinusitis_ant_ethmoid_left", label: "Ant. ethmoid sinusitis - 좌측", type: "checkbox" },
+  { key: "n_sinusitis_post_ethmoid_right", label: "Post. ethmoid sinusitis - 우측", type: "checkbox" },
+  { key: "n_sinusitis_post_ethmoid_left", label: "Post. ethmoid sinusitis - 좌측", type: "checkbox" },
   { key: "n_sinusitis_maxillary_right", label: "Maxillary sinusitis - 우측", type: "checkbox" },
   { key: "n_sinusitis_maxillary_left", label: "Maxillary sinusitis - 좌측", type: "checkbox" },
   { key: "n_sinusitis_sphenoid_right", label: "Sphenoid sinusitis - 우측", type: "checkbox" },

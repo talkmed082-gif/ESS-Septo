@@ -56,12 +56,14 @@ const ESS_RISK_FINDINGS: PresentSidedFinding[] = [
 // FESS 시행 부위 표와 똑같이 부비동 × 좌/우 체크 모양으로 둬서, 체크하면
 // 그 부비동의 시행 부위도 자동으로 이어서 제안되게 한다(상위인
 // surgery-planner.tsx가 SINUSITIS_TO_FESS_FIELD로 처리).
+// 부비동 순서는 Op Plan 시행 부위 표/수술 후 표/기록지 서술과 같은 실제 수술
+// 순서(Maxillary → Ant. → Post. → Sphenoid → Frontal)로 통일한다.
 const SINUSITIS_TYPES = [
-  { key: "frontal", label: "Frontal sinusitis" },
-  { key: "ant_ethmoid", label: "Ant. Ethmoid sinusitis" },
-  { key: "post_ethmoid", label: "Post. Ethmoid sinusitis" },
   { key: "maxillary", label: "Maxillary sinusitis" },
+  { key: "ant_ethmoid", label: "Ant. ethmoid sinusitis" },
+  { key: "post_ethmoid", label: "Post. ethmoid sinusitis" },
   { key: "sphenoid", label: "Sphenoid sinusitis" },
+  { key: "frontal", label: "Frontal sinusitis" },
 ] as const;
 
 export const SINUSITIS_FIELD_KEYS = SINUSITIS_TYPES.flatMap((t) => [

@@ -144,11 +144,11 @@ function septumSummaryLine(values: FieldValues): string {
 // (별도의 "방향" 선택 없이 위치 선택만으로 존재 여부까지 표현).
 const polypSiteFields: { key: string; label: string }[] = [
   { key: "site_mm", label: "Middle meatus" },
+  { key: "site_maxillary", label: "Maxillary ostium" },
   { key: "site_ant_ethmoid", label: "Ant. ethmoid" },
   { key: "site_post_ethmoid", label: "Post. ethmoid" },
-  { key: "site_frontal", label: "Frontal sinus" },
-  { key: "site_maxillary", label: "Maxillary ostium" },
   { key: "site_sphenoid", label: "Sphenoid" },
+  { key: "site_frontal", label: "Frontal sinus" },
   { key: "site_choana", label: "Extension to choana" },
 ];
 
@@ -277,11 +277,11 @@ export function nasalFindingsText(values: FieldValues): string {
 }
 
 const SINUSITIS_TYPES = [
-  { key: "frontal", label: "Frontal sinusitis" },
-  { key: "ant_ethmoid", label: "Ant. Ethmoid sinusitis" },
-  { key: "post_ethmoid", label: "Post. Ethmoid sinusitis" },
   { key: "maxillary", label: "Maxillary sinusitis" },
+  { key: "ant_ethmoid", label: "Ant. ethmoid sinusitis" },
+  { key: "post_ethmoid", label: "Post. ethmoid sinusitis" },
   { key: "sphenoid", label: "Sphenoid sinusitis" },
+  { key: "frontal", label: "Frontal sinusitis" },
 ] as const;
 
 // 해부학적 이상 소견과 별개로 남기는 염증(부비동염) 소견 — FESS 시행
