@@ -23,6 +23,7 @@ export const getCurrentUser = cache(async () => {
       sideNotation: true,
       abbreviateRegions: true,
       defaultAssistantName: true,
+      calendarToken: true,
     },
   });
   if (!user) {

@@ -21,6 +21,9 @@ model User {
   abbreviateRegions Boolean @default(false)
   // 기록지 작성 시 기본값으로 채워줄 보조의 이름 (매번 같은 사람과 수술하는 경우가 많아 입력을 줄여줌)
   defaultAssistantName String?
+  // 구글 캘린더 구독(.ics 피드) 주소에 들어가는 비밀 토큰 — 주소를 아는 사람은
+  // 로그인 없이 이 계정의 수술 일정(수술명+날짜)을 읽을 수 있다. 다시 만들면 기존 주소는 무효.
+  calendarToken        String?         @unique
   patients     Patient[]
   opPlans      OpPlan[]
   opRecords    OpRecord[]
