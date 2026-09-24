@@ -95,6 +95,23 @@ export default async function SettingsPage() {
       </div>
 
       <div>
+        <h2 className="mb-1 text-sm font-semibold text-slate-700">폰에 앱으로 설치</h2>
+        <div className="space-y-1.5 rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-600">
+          <p>
+            <span className="font-medium text-slate-800">아이폰(Safari)</span>: 하단 공유 버튼 → &quot;홈 화면에
+            추가&quot;
+          </p>
+          <p>
+            <span className="font-medium text-slate-800">안드로이드(Chrome)</span>: 오른쪽 위 ⋮ 메뉴 →
+            &quot;홈 화면에 추가&quot; 또는 &quot;앱 설치&quot;
+          </p>
+          <p className="text-xs text-slate-400">
+            홈 화면 앱은 브라우저와 로그인 정보가 따로라서, 설치 후 처음 한 번 다시 로그인해야 합니다.
+          </p>
+        </div>
+      </div>
+
+      <div>
         <h2 className="mb-1 text-sm font-semibold text-slate-700">수술 종류 관리</h2>
         <p className="mb-3 text-sm text-slate-500">
           기본 제공되는 ESS/비중격교정술 외에, 다루는 이비인후과 수술을 자유롭게 추가하거나 입력 항목을
