@@ -325,6 +325,22 @@ export function SurgeryPlanner({
     setTexts(computeTexts(values));
   }
 
+  // 체크박스 몇 개만 바꿀 때 쓴다. applyCombo와 달리 영역 전체를 다시 만들지
+  // 않고(templateKey를 올리지 않고) 폼의 숨은 체크박스를 직접 바꾼 뒤 상태만
+  // 갱신한다 — 전체를 다시 만들면 방금 누른 버튼이 화면에서 사라져서, 폰에서
+  // 연달아 탭할 때 다음 탭이 사라진 버튼에 전달되어 씹히는 문제가 있었다.
+  function patchFieldValues(patch: Record<string, boolean>) {
+    const current = readCurrentValues();
+    if (!current || !formRef.current) return;
+    for (const [key, value] of Object.entries(patch)) {
+      const el = formRef.current.elements.namedItem(`field_${key}`);
+      if (el instanceof HTMLInputElement) el.checked = value;
+    }
+    const updated: FieldValues = { ...current, ...patch };
+    setTemplateValues(updated);
+    setTexts(computeTexts(updated));
+  }
+
   function applyCombo(values: FieldValues) {
     pendingValuesRef.current = values;
     setTemplateValues(values);
@@ -357,7 +373,7 @@ export function SurgeryPlanner({
     if (!selected || !formRef.current) return;
     const current = readCurrentValues();
     if (!current) return;
-    applyCombo({ ...current, [fieldKey]: !current[fieldKey] });
+    patchFieldValues({ [fieldKey]: !current[fieldKey] });
   }
 
   // 비강 소견(부비동염/비용종)에서 체크하면 그 부비동의 Op Plan 시행 부위도
@@ -369,10 +385,10 @@ export function SurgeryPlanner({
     const current = readCurrentValues();
     if (!current) return;
     const next = !current[fieldKey];
-    const updated: FieldValues = { ...current, [fieldKey]: next };
+    const patch: Record<string, boolean> = { [fieldKey]: next };
     const fessKey = cascadeMap[fieldKey];
-    if (fessKey) updated[fessKey] = next;
-    applyCombo(updated);
+    if (fessKey) patch[fessKey] = next;
+    patchFieldValues(patch);
   }
 
   // Op Plan 표에서도 한쪽 값을 반대쪽에 그대로 복사할 수 있게 한다 —

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import type { PlanSideMatrixRow, PlanTable } from "@/lib/op-note-generator";
-import { CHECK_MARK, DataCell } from "@/components/check-cell";
+import { DataCell } from "@/components/check-cell";
+import { MatrixCellButton } from "@/components/matrix-cell-button";
 import { buttonStyles } from "@/lib/ui";
 
 export function SideMatrixTable({
@@ -49,26 +50,10 @@ export function SideMatrixTable({
               {interactive ? (
                 <>
                   <td className={`border border-slate-400 ${cellPad} text-center`}>
-                    <button
-                      type="button"
-                      onClick={() => onToggle?.(row.rightFieldKey)}
-                      className={`h-6 w-6 rounded touch-manipulation active:scale-95 ${
-                        row.right ? "bg-emerald-600 text-white" : "bg-slate-100 text-transparent hover:bg-slate-200"
-                      }`}
-                    >
-                      {CHECK_MARK}
-                    </button>
+                    <MatrixCellButton checked={row.right} onToggle={() => onToggle?.(row.rightFieldKey)} />
                   </td>
                   <td className={`border border-slate-400 ${cellPad} text-center`}>
-                    <button
-                      type="button"
-                      onClick={() => onToggle?.(row.leftFieldKey)}
-                      className={`h-6 w-6 rounded touch-manipulation active:scale-95 ${
-                        row.left ? "bg-emerald-600 text-white" : "bg-slate-100 text-transparent hover:bg-slate-200"
-                      }`}
-                    >
-                      {CHECK_MARK}
-                    </button>
+                    <MatrixCellButton checked={row.left} onToggle={() => onToggle?.(row.leftFieldKey)} />
                   </td>
                 </>
               ) : (
