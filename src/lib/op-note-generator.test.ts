@@ -288,3 +288,22 @@ describe("ESS의 DSN(비중격 만곡) 소견", () => {
   });
 });
 
+describe("부비동염/비용종 소견 문구의 순서", () => {
+  it("부비동염은 실제 수술 순서(Maxillary → Ant. → Post. → Sphenoid → Frontal)로 쓴다", () => {
+    const all: FieldValues = { n_ess_pe_done: true };
+    for (const k of ["frontal", "ant_ethmoid", "post_ethmoid", "maxillary", "sphenoid"]) all[`n_sinusitis_${k}_right`] = true;
+    const order = lines(nasalFindingsText(all))
+      .filter((l) => l.includes("sinusitis"))
+      .map((l) => l.split(" sinusitis")[0]);
+    expect(order).toEqual(["Maxillary", "Ant. Ethmoid", "Post. Ethmoid", "Sphenoid", "Frontal"]);
+  });
+
+  it("비용종 위치도 같은 순서(Middle meatus·Maxillary ostium이 먼저, Frontal은 뒤)로 쓴다", () => {
+    const right: FieldValues = { n_ess_pe_done: true };
+    for (const k of ["mm", "maxillary", "ant_ethmoid", "post_ethmoid", "sphenoid", "frontal", "choana"]) right[`n_polyp_right_site_${k}`] = true;
+    expect(nasalFindingsText(right)).toContain(
+      "비용종: 우측(Middle meatus, Maxillary ostium, Ant. ethmoid, Post. ethmoid, Sphenoid, Frontal sinus, Extension to choana)",
+    );
+  });
+});
+

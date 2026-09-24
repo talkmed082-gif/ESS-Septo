@@ -1,11 +1,11 @@
 "use client";
 
-import { TapButton } from "@/components/tap-button";
+import { SideMatrixTable } from "@/components/plan-table";
+import type { PlanSideMatrixRow } from "@/lib/op-note-generator";
 import { readDsn, useDsnSync, writeDsn } from "@/components/dsn-sync";
 import { useRef, useState } from "react";
 import type { FieldValues } from "@/lib/field-types";
 import { fessStepFieldKeys } from "@/lib/op-note-defs";
-import { buttonStyles } from "@/lib/ui";
 
 // 모식도의 순서를 Op Plan 표/기록지 서술 순서(fessStepFieldKeys)와 똑같이
 // 맞춘다 — 예전엔 이 컴포넌트가 별도의 순서(Frontal이 맨 위)를 갖고 있어서
@@ -205,8 +205,7 @@ export function SinusDiagram({
     setRevisionLeft(values?.f_revision_ess_left === true);
   }
 
-  function toggle(prefix: "f_left_" | "f_right_", key: string) {
-    const fullKey = `${prefix}${key}`;
+  function toggle(fullKey: string) {
     // DOM의 실제 checkbox 값을 기준으로 다음 값을 정하고 동기적으로 바로
     // 반영한 다음 onChange를 부른다 — rAF로 다음 페인트까지 미루면 onChange
     // (라이브 미리보기 갱신)가 그보다 먼저 실행되어 방금 누른 값이 아직
@@ -262,49 +261,23 @@ export function SinusDiagram({
     onChange?.();
   }
 
-  const column = (prefix: "f_left_" | "f_right_", label: string) => (
-    <div className="flex flex-col items-center gap-2">
-      <span className="text-xs font-medium text-slate-600">{label}</span>
-      <div className="flex flex-col gap-2">
-        {(prefix === "f_right_" ? revisionRight : revisionLeft) && (
-          <TapButton
-            onTap={() => toggle(prefix, "uncinectomy")}
-            className={`min-h-[44px] w-28 rounded-md border px-3 py-2.5 text-xs leading-tight select-none ${
-              checked[`${prefix}uncinectomy`]
-                ? "border-emerald-600 bg-emerald-600 text-white"
-                : "border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100"
-            }`}
-          >
-            Uncinectomy
-          </TapButton>
-        )}
-        {SINUS_STEPS.map((s) => {
-          const active = checked[`${prefix}${s.key}`];
-          return (
-            <TapButton
-              key={s.key}
-              onTap={() => toggle(prefix, s.key)}
-              className={`min-h-[44px] w-28 rounded-md border px-3 py-2.5 text-xs leading-tight select-none ${
-                active
-                  ? "border-emerald-600 bg-emerald-600 text-white"
-                  : "border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100"
-              }`}
-            >
-              {s.label}
-            </TapButton>
-          );
-        })}
-      </div>
-    </div>
-  );
+  // 부비동염·비용종·Op Plan 표와 같은 표 모양(우측/좌측 열, 체크 셀)으로 통일한다.
+  // Revision case면 Op Plan 표처럼 맨 위에 Uncinectomy 행을 둔다.
+  const stepRow = (key: string, label: string): PlanSideMatrixRow => ({
+    key,
+    label,
+    left: checked[`f_left_${key}`] === true,
+    right: checked[`f_right_${key}`] === true,
+    leftFieldKey: `f_left_${key}`,
+    rightFieldKey: `f_right_${key}`,
+  });
+  const rows: PlanSideMatrixRow[] = [
+    ...(revisionRight || revisionLeft ? [stepRow("uncinectomy", "Uncinectomy")] : []),
+    ...SINUS_STEPS.map((s) => stepRow(s.key, s.label)),
+  ];
 
   return (
     <div ref={rootRef} className="rounded-md border border-slate-200 p-3">
-      <p className="mb-2 text-xs font-medium text-slate-600">
-        ESS 시행 부위
-        <br />
-        영상의학 기준: 왼쪽 = 환자 우측(Rt.), 오른쪽 = 환자 좌측(Lt.)
-      </p>
       {!hideRevisionToggle && (
         <div className="mb-3 flex flex-wrap gap-4 text-xs font-medium text-slate-600">
           <label className="flex items-center gap-2">
@@ -327,18 +300,13 @@ export function SinusDiagram({
           </label>
         </div>
       )}
-      <div className="mb-2 flex justify-center gap-2">
-        <TapButton onTap={() => copyToOtherSide("f_right_")} className={buttonStyles.pill}>
-          우→좌 동일
-        </TapButton>
-        <TapButton onTap={() => copyToOtherSide("f_left_")} className={buttonStyles.pill}>
-          좌→우 동일
-        </TapButton>
-      </div>
-      <div className="flex items-start justify-center gap-8">
-        {column("f_right_", "우측 (Rt.)")}
-        {column("f_left_", "좌측 (Lt.)")}
-      </div>
+      <SideMatrixTable
+        title="ESS 시행 부위"
+        rows={rows}
+        interactive
+        onToggle={toggle}
+        onCopySide={copyToOtherSide}
+      />
     </div>
   );
 }

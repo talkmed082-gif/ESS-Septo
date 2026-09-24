@@ -27,6 +27,12 @@ function byText(container: HTMLElement, text: string): HTMLButtonElement {
   return Array.from(container.querySelectorAll("button")).find((b) => b.textContent?.trim() === text) as HTMLButtonElement;
 }
 
+function postCell(container: HTMLElement, rowLabel: string, side: "right" | "left"): HTMLButtonElement {
+  const table = Array.from(container.querySelectorAll("table")).find((t) => t.querySelector("thead th")?.textContent?.trim() === "ESS 시행 부위") as HTMLTableElement;
+  const row = Array.from(table.querySelectorAll("tbody tr")).find((tr) => tr.querySelector("td")?.textContent?.trim() === rowLabel)!;
+  return row.querySelectorAll("button")[side === "right" ? 0 : 1] as HTMLButtonElement;
+}
+
 function fessTable(container: HTMLElement): HTMLTableElement {
   return Array.from(container.querySelectorAll("table")).find((t) => t.textContent?.includes("FESS 시행")) as HTMLTableElement;
 }
@@ -90,10 +96,8 @@ describe("부비동염 셀 연속 클릭", () => {
     const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
     fireEvent.click(sinusitisButtons(container)[4]); // Post. Ethmoid 우측
     fireEvent.click(byText(container, "수술 후 (수술 방법 · 기록지)")); // 모식도는 수술 후 화면에서만 그린다
-    const diagramPost = Array.from(container.querySelectorAll("button")).filter((b) => b.textContent?.trim() === "Post. Ethmoid");
-    // 모식도 버튼은 우측 열이 먼저
-    expect(diagramPost[0].className).toContain("emerald");
-    expect(diagramPost[1].className).not.toContain("emerald");
+    expect(postCell(container, "Post. Ethmoid", "right").className).toContain("emerald");
+    expect(postCell(container, "Post. Ethmoid", "left").className).not.toContain("emerald");
   });
 
   it("Op Plan 표의 셀을 눌러도 교체 없이 소견 폼 값이 바뀐다", () => {
@@ -108,14 +112,13 @@ describe("부비동염 셀 연속 클릭", () => {
 
   it("화면에 보이지 않는 쪽(수술 후 모식도)은 수술 전 화면에서 그리지 않는다", () => {
     const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
-    expect(Array.from(container.querySelectorAll("button")).some((b) => b.textContent?.trim() === "Uncinectomy" || b.textContent?.trim() === "Post. Ethmoid")).toBe(false);
+    expect(Array.from(container.querySelectorAll("table")).some((t) => t.querySelector("thead th")?.textContent?.trim() === "ESS 시행 부위")).toBe(false);
   });
 
   it("수술 후 화면에서 고른 부위가 수술 전 화면으로 돌아와도 유지된다", () => {
     const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
     fireEvent.click(byText(container, "수술 후 (수술 방법 · 기록지)"));
-    const post = Array.from(container.querySelectorAll("button")).filter((b) => b.textContent?.trim() === "Post. Ethmoid");
-    fireEvent.click(post[0]); // 우측 Post. Ethmoid
+    fireEvent.click(postCell(container, "Post. Ethmoid", "right"));
     fireEvent.click(byText(container, "수술 전 (비강 소견 · Op Plan)"));
     const form = container.querySelector("form") as HTMLFormElement;
     expect((form.elements.namedItem("field_f_right_post_eth") as HTMLInputElement).checked).toBe(true);
@@ -147,9 +150,10 @@ describe("부비동염 셀 연속 클릭", () => {
     const form = container.querySelector("form") as HTMLFormElement;
     expect((form.elements.namedItem("field_f_revision_ess_right") as HTMLInputElement).checked).toBe(true);
     expect((form.elements.namedItem("field_f_right_uncinectomy") as HTMLInputElement).checked).toBe(true);
-    // 수술 후 화면의 모식도에도 Uncinectomy 버튼이 생긴다
+    // 수술 후 화면의 ESS 시행 부위 표에도 Uncinectomy 행이 생기고, 우측은 이미 켜져 있다
     fireEvent.click(byText(container, "수술 후 (수술 방법 · 기록지)"));
-    expect(byText(container, "Uncinectomy")).toBeTruthy();
+    expect(postCell(container, "Uncinectomy", "right").className).toContain("emerald");
+    expect(postCell(container, "Uncinectomy", "left").className).not.toContain("emerald");
   });
 
   it("부비동염 그룹을 접으면 그 안의 체크가 모두 꺼진다", () => {
@@ -251,6 +255,68 @@ describe("병행: Septo DSN과 ESS DSN 연동", () => {
     fireEvent.change(visibleSelect);
     expect(dsn(container, "degree", "고도").className).toContain("emerald");
     expect(dsn(container, "degree", "경도").className).not.toContain("emerald");
+  });
+});
+
+function tableByTitle(container: HTMLElement, title: string): HTMLTableElement | undefined {
+  return Array.from(container.querySelectorAll("table")).find(
+    (t) => t.querySelector("thead th")?.textContent?.trim() === title,
+  ) as HTMLTableElement | undefined;
+}
+
+function rowLabels(table: HTMLTableElement | undefined): string[] {
+  return Array.from(table?.querySelectorAll("tbody tr") ?? []).map((tr) => tr.querySelector("td")?.textContent?.trim() ?? "");
+}
+
+describe("부비동 표 순서·모양 통일", () => {
+  const SURGICAL = ["Maxillary", "Ant. Ethmoid", "Post. Ethmoid", "Sphenoid", "Frontal"];
+
+  it("부비동염 표, Op Plan 시행 부위 표, 수술 후 ESS 시행 부위 표가 같은 순서다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={allTypes} loggedIn />);
+    const sinusitis = rowLabels(tableByTitle(container, "부비동염(Sinusitis) 소견")).map((l) => l.replace(" sinusitis", ""));
+    expect(sinusitis).toEqual(SURGICAL);
+
+    const plan = rowLabels(fessTable(container));
+    expect(plan.map((l) => l.split(/[ (]/)[0])).toEqual(["MMA", "Ant.", "Post.", "Sphenoidotomy", "Frontal"]);
+
+    fireEvent.click(byText(container, "수술 후 (수술 방법 · 기록지)"));
+    expect(rowLabels(tableByTitle(container, "ESS 시행 부위"))).toEqual(SURGICAL);
+  });
+
+  it("비용종 표도 같은 흐름(Middle meatus·Maxillary → Ant. → Post. → Sphenoid → Frontal → choana)이다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={allTypes} loggedIn />);
+    const polypBox = Array.from(container.querySelectorAll("label")).find((l) => l.textContent?.includes("비용종"))!.querySelector("input") as HTMLInputElement;
+    fireEvent.click(polypBox);
+    expect(rowLabels(tableByTitle(container, "비용종(Polyp) 위치"))).toEqual([
+      "Middle meatus",
+      "Maxillary ostium",
+      "Ant. ethmoid",
+      "Post. ethmoid",
+      "Sphenoid",
+      "Frontal sinus",
+      "Extension to choana",
+    ]);
+  });
+
+  it("수술 후 ESS 시행 부위도 다른 표와 같은 표 모양(우측/좌측 열, 체크 셀)이다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={allTypes} loggedIn />);
+    fireEvent.click(byText(container, "수술 후 (수술 방법 · 기록지)"));
+    const table = tableByTitle(container, "ESS 시행 부위")!;
+    expect(Array.from(table.querySelectorAll("thead th")).map((th) => th.textContent?.trim())).toEqual(["ESS 시행 부위", "우측", "좌측"]);
+    expect(table.querySelectorAll("tbody tr")).toHaveLength(5);
+    expect(table.querySelectorAll("tbody button")).toHaveLength(10);
+  });
+
+  it("수술 후 표의 셀을 눌러도 폼 값이 바뀌고 수술 전 표에도 반영된다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={allTypes} loggedIn />);
+    fireEvent.click(byText(container, "수술 후 (수술 방법 · 기록지)"));
+    const row = Array.from(tableByTitle(container, "ESS 시행 부위")!.querySelectorAll("tbody tr"))[2]; // Post. Ethmoid
+    fireEvent.click(row.querySelectorAll("button")[0]); // 우측
+    const form = container.querySelector("form") as HTMLFormElement;
+    expect((form.elements.namedItem("field_f_right_post_eth") as HTMLInputElement).checked).toBe(true);
+    fireEvent.click(byText(container, "수술 전 (비강 소견 · Op Plan)"));
+    const planRow = Array.from(fessTable(container).querySelectorAll("tbody tr"))[2];
+    expect(planRow.querySelectorAll("button")[0].className).toContain("emerald");
   });
 });
 
