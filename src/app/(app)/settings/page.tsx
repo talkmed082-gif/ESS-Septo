@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { headers } from "next/headers";
 import { getCurrentUser } from "@/lib/dal";
 import { parseFieldValues } from "@/lib/field-types";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
@@ -8,6 +9,7 @@ import { safeDateStr } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
 import { SettingsForm } from "./settings-form";
 import { SurgeryTypesManager } from "../surgery-types/surgery-types-manager";
+import { CalendarSubscribeCard } from "./calendar-subscribe-card";
 
 export default async function SettingsPage() {
   const user = await getCurrentUser();
@@ -15,6 +17,12 @@ export default async function SettingsPage() {
     sideNotation: user.sideNotation as SideNotation,
     abbreviateRegions: user.abbreviateRegions,
   };
+
+  // 구독 주소는 지금 접속한 주소(운영/미리보기)를 기준으로 만든다.
+  const requestHeaders = await headers();
+  const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
+  const proto = requestHeaders.get("x-forwarded-proto") ?? "https";
+  const feedUrl = user.calendarToken && host ? `${proto}://${host}/api/calendar/${user.calendarToken}` : null;
 
   const todayUtc = new Date(new Date().toISOString().slice(0, 10));
   const upcomingPlans = await prisma.opPlan.findMany({
@@ -42,6 +50,10 @@ export default async function SettingsPage() {
         <p className="mb-3 text-sm text-slate-500">
           다가오는 수술을 캘린더에 추가할 수 있습니다. (개인정보 보호를 위해 환자 이름은 표시되지 않습니다)
         </p>
+        <div className="mb-4">
+          <CalendarSubscribeCard feedUrl={feedUrl} />
+        </div>
+        <p className="mb-2 text-xs font-medium text-slate-500">수술별로 하나씩 추가</p>
         {upcomingPlans.length === 0 ? (
           <p className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-400">
             예정된 수술이 없습니다.
