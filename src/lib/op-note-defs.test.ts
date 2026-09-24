@@ -72,3 +72,19 @@ describe("resolveSurgeryTypeFields", () => {
     expect(keys(resolveSurgeryTypeFields({ code: "TONSIL", fields: custom }))).toEqual(["x"]);
   });
 });
+
+describe("ESS의 DSN 필드", () => {
+  it("ESS 단독에도 비중격 만곡 방향/정도 필드가 있고 기본값은 없음이다", () => {
+    const d = defaultsOf(essFullFields);
+    expect(d).toMatchObject({ n_dev_side: "특이 만곡 없음", n_deviation: "해당없음" });
+    expect(keys(essFullFields)).not.toContain("n_septo_pe_done"); // Septo P/E 그룹 자체는 여전히 없음
+  });
+
+  it("병행/비중격교정술에서는 같은 key가 중복되지 않고 하나만 있다", () => {
+    for (const fields of [comboFullFields, septoplastyFullFields]) {
+      expect(keys(fields).filter((k) => k === "n_dev_side")).toHaveLength(1);
+      expect(keys(fields).filter((k) => k === "n_deviation")).toHaveLength(1);
+    }
+  });
+});
+

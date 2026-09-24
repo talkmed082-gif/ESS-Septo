@@ -25,6 +25,7 @@ import { UncinateAttachmentFields } from "@/components/uncinate-attachment-field
 import { TurbinoplastyTypePicker, TURBINOPLASTY_FIELD_KEYS } from "@/components/turbinoplasty-type-picker";
 import { PlanTableView } from "@/components/plan-table";
 import { CopyButton } from "@/components/copy-button";
+import { hasDsnValue, DSN_NO_DEGREE, DSN_NO_SIDE } from "@/components/dsn-sync";
 import { buttonStyles } from "@/lib/ui";
 import {
   applyFieldDefaults,
@@ -43,6 +44,7 @@ import {
   SINUSITIS_TO_FESS_FIELD,
   POLYP_TO_FESS_FIELD,
   POST_OP_FINISH_KEYS,
+  DSN_FIELD_KEYS,
 } from "@/lib/op-note-defs";
 import {
   buildProcedureName,
@@ -244,7 +246,7 @@ export function SurgeryPlanner({
   // 많아서, "간략 소견"에서 체크한 그룹만 펼친다 — 기존에 값이 있으면(예:
   // 수정 화면) 처음부터 펼쳐서 보여준다.
   const [showAnatomicFindings, setShowAnatomicFindings] = useState(() =>
-    ANATOMIC_RISK_PRESENT_KEYS.some((k) => templateValues?.[k] === true),
+    ANATOMIC_RISK_PRESENT_KEYS.some((k) => templateValues?.[k] === true) || hasDsnValue(templateValues),
   );
   // 부비동염은 ESS 계획에서 워낙 흔히 관련돼 있어 기본으로 펼쳐둔다.
   const [showSinusitisFindings, setShowSinusitisFindings] = useState(true);
@@ -342,12 +344,15 @@ export function SurgeryPlanner({
   // 않고(templateKey를 올리지 않고) 폼의 숨은 체크박스를 직접 바꾼 뒤 상태만
   // 갱신한다 — 전체를 다시 만들면 방금 누른 버튼이 화면에서 사라져서, 폰에서
   // 연달아 탭할 때 다음 탭이 사라진 버튼에 전달되어 씹히는 문제가 있었다.
-  function patchFieldValues(patch: Record<string, boolean>) {
+  function patchFieldValues(patch: Record<string, boolean | string>) {
     const current = readCurrentValues();
     if (!current || !formRef.current) return;
     for (const [key, value] of Object.entries(patch)) {
-      const el = formRef.current.elements.namedItem(`field_${key}`);
-      if (el instanceof HTMLInputElement) el.checked = value;
+      // 같은 이름의 입력이 여럿(보이는 select + 숨은 입력)일 수 있어 전부 맞춘다.
+      for (const el of formRef.current.querySelectorAll(`[name="field_${key}"]`)) {
+        if (el instanceof HTMLInputElement && typeof value === "boolean") el.checked = value;
+        else if (el instanceof HTMLSelectElement || el instanceof HTMLInputElement) el.value = String(value);
+      }
     }
     const updated: FieldValues = { ...current, ...patch };
     setTemplateValues(updated);
@@ -367,8 +372,13 @@ export function SurgeryPlanner({
   function setFindingGroupOpen(clearKeys: string[], open: boolean, setOpen: (v: boolean) => void) {
     setOpen(open);
     if (open || !selected || !formRef.current) return;
-    const patch: Record<string, boolean> = {};
+    const patch: Record<string, boolean | string> = {};
     for (const key of clearKeys) patch[key] = false;
+    // DSN은 Septo와 공유하는 값이라, ESS만 기록할 때에만 함께 지운다.
+    if (clearKeys === ANATOMIC_RISK_PRESENT_KEYS && !showSeptum) {
+      patch.n_dev_side = DSN_NO_SIDE;
+      patch.n_deviation = DSN_NO_DEGREE;
+    }
     patchFieldValues(patch);
   }
 
@@ -516,17 +526,6 @@ export function SurgeryPlanner({
             </div>
           )}
           <input type="hidden" name="surgeryTypeId" value={selectedId} />
-          {septoType && (
-            <label className="flex items-center gap-1.5">
-              <input
-                type="checkbox"
-                checked={septoChecked}
-                onChange={(e) => handleSurgeryTypeChange(idForBuiltInCombo(e.target.checked, essChecked), e)}
-                className="h-4 w-4 rounded border-slate-300"
-              />
-              Septo
-            </label>
-          )}
           {essType && (
             <label className="flex items-center gap-1.5">
               <input
@@ -536,6 +535,17 @@ export function SurgeryPlanner({
                 className="h-4 w-4 rounded border-slate-300"
               />
               ESS
+            </label>
+          )}
+          {septoType && (
+            <label className="flex items-center gap-1.5">
+              <input
+                type="checkbox"
+                checked={septoChecked}
+                onChange={(e) => handleSurgeryTypeChange(idForBuiltInCombo(e.target.checked, essChecked), e)}
+                className="h-4 w-4 rounded border-slate-300"
+              />
+              Septo
             </label>
           )}
         </div>
@@ -682,6 +692,7 @@ export function SurgeryPlanner({
                   ...getSeptumCoveredKeys(selected.code),
                   SEPTO_PE_DONE_KEY,
                   ESS_PE_DONE_KEY,
+                  ...DSN_FIELD_KEYS,
                   ...SEPTUM_DETAIL_FIELD_KEYS,
                   ...UNCINATE_FIELD_KEYS,
                   ...POLYP_FIELD_KEYS,

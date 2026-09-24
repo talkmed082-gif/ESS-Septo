@@ -34,7 +34,9 @@ import {
   SEPTO_PE_DONE_KEY,
   ESS_PE_DONE_KEY,
   POST_OP_FINISH_KEYS,
+  DSN_FIELD_KEYS,
 } from "@/lib/op-note-defs";
+import { hasDsnValue } from "@/components/dsn-sync";
 
 type Action = (
   state: OpRecordFormState | undefined,
@@ -77,7 +79,7 @@ export function RecordForm({
   // 바뀜) fieldValues의 사본을 따로 들고 있다가 갱신한다.
   const [liveFieldValues, setLiveFieldValues] = useState<FieldValues>(fieldValues);
   const [showAnatomicFindings, setShowAnatomicFindings] = useState(() =>
-    ANATOMIC_RISK_PRESENT_KEYS.some((k) => fieldValues?.[k] === true),
+    ANATOMIC_RISK_PRESENT_KEYS.some((k) => fieldValues?.[k] === true) || hasDsnValue(fieldValues),
   );
   // 부비동염은 ESS 계획에서 워낙 흔히 관련돼 있어 기본으로 펼쳐둔다.
   const [showSinusitisFindings, setShowSinusitisFindings] = useState(true);
@@ -291,6 +293,7 @@ export function RecordForm({
               ...getSeptumCoveredKeys(surgeryTypeCode),
               SEPTO_PE_DONE_KEY,
               ESS_PE_DONE_KEY,
+              ...DSN_FIELD_KEYS,
               ...SEPTUM_DETAIL_FIELD_KEYS,
               ...UNCINATE_FIELD_KEYS,
               ...POLYP_FIELD_KEYS,

@@ -180,6 +180,16 @@ function polypFindingText(values: FieldValues): string {
   return `비용종: ${parts.join(", ")}`;
 }
 
+// DSN 방향/정도 — 기본값(특이 만곡 없음/해당없음)이면 빈 문자열, 있는 것만 이어 쓴다.
+function dsnText(values: FieldValues): string {
+  const side = str(values, "n_dev_side", "특이 만곡 없음");
+  const degree = str(values, "n_deviation", "해당없음");
+  const parts: string[] = [];
+  if (side !== "특이 만곡 없음") parts.push(side);
+  if (degree !== "해당없음") parts.push(degree);
+  return parts.join(" ");
+}
+
 // UP(Uncinate process) attachment — skull base/CT 소견과 같은 좌우 비교 문장 형식
 function uncinateLine(values: FieldValues): string {
   const left = str(values, "n_uncinate_left", "");
@@ -230,6 +240,10 @@ export function nasalFindingsText(values: FieldValues): string {
     // 그대로 맞춘다.
     const uncinate = uncinateLine(values);
     if (uncinate) lines.push(uncinate);
+    // DSN은 Septoturbinoplasty P/E를 함께 기록할 때는 위의 "비중격" 줄이 이미
+    // 같은 내용을 담고 있으므로, ESS만 기록할 때에만 여기서 쓴다.
+    const dsn = bool(values, "n_septo_pe_done") ? "" : dsnText(values);
+    if (dsn) lines.push(`DSN: ${dsn}`);
     lines.push(
       bool(values, "n_cb_present")
         ? `Concha bullosa: ${str(values, "n_cb_side", "양측")}`
@@ -322,6 +336,9 @@ export function nasalFindingsSummary(values: FieldValues): string {
     if (uncLeft) parts.push(`좌측 ${uncLeft}`);
     items.push(`UP attach ${parts.join(", ")}`);
   }
+
+  const dsn = bool(values, "n_septo_pe_done") ? "" : dsnText(values);
+  if (dsn) items.push(`DSN ${dsn}`);
 
   if (bool(values, "n_cb_present")) {
     items.push(`${str(values, "n_cb_side", "양측")} concha bullosa`);
