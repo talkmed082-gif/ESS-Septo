@@ -25,7 +25,7 @@ export function SideMatrixTable({
   onCopySide?: (from: "f_left_" | "f_right_") => void;
 }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto overflow-y-hidden">
       {interactive && onCopySide && (
         <div className="mb-2 flex gap-2">
           <button type="button" onClick={() => onCopySide("f_right_")} className={buttonStyles.pill}>
@@ -111,7 +111,7 @@ export function PlanTableView({
         </div>
       )}
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto overflow-y-hidden">
         <table className={`w-full border-collapse ${textSize}`}>
           <tbody>
             {table.keyValueRows.map((row) => (

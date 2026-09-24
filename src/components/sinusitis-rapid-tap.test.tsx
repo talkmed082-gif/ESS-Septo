@@ -80,7 +80,7 @@ describe("터치 영역", () => {
     for (const b of t.buttons()) {
       // 칸 안에서 조금 빗나가게 눌러도(폰) 탭이 무시되지 않게 하는 확장 영역
       expect(b.className).toContain("before:-inset-x-7");
-      expect(b.className).toContain("before:-inset-y-2");
+      expect(b.className).toContain("before:-inset-y-1.5");
     }
   });
 });
