@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { startTransition, useActionState, useRef, useState } from "react";
 import type { OpRecordFormState } from "@/app/actions/op-records";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import { OpNoteGenerateButton } from "@/components/op-note-generate-button";
@@ -140,8 +140,41 @@ export function RecordForm({
       active ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
     }`;
 
+  // 손으로 고친 기록지가 체크 항목과 어긋나 보일 때 — 저장 전에 한 번 확인시킨다.
+  // "그대로 저장"은 submitter의 name/value로 검사 생략 플래그를 실어 보낸다.
+  const consistencyNotice = state?.consistencyWarnings?.length ? (
+    <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+      <p className="font-medium">기록지 내용이 체크한 항목과 다를 수 있어요. 저장 전에 확인해 주세요.</p>
+      <ul className="mt-1 list-disc pl-5">
+        {state.consistencyWarnings.map((w) => (
+          <li key={w}>{w}</li>
+        ))}
+      </ul>
+      <button
+        type="submit"
+        name="skipConsistencyCheck"
+        value="1"
+        disabled={pending}
+        className={`mt-2 ${buttonStyles.secondarySmall}`}
+      >
+        확인했어요, 그대로 저장
+      </button>
+    </div>
+  ) : null;
+
   return (
-    <form ref={formRef} action={formAction} className="space-y-4">
+    <form
+      ref={formRef}
+      // action={formAction}을 그대로 쓰면 React가 제출 후 폼을 초기값으로 되돌려서, 경고를
+      // 보고 돌아왔을 때 손으로 고친 기록지와 체크 상태가 날아간다 — 직접 제출해 리셋을 피한다.
+      onSubmit={(e) => {
+        e.preventDefault();
+        const submitter = (e.nativeEvent as SubmitEvent).submitter;
+        const formData = new FormData(e.currentTarget, submitter);
+        startTransition(() => formAction(formData));
+      }}
+      className="space-y-4"
+    >
       <div className="flex items-start justify-end gap-3">
         {state?.message && <p className="mt-2 text-sm text-red-600">{state.message}</p>}
         <button
@@ -152,6 +185,8 @@ export function RecordForm({
           {pending ? "저장 중..." : "기록 저장"}
         </button>
       </div>
+
+      {consistencyNotice}
 
       {(showSeptum || showSinus) && (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700">
@@ -340,6 +375,8 @@ export function RecordForm({
 
         <OpNoteGenerateButton fields={fields} surgeryTypeCode={surgeryTypeCode} nameStyle={nameStyle} />
       </div>
+
+      {consistencyNotice}
 
       <button type="submit" disabled={pending} className={`w-full ${buttonStyles.primary}`}>
         {pending ? "저장 중..." : "기록 저장"}
