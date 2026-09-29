@@ -899,28 +899,31 @@ export function SurgeryPlanner({
 
         {state?.message && <p className="text-sm text-red-600">{state.message}</p>}
 
-        {canSave ? (
-          <div className="sticky bottom-0 z-10 -mx-4 flex gap-2 border-t border-slate-200 bg-white/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
-            <button
-              type="button"
-              onClick={() => previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
-              className={`lg:hidden ${buttonStyles.secondary}`}
-            >
-              {view === "pre" ? "요약 보기" : "기록지 보기"}
-            </button>
-            <button type="submit" name="saveIntent" value="save" disabled={pending} className={`flex-1 ${buttonStyles.secondary}`}>
-              {pending ? "저장 중..." : editPlan ? "저장" : fixedPatient ? "계획 저장" : "환자 등록 + 계획 저장"}
-            </button>
-            <button type="submit" name="saveIntent" value="record" disabled={pending} className={`flex-1 ${buttonStyles.primary}`}>
-              {pending ? "저장 중..." : "저장 후 기록지 작성"}
-            </button>
-          </div>
-        ) : (
+        {!canSave && (
           <button type="button" onClick={regenerateFromForm} className={`w-full ${buttonStyles.accentOutline}`}>
             위 항목으로 미리보기 새로고침
           </button>
         )}
       </div>
+
+      {/* 저장 줄은 폼의 직속 자식이어야 sticky가 폼 전체 높이 동안 화면 아래에 붙어 있는다. */}
+      {canSave && (
+        <div className="sticky bottom-0 z-10 -mx-4 mt-4 flex gap-2 border-t border-slate-200 bg-white/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
+          <button
+            type="button"
+            onClick={() => previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+            className={`lg:hidden ${buttonStyles.secondary}`}
+          >
+            {view === "pre" ? "요약 보기" : "기록지 보기"}
+          </button>
+          <button type="submit" name="saveIntent" value="save" disabled={pending} className={`flex-1 ${buttonStyles.secondary}`}>
+            {pending ? "저장 중..." : editPlan ? "저장" : fixedPatient ? "계획 저장" : "환자 등록 + 계획 저장"}
+          </button>
+          <button type="submit" name="saveIntent" value="record" disabled={pending} className={`flex-1 ${buttonStyles.primary}`}>
+            {pending ? "저장 중..." : "저장 후 기록지 작성"}
+          </button>
+        </div>
+      )}
     </form>
   );
 }

@@ -350,6 +350,8 @@ describe("계획 화면 사용성", () => {
     const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn fixedPatient={{ id: "p", name: "홍길동" }} />);
     const saveBtn = byText(container, "계획 저장");
     expect(saveBtn.parentElement?.className).toContain("sticky");
+    // sticky는 부모 안에서만 따라다니므로, 폼 전체(긴 입력 영역)의 직속 자식이어야 한다.
+    expect(saveBtn.parentElement?.parentElement?.tagName).toBe("FORM");
     const jump = byText(container, "요약 보기");
     expect(jump.className).toContain("lg:hidden");
     fireEvent.click(jump);
