@@ -8,6 +8,7 @@ import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
 import { SurgeryPlanner } from "@/components/surgery-planner";
+import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { buttonStyles } from "@/lib/ui";
 
 export default async function OpPlanPage({
@@ -55,9 +56,12 @@ export default async function OpPlanPage({
             인쇄용 보기
           </Link>
           <form action={deleteOpPlan.bind(null, plan.id, plan.patientId)}>
-            <button type="submit" className={buttonStyles.danger}>
+            <ConfirmSubmitButton
+              message={`${plan.patient.name} 환자의 이 수술 계획을 삭제할까요? 되돌릴 수 없습니다.`}
+              className={buttonStyles.danger}
+            >
               계획 삭제
-            </button>
+            </ConfirmSubmitButton>
           </form>
         </div>
       </div>
@@ -87,6 +91,7 @@ export default async function OpPlanPage({
           values,
           frozenPlanValues: isDone ? planValues : undefined,
           isDone,
+          planNote: plan.planNote ?? "",
         }}
         action={updateOpPlan.bind(null, plan.id)}
       />
