@@ -4,9 +4,11 @@ import * as z from "zod";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { verifySession } from "@/lib/dal";
-import { fieldValuesFromFormData } from "@/lib/field-types";
+import { getCurrentUser, verifySession } from "@/lib/dal";
+import { fieldValuesFromFormData, type FieldValues } from "@/lib/field-types";
 import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
+import type { SideNotation } from "@/lib/op-note-generator";
+import { checkRecordConsistency } from "@/lib/record-consistency";
 
 const OpRecordSchema = z.object({
   operationDate: z.string().trim().min(1, { error: "수술일을 입력하세요." }),
@@ -20,6 +22,32 @@ const OpRecordSchema = z.object({
 export interface OpRecordFormState {
   errors?: Record<string, string[]>;
   message?: string;
+  /** 손으로 고친 기록지가 체크 항목과 모순돼 보일 때의 경고 — 있으면 저장하지 않고 돌려준다. */
+  consistencyWarnings?: string[];
+}
+
+// 경고를 본 뒤 "그대로 저장"을 누르면 폼이 이 값을 실어 보내고, 그땐 다시 검사하지 않는다.
+const SKIP_CONSISTENCY_FIELD = "skipConsistencyCheck";
+
+async function consistencyWarnings(
+  formData: FormData,
+  surgeryTypeCode: string,
+  recordValues: FieldValues,
+  data: { anesthesiaType?: string; procedureName?: string; procedureDetail?: string },
+): Promise<string[]> {
+  if (formData.get(SKIP_CONSISTENCY_FIELD) === "1") return [];
+  const user = await getCurrentUser();
+  return checkRecordConsistency({
+    surgeryTypeCode,
+    recordValues,
+    nameStyle: {
+      sideNotation: user.sideNotation as SideNotation,
+      abbreviateRegions: user.abbreviateRegions,
+    },
+    anesthesiaType: data.anesthesiaType || undefined,
+    procedureName: data.procedureName ?? "",
+    procedureDetail: data.procedureDetail ?? "",
+  });
 }
 
 function parseRecordFormData(formData: FormData) {
@@ -59,6 +87,9 @@ export async function createOpRecord(
 
   const fields = resolveSurgeryTypeFields(plan.surgeryType);
   const recordData = fieldValuesFromFormData(formData, fields);
+
+  const warnings = await consistencyWarnings(formData, plan.surgeryType.code, recordData, data);
+  if (warnings.length) return { consistencyWarnings: warnings };
 
   await prisma.opRecord.create({
     data: {
@@ -104,6 +135,9 @@ export async function updateOpRecord(
 
   const fields = resolveSurgeryTypeFields(record.opPlan.surgeryType);
   const recordData = fieldValuesFromFormData(formData, fields);
+
+  const warnings = await consistencyWarnings(formData, record.opPlan.surgeryType.code, recordData, data);
+  if (warnings.length) return { consistencyWarnings: warnings };
 
   await prisma.opRecord.update({ // ownership-checked above
     where: { id: recordId },
