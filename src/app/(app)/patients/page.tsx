@@ -20,21 +20,29 @@ export default async function PatientsPage({
   };
   const todayUtc = new Date(new Date().toISOString().slice(0, 10));
 
-  const upcomingPlans = await prisma.opPlan.findMany({
-    // "완료"로 표시해둔 계획은 기록지를 아직 안 썼어도 더 이상 "다가오는
-    // 수술"이 아니므로 제외한다.
-    where: { createdById: user.id, plannedDate: { gte: todayUtc }, opRecord: null, status: { not: "DONE" } },
-    orderBy: { plannedDate: "asc" },
-    take: 10,
-    include: { patient: true, surgeryType: true },
-  });
-
   const { q, sort: sortParam, dir: dirParam } = await searchParams;
   const query = typeof q === "string" ? q.trim() : "";
   const sort = typeof sortParam === "string" ? sortParam : "createdAt";
   const dir = dirParam === "asc" ? "asc" : dirParam === "desc" ? "desc" : "desc";
 
-  const patients = await prisma.patient.findMany({
+  // 두 조회는 서로 상관없어서 동시에 보낸다. 수술 종류는 이름 표시에 필요한
+  // code·name만 — 종류마다 딸린 입력 항목 정의(fields) 전체를 계획마다 끌어오지 않게.
+  const [upcomingPlans, patients] = await Promise.all([
+    prisma.opPlan.findMany({
+      // "완료"로 표시해둔 계획은 기록지를 아직 안 썼어도 더 이상 "다가오는
+      // 수술"이 아니므로 제외한다.
+      where: { createdById: user.id, plannedDate: { gte: todayUtc }, opRecord: null, status: { not: "DONE" } },
+      orderBy: { plannedDate: "asc" },
+      take: 10,
+      select: {
+        id: true,
+        plannedDate: true,
+        planData: true,
+        patient: { select: { name: true } },
+        surgeryType: { select: { code: true, name: true } },
+      },
+    }),
+    prisma.patient.findMany({
     where: {
       createdById: user.id,
       ...(query
@@ -49,12 +57,13 @@ export default async function PatientsPage({
           plannedDate: true,
           planData: true,
           status: true,
-          surgeryType: true,
+          surgeryType: { select: { code: true, name: true } },
           opRecord: { select: { id: true } },
         },
       },
     },
-  });
+    }),
+  ]);
 
   const rows: PatientRow[] = patients.map((p) => {
     const withDates = p.opPlans.filter(

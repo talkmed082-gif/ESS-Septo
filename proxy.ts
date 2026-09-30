@@ -18,6 +18,12 @@ export default async function proxy(req: NextRequest) {
   const cookie = (await cookies()).get(SESSION_COOKIE)?.value;
   const session = await decrypt(cookie);
 
+  // 첫 화면("/")은 로그인 여부만 보고 넘기는 곳이라 여기서 바로 보낸다 — 페이지까지
+  // 가면 그 한 번을 위해 서버 함수가 따로 떠서(측정 0.45초) 앱을 열 때마다 기다렸다.
+  if (path === "/") {
+    return NextResponse.redirect(new URL(session?.userId ? "/patients" : "/login", req.nextUrl));
+  }
+
   if (!isPublicRoute && !session?.userId) {
     return NextResponse.redirect(new URL("/login", req.nextUrl));
   }

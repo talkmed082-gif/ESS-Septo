@@ -12,17 +12,17 @@ export default async function NewOpPlanPage({
   const user = await getCurrentUser();
   const { id: patientId } = await params;
 
-  const patient = await prisma.patient.findFirst({ where: { id: patientId, createdById: user.id } });
+  // 환자·수술 종류·이전 비강 소견은 서로 상관없어서 동시에 가져온다.
+  const [patient, surgeryTypes, patientNasalFindings] = await Promise.all([
+    prisma.patient.findFirst({ where: { id: patientId, createdById: user.id } }),
+    prisma.surgeryType.findMany({ orderBy: [{ isBuiltIn: "desc" }, { createdAt: "asc" }] }),
+    getLatestNasalFindingsForPatient(patientId, user.id),
+  ]);
   if (!patient) notFound();
-
-  const surgeryTypes = await prisma.surgeryType.findMany({
-    orderBy: [{ isBuiltIn: "desc" }, { createdAt: "asc" }],
-  });
   const nameStyle: NameStyle = {
     sideNotation: user.sideNotation as SideNotation,
     abbreviateRegions: user.abbreviateRegions,
   };
-  const patientNasalFindings = await getLatestNasalFindingsForPatient(patientId, user.id);
 
   return (
     <div>
