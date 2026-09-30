@@ -176,7 +176,7 @@ export default async function FessChecklistPrintPage({
   if (planIds.length > 0) {
     const opPlans = await prisma.opPlan.findMany({
       where: { id: { in: planIds }, createdById: user.id },
-      include: { patient: true, surgeryType: true },
+      include: { patient: { select: { name: true } }, surgeryType: { select: { code: true, name: true } } },
     });
     const byId = new Map(opPlans.map((p) => [p.id, p]));
     cardsData = planIds

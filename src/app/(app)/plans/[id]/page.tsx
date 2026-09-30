@@ -19,10 +19,17 @@ export default async function OpPlanPage({
   const { id } = await params;
   const { view: viewParam } = await searchParams;
 
-  const plan = await prisma.opPlan.findFirst({
-    where: { id, createdById: user.id },
-    include: { patient: true, surgeryType: true, opRecord: { select: { id: true } } },
-  });
+  // 계획과 수술 종류 목록은 서로 상관없어서 동시에 가져온다.
+  const [plan, surgeryTypes] = await Promise.all([
+    prisma.opPlan.findFirst({
+      where: { id, createdById: user.id },
+      include: { patient: true, surgeryType: true, opRecord: { select: { id: true } } },
+    }),
+    // 계획을 만든 뒤에도 수술 종류를 바꿀 수 있어야 해서(예: ESS로 만들었다가
+    // Septoplasty로 정정), 현재 종류 하나만이 아니라 전체 수술 종류 목록을
+    // 새 계획 작성 화면과 똑같이 넘긴다.
+    prisma.surgeryType.findMany({ orderBy: [{ isBuiltIn: "desc" }, { createdAt: "asc" }] }),
+  ]);
   if (!plan) notFound();
 
   const nameStyle: NameStyle = {
@@ -37,12 +44,6 @@ export default async function OpPlanPage({
   // 보여준다 — Op Plan 표(pre)는 아래 frozenPlanValues로 planData만 따로
   // 넘겨서 이 값과 무관하게 항상 원래 계획 그대로 표시되게 한다.
   const values = { ...planValues, ...actualValues };
-  // 계획을 만든 뒤에도 수술 종류를 바꿀 수 있어야 해서(예: ESS로 만들었다가
-  // Septoplasty로 정정), 현재 종류 하나만이 아니라 전체 수술 종류 목록을
-  // 새 계획 작성 화면과 똑같이 넘긴다.
-  const surgeryTypes = await prisma.surgeryType.findMany({
-    orderBy: [{ isBuiltIn: "desc" }, { createdAt: "asc" }],
-  });
 
   return (
     <div className="space-y-6">
