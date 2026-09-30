@@ -25,6 +25,7 @@ import { UncinateAttachmentFields } from "@/components/uncinate-attachment-field
 import { TurbinoplastyTypePicker, TURBINOPLASTY_FIELD_KEYS } from "@/components/turbinoplasty-type-picker";
 import { PlanTableView } from "@/components/plan-table";
 import { CopyButton } from "@/components/copy-button";
+import { useUnsavedChangesWarning } from "@/components/use-unsaved-changes-warning";
 import { hasDsnValue, DSN_NO_DEGREE, DSN_NO_SIDE } from "@/components/dsn-sync";
 import { buttonStyles } from "@/lib/ui";
 import {
@@ -75,6 +76,7 @@ export interface EditPlanContext {
   // 그대로 유지된다.
   frozenPlanValues?: FieldValues;
   isDone?: boolean;
+  planNote?: string;
 }
 
 export interface SurgeryPlannerFormState {
@@ -222,6 +224,12 @@ export function SurgeryPlanner({
       : { planTable: null, recordText: "" },
   );
   const formRef = useRef<HTMLFormElement>(null);
+  // 모바일에선 Op Plan 요약/기록지 초안이 긴 입력 폼 아래에 있어서, 하단 저장
+  // 줄의 "요약 보기" 버튼으로 바로 내려갈 수 있게 한다.
+  const previewRef = useRef<HTMLDivElement>(null);
+  // 입력을 바꾼 뒤 저장하지 않고 떠나면 경고한다 — 제출하면 다시 끈다.
+  const [dirty, setDirty] = useState(false);
+  useUnsavedChangesWarning(loggedIn && dirty);
   // "수술 전" 화면(비강 소견 입력 + Op Plan 요약)과 "수술 후" 화면(수술 방법
   // 입력 + 수술기록지 초안)을 하나의 토글로 오간다 — 계획이 완료 상태면
   // 수술 후 화면을 기본으로 열어서, 매번 수동으로 넘길 필요가 없게 한다.
@@ -324,6 +332,7 @@ export function SurgeryPlanner({
 
   function handleSurgeryDateChange(e: ChangeEvent<HTMLInputElement>) {
     e.stopPropagation();
+    setDirty(true);
     const next = e.target.value;
     setSurgeryDate(next);
     setTexts(computeTexts(templateValues ?? {}, next));
@@ -335,6 +344,7 @@ export function SurgeryPlanner({
   }
 
   function regenerateFromForm() {
+    setDirty(true);
     const values = readCurrentValues();
     if (!values) return;
     setTexts(computeTexts(values));
@@ -347,6 +357,7 @@ export function SurgeryPlanner({
   function patchFieldValues(patch: Record<string, boolean | string>) {
     const current = readCurrentValues();
     if (!current || !formRef.current) return;
+    setDirty(true);
     for (const [key, value] of Object.entries(patch)) {
       // 같은 이름의 입력이 여럿(보이는 select + 숨은 입력)일 수 있어 전부 맞춘다.
       for (const el of formRef.current.querySelectorAll(`[name="field_${key}"]`)) {
@@ -360,6 +371,7 @@ export function SurgeryPlanner({
   }
 
   function applyCombo(values: FieldValues) {
+    setDirty(true);
     pendingValuesRef.current = values;
     setTemplateValues(values);
     setTemplateKey((k) => k + 1);
@@ -462,6 +474,7 @@ export function SurgeryPlanner({
     // 그 값으로 덮어써 버려서 한 박자 늦게(옛 내용이 잠깐 보였다가) 바뀌는
     // 것처럼 보였다. 버블링을 막아 중복 실행을 방지한다.
     e?.stopPropagation();
+    setDirty(true);
     setSelectedId(id);
     const next = surgeryTypes.find((st) => st.id === id);
     // 이전 종류에서 이미 입력해둔 값(겹치는 키, 예: 비강 소견/turbinoplasty)은
@@ -500,28 +513,25 @@ export function SurgeryPlanner({
   const canSave = loggedIn;
 
   return (
-    <form ref={formRef} action={formAction} onChange={regenerateFromForm}>
+    <form ref={formRef} action={formAction} onChange={regenerateFromForm} onSubmit={() => setDirty(false)}>
       <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-4">
         {fixedPatient && <input type="hidden" name="existingPatientId" value={fixedPatient.id} />}
 
-        {fixedPatient && (
-          <p className="text-sm text-slate-500">
-            환자: <span className="font-medium text-slate-900">{fixedPatient.name}</span>
-          </p>
-        )}
-
         {/* 첫 줄: 수술 전/후 상태 + 수술 종류(Septo/ESS) — 한눈에 보이게 컴팩트하게 묶는다. */}
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700">
           {showPatientSection && (
+            // 아래 "수술 전/후" 탭은 보는 화면만 바꾸고, 이건 저장될 계획 상태라
+            // 이름을 다르게 둔다(같은 이름이 두 군데 있어 헷갈렸다).
             <div className="flex items-center gap-3">
+              <span className="text-xs text-slate-500">상태</span>
               <label className="flex items-center gap-1.5">
                 <input type="radio" name="planStatus" value="PLANNED" defaultChecked onChange={() => changeView("pre")} />
-                수술 전
+                예정
               </label>
               <label className="flex items-center gap-1.5">
                 <input type="radio" name="planStatus" value="DONE" onChange={() => changeView("post")} />
-                수술 후
+                완료
               </label>
             </div>
           )}
@@ -804,7 +814,7 @@ export function SurgeryPlanner({
 
       </div>
 
-      <div className="space-y-4">
+      <div ref={previewRef} className="scroll-mt-4 space-y-4">
         {view === "pre" && (
           <div className="rounded-lg border border-slate-200 bg-white p-4">
             <div className="mb-2 flex items-center justify-between">
@@ -881,6 +891,7 @@ export function SurgeryPlanner({
             <textarea
               name="planNote"
               rows={3}
+              defaultValue={editPlan?.planNote ?? ""}
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
             />
           </div>
@@ -888,21 +899,31 @@ export function SurgeryPlanner({
 
         {state?.message && <p className="text-sm text-red-600">{state.message}</p>}
 
-        {canSave ? (
-          <div className="flex gap-2">
-            <button type="submit" name="saveIntent" value="save" disabled={pending} className={`flex-1 ${buttonStyles.secondary}`}>
-              {pending ? "저장 중..." : editPlan ? "저장" : fixedPatient ? "계획 저장" : "환자 등록 + 계획 저장"}
-            </button>
-            <button type="submit" name="saveIntent" value="record" disabled={pending} className={`flex-1 ${buttonStyles.primary}`}>
-              {pending ? "저장 중..." : "저장 후 기록지 작성"}
-            </button>
-          </div>
-        ) : (
+        {!canSave && (
           <button type="button" onClick={regenerateFromForm} className={`w-full ${buttonStyles.accentOutline}`}>
             위 항목으로 미리보기 새로고침
           </button>
         )}
       </div>
+
+      {/* 저장 줄은 폼의 직속 자식이어야 sticky가 폼 전체 높이 동안 화면 아래에 붙어 있는다. */}
+      {canSave && (
+        <div className="sticky bottom-0 z-10 -mx-4 mt-4 flex gap-2 border-t border-slate-200 bg-white/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
+          <button
+            type="button"
+            onClick={() => previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+            className={`lg:hidden ${buttonStyles.secondary}`}
+          >
+            {view === "pre" ? "요약 보기" : "기록지 보기"}
+          </button>
+          <button type="submit" name="saveIntent" value="save" disabled={pending} className={`flex-1 ${buttonStyles.secondary}`}>
+            {pending ? "저장 중..." : editPlan ? "저장" : fixedPatient ? "계획 저장" : "환자 등록 + 계획 저장"}
+          </button>
+          <button type="submit" name="saveIntent" value="record" disabled={pending} className={`flex-1 ${buttonStyles.primary}`}>
+            {pending ? "저장 중..." : "저장 후 기록지 작성"}
+          </button>
+        </div>
+      )}
     </form>
   );
 }

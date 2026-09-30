@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
+import Link from "next/link";
 
 vi.mock("@/app/actions/patient-plan", () => ({ createPatientWithPlan: vi.fn() }));
 
@@ -320,3 +321,71 @@ describe("부비동 표 순서·모양 통일", () => {
   });
 });
 
+
+describe("계획 화면 사용성", () => {
+  const editPlan = { surgeryTypeId: "1", plannedDate: "2026-09-01", values: {}, planNote: "항응고제 복용 중" };
+
+  it("저장된 계획을 다시 열면 계획 메모가 채워져 있다 (그대로 저장해도 지워지지 않는다)", () => {
+    const { container } = render(
+      <SurgeryPlanner surgeryTypes={types} loggedIn fixedPatient={{ id: "p", name: "홍길동" }} editPlan={editPlan} action={vi.fn()} />,
+    );
+    const note = container.querySelector('textarea[name="planNote"]') as HTMLTextAreaElement;
+    expect(note.value).toBe("항응고제 복용 중");
+  });
+
+  it("환자 이름을 폼 안에서 한 번 더 보여주지 않는다 (페이지 제목에 이미 있음)", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn fixedPatient={{ id: "p", name: "홍길동" }} />);
+    expect(container.textContent).not.toContain("홍길동");
+  });
+
+  it("새 환자 등록 화면의 상태 선택은 화면 탭(수술 전/후)과 다른 이름(예정/완료)이다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
+    const radios = Array.from(container.querySelectorAll('input[name="planStatus"]')) as HTMLInputElement[];
+    expect(radios.map((r) => r.closest("label")?.textContent?.trim())).toEqual(["예정", "완료"]);
+  });
+
+  it("저장 버튼 줄이 화면 아래에 고정되고, 모바일용 요약 이동 버튼이 있다", () => {
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn fixedPatient={{ id: "p", name: "홍길동" }} />);
+    const saveBtn = byText(container, "계획 저장");
+    expect(saveBtn.parentElement?.className).toContain("sticky");
+    // sticky는 부모 안에서만 따라다니므로, 폼 전체(긴 입력 영역)의 직속 자식이어야 한다.
+    expect(saveBtn.parentElement?.parentElement?.tagName).toBe("FORM");
+    const jump = byText(container, "요약 보기");
+    expect(jump.className).toContain("lg:hidden");
+    fireEvent.click(jump);
+    expect(scrollIntoView).toHaveBeenCalled();
+  });
+
+  it("입력을 바꾼 뒤에만 페이지를 떠날 때 경고하고, 저장(제출)하면 경고하지 않는다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn fixedPatient={{ id: "p", name: "홍길동" }} />);
+    const leave = () => {
+      const ev = new Event("beforeunload", { cancelable: true });
+      window.dispatchEvent(ev);
+      return ev.defaultPrevented;
+    };
+    expect(leave()).toBe(false);
+    fireEvent.change(container.querySelector('textarea[name="planNote"]')!, { target: { value: "메모" } });
+    expect(leave()).toBe(true);
+    fireEvent.submit(container.querySelector("form")!);
+    expect(leave()).toBe(false);
+  });
+
+  it("입력을 바꾼 뒤 앱 안의 다른 링크를 누르면 확인을 묻고, 취소하면 이동하지 않는다", () => {
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+    const { container } = render(
+      <>
+        <Link href="/patients">환자 목록</Link>
+        <SurgeryPlanner surgeryTypes={types} loggedIn fixedPatient={{ id: "p", name: "홍길동" }} />
+      </>,
+    );
+    fireEvent.change(container.querySelector('textarea[name="planNote"]')!, { target: { value: "메모" } });
+    const link = container.querySelector('a[href="/patients"]')!;
+    const ev = new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 });
+    link.dispatchEvent(ev);
+    expect(confirm).toHaveBeenCalled();
+    expect(ev.defaultPrevented).toBe(true);
+    confirm.mockRestore();
+  });
+});
