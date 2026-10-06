@@ -82,6 +82,10 @@ model OpPlan {
   side          String?
   diagnosis     String?
   planNote      String?
+  // 주호소(CC) — 수술 후 특이사항과 함께 차트 remark로 복사할 때 맨 앞에 들어간다.
+  chiefComplaint String?
+  // 수술 후 특이사항 — 기록지 본문과 별개로 차트 remark에 붙여넣을 짧은 메모.
+  postOpRemark   String?
   // surgeryType.fields 의 key 에 대응하는 계획 단계 입력값 — 완료(DONE) 처리
   // 이후에는 더 이상 여기가 덮어써지지 않고, "수술 후" 화면(수술 방법) 수정은
   // actualData에만 반영된다. Op Plan 표는 항상 이 planData만 읽는다.

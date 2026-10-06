@@ -18,6 +18,8 @@ const PatientPlanSchema = z.object({
   surgeryTypeId: z.string().trim().optional(),
   plannedDate: z.string().trim().optional(),
   planNote: z.string().trim().optional(),
+  chiefComplaint: z.string().trim().optional(),
+  postOpRemark: z.string().trim().optional(),
   planStatus: z.enum(["PLANNED", "DONE"]).optional(),
   saveIntent: z.enum(["save", "record"]).optional(),
 });
@@ -62,6 +64,8 @@ export async function createPatientWithPlan(
     surgeryTypeId: formData.get("surgeryTypeId") ?? "",
     plannedDate: formData.get("plannedDate") ?? "",
     planNote: formData.get("planNote") ?? "",
+    chiefComplaint: formData.get("chiefComplaint") ?? "",
+    postOpRemark: formData.get("postOpRemark") ?? "",
     planStatus: formData.get("planStatus") || undefined,
     saveIntent: formData.get("saveIntent") || undefined,
   });
@@ -110,6 +114,8 @@ export async function createPatientWithPlan(
       surgeryTypeId: surgeryType.id,
       plannedDate: data.plannedDate ? new Date(data.plannedDate) : null,
       planNote: data.planNote || null,
+      chiefComplaint: data.chiefComplaint || null,
+      postOpRemark: data.postOpRemark || null,
       planData,
       status: data.planStatus ?? "PLANNED",
       createdById: session.userId,

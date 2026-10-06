@@ -389,3 +389,25 @@ describe("계획 화면 사용성", () => {
     confirm.mockRestore();
   });
 });
+
+describe("차트 Remark", () => {
+  it("CC와 수술 후 특이사항을 수술명과 함께 remark로 묶고, 수술 전 화면에서도 저장 값이 남는다", () => {
+    const { container } = render(
+      <SurgeryPlanner
+        surgeryTypes={types}
+        loggedIn
+        defaultView="post"
+        editPlan={{ surgeryTypeId: "1", plannedDate: "2026-10-06", values: {}, chiefComplaint: "코막힘" }}
+      />,
+    );
+    const remark = container.querySelector("textarea:not([name])") as HTMLTextAreaElement;
+    fireEvent.change(remark, { target: { value: "출혈 많아 packing" } });
+    const pre = Array.from(container.querySelectorAll("pre")).find((p) => p.textContent?.startsWith("CC :"))!;
+    expect(pre.textContent).toMatch(/^CC : 코막힘\nOp : 2026-10-06 .+\n수술 후 특이사항 : 출혈 많아 packing$/);
+
+    fireEvent.click(byText(container, "수술 전 (비강 소견 · Op Plan)"));
+    const form = new FormData(container.querySelector("form")!);
+    expect(form.get("chiefComplaint")).toBe("코막힘");
+    expect(form.get("postOpRemark")).toBe("출혈 많아 packing");
+  });
+});

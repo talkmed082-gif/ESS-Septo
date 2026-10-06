@@ -11,6 +11,8 @@ import { isNasalFindingKey, REVISION_FLAG_KEYS, resolveSurgeryTypeFields } from 
 const OpPlanSchema = z.object({
   plannedDate: z.string().trim().optional(),
   planNote: z.string().trim().optional(),
+  chiefComplaint: z.string().trim().optional(),
+  postOpRemark: z.string().trim().optional(),
   saveIntent: z.enum(["save", "record"]).optional(),
 });
 
@@ -36,12 +38,14 @@ export async function updateOpPlan(
   const validated = OpPlanSchema.safeParse({
     plannedDate: formData.get("plannedDate"),
     planNote: formData.get("planNote"),
+    chiefComplaint: formData.get("chiefComplaint") ?? "",
+    postOpRemark: formData.get("postOpRemark") ?? "",
     saveIntent: formData.get("saveIntent") || undefined,
   });
   if (!validated.success) {
     return { message: "입력값을 확인하세요." };
   }
-  const { plannedDate, planNote, saveIntent } = validated.data;
+  const { plannedDate, planNote, chiefComplaint, postOpRemark, saveIntent } = validated.data;
 
   // 계획을 만든 뒤에도 수술 종류를 바꿀 수 있게 한다 — 화면(SurgeryPlanner)에서
   // 종류를 바꾸면 그 종류의 필드로 폼이 다시 그려지므로, formData도 이미 새
@@ -88,6 +92,8 @@ export async function updateOpPlan(
       surgeryTypeId: surgeryType.id,
       plannedDate: plannedDate ? new Date(plannedDate) : null,
       planNote: planNote || null,
+      chiefComplaint: chiefComplaint || null,
+      postOpRemark: postOpRemark || null,
       planData,
       ...(actualData !== undefined ? { actualData } : {}),
     },

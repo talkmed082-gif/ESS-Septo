@@ -81,6 +81,11 @@ export default async function PatientDetailPage({
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
               <div className="text-sm text-slate-500">
                 예정일: <span className="font-medium text-slate-900">{safeDateStr(plan.plannedDate) ?? "미정"}</span>
+                {plan.chiefComplaint && (
+                  <>
+                    {" · "}CC: <span className="font-medium text-slate-900">{plan.chiefComplaint}</span>
+                  </>
+                )}
               </div>
               <div className="flex gap-2">
                 <Link href={`/plans/${plan.id}`} className={buttonStyles.smallOutline}>

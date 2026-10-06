@@ -28,6 +28,7 @@ import { CopyButton } from "@/components/copy-button";
 import { useUnsavedChangesWarning } from "@/components/use-unsaved-changes-warning";
 import { hasDsnValue, DSN_NO_DEGREE, DSN_NO_SIDE } from "@/components/dsn-sync";
 import { buttonStyles } from "@/lib/ui";
+import { buildRemarkText } from "@/lib/remark";
 import {
   applyFieldDefaults,
   fieldValuesFromFormData,
@@ -77,6 +78,8 @@ export interface EditPlanContext {
   frozenPlanValues?: FieldValues;
   isDone?: boolean;
   planNote?: string;
+  chiefComplaint?: string;
+  postOpRemark?: string;
 }
 
 export interface SurgeryPlannerFormState {
@@ -95,11 +98,12 @@ function buildTexts(
   anesthesiaType: string,
   nameStyle?: NameStyle,
   recordMeta?: { date: string; surgeonName: string },
-): { planTable: PlanTable | null; recordText: string } {
+): { planTable: PlanTable | null; recordText: string; procedureName: string } {
   if (!isBuiltInSurgeryCode(code)) {
     return {
       planTable: null,
       recordText: "이 수술 종류는 자동 작성을 지원하지 않습니다.",
+      procedureName: "",
     };
   }
   const planTable = buildPlanTable(code, values, nameStyle);
@@ -116,6 +120,7 @@ function buildTexts(
   return {
     planTable,
     recordText: `${nameLine}\n\n${findingsSection}[수술 과정]\n${record.procedureDetail}`,
+    procedureName,
   };
 }
 
@@ -145,12 +150,15 @@ function buildTextsFrozenAware(
   anesthesiaType: string,
   nameStyle?: NameStyle,
   recordMeta?: { date: string; surgeonName: string },
-): { planTable: PlanTable | null; recordText: string } {
+): { planTable: PlanTable | null; recordText: string; procedureName: string } {
   const overrides = proceduralFrozenOverrides(fields, frozenPlanValues);
   const planTableValues = overrides ? { ...values, ...overrides } : values;
+  // 기록지/remark의 수술명은 실제 시행 값(values) 기준이라 기록지 쪽 결과를 그대로 쓴다.
+  const record = buildTexts(code, values, anesthesiaType, nameStyle, recordMeta);
   return {
     planTable: buildTexts(code, planTableValues, anesthesiaType, nameStyle).planTable,
-    recordText: buildTexts(code, values, anesthesiaType, nameStyle, recordMeta).recordText,
+    recordText: record.recordText,
+    procedureName: record.procedureName,
   };
 }
 
@@ -210,7 +218,7 @@ export function SurgeryPlanner({
   const [surgeryDate, setSurgeryDate] = useState(
     () => editPlan?.plannedDate || new Date().toISOString().slice(0, 10),
   );
-  const [{ planTable, recordText }, setTexts] = useState(() =>
+  const [{ planTable, recordText, procedureName }, setTexts] = useState(() =>
     initialSelected
       ? buildTextsFrozenAware(
           initialSelected.code,
@@ -221,8 +229,12 @@ export function SurgeryPlanner({
           nameStyle,
           { date: editPlan?.plannedDate || new Date().toISOString().slice(0, 10), surgeonName: userName ?? "" },
         )
-      : { planTable: null, recordText: "" },
+      : { planTable: null, recordText: "", procedureName: "" },
   );
+  // 차트 remark용 — CC(주호소)는 수술 전에, 특이사항은 수술 후에 적고, 둘을
+  // 수술명과 함께 묶어 한 번에 복사한다.
+  const [chiefComplaint, setChiefComplaint] = useState(editPlan?.chiefComplaint ?? "");
+  const [postOpRemark, setPostOpRemark] = useState(editPlan?.postOpRemark ?? "");
   const formRef = useRef<HTMLFormElement>(null);
   // 모바일에선 Op Plan 요약/기록지 초안이 긴 입력 폼 아래에 있어서, 하단 저장
   // 줄의 "요약 보기" 버튼으로 바로 내려갈 수 있게 한다.
@@ -300,8 +312,11 @@ export function SurgeryPlanner({
       active ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
     }`;
 
-  function computeTexts(values: FieldValues, dateOverride?: string): { planTable: PlanTable | null; recordText: string } {
-    if (!selected) return { planTable: null, recordText: "" };
+  function computeTexts(
+    values: FieldValues,
+    dateOverride?: string,
+  ): { planTable: PlanTable | null; recordText: string; procedureName: string } {
+    if (!selected) return { planTable: null, recordText: "", procedureName: "" };
     return buildTextsFrozenAware(
       selected.code,
       selected.fields,
@@ -505,12 +520,19 @@ export function SurgeryPlanner({
             nameStyle,
             { date: surgeryDate, surgeonName: userName ?? "" },
           )
-        : { planTable: null, recordText: "" },
+        : { planTable: null, recordText: "", procedureName: "" },
     );
   }
 
   const showPatientSection = loggedIn && !fixedPatient;
   const canSave = loggedIn;
+  const remarkText = buildRemarkText({
+    chiefComplaint,
+    surgeryDate,
+    // 자동 수술명을 못 만드는 커스텀 수술 종류는 종류 이름으로 대신한다.
+    procedureName: procedureName || selected?.name,
+    postOpRemark,
+  });
 
   return (
     <form ref={formRef} action={formAction} onChange={regenerateFromForm} onSubmit={() => setDirty(false)}>
@@ -626,6 +648,18 @@ export function SurgeryPlanner({
           </div>
         )}
 
+        {selected && (
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">CC (주호소)</label>
+            <input
+              name="chiefComplaint"
+              value={chiefComplaint}
+              onChange={(e) => setChiefComplaint(e.target.value)}
+              placeholder="예: 코막힘, 후비루"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            />
+          </div>
+        )}
 
         {selected && (
           <div key={`${selected.id}-${templateKey}`} className="space-y-4">
@@ -862,6 +896,32 @@ export function SurgeryPlanner({
               </div>
             </div>
             <pre className="whitespace-pre-wrap font-sans text-sm text-slate-800">{recordText}</pre>
+          </div>
+        )}
+        {/* 특이사항 입력란은 수술 후 화면에서만 보이지만, 수술 전 화면에서 저장해도
+            값이 지워지지 않게 실제 전송은 항상 그려지는 숨은 입력으로 한다. */}
+        <input type="hidden" name="postOpRemark" value={postOpRemark} />
+        {view === "post" && selected && (
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold text-slate-700">차트 Remark</h2>
+              <CopyButton text={remarkText} />
+            </div>
+            <label className="mb-1 block text-xs font-medium text-slate-500">수술 후 특이사항</label>
+            <textarea
+              rows={3}
+              value={postOpRemark}
+              onChange={(e) => setPostOpRemark(e.target.value)}
+              placeholder="예: 출혈 많아 Merocel 양측 packing, 특이 합병증 없음"
+              className="mb-3 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            />
+            {remarkText ? (
+              <pre className="whitespace-pre-wrap rounded-md bg-slate-50 p-3 font-sans text-sm text-slate-800">
+                {remarkText}
+              </pre>
+            ) : (
+              <p className="text-sm text-slate-500">CC와 특이사항을 적으면 여기에 remark가 만들어집니다.</p>
+            )}
           </div>
         )}
         <p className="text-xs text-slate-500">

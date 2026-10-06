@@ -93,6 +93,8 @@ export default async function OpPlanPage({
           frozenPlanValues: isDone ? planValues : undefined,
           isDone,
           planNote: plan.planNote ?? "",
+          chiefComplaint: plan.chiefComplaint ?? "",
+          postOpRemark: plan.postOpRemark ?? "",
         }}
         action={updateOpPlan.bind(null, plan.id)}
       />
