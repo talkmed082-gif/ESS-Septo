@@ -5,7 +5,7 @@ import { parseFieldValues } from "@/lib/field-types";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
 import { buildProcedureName, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { buildGoogleCalendarUrl } from "@/lib/calendar";
-import { safeDateStr } from "@/lib/date-format";
+import { safeDateStr, seoulTodayAsStoredDate } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
 import { SettingsForm } from "./settings-form";
 import { SurgeryTypesManager } from "../surgery-types/surgery-types-manager";
@@ -24,7 +24,8 @@ export default async function SettingsPage() {
   const proto = requestHeaders.get("x-forwarded-proto") ?? "https";
   const feedUrl = user.calendarToken && host ? `${proto}://${host}/api/calendar/${user.calendarToken}` : null;
 
-  const todayUtc = new Date(new Date().toISOString().slice(0, 10));
+  // 한국 시간 기준 오늘 — UTC로 자르면 오전 9시 전까지 어제 수술도 "다가오는 수술"에 남았다.
+  const todayUtc = seoulTodayAsStoredDate();
   const upcomingPlans = await prisma.opPlan.findMany({
     // "완료"로 표시해둔 계획은 더 이상 캘린더에 새로 추가할 필요가 없으니 제외한다.
     where: { createdById: user.id, plannedDate: { gte: todayUtc }, status: { not: "DONE" } },

@@ -6,7 +6,7 @@ import { parseFieldValues } from "@/lib/field-types";
 import { createOpRecord } from "@/app/actions/op-records";
 import { buildProcedureName, generateOpNote, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { isBuiltInSurgeryCode, resolveSurgeryTypeFields } from "@/lib/op-note-defs";
-import { safeDateStr } from "@/lib/date-format";
+import { safeDateStr, seoulNow } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
 import { RecordForm } from "../../../records/record-form";
 
@@ -54,7 +54,7 @@ export default async function NewOpRecordPage({
         fields={fields}
         fieldValues={planValues}
         defaultValues={{
-          operationDate: safeDateStr(plan.plannedDate) ?? new Date().toISOString().slice(0, 10),
+          operationDate: safeDateStr(plan.plannedDate) ?? seoulNow().date,
           surgeonName: currentUser.name,
           anesthesiaType: "General",
           procedureName: auto.procedureName,

@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/dal";
 import { parseFieldValues } from "@/lib/field-types";
 import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
 import { buildProcedureName, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
-import { safeDateStr } from "@/lib/date-format";
+import { safeDateStr, seoulTodayAsStoredDate } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
 import { PatientsListTitle } from "@/components/patients-list-title";
 import { PatientListTable } from "./patient-list-table";
@@ -18,7 +18,8 @@ export default async function PatientsPage({
     sideNotation: user.sideNotation as SideNotation,
     abbreviateRegions: user.abbreviateRegions,
   };
-  const todayUtc = new Date(new Date().toISOString().slice(0, 10));
+  // 한국 시간 기준 오늘 — UTC로 자르면 오전 9시 전까지 어제 수술도 "다가오는 수술"에 남았다.
+  const todayUtc = seoulTodayAsStoredDate();
 
   const { q, sort: sortParam, dir: dirParam } = await searchParams;
   const query = typeof q === "string" ? q.trim() : "";

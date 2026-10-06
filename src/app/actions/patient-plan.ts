@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
 import { fieldValuesFromFormData } from "@/lib/field-types";
 import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
+import { seoulNow } from "@/lib/date-format";
 
 const PatientPlanSchema = z.object({
   existingPatientId: z.string().trim().optional(),
@@ -27,11 +28,11 @@ const PatientPlanSchema = z.object({
 // 이름을 안 적어도 등록할 수 있게(예: 접수 직후 바로 계획부터 잡을 때) —
 // 나중에 알아볼 수 있게 등록 날짜·시간으로 이름을 대신 채운다.
 function autoPatientName(): string {
-  const now = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
+  // 서버는 UTC라 한국 시간으로 읽어야 등록한 시각과 이름이 맞는다.
+  const { date, time } = seoulNow();
   // "환자" 접미사를 붙이면 화면마다 이미 붙어있는 "환자"와 겹쳐서(예: "...
   // 환자 환자 수술 계획") 중복돼 보이므로, 이름 자체엔 날짜·시간만 남긴다.
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  return `${date} ${time}`;
 }
 
 export interface PatientPlanFormState {

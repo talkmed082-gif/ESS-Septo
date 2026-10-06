@@ -6,7 +6,7 @@ import { parseFieldValues } from "@/lib/field-types";
 import { updateOpRecord } from "@/app/actions/op-records";
 import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
-import { safeDateStr } from "@/lib/date-format";
+import { safeDateStr, seoulNow } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
 import { RecordForm } from "../../record-form";
 
@@ -46,7 +46,7 @@ export default async function EditOpRecordPage({
         fields={fields}
         fieldValues={values}
         defaultValues={{
-          operationDate: safeDateStr(record.operationDate) ?? new Date().toISOString().slice(0, 10),
+          operationDate: safeDateStr(record.operationDate) ?? seoulNow().date,
           surgeonName: record.surgeonName,
           anesthesiaType: record.anesthesiaType ?? "",
           procedureName: record.procedureName ?? "",
