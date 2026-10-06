@@ -130,8 +130,11 @@ function septumSummaryLine(values: FieldValues): string {
   const perforation = str(values, "n_septal_perforation", "없음") === "있음";
   const note = str(values, "n_septum_note", "");
 
+  // 방향만 고르고 정도를 안 고른 경우도 편위가 있는 것으로 쓴다 — 예전엔 정도가
+  // 기본값(해당없음)이면 방향을 골라도 "특이 편위 없음"으로 나가서 비중격교정술
+  // 환자 기록과 모순됐다.
   const parts: string[] = [
-    side === "특이 만곡 없음" || dev === "해당없음" ? "특이 편위 없음" : `${side} ${dev} 편위`,
+    side === "특이 만곡 없음" ? "특이 편위 없음" : dev === "해당없음" ? `${side} 편위` : `${side} ${dev} 편위`,
   ];
   if (perforation) parts.push("천공 있음");
   if (note) parts.push(note);
@@ -215,10 +218,18 @@ function sidedFindingLine(label: string, key: string, values: FieldValues): stri
 // Concha bullosa/skull base 위험/Onodi/Haller/골 결손처럼 "문제 있는지
 // 체크 → 있으면 방향만 선택" 2단계 입력을 공유하는 소견들의 공통 한 줄 서술.
 // 임상적 주의 문구는 넣지 않는다 — 실제 기록지 작성 시 의사가 직접 판단해서 쓴다.
+// 방향을 안 고른 채 "있음"만 체크했으면 방향을 지어내지 않고 미선택이라고 남긴다 —
+// 예전엔 "양측"으로 채워서, 골 결손처럼 방향이 중요한 소견이 고르지도 않은
+// 방향으로 기록됐다.
+export const SIDE_NOT_SELECTED = "방향 미선택";
+
+function presentSide(values: FieldValues, sideKey: string): string {
+  return str(values, sideKey, SIDE_NOT_SELECTED);
+}
+
 function presentSidedLine(label: string, presentKey: string, sideKey: string, values: FieldValues): string {
   if (!bool(values, presentKey)) return "";
-  const side = str(values, sideKey, "양측");
-  return `${label}: ${side}`;
+  return `${label}: ${presentSide(values, sideKey)}`;
 }
 
 // 비강 소견 — 내시경 소견과 술전 CT 소견을 함께 서술함 (한쪽 검사로 국한하지 않음)
@@ -246,7 +257,7 @@ export function nasalFindingsText(values: FieldValues): string {
     if (dsn) lines.push(`DSN: ${dsn}`);
     lines.push(
       bool(values, "n_cb_present")
-        ? `Concha bullosa: ${str(values, "n_cb_side", "양측")}`
+        ? `Concha bullosa: ${presentSide(values, "n_cb_side")}`
         : "Concha bullosa 없음",
     );
     const skullBase = presentSidedLine("Low skull base", "n_skull_base_risk_present", "n_skull_base_risk_side", values);
@@ -309,8 +320,8 @@ export function nasalFindingsSummary(values: FieldValues): string {
   if (bool(values, "n_septo_pe_done")) {
     const devSide = str(values, "n_dev_side", "특이 만곡 없음");
     const devDegree = str(values, "n_deviation", "해당없음");
-    if (devSide !== "특이 만곡 없음" && devDegree !== "해당없음") {
-      items.push(`비중격 ${devSide} ${devDegree} 편위`);
+    if (devSide !== "특이 만곡 없음") {
+      items.push(devDegree !== "해당없음" ? `비중격 ${devSide} ${devDegree} 편위` : `비중격 ${devSide} 편위`);
     }
 
     if (str(values, "n_septal_perforation", "없음") === "있음") items.push("비중격 천공");
@@ -341,27 +352,27 @@ export function nasalFindingsSummary(values: FieldValues): string {
   if (dsn) items.push(`DSN ${dsn}`);
 
   if (bool(values, "n_cb_present")) {
-    items.push(`${str(values, "n_cb_side", "양측")} concha bullosa`);
+    items.push(`${presentSide(values, "n_cb_side")} concha bullosa`);
   }
 
   if (bool(values, "n_skull_base_risk_present")) {
-    items.push(`${str(values, "n_skull_base_risk_side", "양측")} Low skull base`);
+    items.push(`${presentSide(values, "n_skull_base_risk_side")} Low skull base`);
   }
 
   if (bool(values, "n_onodi_present")) {
-    items.push(`${str(values, "n_onodi_side", "양측")} Onodi's cell`);
+    items.push(`${presentSide(values, "n_onodi_side")} Onodi's cell`);
   }
 
   if (bool(values, "n_haller_present")) {
-    items.push(`${str(values, "n_haller_side", "양측")} Haller's cell`);
+    items.push(`${presentSide(values, "n_haller_side")} Haller's cell`);
   }
 
   if (bool(values, "n_lp_dehiscence_present")) {
-    items.push(`${str(values, "n_lp_dehiscence_side", "양측")} Lamina papyracea 결손`);
+    items.push(`${presentSide(values, "n_lp_dehiscence_side")} Lamina papyracea 결손`);
   }
 
   if (bool(values, "n_dehiscence_present")) {
-    items.push(`${str(values, "n_dehiscence_side", "양측")} 시신경/경동맥 골 결손`);
+    items.push(`${presentSide(values, "n_dehiscence_side")} 시신경/경동맥 골 결손`);
   }
 
   for (const s of sinusitisFindings(values)) items.push(s);
@@ -471,12 +482,18 @@ function incisionSentence(values: FieldValues): string {
   return side ? `${side}에서 ${base}` : base;
 }
 
-function septoCore(values: FieldValues): string[] {
+// 병행 수술에서 같은 turbinoplasty가 비중격 블록과 FESS 블록에 두 번 적히지 않게,
+// 어느 블록이 어떤 turbinoplasty를 서술할지 정한다 — 하비갑개는 비중격교정술과 한
+// 묶음(Septoturbinoplasty)이라 비중격 블록, 중비갑개는 ESS 시야에서 다루므로 각
+// 측 FESS 블록에서 쓴다. 단독 수술은 각자 블록에서 둘 다 쓴다.
+const ALL_TURB_TYPES: TurbType[] = ["inferior", "middle"];
+
+function septoCore(values: FieldValues, turbs: TurbType[] = ALL_TURB_TYPES): string[] {
   const caudal = bool(values, "s_caudal");
   const ansRelease = bool(values, "s_ans_release");
   const spur = bool(values, "s_spur");
-  const turbMiddleSide = turbTypeSideLabel("middle", values);
-  const turbInferiorSide = turbTypeSideLabel("inferior", values);
+  const turbMiddleSide = turbs.includes("middle") && turbTypeSideLabel("middle", values);
+  const turbInferiorSide = turbs.includes("inferior") && turbTypeSideLabel("inferior", values);
   const splint = bool(values, "s_splint");
   const quilting = bool(values, "s_quilting");
   const quiltingSuture = str(values, "s_quilting_suture", "4-0 Vicryl");
@@ -490,23 +507,27 @@ function septoCore(values: FieldValues): string[] {
     "확인된 편위 부위의 변형된 septal cartilage 및 골성 비중격 일부를 절제 및 교정하여 straightening 후 정중앙에 위치시킴",
     turbMiddleSide && `${turbMiddleSide} ${turbinoplastyTechniqueSentence("middle")}`,
     turbInferiorSide && `${turbInferiorSide} ${turbinoplastyTechniqueSentence("inferior")}`,
-    quilting
-      ? `Flap을 원위치로 정복한 후 ${quiltingSuture}를 사용하여 quilting suture 시행`
-      : "Incision 부위 Vicryl로 suture 시행함",
+    quilting && `Flap을 원위치로 정복한 후 ${quiltingSuture}를 사용하여 quilting suture 시행`,
+    "Incision 부위 Vicryl로 suture 시행함",
     splint && `양측 비강에 silastic splint를 삽입하고 ${splintSuture}로 관통 봉합하여 고정함`,
   ];
   return steps.filter((s): s is string => Boolean(s));
 }
 
-function genSeptoplasty(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpNoteResult {
+function septalInfiltrationSentence(values: FieldValues): string {
   const localAnesthetic = str(values, "s_local_anesthetic", "1% lidocaine with epinephrine, 총 5cc");
+  return `${localAnesthetic}를 비중격 점막에 국소 침윤 마취함`;
+}
 
+function genSeptoplasty(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpNoteResult {
   const steps: (string | false)[] = [];
   if (mode === "record") {
     steps.push(`환자를 앙와위로 눕히고 ${anesLabel} 하에 수술을 시작함`);
     steps.push(revisionSentence(values) || false);
+    // ESS·병행과 똑같이 epinephrine patty로 점막을 먼저 수축시킨다.
+    steps.push("Epinephrine을 적신 patty로 양측 비강 점막을 수축시킴");
     steps.push(sphenopalatineBlockSentence("양측"));
-    steps.push(`${localAnesthetic}를 비중격 점막에 국소 침윤 마취함`);
+    steps.push(septalInfiltrationSentence(values));
   }
   steps.push(...septoCore(values));
   steps.push("양측 비강에 Rhinocel로 packing을 시행하고 출혈 소견 없음을 확인한 후 수술을 종료함");
@@ -559,7 +580,9 @@ function fessStepFindingClauses(
   const siteLabel = fessStepSiteLabel[key];
   const clauses: string[] = [];
   if (bool(values, `n_sinusitis_${fessStepSinusitisKey[key]}_${sideSuffix}`)) {
-    clauses.push(`${siteLabel}에서 discharge가 drainage됨을 확인함`);
+    // 부비동염 체크만으로 분비물이 있었다고 단정하지 않는다(점막 비후만 있는
+    // 경우도 많다) — 염증 소견 확인과 배액로 확보까지만 쓴다.
+    clauses.push(`${siteLabel}의 염증 소견을 확인하고 배액로를 확보함`);
   }
   if (fessStepPolypSiteKeys[key].some((site) => bool(values, `n_polyp_${sideSuffix}_${site}`))) {
     clauses.push(`${siteLabel} 내 비용종을 제거함`);
@@ -567,23 +590,53 @@ function fessStepFindingClauses(
   return clauses.length > 0 ? `. ${clauses.join(". ")}` : "";
 }
 
+// 시행 단계 문장에 붙지 못하는 비용종 위치 — 해당 부비동 단계를 시행하지 않았거나
+// (예: MMA 없이 middle meatus 비용종), 대응하는 단계 자체가 없는 위치(후비공
+// 연장)다. 이런 비용종 제거가 기록지에서 빠지지 않게 따로 한 문장으로 남긴다.
+const polypSiteSentenceLabels: Record<string, string> = {
+  site_mm: "Middle meatus",
+  site_maxillary: "Maxillary ostium",
+  site_ant_ethmoid: "Ant. ethmoid",
+  site_post_ethmoid: "Post. ethmoid",
+  site_sphenoid: "Sphenoid",
+  site_frontal: "Frontal recess",
+  site_choana: "후비공(choana)까지 연장된 부위",
+};
+
+function uncoveredPolypSites(prefix: "f_left_" | "f_right_", values: FieldValues): string[] {
+  const sideSuffix = prefix === "f_left_" ? "left" : "right";
+  const covered = new Set(
+    fessStepFieldKeys.filter((key) => bool(values, `${prefix}${key}`)).flatMap((key) => fessStepPolypSiteKeys[key]),
+  );
+  return Object.keys(polypSiteSentenceLabels).filter(
+    (site) => !covered.has(site) && bool(values, `n_polyp_${sideSuffix}_${site}`),
+  );
+}
+
+function sideHasFessSteps(prefix: "f_left_" | "f_right_", values: FieldValues): boolean {
+  return fessStepFieldKeys.some((key) => bool(values, `${prefix}${key}`)) || uncoveredPolypSites(prefix, values).length > 0;
+}
+
 function fessSideBlock(
   sideName: "좌측" | "우측",
   prefix: "f_left_" | "f_right_",
   values: FieldValues,
   includeMicrodebriderSentence: boolean = true,
+  turbs: TurbType[] = ALL_TURB_TYPES,
 ): string[] {
   const selectedSteps = fessStepFieldKeys.filter((key) => bool(values, `${prefix}${key}`));
-  const turbLabels = turbinateLabelsForSide(sideName, values);
+  const turbSuffix = prefix === "f_left_" ? "left" : "right";
+  const sideTurbs = turbs.filter((type) => bool(values, `turb_${type}_${turbSuffix}`));
+  const extraPolypSites = uncoveredPolypSites(prefix, values);
   // 해당 측에 실제로 시행한 것이 하나도 없으면(반대측만 시행한 편측 FESS 등)
   // "수술을 진행함"이나 "비용종 제거함" 같은 문장이 생기지 않도록 블록 자체를 건너뜀
-  if (selectedSteps.length === 0 && turbLabels.length === 0) {
+  if (selectedSteps.length === 0 && sideTurbs.length === 0 && extraPolypSites.length === 0) {
     return [];
   }
 
   const block: string[] = [`[${sideName}] 내시경(0°/30°)을 이용하여 수술을 진행함`];
 
-  if (selectedSteps.length > 0) {
+  if (selectedSteps.length > 0 || extraPolypSites.length > 0) {
     // Microdebrider는 비용종이 있을 때만 쓰는 게 아니라 ESS 전반의 점막/조직
     // 정리에 기본적으로 쓰이므로, 비용종 유무와 무관하게 기본 문구로 넣는다.
     // Cutting forceps/cuff forceps도 함께 병용하는 것을 기본값으로 서술한다.
@@ -610,14 +663,15 @@ function fessSideBlock(
     for (const key of selectedSteps) {
       block.push(`[${sideName}] ${fessStepSentences[key]}${fessStepFindingClauses(key, prefix, values)}`);
     }
+    if (extraPolypSites.length > 0) {
+      block.push(
+        `[${sideName}] ${extraPolypSites.map((site) => polypSiteSentenceLabels[site]).join(", ")}의 비용종을 제거함`,
+      );
+    }
   }
 
-  const turbSuffix = prefix === "f_left_" ? "left" : "right";
-  if (bool(values, `turb_middle_${turbSuffix}`)) {
-    block.push(`[${sideName}] ${turbinoplastyTechniqueSentence("middle")}`);
-  }
-  if (bool(values, `turb_inferior_${turbSuffix}`)) {
-    block.push(`[${sideName}] ${turbinoplastyTechniqueSentence("inferior")}`);
+  for (const type of ["middle", "inferior"] as const) {
+    if (sideTurbs.includes(type)) block.push(`[${sideName}] ${turbinoplastyTechniqueSentence(type)}`);
   }
 
   return block;
@@ -627,7 +681,11 @@ function fessSideBlock(
 // 한 문장으로 모아서 서술한다. 좌우 구분 없이 하나의 체크박스로만 관리한다.
 function silasticSheetSentence(values: FieldValues): string {
   if (!bool(values, "f_silastic_sheet")) return "";
-  return "유착 방지를 위해 양측 middle meatus에 silastic sheet를 삽입함";
+  // 실제로 ESS를 시행한 쪽에만 넣는다 — 예전엔 편측 ESS에도 "양측"으로 적혔다.
+  const right = sideHasFessSteps("f_right_", values);
+  const left = sideHasFessSteps("f_left_", values);
+  const side = right && left ? "양측" : right ? "우측" : left ? "좌측" : "양측";
+  return `유착 방지를 위해 ${side} middle meatus에 silastic sheet를 삽입함`;
 }
 
 function fessCore(values: FieldValues): string[] {
@@ -637,8 +695,8 @@ function fessCore(values: FieldValues): string[] {
   // 양쪽 다 시행하면 "Microdebrider..." 문장이 좌/우 블록에서 그대로
   // 두 번 반복돼 장황해지므로, 양측일 때는 앞에서 [양측]으로 한 번만
   // 서술하고 각 side 블록에서는 생략한다.
-  const rightHasSteps = fessStepFieldKeys.some((key) => bool(values, `f_right_${key}`));
-  const leftHasSteps = fessStepFieldKeys.some((key) => bool(values, `f_left_${key}`));
+  const rightHasSteps = sideHasFessSteps("f_right_", values);
+  const leftHasSteps = sideHasFessSteps("f_left_", values);
   const bothSides = rightHasSteps && leftHasSteps;
 
   const steps: string[] = [];
@@ -661,10 +719,8 @@ function fessCore(values: FieldValues): string[] {
 // 국소마취(sphenopalatine block) 주입 방향은 실제 수술 범위에 맞춰
 // 편측/양측을 판단한다 — turbinoplasty만 시행한 side도 수술 범위에 포함시킨다.
 function fessOperativeSideLabel(values: FieldValues): string {
-  const rightActive =
-    fessRegionsForSide("f_right_", values).length > 0 || turbinateLabelsForSide("우측", values).length > 0;
-  const leftActive =
-    fessRegionsForSide("f_left_", values).length > 0 || turbinateLabelsForSide("좌측", values).length > 0;
+  const rightActive = sideHasFessSteps("f_right_", values) || turbinateLabelsForSide("우측", values).length > 0;
+  const leftActive = sideHasFessSteps("f_left_", values) || turbinateLabelsForSide("좌측", values).length > 0;
   if (rightActive && leftActive) return "양측";
   if (rightActive) return "우측";
   if (leftActive) return "좌측";
@@ -684,7 +740,7 @@ function genFess(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpNo
   steps.push(silasticSheetSentence(values) || false);
   steps.push(
     bool(values, "f_nasocel") &&
-      `${operativeSide} 수술 부위 지혈 상태를 확인한 후 Nasocel로 1차 packing을 시행함`,
+      `${operativeSide} 수술 부위 지혈 상태를 확인한 후 Nasocel Plus로 1차 packing을 시행함`,
   );
   steps.push(dermacolSentence(values) || false);
   steps.push(
@@ -724,13 +780,14 @@ function genCombo(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpN
     if (revision) opening.push(revision);
     opening.push("Epinephrine을 적신 patty로 비중격 및 비강 점막을 수축시킴");
     opening.push(sphenopalatineBlockSentence("양측"));
+    opening.push(septalInfiltrationSentence(values));
   }
   if (nav) opening.push("Image-guided navigation system을 병용하여 해부학적 구조물을 확인함");
 
   const blocks: Record<"septo" | "left" | "right", string[]> = {
-    septo: septoCore(values),
-    left: fessSideBlock("좌측", "f_left_", values),
-    right: fessSideBlock("우측", "f_right_", values),
+    septo: septoCore(values, ["inferior"]),
+    left: fessSideBlock("좌측", "f_left_", values, true, ["middle"]),
+    right: fessSideBlock("우측", "f_right_", values, true, ["middle"]),
   };
   const seq = comboOrderSequence[order] ?? comboOrderSequence["비중격 → 좌 FESS → 우 FESS"];
 
@@ -749,7 +806,7 @@ function genCombo(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpN
   parts.push("--- 종료 ---");
   const closingSteps: (string | false)[] = [
     silasticSheetSentence(values) || false,
-    bool(values, "f_nasocel") && "양측 비강에 Nasocel로 1차 packing을 시행함",
+    bool(values, "f_nasocel") && "양측 비강에 Nasocel Plus로 1차 packing을 시행함",
     dermacolSentence(values) || false,
     bool(values, "f_rhinocel")
       ? "이어서 Rhinocel로 마무리 packing을 시행하고 출혈 소견 없음을 확인한 후 수술을 종료함"
@@ -786,7 +843,7 @@ function septoConciseItems(values: FieldValues, includePacking: boolean): string
     bool(values, "s_quilting") && `Quilting suture (${quiltingSuture})`,
     bool(values, "s_splint") && "Silastic splint 삽입",
   ];
-  if (includePacking) items.push("Nasocel + Rhinocel packing 예정");
+  if (includePacking) items.push("Nasocel Plus + Rhinocel packing 예정");
   return items.filter((s): s is string => Boolean(s));
 }
 
@@ -971,12 +1028,16 @@ export function buildProcedureName(
     right: bool(values, "f_revision_ess_right"),
   };
 
-  const fessName = buildFessProcedureName(values, "ESS", style, excludeSides);
-  if (surgeryCode === "ESS") {
-    return `${revisionPrefix}${fessName}${turbSuffix}`.replace(/\s+/g, " ").trim();
-  }
-  const combined = fessName ? `Septoplasty + ${fessName}` : "Septoplasty";
-  return `${revisionPrefix}${combined}${turbSuffix}`.replace(/\s+/g, " ").trim();
+  // Turbinoplasty만 하고 부비동은 하나도 열지 않았으면 "ESS"를 붙이지 않는다.
+  const onlyTurbinoplasty = !hasFessRegions && turbSuffix !== "" && !revisionPrefix;
+  const fessName = onlyTurbinoplasty ? "" : buildFessProcedureName(values, "ESS", style, excludeSides);
+  const rest = surgeryCode === "ESS" ? fessName : fessName ? `Septoplasty + ${fessName}` : "Septoplasty";
+  // ESS revision 태그(rev> ...)에는 그 side에서 이번에 시행한 sinus까지 들어 있어서,
+  // 뒤에 다른 side 술식이 이어지면 "+"로 끊어야 그 술식까지 재수술로 읽히지 않는다.
+  const hasEssRevision = excludeSides.left || excludeSides.right;
+  const joiner = hasEssRevision && rest ? "+ " : "";
+  const name = `${revisionPrefix}${joiner}${rest}${turbSuffix}`.replace(/\s+/g, " ").trim();
+  return name.replace(/^\+\s*/, "");
 }
 
 // ---------- Op Plan 표 형식 (인쇄용 — 내시경 앞에 붙여두고 한눈에 보는 용도) ----------
@@ -1062,7 +1123,7 @@ function turbinoplastySideMatrix(values: FieldValues): { title: string; rows: Pl
 // 같이 도포하는 경우가 많아 표에서는 한 칸에 묶어 보여준다.
 function packingCellValue(values: FieldValues): string {
   const parts: string[] = [];
-  if (bool(values, "f_nasocel")) parts.push("Nasocel");
+  if (bool(values, "f_nasocel")) parts.push("Nasocel Plus");
   if (bool(values, "f_rhinocel")) parts.push("Rhinocel");
   if (bool(values, "dermacol")) parts.push("Dermacol");
   return parts.length > 0 ? parts.join(" + ") : "-";

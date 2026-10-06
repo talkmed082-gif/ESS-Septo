@@ -429,9 +429,10 @@ export function SurgeryPlanner({
   }
 
   // 비강 소견(부비동염/비용종)에서 체크하면 그 부비동의 Op Plan 시행 부위도
-  // 자동으로 같이 켜지고, 체크 해제하면 같이 꺼진다 — 비강 소견 -> Op Plan
-  // -> 수술 방법 -> 수술 기록지까지 하나의 데이터(templateValues)로 이어져
-  // 있어서, applyCombo로 한 번에 반영하면 넷 다 같이 갱신된다.
+  // 자동으로 같이 켜진다 — 비강 소견 -> Op Plan -> 수술 방법 -> 수술 기록지까지
+  // 하나의 데이터(templateValues)로 이어져 있다. 끌 때는 같은 시행 부위를
+  // 가리키는 다른 소견(예: 같은 부비동의 비용종)이 남아 있으면 시행 부위를 그대로
+  // 둔다 — 예전엔 부비동염만 꺼도 비용종 때문에 필요한 MMA까지 같이 꺼졌다.
   function toggleFindingWithCascade(fieldKey: string, cascadeMap: Record<string, string>) {
     if (!selected || !formRef.current) return;
     const current = readCurrentValues();
@@ -439,7 +440,12 @@ export function SurgeryPlanner({
     const next = !current[fieldKey];
     const patch: Record<string, boolean> = { [fieldKey]: next };
     const fessKey = cascadeMap[fieldKey];
-    if (fessKey) patch[fessKey] = next;
+    if (fessKey) {
+      const otherSupport = Object.entries({ ...SINUSITIS_TO_FESS_FIELD, ...POLYP_TO_FESS_FIELD }).some(
+        ([findingKey, target]) => findingKey !== fieldKey && target === fessKey && current[findingKey] === true,
+      );
+      if (next || !otherSupport) patch[fessKey] = next;
+    }
     patchFieldValues(patch);
   }
 

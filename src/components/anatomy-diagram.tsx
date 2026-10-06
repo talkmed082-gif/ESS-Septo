@@ -106,7 +106,7 @@ export function SeptumDiagram({
   useDsnSync(rootRef, () => setSide(readDsn(findForm(rootRef.current)).side));
 
   const zone = (label: string, value: string, x: number) => {
-    const active = side === value || (value !== "특이 만곡 없음" && side === "양측(C자형)");
+    const active = side === value || (value !== "특이 만곡 없음" && side === "양측(S자형)");
     return (
       <g
         onClick={() => pick(side === value ? "특이 만곡 없음" : value)}
@@ -155,14 +155,14 @@ export function SeptumDiagram({
       </svg>
       <button
         type="button"
-        onClick={() => pick(side === "양측(C자형)" ? "특이 만곡 없음" : "양측(C자형)")}
+        onClick={() => pick(side === "양측(S자형)" ? "특이 만곡 없음" : "양측(S자형)")}
         className={`mt-2 rounded-full border px-3 py-1 text-xs ${
-          side === "양측(C자형)"
+          side === "양측(S자형)"
             ? "border-emerald-600 bg-emerald-600 text-white"
             : "border-slate-300 text-slate-600 hover:bg-slate-50"
         }`}
       >
-        양측(C자형)
+        양측(S자형)
       </button>
     </div>
   );

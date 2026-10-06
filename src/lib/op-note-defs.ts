@@ -20,7 +20,7 @@ export const septumTurbinateFindingFields: SurgeryFieldDef[] = [
     key: "n_dev_side",
     label: "비중격 편위 방향",
     type: "select",
-    options: ["특이 만곡 없음", "우측", "양측(C자형)", "좌측"],
+    options: ["특이 만곡 없음", "우측", "양측(S자형)", "좌측"],
     default: "특이 만곡 없음",
   },
   {
@@ -300,7 +300,7 @@ export const fessFields: SurgeryFieldDef[] = [
   })),
   { key: "f_silastic_sheet", label: "Silastic sheet 삽입 (유착 방지)", type: "checkbox" },
   { key: "f_nav", label: "Navigation 병용", type: "checkbox" },
-  { key: "f_nasocel", label: "Nasocel packing", type: "checkbox", default: "true" },
+  { key: "f_nasocel", label: "Nasocel Plus packing", type: "checkbox", default: "true" },
   { key: "f_rhinocel", label: "Rhinocel packing", type: "checkbox", default: "true" },
   { key: "dermacol", label: "Dermacol 도포", type: "checkbox", default: "true" },
 ];
@@ -401,8 +401,8 @@ export function isNasalFindingKey(key: string): boolean {
 export const REVISION_FLAG_KEYS = ["f_revision_septo", "f_revision_ess_right", "f_revision_ess_left"] as const;
 
 // 비강 소견(염증/비용종)에서 해당 부비동을 체크하면 Op Plan의 그 부비동
-// FESS 시행 부위도 자동으로 제안(체크)되도록 이어주는 매핑 — 켤 때만
-// 제안하고, 끌 때는 이미 계획해둔 시행 부위를 임의로 지우지 않는다(surgery
+// FESS 시행 부위도 자동으로 제안(체크)되도록 이어주는 매핑 — 끌 때는 같은
+// 시행 부위를 가리키는 다른 소견이 하나도 안 남았을 때만 같이 끈다(surgery
 // -planner.tsx의 cascade 로직에서 씀). Ethmoid는 소견 쪽도 시행 부위와
 // 똑같이 Ant./Post.로 나눠서 정확히 대응시킨다.
 export const SINUSITIS_TO_FESS_FIELD: Record<string, string> = {

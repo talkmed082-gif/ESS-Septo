@@ -235,16 +235,16 @@ describe("병행: Septo DSN과 ESS DSN 연동", () => {
 
   it("ESS의 DSN 방향을 바꾸면 Septo 모식도가 따라 바뀐다", () => {
     const { container } = renderCombo();
-    fireEvent.click(dsn(container, "side", "양측(C자형)"));
-    const cShape = Array.from(container.querySelectorAll("button")).find((b) => b.textContent?.trim() === "양측(C자형)" && !b.hasAttribute("data-dsn")) as HTMLButtonElement;
-    expect(cShape.className).toContain("emerald");
+    fireEvent.click(dsn(container, "side", "양측(S자형)"));
+    const sShape = Array.from(container.querySelectorAll("button")).find((b) => b.textContent?.trim() === "양측(S자형)" && !b.hasAttribute("data-dsn")) as HTMLButtonElement;
+    expect(sShape.className).toContain("emerald");
   });
 
   it("Septo 모식도에서 방향을 바꾸면 ESS의 DSN 행이 따라 바뀐다", () => {
     const { container } = renderCombo();
-    const cShape = Array.from(container.querySelectorAll("button")).find((b) => b.textContent?.trim() === "양측(C자형)" && !b.hasAttribute("data-dsn")) as HTMLButtonElement;
-    fireEvent.click(cShape);
-    expect(dsn(container, "side", "양측(C자형)").className).toContain("emerald");
+    const sShape = Array.from(container.querySelectorAll("button")).find((b) => b.textContent?.trim() === "양측(S자형)" && !b.hasAttribute("data-dsn")) as HTMLButtonElement;
+    fireEvent.click(sShape);
+    expect(dsn(container, "side", "양측(S자형)").className).toContain("emerald");
   });
 
   it("ESS에서 정도를 고르면 Septo의 정도 select도 바뀌고, 반대로도 따라간다", () => {
@@ -452,5 +452,26 @@ describe("CC 빠른 입력", () => {
     fireEvent.click(byText(container, "Both"));
     fireEvent.click(byText(container, "코막힘 Rt."));
     expect(cc.value).toBe("코막힘 (Both), 후비루");
+  });
+});
+
+describe("소견 해제 시 시행 부위", () => {
+  it("같은 부비동의 다른 소견(비용종)이 남아 있으면 부비동염을 꺼도 MMA는 그대로 둔다", () => {
+    const { container } = render(
+      <SurgeryPlanner
+        surgeryTypes={types}
+        loggedIn
+        editPlan={{
+          surgeryTypeId: "1",
+          plannedDate: "",
+          values: { n_sinusitis_maxillary_right: true, n_polyp_right_site_maxillary: true, f_right_mma: true },
+        }}
+      />,
+    );
+    // 버튼 순서: Maxillary 우측이 첫 칸
+    fireEvent.click(sinusitisButtons(container)[0]);
+    const form = new FormData(container.querySelector("form")!);
+    expect(form.get("field_n_sinusitis_maxillary_right")).toBeNull();
+    expect(form.get("field_f_right_mma")).toBe("on");
   });
 });

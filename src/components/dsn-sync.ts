@@ -8,7 +8,7 @@ import type { FieldValues } from "@/lib/field-types";
 // (계획 화면/기록지 화면 어디서든) 항상 같은 값을 보여준다.
 export const DSN_NO_SIDE = "특이 만곡 없음";
 export const DSN_NO_DEGREE = "해당없음";
-export const DSN_SIDES = [DSN_NO_SIDE, "우측", "양측(C자형)", "좌측"] as const;
+export const DSN_SIDES = [DSN_NO_SIDE, "우측", "양측(S자형)", "좌측"] as const;
 export const DSN_DEGREES = [DSN_NO_DEGREE, "경도", "중등도", "고도"] as const;
 
 const SYNC_EVENT = "dsn-sync";

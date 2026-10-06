@@ -72,7 +72,7 @@ describe("generateOpNote - ESS", () => {
     };
     const { procedureDetail } = generateOpNote("ESS", values, "plan");
     expect(procedureDetail).toContain(
-      "[우측] Middle meatal antrostomy를 통해 상악동 자연공 확장. Maxillary sinus에서 discharge가 drainage됨을 확인함. Maxillary sinus 내 비용종을 제거함",
+      "[우측] Middle meatal antrostomy를 통해 상악동 자연공 확장. Maxillary sinus의 염증 소견을 확인하고 배액로를 확보함. Maxillary sinus 내 비용종을 제거함",
     );
   });
 
@@ -103,12 +103,13 @@ describe("generateOpNote - 비중격교정술", () => {
     );
   });
 
-  it("Quilting suture는 체크했을 때만 들어가고, 아니면 기본 봉합 문장을 쓴다", () => {
+  it("Quilting suture는 체크했을 때만 들어가고, 절개 봉합 문장은 항상 남는다", () => {
     const off = generateOpNote("SEPTOPLASTY", {}, "plan").procedureDetail;
     const on = generateOpNote("SEPTOPLASTY", { s_quilting: true, s_quilting_suture: "5-0 Vicryl" }, "plan").procedureDetail;
     expect(off).toContain("Incision 부위 Vicryl로 suture 시행함");
     expect(off).not.toContain("quilting");
     expect(on).toContain("5-0 Vicryl를 사용하여 quilting suture 시행");
+    expect(on).toContain("Incision 부위 Vicryl로 suture 시행함");
   });
 
   it("하비갑개 축소술 side가 문장에 반영된다", () => {
@@ -212,7 +213,8 @@ describe("buildProcedureName", () => {
   it("Revision side의 sinus는 rev> 태그에만 나오고 뒤에서 반복되지 않는다", () => {
     const values = { ...fessSteps("both", ["mma", "ant_eth"]), f_revision_ess_right: true };
     const name = buildProcedureName("ESS", values);
-    expect(name).toBe("rev> Rt. ESS (Ethmoid, Maxillary) Lt. ESS(Ethmoid, Maxillary)");
+    // 재수술 태그 뒤 다른 side 술식은 "+"로 끊어서 그 술식까지 재수술로 읽히지 않게 한다.
+    expect(name).toBe("rev> Rt. ESS (Ethmoid, Maxillary) + Lt. ESS(Ethmoid, Maxillary)");
     expect(count(name, "Rt.")).toBe(1);
   });
 
@@ -247,7 +249,7 @@ describe("buildPlanTable", () => {
 
   it("Packing 칸은 체크한 재료만 모아 보여준다", () => {
     const table = buildPlanTable("ESS", { f_nasocel: true, dermacol: true });
-    expect(table.keyValueRows.find((r) => r.label === "Packing / Material")?.value).toBe("Nasocel + Dermacol");
+    expect(table.keyValueRows.find((r) => r.label === "Packing / Material")?.value).toBe("Nasocel Plus + Dermacol");
   });
 });
 
@@ -270,7 +272,7 @@ describe("ESS의 DSN(비중격 만곡) 소견", () => {
   });
 
   it("요약에도 의미 있는 DSN만 넣는다", () => {
-    expect(nasalFindingsSummary({ ...ess, n_dev_side: "양측(C자형)", n_deviation: "경도" })).toContain("DSN 양측(C자형) 경도");
+    expect(nasalFindingsSummary({ ...ess, n_dev_side: "양측(S자형)", n_deviation: "경도" })).toContain("DSN 양측(S자형) 경도");
     expect(nasalFindingsSummary({ ...ess, n_dev_side: "특이 만곡 없음", n_deviation: "해당없음" })).not.toContain("DSN");
   });
 
@@ -307,3 +309,94 @@ describe("부비동염/비용종 소견 문구의 순서", () => {
   });
 });
 
+
+describe("수술 기록 문장 — 병행·편측 조합", () => {
+  const comboBase = {
+    ...fessSteps("both", ["mma", "ant_eth"]),
+    turb_inferior_right: true,
+    turb_inferior_left: true,
+  };
+
+  it("병행에서 하비갑개 축소술은 비중격 블록에 한 번만 쓴다", () => {
+    const { procedureDetail } = generateOpNote("COMBO", comboBase, "record");
+    expect(count(procedureDetail, "축소술(Turbinoplasty)")).toBe(1);
+    expect(procedureDetail).toContain("양측 하비갑개에 대해 coblator를 이용하여 축소술(Turbinoplasty)을 시행함");
+  });
+
+  it("병행에서 중비갑개 축소술은 해당 측 FESS 블록에만 쓴다", () => {
+    const { procedureDetail } = generateOpNote("COMBO", { ...comboBase, turb_middle_right: true }, "record");
+    expect(count(procedureDetail, "축소술(Mturbinoplasty)")).toBe(1);
+    expect(procedureDetail).toContain("[우측] 중비갑개에 대해");
+  });
+
+  it("병행에도 비중격 국소 침윤마취 문장이 들어가고, 입력한 마취제를 쓴다", () => {
+    const { procedureDetail } = generateOpNote(
+      "COMBO",
+      { ...comboBase, s_local_anesthetic: "2% lidocaine, 총 4cc" },
+      "record",
+    );
+    expect(procedureDetail).toContain("2% lidocaine, 총 4cc를 비중격 점막에 국소 침윤 마취함");
+  });
+
+  it("Septo 단독에도 epinephrine patty 점막 수축 단계가 들어가고, packing은 Rhinocel만 쓴다", () => {
+    const { procedureDetail } = generateOpNote("SEPTOPLASTY", {}, "record");
+    expect(procedureDetail).toContain("Epinephrine을 적신 patty로 양측 비강 점막을 수축시킴");
+    expect(procedureDetail).toContain("Rhinocel로 packing");
+    expect(procedureDetail).not.toContain("Nasocel");
+  });
+
+  it("ESS packing은 Nasocel Plus로 쓴다", () => {
+    const { procedureDetail } = generateOpNote("ESS", { ...fessSteps("right", ["mma"]), f_nasocel: true }, "record");
+    expect(procedureDetail).toContain("Nasocel Plus로 1차 packing");
+  });
+
+  it("편측 ESS의 silastic sheet는 그 측에만 넣는다", () => {
+    const { procedureDetail } = generateOpNote("ESS", { ...fessSteps("right", ["mma"]), f_silastic_sheet: true }, "plan");
+    expect(procedureDetail).toContain("우측 middle meatus에 silastic sheet");
+    expect(procedureDetail).not.toContain("양측 middle meatus");
+  });
+
+  it("시행 단계에 붙지 않는 비용종(후비공 연장, MMA 없는 middle meatus)도 제거 문장이 빠지지 않는다", () => {
+    const { procedureDetail } = generateOpNote(
+      "ESS",
+      { ...fessSteps("right", ["ant_eth"]), n_polyp_right_site_mm: true, n_polyp_right_site_choana: true },
+      "plan",
+    );
+    expect(procedureDetail).toContain("[우측] Middle meatus, 후비공(choana)까지 연장된 부위의 비용종을 제거함");
+  });
+
+  it("MMA를 하면 middle meatus 비용종은 MMA 문장에만 붙고 따로 반복하지 않는다", () => {
+    const { procedureDetail } = generateOpNote(
+      "ESS",
+      { ...fessSteps("right", ["mma"]), n_polyp_right_site_mm: true },
+      "plan",
+    );
+    expect(count(procedureDetail, "비용종을 제거함")).toBe(1);
+  });
+});
+
+describe("비강 소견 — 고르지 않은 값을 지어내지 않는다", () => {
+  it("방향을 안 고른 위험 소견은 '방향 미선택'으로 남긴다", () => {
+    const values = { n_ess_pe_done: true, n_lp_dehiscence_present: true, n_dehiscence_present: true };
+    const text = nasalFindingsText(values);
+    expect(text).toContain("Lamina papyracea 결손: 방향 미선택");
+    expect(text).toContain("시신경/경동맥 골 결손: 방향 미선택");
+    expect(nasalFindingsSummary(values)).toContain("방향 미선택 Lamina papyracea 결손");
+  });
+
+  it("비중격 편위 방향만 고르고 정도를 안 골라도 편위로 쓴다", () => {
+    const values = { n_septo_pe_done: true, n_dev_side: "우측", n_deviation: "해당없음" };
+    expect(nasalFindingsText(values)).toContain("비중격: 우측 편위");
+    expect(nasalFindingsSummary(values)).toContain("비중격 우측 편위");
+  });
+});
+
+describe("수술명 — turbinoplasty만 시행", () => {
+  it("부비동을 열지 않았으면 ESS를 붙이지 않는다", () => {
+    expect(buildProcedureName("ESS", { turb_inferior_right: true, turb_inferior_left: true })).toBe("Both Turbinoplasty");
+  });
+
+  it("아무것도 고르지 않았으면 기존처럼 ESS로 둔다", () => {
+    expect(buildProcedureName("ESS", {})).toBe("ESS");
+  });
+});

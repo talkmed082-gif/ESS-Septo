@@ -182,7 +182,7 @@ function PresentSidedGroup({
   );
 }
 
-const DSN_SIDE_LABEL: Record<string, string> = { [DSN_NO_SIDE]: "없음", "양측(C자형)": "양측(C)" };
+const DSN_SIDE_LABEL: Record<string, string> = { [DSN_NO_SIDE]: "없음", "양측(S자형)": "양측(S)" };
 const DSN_DEGREE_LABEL: Record<string, string> = { [DSN_NO_DEGREE]: "없음" };
 
 // DSN(비중격 만곡) — Septoturbinoplasty의 비중격 편위 방향/정도와 같은 값을 쓰는
