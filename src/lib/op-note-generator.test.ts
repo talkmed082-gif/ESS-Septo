@@ -5,6 +5,7 @@ import {
   generateOpNote,
   nasalFindingsSummary,
   nasalFindingsText,
+  procedureNameFor,
   type NameStyle,
 } from "./op-note-generator";
 import type { FieldValues } from "./field-types";
@@ -398,5 +399,12 @@ describe("수술명 — turbinoplasty만 시행", () => {
 
   it("아무것도 고르지 않았으면 기존처럼 ESS로 둔다", () => {
     expect(buildProcedureName("ESS", {})).toBe("ESS");
+  });
+});
+
+describe("procedureNameFor", () => {
+  it("기본 수술 종류는 자동 생성하고, 사용자가 추가한 종류는 그 이름을 쓴다", () => {
+    expect(procedureNameFor({ code: "ESS", name: "부비동내시경수술" }, fessSteps("right", ["mma"]))).toBe("Rt. MMA");
+    expect(procedureNameFor({ code: "TONSIL", name: "편도절제술" }, {})).toBe("편도절제술");
   });
 });

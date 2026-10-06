@@ -2,8 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
 import { parseFieldValues } from "@/lib/field-types";
-import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
-import { buildProcedureName, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
+import { procedureNameFor, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { safeDateStr, seoulTodayAsStoredDate } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
 import { PatientsListTitle } from "@/components/patients-list-title";
@@ -75,11 +74,7 @@ export default async function PatientsPage({
         ? withDates.reduce((a, b) => (a.plannedDate > b.plannedDate ? a : b))
         : (p.opPlans[0] ?? null);
     const latestValues = latestPlan ? parseFieldValues(latestPlan.planData) : {};
-    const procedureName = latestPlan
-      ? isBuiltInSurgeryCode(latestPlan.surgeryType.code)
-        ? buildProcedureName(latestPlan.surgeryType.code, latestValues, nameStyle)
-        : latestPlan.surgeryType.name
-      : null;
+    const procedureName = latestPlan ? procedureNameFor(latestPlan.surgeryType, latestValues, nameStyle) : null;
     return {
       id: p.id,
       name: p.name,
@@ -151,11 +146,8 @@ export default async function PatientsPage({
           </h2>
           <ul className="space-y-2">
             {upcomingPlans.map((plan) => {
-              const code = plan.surgeryType.code;
               const values = parseFieldValues(plan.planData);
-              const procedureName = isBuiltInSurgeryCode(code)
-                ? buildProcedureName(code, values, nameStyle)
-                : plan.surgeryType.name;
+              const procedureName = procedureNameFor(plan.surgeryType, values, nameStyle);
               return (
                 <li key={plan.id} className="flex items-center justify-between text-sm">
                   <Link href={`/plans/${plan.id}`} className="hover:underline">

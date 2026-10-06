@@ -242,7 +242,12 @@ export function SurgeryPlanner({
   const previewRef = useRef<HTMLDivElement>(null);
   // 입력을 바꾼 뒤 저장하지 않고 떠나면 경고한다 — 제출하면 다시 끈다.
   const [dirty, setDirty] = useState(false);
-  useUnsavedChangesWarning(loggedIn && dirty);
+  // 저장을 누르면 경고를 끄는데(성공하면 다른 화면으로 넘어가므로), 저장이 실패해
+  // 이 화면에 오류와 함께 남으면 입력은 아직 저장 안 된 상태라 경고를 다시 켠다 —
+  // 저장 실패 때만 state가 새로 바뀌므로(성공하면 redirect), 누를 때의 state와
+  // 달라졌으면 실패로 본다.
+  const [stateAtSubmit, setStateAtSubmit] = useState(state);
+  useUnsavedChangesWarning(loggedIn && (dirty || state !== stateAtSubmit));
   // "수술 전" 화면(비강 소견 입력 + Op Plan 요약)과 "수술 후" 화면(수술 방법
   // 입력 + 수술기록지 초안)을 하나의 토글로 오간다 — 계획이 완료 상태면
   // 수술 후 화면을 기본으로 열어서, 매번 수동으로 넘길 필요가 없게 한다.
@@ -545,7 +550,10 @@ export function SurgeryPlanner({
   });
 
   return (
-    <form ref={formRef} action={formAction} onChange={regenerateFromForm} onSubmit={() => setDirty(false)}>
+    <form ref={formRef} action={formAction} onChange={regenerateFromForm} onSubmit={() => {
+        setDirty(false);
+        setStateAtSubmit(state);
+      }}>
       <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-4">
         {fixedPatient && <input type="hidden" name="existingPatientId" value={fixedPatient.id} />}
@@ -944,7 +952,11 @@ export function SurgeryPlanner({
         {view === "post" && (
           <div className="rounded-lg border border-slate-200 bg-white p-4">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold text-slate-700">수술기록지 초안</h2>
+              {/* 여기는 복사해서 EMR에 붙이는 초안이고, 저장·인쇄하는 정식 기록지는 계획
+                  화면 위쪽 버튼으로 따로 쓴다 — 이름이 같아 둘을 헷갈렸다. */}
+              <h2 className="text-sm font-semibold text-slate-700">
+                수술기록지 초안 <span className="font-normal text-slate-400">(복사용)</span>
+              </h2>
               <div className="flex gap-2">
                 <CopyButton text={recordText} />
                 <a
@@ -1016,7 +1028,7 @@ export function SurgeryPlanner({
             {pending ? "저장 중..." : editPlan ? "저장" : fixedPatient ? "계획 저장" : "환자 등록 + 계획 저장"}
           </button>
           <button type="submit" name="saveIntent" value="record" disabled={pending} className={`flex-1 ${buttonStyles.primary}`}>
-            {pending ? "저장 중..." : "저장 후 기록지 작성"}
+            {pending ? "저장 중..." : "저장 후 기록지 초안"}
           </button>
         </div>
       )}

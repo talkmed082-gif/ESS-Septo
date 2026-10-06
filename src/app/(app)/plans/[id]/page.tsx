@@ -43,7 +43,10 @@ export default async function OpPlanPage({
   // 값(actualData)이 있으면 그걸 먼저 보여주고, 없으면 원래 계획값을 그대로
   // 보여준다 — Op Plan 표(pre)는 아래 frozenPlanValues로 planData만 따로
   // 넘겨서 이 값과 무관하게 항상 원래 계획 그대로 표시되게 한다.
-  const values = { ...planValues, ...actualValues };
+  // 예정(PLANNED)으로 되돌린 계획은 원래 계획만 보여준다 — 합친 값을 보여주면
+  // 저장할 때 실제 시행 내역이 원래 계획(planData)을 덮어써서 원래 계획이 사라졌다.
+  // 실제 시행 내역(actualData)은 지우지 않고 남겨서, 다시 완료로 바꾸면 돌아온다.
+  const values = isDone ? { ...planValues, ...actualValues } : planValues;
 
   return (
     <div className="space-y-6">
@@ -52,9 +55,20 @@ export default async function OpPlanPage({
           <h1 className="text-xl font-semibold">{plan.patient.name} 수술 계획</h1>
           <p className="mt-1 text-sm text-slate-500">{plan.surgeryType.name}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {/* 저장·인쇄하는 정식 기록지로 가는 길 — 예전엔 기록지를 저장하고 이 화면으로
+              돌아와도 기록지로 갈 버튼이 없어서 환자 화면을 거쳐야 했다. */}
+          {plan.opRecord ? (
+            <Link href={`/records/${plan.opRecord.id}`} className={buttonStyles.primarySmall}>
+              정식 기록지 보기
+            </Link>
+          ) : (
+            <Link href={`/plans/${plan.id}/record`} className={buttonStyles.primarySmall}>
+              정식 기록지 작성
+            </Link>
+          )}
           <Link href={`/plans/${plan.id}/print`} className={buttonStyles.secondarySmall}>
-            인쇄용 보기
+            계획 인쇄
           </Link>
           <form action={deleteOpPlan.bind(null, plan.id, plan.patientId)}>
             <ConfirmSubmitButton
@@ -81,7 +95,7 @@ export default async function OpPlanPage({
         fixedPatient={{ id: plan.patient.id, name: plan.patient.name }}
         // 완료로 표시된 계획은 "수술 후" 화면(수술 방법/기록지)을 기본으로
         // 열어서, 이미 끝난 수술의 소견 입력 화면부터 다시 보여주지 않게 한다.
-        // ?view= 로 명시적으로 넘어오면(저장 후 기록지 작성 버튼) 그걸 우선한다.
+        // ?view= 로 명시적으로 넘어오면(저장 후 기록지 초안 버튼) 그걸 우선한다.
         defaultView={viewParam === "pre" || viewParam === "post" ? viewParam : isDone ? "post" : "pre"}
         editPlan={{
           surgeryTypeId: plan.surgeryTypeId,

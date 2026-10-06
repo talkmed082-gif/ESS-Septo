@@ -1,5 +1,5 @@
 import type { FieldValues } from "./field-types";
-import { fessStepFieldKeys, fessStepLabels, type BuiltInSurgeryCode } from "./op-note-defs";
+import { fessStepFieldKeys, fessStepLabels, isBuiltInSurgeryCode, type BuiltInSurgeryCode } from "./op-note-defs";
 
 export type OpNoteMode = "plan" | "record";
 
@@ -1038,6 +1038,19 @@ export function buildProcedureName(
   const joiner = hasEssRevision && rest ? "+ " : "";
   const name = `${revisionPrefix}${joiner}${rest}${turbSuffix}`.replace(/\s+/g, " ").trim();
   return name.replace(/^\+\s*/, "");
+}
+
+// 목록·캘린더·설정 등 여러 화면이 같이 쓰는 수술명 — 기본 3종은 자동 생성하고,
+// 사용자가 추가한 수술 종류는 그 이름을 그대로 쓴다. 예전엔 이 분기가 화면마다
+// 따로 복사돼 있어서 표기 규칙을 바꿀 때 여러 곳을 고쳐야 했다.
+export function procedureNameFor(
+  surgeryType: { code: string; name: string },
+  values: FieldValues,
+  style: NameStyle = DEFAULT_NAME_STYLE,
+): string {
+  return isBuiltInSurgeryCode(surgeryType.code)
+    ? buildProcedureName(surgeryType.code, values, style)
+    : surgeryType.name;
 }
 
 // ---------- Op Plan 표 형식 (인쇄용 — 내시경 앞에 붙여두고 한눈에 보는 용도) ----------

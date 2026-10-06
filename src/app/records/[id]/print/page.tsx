@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
 import { parseFieldValues } from "@/lib/field-types";
-import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
+import { isUnusedSideField, resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import { PrintButton } from "@/components/print-button";
 import { SaveImageButton } from "@/components/save-image-button";
 import { CopyButton } from "@/components/copy-button";
@@ -45,7 +45,7 @@ export default async function OpRecordPrintPage({
 
   const checkedFields = fields.filter((f) => f.type === "checkbox" && values[f.key]);
   const otherFields = fields.filter(
-    (f) => f.type !== "checkbox" && values[f.key],
+    (f) => f.type !== "checkbox" && values[f.key] && !isUnusedSideField(f.key, values),
   );
 
   // 병원 EMR 등 다른 곳에 옮겨 적을 수 있게, 수술명 + 소견/과정을 통째로

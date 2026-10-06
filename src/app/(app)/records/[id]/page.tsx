@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
 import { parseFieldValues } from "@/lib/field-types";
-import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
+import { isUnusedSideField, resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import { safeDateStr } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
 import { buildRemarkText } from "@/lib/remark";
@@ -106,6 +106,7 @@ export default async function OpRecordPage({
           <ul className="space-y-1 text-sm">
             {fields.map((f) => {
               const v = values[f.key];
+              if (isUnusedSideField(f.key, values)) return null;
               if (f.type === "checkbox") {
                 if (!v) return null;
                 return <li key={f.key}>✓ {f.label}</li>;

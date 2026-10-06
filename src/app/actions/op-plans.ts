@@ -36,8 +36,8 @@ export async function updateOpPlan(
   }
 
   const validated = OpPlanSchema.safeParse({
-    plannedDate: formData.get("plannedDate"),
-    planNote: formData.get("planNote"),
+    plannedDate: formData.get("plannedDate") ?? "",
+    planNote: formData.get("planNote") ?? "",
     chiefComplaint: formData.get("chiefComplaint") ?? "",
     postOpRemark: formData.get("postOpRemark") ?? "",
     saveIntent: formData.get("saveIntent") || undefined,

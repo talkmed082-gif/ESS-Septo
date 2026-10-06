@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
 import { parseFieldValues } from "@/lib/field-types";
-import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
-import { buildProcedureName } from "@/lib/op-note-generator";
+import { procedureNameFor } from "@/lib/op-note-generator";
 import { buildIcsContent } from "@/lib/calendar";
 
 export async function GET(
@@ -22,9 +21,7 @@ export async function GET(
   }
 
   const values = parseFieldValues(plan.planData);
-  const procedureName = isBuiltInSurgeryCode(plan.surgeryType.code)
-    ? buildProcedureName(plan.surgeryType.code, values)
-    : plan.surgeryType.name;
+  const procedureName = procedureNameFor(plan.surgeryType, values);
 
   const ics = buildIcsContent({
     uid: `op-plan-${plan.id}@ess-septo`,

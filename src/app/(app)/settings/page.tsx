@@ -2,14 +2,14 @@ import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { getCurrentUser } from "@/lib/dal";
 import { parseFieldValues } from "@/lib/field-types";
-import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
-import { buildProcedureName, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
+import { procedureNameFor, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { buildGoogleCalendarUrl } from "@/lib/calendar";
 import { safeDateStr, seoulTodayAsStoredDate } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
 import { SettingsForm } from "./settings-form";
 import { SurgeryTypesManager } from "../surgery-types/surgery-types-manager";
 import { CalendarSubscribeCard } from "./calendar-subscribe-card";
+import { AccountCard } from "./account-card";
 
 export default async function SettingsPage() {
   const user = await getCurrentUser();
@@ -63,9 +63,7 @@ export default async function SettingsPage() {
           <ul className="space-y-2">
             {upcomingPlans.map((plan) => {
               const values = parseFieldValues(plan.planData);
-              const procedureName = isBuiltInSurgeryCode(plan.surgeryType.code)
-                ? buildProcedureName(plan.surgeryType.code, values, nameStyle)
-                : plan.surgeryType.name;
+              const procedureName = procedureNameFor(plan.surgeryType, values, nameStyle);
               return (
                 <li
                   key={plan.id}
@@ -93,6 +91,12 @@ export default async function SettingsPage() {
             })}
           </ul>
         )}
+      </div>
+
+      <div>
+        <h2 className="mb-1 text-sm font-semibold text-slate-700">계정 보안</h2>
+        <p className="mb-3 text-sm text-slate-500">{user.email}</p>
+        <AccountCard />
       </div>
 
       <div>

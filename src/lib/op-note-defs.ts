@@ -365,6 +365,13 @@ export const comboFullFields: SurgeryFieldDef[] = withDefaults(
   { [SEPTO_PE_DONE_KEY]: "true", [ESS_PE_DONE_KEY]: "true", n_chr: "양측" },
 );
 
+// "있음" 체크 없이 방향 값만 남아 있는 소견 — 방향 칸은 기본값(양측)이 있어서,
+// 기록지 항목 목록에 그대로 나열하면 없는 소견이 "방향: 양측"으로 보였다.
+export function isUnusedSideField(key: string, values: Record<string, unknown>): boolean {
+  if (!key.endsWith("_side") || key === "n_dev_side" || key === "s_incision_side") return false;
+  return values[key.replace(/_side$/, "_present")] !== true;
+}
+
 export const BUILT_IN_SURGERY_CODES = ["ESS", "SEPTOPLASTY", "COMBO"] as const;
 export type BuiltInSurgeryCode = (typeof BUILT_IN_SURGERY_CODES)[number];
 

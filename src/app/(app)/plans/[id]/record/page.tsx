@@ -30,7 +30,13 @@ export default async function NewOpRecordPage({
     abbreviateRegions: currentUser.abbreviateRegions,
   };
   const fields = resolveSurgeryTypeFields(plan.surgeryType);
-  const planValues = parseFieldValues(plan.planData);
+  // 완료된 계획은 "수술 후" 화면에서 고친 실제 시행 내역(actualData)이 따로 있어서,
+  // 기록지 초안도 그 값을 우선해야 한다 — 예전엔 원래 계획(planData)만 읽어서 수술
+  // 후에 고친 내용이 정식 기록지에서 빠졌다. 계획 화면의 초안과 같은 기준이다.
+  const planValues =
+    plan.status === "DONE"
+      ? { ...parseFieldValues(plan.planData), ...parseFieldValues(plan.actualData) }
+      : parseFieldValues(plan.planData);
   const action = createOpRecord.bind(null, planId);
 
   const code = plan.surgeryType.code;

@@ -177,6 +177,10 @@ export function RecordForm({
     >
       <div className="flex items-start justify-end gap-3">
         {state?.message && <p className="mt-2 text-sm text-red-600">{state.message}</p>}
+        {/* 검사 오류가 화면 어디에도 안 보여서 저장이 왜 안 되는지 알 수 없던 문제 — 모아서 보여준다. */}
+        {state?.errors && Object.values(state.errors).flat().length > 0 && (
+          <p className="mt-2 text-sm text-red-600">{Object.values(state.errors).flat().join(" ")}</p>
+        )}
         <button
           type="submit"
           disabled={pending}

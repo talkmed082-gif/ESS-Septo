@@ -2,10 +2,12 @@ import { prisma } from "@/lib/prisma";
 import { deleteSurgeryType } from "@/app/actions/surgery-types";
 import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import { SurgeryTypeFieldBuilder } from "./field-builder";
+import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 
 export async function SurgeryTypesManager() {
   const surgeryTypes = await prisma.surgeryType.findMany({
     orderBy: [{ isBuiltIn: "desc" }, { createdAt: "asc" }],
+    include: { _count: { select: { opPlans: true } } },
   });
 
   return (
@@ -35,16 +37,21 @@ export async function SurgeryTypesManager() {
                   {st.isBuiltIn ? "기본" : "사용자 추가"}
                 </td>
                 <td className="px-4 py-2 text-right">
-                  {!st.isBuiltIn && (
-                    <form action={deleteSurgeryType.bind(null, st.id)}>
-                      <button
-                        type="submit"
-                        className="text-sm text-red-600 hover:underline"
-                      >
-                        삭제
-                      </button>
-                    </form>
-                  )}
+                  {/* 수술 종류는 모든 계정이 같이 쓰고, 계획에서 쓰는 중이면 지울 수 없다 —
+                      예전엔 확인 없이 지워지거나, 쓰는 중이면 아무 안내 없이 실패했다. */}
+                  {!st.isBuiltIn &&
+                    (st._count.opPlans > 0 ? (
+                      <span className="text-xs text-slate-400">계획 {st._count.opPlans}건에서 사용 중</span>
+                    ) : (
+                      <form action={deleteSurgeryType.bind(null, st.id)}>
+                        <ConfirmSubmitButton
+                          message={`수술 종류 "${st.name}"을(를) 삭제할까요? 다른 계정에서도 함께 사라집니다.`}
+                          className="text-sm text-red-600 hover:underline"
+                        >
+                          삭제
+                        </ConfirmSubmitButton>
+                      </form>
+                    ))}
                 </td>
               </tr>
             ))}

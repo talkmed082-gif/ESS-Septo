@@ -9,15 +9,7 @@ import { fieldValuesFromFormData, type FieldValues } from "@/lib/field-types";
 import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import type { SideNotation } from "@/lib/op-note-generator";
 import { checkRecordConsistency } from "@/lib/record-consistency";
-
-const OpRecordSchema = z.object({
-  operationDate: z.string().trim().min(1, { error: "수술일을 입력하세요." }),
-  surgeonName: z.string().trim().min(1, { error: "집도의를 입력하세요." }),
-  anesthesiaType: z.string().trim().optional(),
-  procedureName: z.string().trim().optional(),
-  findings: z.string().trim().optional(),
-  procedureDetail: z.string().trim().optional(),
-});
+import { parseRecordFormData } from "@/lib/op-record-form";
 
 export interface OpRecordFormState {
   errors?: Record<string, string[]>;
@@ -47,17 +39,6 @@ async function consistencyWarnings(
     anesthesiaType: data.anesthesiaType || undefined,
     procedureName: data.procedureName ?? "",
     procedureDetail: data.procedureDetail ?? "",
-  });
-}
-
-function parseRecordFormData(formData: FormData) {
-  return OpRecordSchema.safeParse({
-    operationDate: formData.get("operationDate"),
-    surgeonName: formData.get("surgeonName"),
-    anesthesiaType: formData.get("anesthesiaType"),
-    procedureName: formData.get("procedureName"),
-    findings: formData.get("findings"),
-    procedureDetail: formData.get("procedureDetail"),
   });
 }
 
@@ -91,7 +72,10 @@ export async function createOpRecord(
   const warnings = await consistencyWarnings(formData, plan.surgeryType.code, recordData, data);
   if (warnings.length) return { consistencyWarnings: warnings };
 
-  await prisma.opRecord.create({
+  // 정식 기록지를 썼다는 건 수술이 끝났다는 뜻이라 계획도 완료로 바꾼다 — 그래야
+  // 계획 화면이 "수술 후" 화면으로 열리고, 이후 수술 방법 수정이 원래 계획을
+  // 덮어쓰지 않는다. 완료로 바뀌는 시점의 값은 그대로 원래 계획으로 남는다.
+  const createRecord = prisma.opRecord.create({
     data: {
       opPlanId: planId,
       operationDate: new Date(data.operationDate),
@@ -104,7 +88,16 @@ export async function createOpRecord(
       createdById: session.userId,
     },
   });
+  if (plan.status === "DONE") {
+    await createRecord;
+  } else {
+    await prisma.$transaction([
+      createRecord,
+      prisma.opPlan.update({ where: { id: planId }, data: { status: "DONE" } }), // ownership-checked above
+    ]);
+  }
 
+  revalidatePath("/patients");
   revalidatePath(`/plans/${planId}`);
   revalidatePath(`/patients/${plan.patientId}`);
   // 계획 작성 화면 자체가 환자 기본 화면이라, 기록지를 쓴 뒤에도 그

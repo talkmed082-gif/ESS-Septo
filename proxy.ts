@@ -37,7 +37,8 @@ export default async function proxy(req: NextRequest) {
   // 자동 로그인: 방문할 때마다 세션 만료 시간을 다시 늘려서, 계속 쓰는
   // 한 로그아웃되지 않게 한다(sliding session).
   if (session?.userId) {
-    const refreshed = await encrypt({ userId: session.userId });
+    // 세션 버전(sv)도 그대로 옮겨야 비밀번호 변경 전/후 판별이 유지된다.
+    const refreshed = await encrypt({ userId: session.userId, sv: session.sv ?? 0 });
     const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
     response.cookies.set(SESSION_COOKIE, refreshed, sessionCookieOptions(expiresAt));
   }

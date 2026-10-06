@@ -10,6 +10,9 @@ const encodedKey = new TextEncoder().encode(secretKey);
 
 export interface SessionPayload {
   userId: string;
+  // User.sessionVersion — 비밀번호 변경 등으로 올라가면 이 값이 다른 예전 세션은
+  // 무효가 된다. 이 값이 생기기 전에 발급된 쿠키는 없으므로 0으로 본다.
+  sv?: number;
   [key: string]: unknown;
 }
 
@@ -51,9 +54,9 @@ export function sessionCookieOptions(expiresAt: Date) {
   };
 }
 
-export async function createSession(userId: string) {
+export async function createSession(userId: string, sessionVersion: number) {
   const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
-  const session = await encrypt({ userId });
+  const session = await encrypt({ userId, sv: sessionVersion });
   const cookieStore = await cookies();
 
   cookieStore.set(SESSION_COOKIE, session, sessionCookieOptions(expiresAt));

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  isUnusedSideField,
   comboFullFields,
   essFindingFields,
   essFullFields,
@@ -88,3 +89,15 @@ describe("ESS의 DSN 필드", () => {
   });
 });
 
+
+describe("isUnusedSideField", () => {
+  it("'있음' 체크가 없는 소견의 방향 칸은 숨긴다", () => {
+    expect(isUnusedSideField("n_cb_side", { n_cb_side: "양측" })).toBe(true);
+    expect(isUnusedSideField("n_cb_side", { n_cb_side: "양측", n_cb_present: true })).toBe(false);
+  });
+
+  it("짝이 없는 방향 칸(비중격 편위, 절개 방향)은 그대로 보여준다", () => {
+    expect(isUnusedSideField("n_dev_side", {})).toBe(false);
+    expect(isUnusedSideField("s_incision_side", {})).toBe(false);
+  });
+});
