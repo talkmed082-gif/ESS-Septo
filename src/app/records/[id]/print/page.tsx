@@ -10,6 +10,7 @@ import { CopyButton } from "@/components/copy-button";
 import { AppNavBar } from "@/components/app-nav-bar";
 import { safeDateStr } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
+import { buildRemarkText } from "@/lib/remark";
 
 function Row({ label, value }: { label: string; value?: string | null }) {
   return (
@@ -55,6 +56,12 @@ export default async function OpRecordPrintPage({
   ]
     .filter(Boolean)
     .join("\n\n");
+  const remarkText = buildRemarkText({
+    chiefComplaint: record.opPlan.chiefComplaint ?? "",
+    surgeryDate: safeDateStr(record.operationDate) ?? "",
+    procedureName: record.procedureName ?? "",
+    postOpRemark: record.opPlan.postOpRemark ?? "",
+  });
 
   return (
     <div>
@@ -66,6 +73,12 @@ export default async function OpRecordPrintPage({
           </Link>
           <div className="flex flex-wrap gap-2">
             <CopyButton text={copyText} label="내용 복사" className={buttonStyles.secondary} />
+            <CopyButton
+              text={remarkText}
+              label="Remark 복사"
+              disabled={!remarkText}
+              className={buttonStyles.secondary}
+            />
             <SaveImageButton
               targetId="op-record-print-content"
               fileName={`${patient.name}_수술기록지.jpg`}
@@ -92,6 +105,7 @@ export default async function OpRecordPrintPage({
                     patient.age != null ? `만 ${patient.age}세` : "-"
                   }`}
                 />
+                <Row label="CC" value={record.opPlan.chiefComplaint} />
                 <Row label="수술일" value={safeDateStr(record.operationDate) ?? "-"} />
                 <Row label="마취 종류" value={record.anesthesiaType} />
                 <Row label="집도의" value={record.surgeonName} />
@@ -107,6 +121,7 @@ export default async function OpRecordPrintPage({
                   label="수술 소견 및 과정"
                   value={[record.findings, record.procedureDetail].filter(Boolean).join("\n\n")}
                 />
+                <Row label="수술 후 특이사항" value={record.opPlan.postOpRemark} />
               </tbody>
             </table>
           </div>

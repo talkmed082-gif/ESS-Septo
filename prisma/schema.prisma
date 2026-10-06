@@ -116,10 +116,8 @@ model OpRecord {
   procedureDetail   String?
   // surgeryType.fields 의 key 에 대응하는 실제 시행 결과값
   recordData        Json?
-  complication      String?
   estimatedBloodLoss String?
   specimen          String?
-  postOpPlan        String?
   createdById       String
   createdBy         User     @relation(fields: [createdById], references: [id])
   createdAt         DateTime @default(now())

@@ -6,6 +6,8 @@ import { parseFieldValues } from "@/lib/field-types";
 import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import { safeDateStr } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
+import { buildRemarkText } from "@/lib/remark";
+import { CopyButton } from "@/components/copy-button";
 
 function Row({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
@@ -33,6 +35,14 @@ export default async function OpRecordPage({
 
   const fields = resolveSurgeryTypeFields(record.opPlan.surgeryType);
   const values = parseFieldValues(record.recordData);
+  // 기록지를 다 쓴 뒤에도 여기서 바로 차트 remark를 복사할 수 있게 한다 —
+  // 수술명·날짜는 기록지에 최종으로 적은 값을 쓴다.
+  const remarkText = buildRemarkText({
+    chiefComplaint: record.opPlan.chiefComplaint ?? "",
+    surgeryDate: safeDateStr(record.operationDate) ?? "",
+    procedureName: record.procedureName ?? "",
+    postOpRemark: record.opPlan.postOpRemark ?? "",
+  });
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -58,6 +68,7 @@ export default async function OpRecordPage({
       <div className="rounded-lg border border-slate-200 bg-white p-5">
         <dl>
           <Row label="환자" value={record.opPlan.patient.name} />
+          <Row label="CC" value={record.opPlan.chiefComplaint} />
           <Row
             label="수술일"
             value={safeDateStr(record.operationDate)}
@@ -66,6 +77,25 @@ export default async function OpRecordPage({
           <Row label="마취" value={record.anesthesiaType} />
           <Row label="시행 수술명" value={record.procedureName} />
         </dl>
+      </div>
+
+      <div className="rounded-lg border border-slate-200 bg-white p-5">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold text-slate-700">차트 Remark</h2>
+          <div className="flex gap-2">
+            <Link href={`/plans/${record.opPlan.id}?view=post`} className={buttonStyles.smallOutline}>
+              CC·특이사항 수정
+            </Link>
+            <CopyButton text={remarkText} disabled={!remarkText} />
+          </div>
+        </div>
+        {remarkText ? (
+          <pre className="whitespace-pre-wrap rounded-md bg-slate-50 p-3 font-sans text-sm text-slate-800">
+            {remarkText}
+          </pre>
+        ) : (
+          <p className="text-sm text-slate-500">수술 계획 화면에서 CC와 수술 후 특이사항을 적으면 여기에 표시됩니다.</p>
+        )}
       </div>
 
       {fields.length > 0 && (

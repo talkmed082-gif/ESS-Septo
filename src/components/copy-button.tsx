@@ -10,15 +10,19 @@ export function CopyButton({
   text,
   label = "복사",
   className = buttonStyles.smallOutline,
+  disabled = false,
 }: {
   text: string;
   label?: string;
   className?: string;
+  // 복사할 내용이 없을 때 눌러도 "복사됨"이 뜨지 않게 끈다.
+  disabled?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
   return (
     <button
       type="button"
+      disabled={disabled}
       onClick={async () => {
         try {
           await navigator.clipboard.writeText(text);
@@ -28,7 +32,7 @@ export function CopyButton({
           // 클립보드 접근 불가 - 무시
         }
       }}
-      className={className}
+      className={`${className} disabled:cursor-not-allowed disabled:opacity-40`}
     >
       {copied ? "복사됨 ✓" : label}
     </button>

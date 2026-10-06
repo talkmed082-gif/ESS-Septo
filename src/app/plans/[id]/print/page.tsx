@@ -78,6 +78,14 @@ export default async function OpPlanPrintPage({
                     {safeDateStr(plan.plannedDate) ?? "-"}
                   </td>
                 </tr>
+                {plan.chiefComplaint && (
+                  <tr>
+                    <th className="border border-slate-400 bg-slate-50 px-2 py-2 text-left font-medium sm:px-3 sm:py-2.5">
+                      CC
+                    </th>
+                    <td className="border border-slate-400 px-2 py-2 sm:px-3 sm:py-2.5">{plan.chiefComplaint}</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

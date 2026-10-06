@@ -411,3 +411,46 @@ describe("차트 Remark", () => {
     expect(form.get("postOpRemark")).toBe("출혈 많아 packing");
   });
 });
+
+describe("수술 날짜", () => {
+  it("수술 전 화면에서 저장해도 날짜가 같이 전송된다", () => {
+    const { container } = render(
+      <SurgeryPlanner
+        surgeryTypes={types}
+        loggedIn
+        defaultView="pre"
+        editPlan={{ surgeryTypeId: "1", plannedDate: "2026-10-06", values: {} }}
+      />,
+    );
+    expect(new FormData(container.querySelector("form")!).get("plannedDate")).toBe("2026-10-06");
+  });
+
+  it("새 계획은 날짜를 오늘로 지어내지 않고 비워 둔다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
+    expect(new FormData(container.querySelector("form")!).get("plannedDate")).toBe("");
+  });
+
+  it("새 환자를 완료 상태로 등록하면 비어 있던 날짜를 오늘로 채우고 기록지 초안에도 반영한다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
+    fireEvent.click(container.querySelector('input[name="planStatus"][value="DONE"]')!);
+    const date = new FormData(container.querySelector("form")!).get("plannedDate") as string;
+    expect(date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    const draft = Array.from(container.querySelectorAll("pre")).find((p) => p.textContent?.startsWith("수술명"))!;
+    expect(draft.textContent).toContain(date);
+  });
+});
+
+describe("CC 빠른 입력", () => {
+  it("방향을 고른 뒤 증상 버튼을 누르면 CC에 방향과 함께 들어간다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
+    fireEvent.click(byText(container, "Rt."));
+    fireEvent.click(byText(container, "코막힘"));
+    fireEvent.click(byText(container, "후비루"));
+    const cc = container.querySelector('input[name="chiefComplaint"]') as HTMLInputElement;
+    expect(cc.value).toBe("코막힘 (Rt.), 후비루");
+    // 같은 증상을 다른 방향으로 다시 누르면 방향만 바뀐다
+    fireEvent.click(byText(container, "Both"));
+    fireEvent.click(byText(container, "코막힘 Rt."));
+    expect(cc.value).toBe("코막힘 (Both), 후비루");
+  });
+});

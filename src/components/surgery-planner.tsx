@@ -25,10 +25,12 @@ import { UncinateAttachmentFields } from "@/components/uncinate-attachment-field
 import { TurbinoplastyTypePicker, TURBINOPLASTY_FIELD_KEYS } from "@/components/turbinoplasty-type-picker";
 import { PlanTableView } from "@/components/plan-table";
 import { CopyButton } from "@/components/copy-button";
+import { CcInput } from "@/components/cc-input";
 import { useUnsavedChangesWarning } from "@/components/use-unsaved-changes-warning";
 import { hasDsnValue, DSN_NO_DEGREE, DSN_NO_SIDE } from "@/components/dsn-sync";
 import { buttonStyles } from "@/lib/ui";
 import { buildRemarkText } from "@/lib/remark";
+import { localTodayStr } from "@/lib/date-format";
 import {
   applyFieldDefaults,
   fieldValuesFromFormData,
@@ -213,11 +215,10 @@ export function SurgeryPlanner({
   const [selectedId, setSelectedId] = useState(initialSelected?.id ?? first?.id ?? "");
   // 마취는 항상 전신마취(General)가 기본이라 별도 선택 없이 고정한다.
   const anesthesiaType = "General";
-  // 기록지 초안 수술명 줄에 쓸 날짜 — 기본은 작성 당일이고, 저장된 계획을
-  // 다시 열면 그때 저장해둔 날짜를 그대로 보여준다.
-  const [surgeryDate, setSurgeryDate] = useState(
-    () => editPlan?.plannedDate || new Date().toISOString().slice(0, 10),
-  );
+  // 수술 날짜 — 저장된 계획은 그 날짜를, 새 계획은 빈 값(미정)으로 시작한다.
+  // 예전엔 오늘 날짜를 기본으로 채워서, 며칠 뒤 수술을 미리 계획하면 날짜를 안
+  // 고친 채 저장돼 엉뚱한 날짜가 기록지·remark·캘린더에 들어갔다.
+  const [surgeryDate, setSurgeryDate] = useState(() => editPlan?.plannedDate ?? "");
   const [{ planTable, recordText, procedureName }, setTexts] = useState(() =>
     initialSelected
       ? buildTextsFrozenAware(
@@ -227,7 +228,7 @@ export function SurgeryPlanner({
           editPlan?.frozenPlanValues,
           "General",
           nameStyle,
-          { date: editPlan?.plannedDate || new Date().toISOString().slice(0, 10), surgeonName: userName ?? "" },
+          { date: editPlan?.plannedDate ?? "", surgeonName: userName ?? "" },
         )
       : { planTable: null, recordText: "", procedureName: "" },
   );
@@ -345,12 +346,15 @@ export function SurgeryPlanner({
     setView(next);
   }
 
+  function changeSurgeryDate(next: string) {
+    setDirty(true);
+    setSurgeryDate(next);
+    setTexts(computeTexts(readCurrentValues() ?? templateValues ?? {}, next));
+  }
+
   function handleSurgeryDateChange(e: ChangeEvent<HTMLInputElement>) {
     e.stopPropagation();
-    setDirty(true);
-    const next = e.target.value;
-    setSurgeryDate(next);
-    setTexts(computeTexts(templateValues ?? {}, next));
+    changeSurgeryDate(e.target.value);
   }
 
   function readCurrentValues(): FieldValues | null {
@@ -552,7 +556,20 @@ export function SurgeryPlanner({
                 예정
               </label>
               <label className="flex items-center gap-1.5">
-                <input type="radio" name="planStatus" value="DONE" onChange={() => changeView("post")} />
+                <input
+                  type="radio"
+                  name="planStatus"
+                  value="DONE"
+                  onChange={(e) => {
+                    changeView("post");
+                    // 이미 끝난 수술을 등록하는 경우라 날짜가 비어 있으면 오늘로 채운다.
+                    // 폼 onChange는 아직 빈 날짜를 보고 초안을 다시 덮어쓰므로 막는다.
+                    if (!surgeryDate) {
+                      e.stopPropagation();
+                      changeSurgeryDate(localTodayStr());
+                    }
+                  }}
+                />
                 완료
               </label>
             </div>
@@ -580,6 +597,28 @@ export function SurgeryPlanner({
               Septo
             </label>
           )}
+          {/* 날짜는 수술 전/후 어느 화면에서 저장해도 항상 전송되도록 늘 그려지는
+              이 줄에 둔다 — 예전엔 수술 후 화면에만 있어서, 수술 전 화면에서 저장하면
+              날짜가 빠져 저장이 실패하거나 날짜가 지워졌다. */}
+          <div className="flex items-center gap-1.5 text-xs text-slate-500">
+            <label className="flex items-center gap-1.5">
+              수술 날짜
+              <input
+                type="date"
+                name="plannedDate"
+                value={surgeryDate}
+                onChange={handleSurgeryDateChange}
+                className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-xs text-slate-700"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => changeSurgeryDate(localTodayStr())}
+              className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-xs text-slate-600 hover:bg-slate-100"
+            >
+              오늘
+            </button>
+          </div>
         </div>
 
         {customTypes.length > 0 && (
@@ -649,16 +688,13 @@ export function SurgeryPlanner({
         )}
 
         {selected && (
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">CC (주호소)</label>
-            <input
-              name="chiefComplaint"
-              value={chiefComplaint}
-              onChange={(e) => setChiefComplaint(e.target.value)}
-              placeholder="예: 코막힘, 후비루"
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-            />
-          </div>
+          <CcInput
+            value={chiefComplaint}
+            onChange={(next) => {
+              setDirty(true);
+              setChiefComplaint(next);
+            }}
+          />
         )}
 
         {selected && (
@@ -867,22 +903,42 @@ export function SurgeryPlanner({
             )}
           </div>
         )}
+        {/* 특이사항 입력란은 수술 후 화면에서만 보이지만, 수술 전 화면에서 저장해도
+            값이 지워지지 않게 실제 전송은 항상 그려지는 숨은 입력으로 한다.
+            Remark는 짧아서 긴 기록지 초안 위에 둔다 — 폰에서 한참 내려가지 않게. */}
+        <input type="hidden" name="postOpRemark" value={postOpRemark} />
+        {view === "post" && selected && (
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold text-slate-700">차트 Remark</h2>
+              <CopyButton text={remarkText} disabled={!remarkText} />
+            </div>
+            <label className="mb-1 block text-xs font-medium text-slate-500">수술 후 특이사항</label>
+            <textarea
+              rows={3}
+              value={postOpRemark}
+              onChange={(e) => {
+                // 폼 전체 onChange(기록지 초안 재계산)로 퍼지지 않게 막는다.
+                e.stopPropagation();
+                setDirty(true);
+                setPostOpRemark(e.target.value);
+              }}
+              placeholder="예: 출혈 많아 Merocel 양측 packing, 특이 합병증 없음"
+              className="mb-3 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            />
+            {remarkText ? (
+              <pre className="whitespace-pre-wrap rounded-md bg-slate-50 p-3 font-sans text-sm text-slate-800">
+                {remarkText}
+              </pre>
+            ) : (
+              <p className="text-sm text-slate-500">CC와 특이사항을 적으면 여기에 remark가 만들어집니다.</p>
+            )}
+          </div>
+        )}
         {view === "post" && (
           <div className="rounded-lg border border-slate-200 bg-white p-4">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <h2 className="text-sm font-semibold text-slate-700">수술기록지 초안</h2>
-                <label className="flex items-center gap-1.5 text-xs text-slate-500">
-                  수술 날짜
-                  <input
-                    type="date"
-                    name="plannedDate"
-                    value={surgeryDate}
-                    onChange={handleSurgeryDateChange}
-                    className="rounded border border-slate-300 px-1.5 py-0.5 text-xs"
-                  />
-                </label>
-              </div>
+              <h2 className="text-sm font-semibold text-slate-700">수술기록지 초안</h2>
               <div className="flex gap-2">
                 <CopyButton text={recordText} />
                 <a
@@ -896,32 +952,6 @@ export function SurgeryPlanner({
               </div>
             </div>
             <pre className="whitespace-pre-wrap font-sans text-sm text-slate-800">{recordText}</pre>
-          </div>
-        )}
-        {/* 특이사항 입력란은 수술 후 화면에서만 보이지만, 수술 전 화면에서 저장해도
-            값이 지워지지 않게 실제 전송은 항상 그려지는 숨은 입력으로 한다. */}
-        <input type="hidden" name="postOpRemark" value={postOpRemark} />
-        {view === "post" && selected && (
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold text-slate-700">차트 Remark</h2>
-              <CopyButton text={remarkText} />
-            </div>
-            <label className="mb-1 block text-xs font-medium text-slate-500">수술 후 특이사항</label>
-            <textarea
-              rows={3}
-              value={postOpRemark}
-              onChange={(e) => setPostOpRemark(e.target.value)}
-              placeholder="예: 출혈 많아 Merocel 양측 packing, 특이 합병증 없음"
-              className="mb-3 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-            />
-            {remarkText ? (
-              <pre className="whitespace-pre-wrap rounded-md bg-slate-50 p-3 font-sans text-sm text-slate-800">
-                {remarkText}
-              </pre>
-            ) : (
-              <p className="text-sm text-slate-500">CC와 특이사항을 적으면 여기에 remark가 만들어집니다.</p>
-            )}
           </div>
         )}
         <p className="text-xs text-slate-500">
@@ -974,7 +1004,7 @@ export function SurgeryPlanner({
             onClick={() => previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
             className={`lg:hidden ${buttonStyles.secondary}`}
           >
-            {view === "pre" ? "요약 보기" : "기록지 보기"}
+            {view === "pre" ? "요약 보기" : "Remark·기록지"}
           </button>
           <button type="submit" name="saveIntent" value="save" disabled={pending} className={`flex-1 ${buttonStyles.secondary}`}>
             {pending ? "저장 중..." : editPlan ? "저장" : fixedPatient ? "계획 저장" : "환자 등록 + 계획 저장"}
