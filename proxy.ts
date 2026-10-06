@@ -8,7 +8,8 @@ import {
   sessionCookieOptions,
 } from "@/lib/session";
 
-const publicRoutes = ["/login", "/signup", "/"];
+// 비밀번호 찾기/재설정은 로그인 없이 들어오는 화면이다(로그인 상태여도 막지 않는다).
+const publicRoutes = ["/login", "/signup", "/", "/forgot-password", "/reset-password"];
 const authOnlyRoutes = ["/login", "/signup"];
 
 export default async function proxy(req: NextRequest) {
