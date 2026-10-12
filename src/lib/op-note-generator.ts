@@ -1017,7 +1017,16 @@ export function buildProcedureName(
 
   const hasFessRegions =
     fessRegionsForSide("f_left_", values).length > 0 || fessRegionsForSide("f_right_", values).length > 0;
-  const turbSuffix = turbinoplastyGlobalSuffix(values, style, hasFessRegions);
+  // 병행(COMBO)도 단독 비중격(septoplastyProcedureName)과 같은 규칙 — Inferior
+  // 양측이면 "Septoturbinoplasty"라는 한 단어에 이미 담기므로 접미사에서 뺀다.
+  const inferior = turbSideFlags("inferior", values);
+  const septoturbino = surgeryCode === "COMBO" && inferior.right && inferior.left;
+  const septoWord = septoturbino ? "Septoturbinoplasty" : "Septoplasty";
+  const turbSuffix = turbinoplastyGlobalSuffix(
+    septoturbino ? { ...values, turb_inferior_right: false, turb_inferior_left: false } : values,
+    style,
+    hasFessRegions,
+  );
   // Revision case(재수술)는 수술명 맨 앞에 어느 부위의 재수술인지와 함께
   // "rev> 부위(시행 sinus)" 형태로 표기한다 — 그 side의 sinus 내역은 이미 이
   // 태그 안에 다 들어있으므로, 실제 수술명 쪽에서는 revision이 걸린 side를
@@ -1031,7 +1040,7 @@ export function buildProcedureName(
   // Turbinoplasty만 하고 부비동은 하나도 열지 않았으면 "ESS"를 붙이지 않는다.
   const onlyTurbinoplasty = !hasFessRegions && turbSuffix !== "" && !revisionPrefix;
   const fessName = onlyTurbinoplasty ? "" : buildFessProcedureName(values, "ESS", style, excludeSides);
-  const rest = surgeryCode === "ESS" ? fessName : fessName ? `Septoplasty + ${fessName}` : "Septoplasty";
+  const rest = surgeryCode === "ESS" ? fessName : fessName ? `${septoWord} + ${fessName}` : septoWord;
   // ESS revision 태그(rev> ...)에는 그 side에서 이번에 시행한 sinus까지 들어 있어서,
   // 뒤에 다른 side 술식이 이어지면 "+"로 끊어야 그 술식까지 재수술로 읽히지 않는다.
   const hasEssRevision = excludeSides.left || excludeSides.right;

@@ -229,10 +229,30 @@ describe("buildProcedureName", () => {
     expect(buildProcedureName("ESS", fessSteps("both"), style)).toBe("B] ESS(FEMS)");
   });
 
-  it("병행은 Septoplasty + ESS 이름에 turbinoplasty 접미사를 붙인다", () => {
+  it("병행에서 Inferior 양측이면 Septoturbinoplasty + ESS로 쓴다", () => {
     const values = { ...fessSteps("both", ["mma", "ant_eth"]), turb_inferior_right: true, turb_inferior_left: true };
-    expect(buildProcedureName("COMBO", values)).toBe(
-      "Septoplasty + Both ESS(Ethmoid, Maxillary) + Both Turbinoplasty",
+    expect(buildProcedureName("COMBO", values)).toBe("Septoturbinoplasty + Both ESS(Ethmoid, Maxillary)");
+  });
+
+  it("병행에서 Inferior 한쪽만이면 Septoplasty를 유지한다", () => {
+    const values = { ...fessSteps("both", ["mma", "ant_eth"]), turb_inferior_right: true };
+    expect(buildProcedureName("COMBO", values)).toMatch(/^Septoplasty \+ /);
+  });
+
+  it("병행에서 Inferior 양측 + Middle 양측이면 Middle만 접미사로 남는다", () => {
+    const values = {
+      ...fessSteps("both", ["mma"]),
+      turb_inferior_right: true,
+      turb_inferior_left: true,
+      turb_middle_right: true,
+      turb_middle_left: true,
+    };
+    expect(buildProcedureName("COMBO", values)).toBe("Septoturbinoplasty + Both MMA + Both Mturbinoplasty");
+  });
+
+  it("단독 비중격은 Inferior 양측이면 Septoturbinoplasty", () => {
+    expect(buildProcedureName("SEPTOPLASTY", { turb_inferior_right: true, turb_inferior_left: true })).toBe(
+      "Septoturbinoplasty",
     );
   });
 });
