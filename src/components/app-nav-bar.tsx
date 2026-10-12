@@ -17,6 +17,9 @@ export async function AppNavBar() {
             Op Plan &amp; 기록지
           </Link>
           <PatientsNavLink />
+          <Link href="/import" className="text-sm text-slate-600 hover:text-slate-900">
+            엑셀 가져오기
+          </Link>
           <Link href="/settings" className="text-sm text-slate-600 hover:text-slate-900">
             설정
           </Link>
