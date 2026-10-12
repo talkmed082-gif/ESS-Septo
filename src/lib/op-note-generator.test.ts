@@ -420,6 +420,21 @@ describe("수술명 — turbinoplasty만 시행", () => {
   it("아무것도 고르지 않았으면 기존처럼 ESS로 둔다", () => {
     expect(buildProcedureName("ESS", {})).toBe("ESS");
   });
+
+  it("병행(COMBO)은 부비동을 아직 안 골랐어도 ESS를 지우지 않는다", () => {
+    expect(buildProcedureName("COMBO", { turb_inferior_right: true })).toBe("Septoplasty + ESS + Rt. Turbinoplasty");
+    expect(buildProcedureName("COMBO", { turb_inferior_right: true, turb_inferior_left: true })).toBe(
+      "Septoturbinoplasty + ESS",
+    );
+    expect(
+      buildProcedureName("COMBO", {
+        turb_inferior_right: true,
+        turb_inferior_left: true,
+        turb_middle_right: true,
+        turb_middle_left: true,
+      }),
+    ).toBe("Septoturbinoplasty + ESS + Both Mturbinoplasty");
+  });
 });
 
 describe("procedureNameFor", () => {

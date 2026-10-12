@@ -1038,7 +1038,9 @@ export function buildProcedureName(
   };
 
   // Turbinoplasty만 하고 부비동은 하나도 열지 않았으면 "ESS"를 붙이지 않는다.
-  const onlyTurbinoplasty = !hasFessRegions && turbSuffix !== "" && !revisionPrefix;
+  // 병행(COMBO)은 수술 종류 자체가 ESS를 포함하므로(예: 스케줄에서 가져와 부비동을
+  // 아직 안 고른 계획) ESS를 지우지 않는다.
+  const onlyTurbinoplasty = surgeryCode === "ESS" && !hasFessRegions && turbSuffix !== "" && !revisionPrefix;
   const fessName = onlyTurbinoplasty ? "" : buildFessProcedureName(values, "ESS", style, excludeSides);
   const rest = surgeryCode === "ESS" ? fessName : fessName ? `${septoWord} + ${fessName}` : septoWord;
   // ESS revision 태그(rev> ...)에는 그 side에서 이번에 시행한 sinus까지 들어 있어서,

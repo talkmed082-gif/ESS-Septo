@@ -4,7 +4,12 @@ import { useActionState, useState, useTransition } from "react";
 import Link from "next/link";
 import { importSchedule, previewSchedule, type PreviewRow } from "@/app/actions/schedule-import";
 
-const STATUS_LABEL: Record<PreviewRow["status"], string> = { new: "", exists: "이미 있음", unsupported: "지원 안 됨" };
+const STATUS_LABEL: Record<PreviewRow["status"], string> = {
+  new: "",
+  exists: "이미 있음",
+  unsupported: "지원 안 됨",
+  noChart: "등록번호 없음",
+};
 
 export function ImportForm() {
   const [state, formAction, previewing] = useActionState(previewSchedule, undefined);

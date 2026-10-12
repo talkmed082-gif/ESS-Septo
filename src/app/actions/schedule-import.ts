@@ -10,10 +10,11 @@ import {
   buildImportPlanNote,
   mapScheduleProcedure,
   parseScheduleAge,
+  previewStatusOf,
   type ImportSurgeryCode,
+  type PreviewStatus,
 } from "@/lib/schedule-import";
 
-export type PreviewStatus = "new" | "exists" | "unsupported";
 export interface PreviewRow extends ScheduleRow {
   code: ImportSurgeryCode | null;
   status: PreviewStatus;
@@ -55,9 +56,8 @@ export async function previewSchedule(_prev: PreviewState | undefined, formData:
   const preview = await Promise.all(
     rows.map(async (row): Promise<PreviewRow> => {
       const { code } = mapScheduleProcedure(row.procedure);
-      if (!code) return { ...row, code, status: "unsupported" };
-      const exists = row.chartNo ? await existingPlan(user.id, row.chartNo, row.date, code) : null;
-      return { ...row, code, status: exists ? "exists" : "new" };
+      const exists = code && row.chartNo.trim() ? await existingPlan(user.id, row.chartNo, row.date, code) : null;
+      return { ...row, code, status: previewStatusOf(row, code, !!exists) };
     }),
   );
   return preview.length ? { rows: preview } : { rows: [], message: `${user.name} 교수님 수술이 이 파일에 없습니다.` };

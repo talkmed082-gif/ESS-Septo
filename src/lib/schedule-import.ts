@@ -84,3 +84,17 @@ export function buildImportPlanNote(row: {
     .filter(Boolean)
     .join("\n");
 }
+
+export type PreviewStatus = "new" | "exists" | "unsupported" | "noChart";
+
+// 미리보기 행 상태 — 등록번호가 없는 행은 환자를 찾거나 만들 기준이 없어서 가져오지
+// 않는다(체크된 채로 보내면 그 한 줄 때문에 전체 가져오기가 실패했었다).
+export function previewStatusOf(
+  row: { chartNo: string },
+  code: ImportSurgeryCode | null,
+  exists: boolean,
+): PreviewStatus {
+  if (!code) return "unsupported";
+  if (!row.chartNo.trim()) return "noChart";
+  return exists ? "exists" : "new";
+}

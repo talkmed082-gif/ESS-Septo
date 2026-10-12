@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildImportPlanData, buildImportPlanNote, mapScheduleProcedure, parseScheduleAge } from "./schedule-import";
+import {
+  buildImportPlanData,
+  buildImportPlanNote,
+  mapScheduleProcedure,
+  parseScheduleAge,
+  previewStatusOf,
+} from "./schedule-import";
 import { buildProcedureName } from "./op-note-generator";
 
 describe("mapScheduleProcedure", () => {
@@ -101,5 +107,17 @@ describe("buildImportPlanNote", () => {
       anesthesia: "전신", duration: "02 : 30", note: "",
     });
     expect(note).toBe("스케줄: ESS[B]\nRoom23 #1 · assist R2D\n마취 전신 · 예상 02 : 30");
+  });
+});
+
+describe("previewStatusOf", () => {
+  it("등록번호가 없으면 가져올 수 없다고 표시한다(한 줄 때문에 전체가 실패하지 않게)", () => {
+    expect(previewStatusOf({ chartNo: "" }, "ESS", false)).toBe("noChart");
+    expect(previewStatusOf({ chartNo: "  " }, "ESS", false)).toBe("noChart");
+  });
+  it("지원 안 되는 수술 > 등록번호 없음 > 이미 있음 > 새로 순으로 판단", () => {
+    expect(previewStatusOf({ chartNo: "" }, null, false)).toBe("unsupported");
+    expect(previewStatusOf({ chartNo: "1" }, "ESS", true)).toBe("exists");
+    expect(previewStatusOf({ chartNo: "1" }, "ESS", false)).toBe("new");
   });
 });
