@@ -60,3 +60,27 @@ export function buildImportPlanData(mapping: { code: ImportSurgeryCode; override
   const fields = resolveSurgeryTypeFields({ code: mapping.code, fields: [] });
   return { ...applyFieldDefaults({}, fields), ...mapping.overrides };
 }
+
+// 계획 화면에 보이는 메모(planNote) — 사이트는 OpPlan.diagnosis를 어느 화면에도
+// 보여주지 않아서, 진단도 여기 같이 적어 둔다. 원본 수술 문자열은 괄호 표기 등
+// 매핑에 안 쓴 정보까지 그대로 남기려는 것.
+export function buildImportPlanNote(row: {
+  procedure: string;
+  diagnosis: string;
+  room: string;
+  order: string;
+  assist: string;
+  anesthesia: string;
+  duration: string;
+  note: string;
+}): string {
+  return [
+    row.diagnosis && `진단: ${row.diagnosis}`,
+    `스케줄: ${row.procedure}`,
+    `${row.room} #${row.order} · assist ${row.assist}`,
+    `마취 ${row.anesthesia} · 예상 ${row.duration}`,
+    row.note && `비고 ${row.note}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}

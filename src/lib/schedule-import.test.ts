@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildImportPlanData, mapScheduleProcedure, parseScheduleAge } from "./schedule-import";
+import { buildImportPlanData, buildImportPlanNote, mapScheduleProcedure, parseScheduleAge } from "./schedule-import";
 import { buildProcedureName } from "./op-note-generator";
 
 describe("mapScheduleProcedure", () => {
@@ -83,5 +83,23 @@ describe("buildImportPlanData", () => {
   it("COMBO + Septoturbinoplasty는 Septoturbinoplasty로 시작", () => {
     const m = mapScheduleProcedure("Septoturbinoplasty ; ESS[B]");
     expect(buildProcedureName("COMBO", buildImportPlanData({ ...m, code: "COMBO" }))).toMatch(/^Septoturbinoplasty/);
+  });
+});
+
+describe("buildImportPlanNote", () => {
+  it("진단·원본 수술·방·마취·비고를 화면에 보이는 메모로 남긴다", () => {
+    const note = buildImportPlanNote({
+      procedure: "ESS[B]", diagnosis: "CRS[B]", room: "Room23", order: "1", assist: "R2D",
+      anesthesia: "전신", duration: "02 : 30", note: "당일",
+    });
+    expect(note).toBe("진단: CRS[B]\n스케줄: ESS[B]\nRoom23 #1 · assist R2D\n마취 전신 · 예상 02 : 30\n비고 당일");
+  });
+
+  it("진단·비고가 없으면 그 줄은 뺀다", () => {
+    const note = buildImportPlanNote({
+      procedure: "ESS[B]", diagnosis: "", room: "Room23", order: "1", assist: "R2D",
+      anesthesia: "전신", duration: "02 : 30", note: "",
+    });
+    expect(note).toBe("스케줄: ESS[B]\nRoom23 #1 · assist R2D\n마취 전신 · 예상 02 : 30");
   });
 });

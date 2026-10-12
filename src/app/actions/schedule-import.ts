@@ -7,6 +7,7 @@ import { getCurrentUser } from "@/lib/dal";
 import { parseScheduleWorkbook, ScheduleFormatError, type ScheduleRow } from "@/lib/schedule-workbook";
 import {
   buildImportPlanData,
+  buildImportPlanNote,
   mapScheduleProcedure,
   parseScheduleAge,
   type ImportSurgeryCode,
@@ -79,17 +80,6 @@ const RowSchema = z.object({
   note: z.string(),
 });
 
-function planNoteOf(row: ScheduleRow): string {
-  return [
-    `스케줄: ${row.procedure}`,
-    `${row.room} #${row.order} · assist ${row.assist}`,
-    `마취 ${row.anesthesia} · 예상 ${row.duration}`,
-    row.note && `비고 ${row.note}`,
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
-
 export async function importSchedule(
   input: ScheduleRow[],
 ): Promise<{ created: number; skipped: number; message?: string }> {
@@ -132,7 +122,7 @@ export async function importSchedule(
           surgeryTypeId: type.id,
           plannedDate: new Date(row.date),
           diagnosis: row.diagnosis || null,
-          planNote: planNoteOf(row),
+          planNote: buildImportPlanNote(row),
           planData: buildImportPlanData({ code, overrides: mapping.overrides }),
           status: "PLANNED",
           createdById: user.id,
