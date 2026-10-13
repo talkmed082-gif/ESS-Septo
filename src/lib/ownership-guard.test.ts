@@ -5,7 +5,8 @@ import { describe, expect, it } from "vitest";
 function walk(dir: string): string[] {
   return readdirSync(dir).flatMap((n) => {
     const p = join(dir, n);
-    if (p.includes("src/generated") || p.endsWith(".test.ts")) return [];
+    // Windows에서는 경로 구분자가 \ 라서 슬래시로 바꿔 비교한다.
+    if (p.replaceAll("\\", "/").includes("src/generated") || p.endsWith(".test.ts")) return [];
     return statSync(p).isDirectory() ? walk(p) : /\.tsx?$/.test(p) ? [p] : [];
   });
 }
