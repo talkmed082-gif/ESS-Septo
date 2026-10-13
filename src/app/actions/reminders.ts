@@ -51,6 +51,13 @@ export async function createReminder(
   return { ok: true };
 }
 
+// "동기화 요청" — 병원 PC가 평일 근무 시간(08:00~17:30)에 10분마다 확인해서 처리한다.
+export async function requestReminderSync(patientId: string): Promise<void> {
+  const session = await verifySession();
+  await prisma.user.update({ where: { id: session.userId }, data: { reminderSyncRequestedAt: new Date() } });
+  revalidatePath(`/patients/${patientId}`);
+}
+
 // 아직 EMR에 안 올라간(이 사이트에서 만든) 리마인더만 지울 수 있다 — EMR에 있는 것은
 // EMR에서 지우면 다음 동기화 때 여기서도 사라진다.
 export async function deleteReminder(reminderId: string, patientId: string): Promise<void> {

@@ -10,6 +10,7 @@ import { safeDateStr } from "@/lib/date-format";
 import { SurgeryPlanner } from "@/components/surgery-planner";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { buttonStyles } from "@/lib/ui";
+import { ReminderList } from "@/components/reminder-list";
 
 export default async function OpPlanPage({
   params,
@@ -23,7 +24,13 @@ export default async function OpPlanPage({
   const [plan, surgeryTypes] = await Promise.all([
     prisma.opPlan.findFirst({
       where: { id, createdById: user.id },
-      include: { patient: true, surgeryType: true, opRecord: { select: { id: true } } },
+      include: {
+        patient: {
+          include: { reminders: { where: { createdById: user.id }, orderBy: [{ dueDate: "asc" }, { createdAt: "asc" }] } },
+        },
+        surgeryType: true,
+        opRecord: { select: { id: true } },
+      },
     }),
     // 계획을 만든 뒤에도 수술 종류를 바꿀 수 있어야 해서(예: ESS로 만들었다가
     // Septoplasty로 정정), 현재 종류 하나만이 아니라 전체 수술 종류 목록을
@@ -80,6 +87,19 @@ export default async function OpPlanPage({
           </form>
         </div>
       </div>
+
+      {/* 수술 전·후 탭은 SurgeryPlanner 안에서 바뀌므로, 탭 바깥에 두어 두 화면 모두에서 보이게 한다 */}
+      {plan.patient.reminders.length > 0 && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold text-slate-700">리마인더</h2>
+            <Link href={`/patients/${plan.patient.id}`} className={buttonStyles.link}>
+              환자 화면에서 추가
+            </Link>
+          </div>
+          <ReminderList reminders={plan.patient.reminders} patientId={plan.patient.id} />
+        </div>
+      )}
 
       <SurgeryPlanner
         surgeryTypes={surgeryTypes.map((st) => ({

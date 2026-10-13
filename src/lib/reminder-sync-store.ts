@@ -48,7 +48,10 @@ export async function getReminderSyncTargets(userId: string) {
     orderBy: { createdAt: "asc" },
     select: { id: true, title: true, dueDate: true, content: true, patient: { select: { chartNo: true } } },
   });
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { reminderSyncRequestedAt: true } });
   return {
+    // "동기화 요청" 버튼을 누른 시각(없으면 null) — 병원 PC의 10분 확인 작업은 이 값이 있을 때만 동기화한다
+    requestedAt: user?.reminderSyncRequestedAt?.toISOString() ?? null,
     patients: patients.map((p) => p.chartNo!),
     pending: pending.map((r) => ({
       id: r.id,
@@ -125,6 +128,9 @@ export async function applyReminderSync(userId: string, body: ReminderSyncBody) 
       deleted += res.count;
     }
   }
+
+  // 동기화가 끝났으니 요청 표시를 지운다
+  await prisma.user.update({ where: { id: userId }, data: { reminderSyncRequestedAt: null } });
 
   console.info(`[reminder-sync] linked=${linked} created=${created} updated=${updated} deleted=${deleted}`);
   return { linked, created, updated, deleted };

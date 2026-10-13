@@ -8,11 +8,13 @@ const db = vi.hoisted(() => ({
   updateReminder: vi.fn(),
   createReminder: vi.fn(),
   deleteManyReminders: vi.fn(),
+  updateUser: vi.fn(),
 }));
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     patient: { findFirst: db.findFirstPatient },
+    user: { update: db.updateUser },
     reminder: {
       findMany: db.findManyReminders,
       updateMany: db.updateManyReminders,
@@ -83,6 +85,11 @@ describe("applyReminderSync", () => {
     const res = await applyReminderSync("u1", { pushed: [], patients: [{ chartNo: "00000001", reminders: [emr("1")] }] });
     expect(db.deleteManyReminders).toHaveBeenCalledWith({ where: { id: { in: ["gone"] }, createdById: "u1" } });
     expect(res.deleted).toBe(1);
+  });
+
+  it("동기화가 끝나면 '동기화 요청' 표시를 지운다", async () => {
+    await applyReminderSync("u1", { pushed: [], patients: [] });
+    expect(db.updateUser).toHaveBeenCalledWith({ where: { id: "u1" }, data: { reminderSyncRequestedAt: null } });
   });
 
   it("이 계정에 없는 등록번호는 건너뛴다", async () => {
