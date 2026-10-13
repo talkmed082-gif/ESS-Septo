@@ -26,6 +26,7 @@ export const verifySession = cache(async () => {
       abbreviateRegions: true,
       defaultAssistantName: true,
       calendarToken: true,
+      importToken: true,
       sessionVersion: true,
     },
   });

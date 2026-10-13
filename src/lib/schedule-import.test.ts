@@ -54,6 +54,17 @@ describe("mapScheduleProcedure", () => {
     }
   });
 
+  it("EMR 수술장 표기도 같은 규칙으로 읽는다", () => {
+    expect(mapScheduleProcedure("Endoscopic sinus surgery (B)")).toEqual({ code: "ESS", overrides: {} });
+    expect(mapScheduleProcedure("Functional endoscopic sinus surgery (L)").code).toBe("ESS");
+    expect(mapScheduleProcedure("Endoscopic sinus surgery (B), Septoplasty").code).toBe("COMBO");
+    expect(mapScheduleProcedure("Septoplasty + Inferior turbinoplasty (R)")).toEqual({
+      code: "SEPTOPLASTY",
+      overrides: { turb_inferior_right: true, turb_inferior_left: false },
+    });
+    expect(mapScheduleProcedure("Endoscopic sinus surgery with tumor removal (B)").code).toBeNull();
+  });
+
   it("ESS가 다른 단어 안에 섞인 경우는 ESS로 보지 않는다", () => {
     expect(mapScheduleProcedure("Explorative tympanotomy[L]").code).toBeNull();
     expect(mapScheduleProcedure("Excess tissue removal").code).toBeNull();

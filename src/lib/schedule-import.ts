@@ -11,9 +11,10 @@ export interface ProcedureMapping {
 // 스케줄 엑셀의 수술 칸("ESS[B] ; Septoplasty ; ITR[B]")을 사이트 수술 종류와
 // 미리 켜둘 체크 항목으로 바꾼다. 규칙(사용자 확정): 엑셀 Septoturbinoplasty는
 // 괄호와 상관없이 Septoplasty + Inferior turbinoplasty 양측이다.
+// EMR 수술장 화면의 수술명("Endoscopic sinus surgery (B)", 여러 개면 , 또는 +로 구분)도 받는다.
 export function mapScheduleProcedure(text: string): ProcedureMapping {
   const tokens = text
-    .split(";")
+    .split(/[;,+]/)
     .map((t) => t.trim())
     .filter(Boolean);
   let ess = false;
@@ -23,9 +24,13 @@ export function mapScheduleProcedure(text: string): ProcedureMapping {
   let touchedInferior = false;
 
   for (const token of tokens) {
-    const side = /\[([RLB])\]/i.exec(token)?.[1]?.toUpperCase();
-    const name = token.replace(/\[.*?\]/g, "").trim();
-    if (/^f?ess$/i.test(name)) {
+    // 측 표기: 엑셀 [B], EMR (B)
+    const side = /[[(]([RLB])[\])]/i.exec(token)?.[1]?.toUpperCase();
+    const name = token
+      .replace(/\[.*?\]/g, "")
+      .replace(/\(\s*[RLB]\s*\)/gi, "")
+      .trim();
+    if (/^f?ess$/i.test(name) || /^(functional\s+)?endoscopic\s+sinus\s+surgery$/i.test(name)) {
       ess = true;
     } else if (/^septoturbinoplasty$/i.test(name)) {
       septo = true;
@@ -33,7 +38,7 @@ export function mapScheduleProcedure(text: string): ProcedureMapping {
     } else if (/^septoplasty$/i.test(name)) {
       septo = true;
       touchedInferior = true;
-    } else if (/^itr$/i.test(name)) {
+    } else if (/^itr$/i.test(name) || /^(inferior\s+)?turbinoplasty$/i.test(name)) {
       touchedInferior = true;
       if (side !== "L") right = true;
       if (side !== "R") left = true;

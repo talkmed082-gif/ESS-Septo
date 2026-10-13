@@ -9,6 +9,7 @@ import { buttonStyles } from "@/lib/ui";
 import { SettingsForm } from "./settings-form";
 import { SurgeryTypesManager } from "../surgery-types/surgery-types-manager";
 import { CalendarSubscribeCard } from "./calendar-subscribe-card";
+import { ImportTokenCard } from "./import-token-card";
 import { AccountCard } from "./account-card";
 
 export default async function SettingsPage() {
@@ -91,6 +92,11 @@ export default async function SettingsPage() {
             })}
           </ul>
         )}
+      </div>
+
+      <div>
+        <h2 className="mb-1 text-sm font-semibold text-slate-700">EMR 수술 일정 연동</h2>
+        <ImportTokenCard token={user.importToken} />
       </div>
 
       <div>
