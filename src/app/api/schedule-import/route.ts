@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import * as z from "zod";
-import { prisma } from "@/lib/prisma";
-import { isCalendarTokenFormat } from "@/lib/calendar-feed";
+import { findUserByImportToken } from "@/lib/import-auth";
 import { importScheduleRows, ScheduleRowSchema } from "@/lib/schedule-import-store";
 
 // 병원 PC 스크립트(EMR 수술장 화면 조회)가 내 집도 건을 올리는 입구 — 로그인 쿠키 대신
@@ -10,10 +9,7 @@ import { importScheduleRows, ScheduleRowSchema } from "@/lib/schedule-import-sto
 const BodySchema = z.object({ rows: z.array(ScheduleRowSchema).max(200) });
 
 export async function POST(request: Request) {
-  const token = /^Bearer\s+(\S+)$/.exec(request.headers.get("authorization") ?? "")?.[1] ?? "";
-  if (!isCalendarTokenFormat(token)) return notFound();
-
-  const user = await prisma.user.findUnique({ where: { importToken: token }, select: { id: true, name: true } });
+  const user = await findUserByImportToken(request);
   if (!user) return notFound();
 
   const parsed = BodySchema.safeParse(await request.json().catch(() => null));

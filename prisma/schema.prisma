@@ -40,6 +40,7 @@ model User {
   patients     Patient[]
   opPlans      OpPlan[]
   opRecords    OpRecord[]
+  reminders    Reminder[]
 }
 
 // 수술 종류 (ESS, 비중격교정술, 기타 이비인후과 수술 등). fields 는 이 수술에 특화된
@@ -68,6 +69,30 @@ model Patient {
   createdById String
   createdBy   User     @relation(fields: [createdById], references: [id])
   opPlans     OpPlan[]
+  reminders   Reminder[]
+}
+
+// 환자별 리마인더 — EMR(YES) Reminder 기본 탭과 병원 PC 스크립트로 양방향 동기화한다.
+// source "EMR": EMR에서 읽어 온 것(EMR이 원본, EMR에서 지워지면 여기서도 지움).
+// source "ESS": 이 사이트에서 만든 것. 아직 EMR에 안 올라갔으면 emrRegSeq가 비어 있고,
+// 병원 PC가 EMR에 추가한 뒤 EMR의 등록일·순번을 채운다(그 뒤로는 EMR 쪽이 원본).
+model Reminder {
+  id          String    @id @default(cuid())
+  patientId   String
+  patient     Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  title       String
+  dueDate     DateTime?
+  content     String?
+  authorName  String?
+  source      String    @default("ESS")
+  emrRegDate  String?
+  emrRegSeq   String?
+  createdById String
+  createdBy   User      @relation(fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([patientId, emrRegDate, emrRegSeq])
 }
 
 model OpPlan {

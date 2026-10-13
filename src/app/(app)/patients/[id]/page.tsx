@@ -8,6 +8,8 @@ import { buildPlanTable, type NameStyle, type SideNotation } from "@/lib/op-note
 import { safeDateStr } from "@/lib/date-format";
 import { PlanTableView } from "@/components/plan-table";
 import { buttonStyles } from "@/lib/ui";
+import { createReminder, deleteReminder } from "@/app/actions/reminders";
+import { ReminderForm } from "./reminder-form";
 
 export default async function PatientDetailPage({
   params,
@@ -31,6 +33,7 @@ export default async function PatientDetailPage({
           },
         },
       },
+      reminders: { where: { createdById: user.id }, orderBy: [{ dueDate: "asc" }, { createdAt: "asc" }] },
     },
   });
 
@@ -63,6 +66,43 @@ export default async function PatientDetailPage({
             + 수술 계획 작성
           </Link>
         </div>
+      </div>
+
+      <div className="rounded-lg border border-slate-200 bg-white p-4">
+        <h2 className="mb-1 text-sm font-semibold text-slate-700">리마인더</h2>
+        <p className="mb-3 text-xs text-slate-400">
+          EMR Reminder(기본 탭)와 병원 PC가 매일 동기화합니다. 여기서 추가한 것은 다음 동기화 때 EMR에 올라갑니다.
+        </p>
+        {patient.reminders.length > 0 && (
+          <ul className="mb-4 space-y-2">
+            {patient.reminders.map((r) => {
+              const pendingPush = r.source === "ESS" && !r.emrRegSeq;
+              return (
+                <li key={r.id} className="rounded-md border border-slate-200 p-2.5 text-sm">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-medium text-slate-900">{r.title}</span>
+                    {r.dueDate && <span className="text-xs text-slate-500">~{safeDateStr(r.dueDate)}</span>}
+                    {r.authorName && <span className="text-xs text-slate-400">{r.authorName}</span>}
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs ${pendingPush ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-500"}`}
+                    >
+                      {pendingPush ? "EMR 올리기 대기" : "EMR"}
+                    </span>
+                    {pendingPush && (
+                      <form action={deleteReminder.bind(null, r.id, patient.id)} className="ml-auto">
+                        <button type="submit" className={buttonStyles.smallOutline}>
+                          삭제
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                  {r.content && <p className="mt-1 whitespace-pre-wrap text-slate-600">{r.content}</p>}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        <ReminderForm action={createReminder.bind(null, patient.id)} />
       </div>
 
       {patient.opPlans.length === 0 && (
