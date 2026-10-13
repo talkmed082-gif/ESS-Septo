@@ -25,6 +25,9 @@ export const ReminderSyncBodySchema = z.object({
   patients: z
     .array(z.object({ chartNo: z.string().min(1), reminders: z.array(EmrReminderSchema).max(500) }))
     .max(500),
+  // GET이 돌려준 serverTime — 이 시각 이전에 누른 "동기화 요청"만 처리된 것으로 보고 지운다
+  // (동기화 도중에 새로 누른 요청은 남겨서 다음 확인 때 다시 처리한다)
+  startedAt: z.iso.datetime(),
 });
 export type ReminderSyncBody = z.infer<typeof ReminderSyncBodySchema>;
 
@@ -50,6 +53,7 @@ export async function getReminderSyncTargets(userId: string) {
   });
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { reminderSyncRequestedAt: true } });
   return {
+    serverTime: new Date().toISOString(),
     // "동기화 요청" 버튼을 누른 시각(없으면 null) — 병원 PC의 10분 확인 작업은 이 값이 있을 때만 동기화한다
     requestedAt: user?.reminderSyncRequestedAt?.toISOString() ?? null,
     patients: patients.map((p) => p.chartNo!),
@@ -129,8 +133,11 @@ export async function applyReminderSync(userId: string, body: ReminderSyncBody) 
     }
   }
 
-  // 동기화가 끝났으니 요청 표시를 지운다
-  await prisma.user.update({ where: { id: userId }, data: { reminderSyncRequestedAt: null } });
+  // 동기화를 시작하기 전에 누른 요청만 지운다
+  await prisma.user.updateMany({
+    where: { id: userId, reminderSyncRequestedAt: { lte: new Date(body.startedAt) } },
+    data: { reminderSyncRequestedAt: null },
+  });
 
   console.info(`[reminder-sync] linked=${linked} created=${created} updated=${updated} deleted=${deleted}`);
   return { linked, created, updated, deleted };

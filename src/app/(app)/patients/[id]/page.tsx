@@ -8,7 +8,7 @@ import { buildPlanTable, type NameStyle, type SideNotation } from "@/lib/op-note
 import { safeDateStr } from "@/lib/date-format";
 import { PlanTableView } from "@/components/plan-table";
 import { buttonStyles } from "@/lib/ui";
-import { createReminder, requestReminderSync } from "@/app/actions/reminders";
+import { cancelReminderSync, createReminder, requestReminderSync } from "@/app/actions/reminders";
 import { ReminderList } from "@/components/reminder-list";
 import { ReminderForm } from "./reminder-form";
 
@@ -72,15 +72,30 @@ export default async function PatientDetailPage({
       <div className="rounded-lg border border-slate-200 bg-white p-4">
         <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-semibold text-slate-700">리마인더</h2>
-          <form action={requestReminderSync.bind(null, patient.id)}>
-            <button type="submit" className={buttonStyles.smallOutline}>
-              {user.reminderSyncRequestedAt ? "동기화 요청됨" : "지금 동기화 요청"}
-            </button>
-          </form>
+          <div className="flex items-center gap-2">
+            {user.reminderSyncRequestedAt && (
+              <>
+                <span className="text-xs text-amber-700">
+                  동기화 요청됨 ({user.reminderSyncRequestedAt.toLocaleString("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })})
+                </span>
+                <form action={cancelReminderSync.bind(null, patient.id)}>
+                  <button type="submit" className={buttonStyles.smallOutline}>
+                    요청 취소
+                  </button>
+                </form>
+              </>
+            )}
+            <form action={requestReminderSync.bind(null, patient.id)}>
+              <button type="submit" className={buttonStyles.smallOutline}>
+                {user.reminderSyncRequestedAt ? "다시 요청" : "지금 동기화 요청"}
+              </button>
+            </form>
+          </div>
         </div>
         <p className="mb-3 text-xs text-slate-400">
-          EMR Reminder(기본 탭)와 병원 PC가 평일 17:10에 동기화합니다. 동기화 요청을 누르면 평일 08:00~17:30에는 10분
-          안에, 그 밖의 시간이면 다음 평일 출근 시간에 동기화합니다. 여기서 추가한 것은 동기화 때 EMR에 올라갑니다.
+          EMR Reminder(기본 탭)와 병원 PC가 평일 17:10에 동기화합니다. 동기화 요청을 누르면 평일 08:00~16:50에는 10분
+          안에, 그 밖의 시간이면 다음 평일 출근 시간(08:00)에 동기화합니다. 처리되기 전에는 요청을 취소할 수 있습니다.
+          여기서 추가한 것은 동기화 때 EMR에 올라갑니다.
         </p>
         <div className="mb-4">
           <ReminderList reminders={patient.reminders} patientId={patient.id} allowDelete />
