@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { kstDate, OutpatientListBodySchema, TsaRunBodySchema, validateTsaScanRange } from "@/lib/hospital-link";
+﻿import { describe, expect, it } from "vitest";
+import { kstDate, OutpatientListBodySchema, PcJobBodySchema, pcJobState, TsaRunBodySchema, validateTsaScanRange } from "@/lib/hospital-link";
 
 // 2026-10-14 16:00 UTC = 10/15 01:00 KST
 const NOW = new Date("2026-10-14T16:00:00Z");
@@ -48,5 +48,21 @@ describe("병원 PC 요청 형식", () => {
   });
   it("외래 명단: 날짜 형식이 틀리면 거절", () => {
     expect(OutpatientListBodySchema.safeParse({ date: "10/15", clinic: "x", rows: [] }).success).toBe(false);
+  });
+});
+
+describe("pcJobState", () => {
+  const now = new Date("2026-10-15T09:00:00Z");
+  const h = (hours: number) => new Date(now.getTime() - hours * 3600000);
+  it("실패 > 늦음 > 정상, 기록 없으면 none", () => {
+    expect(pcJobState(undefined, 80, now)).toBe("none");
+    expect(pcJobState({ lastRunAt: h(1), lastOk: false }, 80, now)).toBe("fail");
+    expect(pcJobState({ lastRunAt: h(81), lastOk: true }, 80, now)).toBe("late");
+    expect(pcJobState({ lastRunAt: h(79), lastOk: true }, 80, now)).toBe("ok");
+    expect(pcJobState({ lastRunAt: h(1000), lastOk: true }, null, now)).toBe("ok"); // 요청 시에만 도는 작업
+  });
+  it("작업 이름이 목록에 없으면 거절", () => {
+    expect(PcJobBodySchema.safeParse({ job: "SURGERY_DAILY", ok: true }).success).toBe(true);
+    expect(PcJobBodySchema.safeParse({ job: "WHATEVER", ok: true }).success).toBe(false);
   });
 });

@@ -441,16 +441,15 @@ describe("수술 날짜", () => {
 });
 
 describe("CC 빠른 입력", () => {
-  it("방향을 고른 뒤 증상 버튼을 누르면 CC에 방향과 함께 들어간다", () => {
+  it("증상을 누른 뒤 그 옆의 방향을 고르면 CC에 방향과 함께 들어가고, 다른 방향을 누르면 방향만 바뀐다", () => {
     const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
-    fireEvent.click(byText(container, "Rt."));
+    const side = (label: string) => container.querySelector(`button[aria-label="${label}"]`) as HTMLButtonElement;
     fireEvent.click(byText(container, "코막힘"));
+    fireEvent.click(side("코막힘 Rt."));
     fireEvent.click(byText(container, "후비루"));
     const cc = container.querySelector('input[name="chiefComplaint"]') as HTMLInputElement;
     expect(cc.value).toBe("코막힘 (Rt.), 후비루");
-    // 같은 증상을 다른 방향으로 다시 누르면 방향만 바뀐다
-    fireEvent.click(byText(container, "Both"));
-    fireEvent.click(byText(container, "코막힘 Rt."));
+    fireEvent.click(side("코막힘 Both"));
     expect(cc.value).toBe("코막힘 (Both), 후비루");
   });
 });

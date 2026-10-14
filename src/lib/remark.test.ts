@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { buildRemarkText, ccSymptomSide, remarkExtras, toggleCcSymptom } from "./remark";
+﻿import { describe, expect, it } from "vitest";
+import { buildRemarkText, ccSymptomSide, remarkExtras, removeCcSymptom, setCcSymptomSide, toggleCcSymptom } from "./remark";
 
 describe("buildRemarkText", () => {
   it("'~ 증상으로 날짜 수술명 시행하였음, 덧붙임, 특이사항.' 한 문장으로 묶는다", () => {
@@ -58,5 +58,16 @@ describe("toggleCcSymptom", () => {
     expect(ccSymptomSide("코막힘 (Rt.), 후비루", "코막힘")).toBe("Rt.");
     expect(ccSymptomSide("코막힘 (Rt.), 후비루", "후비루")).toBe("");
     expect(ccSymptomSide("코막힘 (Rt.)", "두통")).toBeUndefined();
+  });
+});
+
+describe("removeCcSymptom / setCcSymptomSide", () => {
+  it("증상만 빼고 직접 적은 내용은 둔다", () => {
+    expect(removeCcSymptom("코막힘 (Rt.), 3년 전부터 악화, 후비루", "코막힘")).toBe("3년 전부터 악화, 후비루");
+  });
+  it("방향을 바꾸거나 지우고, 없는 증상이면 붙인다", () => {
+    expect(setCcSymptomSide("코막힘 (Rt.), 후비루", "코막힘", "Both")).toBe("코막힘 (Both), 후비루");
+    expect(setCcSymptomSide("코막힘 (Rt.)", "코막힘")).toBe("코막힘");
+    expect(setCcSymptomSide("후비루", "Foul odor", "Lt.")).toBe("후비루, Foul odor (Lt.)");
   });
 });

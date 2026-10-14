@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { pcJson } from "@/lib/pc-api";
 import * as z from "zod";
 import { findUserByImportToken } from "@/lib/import-auth";
 import { importScheduleRows, ScheduleRowSchema } from "@/lib/schedule-import-store";
@@ -13,10 +14,10 @@ export async function POST(request: Request) {
   if (!user) return notFound();
 
   const parsed = BodySchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "행 형식이 올바르지 않습니다." }, { status: 400 });
+  if (!parsed.success) return pcJson({ error: "행 형식이 올바르지 않습니다." }, { status: 400 });
 
   const result = await importScheduleRows(user, parsed.data.rows);
-  return NextResponse.json(result);
+  return pcJson(result);
 }
 
 function notFound() {

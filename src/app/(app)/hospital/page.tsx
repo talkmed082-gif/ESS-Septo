@@ -1,14 +1,17 @@
+import Link from "next/link";
 import { verifySession } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
-import { kstDate, type OutpatientRow } from "@/lib/hospital-link";
+import { kstDate, PC_JOBS, pcJobState, type OutpatientRow } from "@/lib/hospital-link";
 import { cancelTsaScan, requestTsaScan } from "@/app/actions/hospital-link";
+import { safeDateStr, seoulTodayAsStoredDate } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
 import { TsaScanForm } from "./tsa-scan-form";
 import { OutpatientCalendar } from "./outpatient-calendar";
 
-// 병원 PC 연동 상태 — TSA 구글 시트 동기화 기록·기간 확인 요청, 병원 PC가 올린 외래 명단.
+// 병원 PC 연동 상태 — 병원 PC 작업 상태판, TSA 구글 시트 동기화 기록·기간 확인 요청, 외래 명단.
 // 로그인한 본인 계정 데이터만 보인다(createdById로 거름).
-type SheetRef = { date: string; chart4: string; rows: number[] };
+// dates: 비슷한 행(보류 이유)의 시트 수술일 — 날짜가 다르게 적힌 경우를 바로 알 수 있게
+type SheetRef = { date: string; chart4: string; rows: number[]; dates?: string[] };
 
 const fmtTime = new Intl.DateTimeFormat("ko-KR", {
   timeZone: "Asia/Seoul",
@@ -18,6 +21,13 @@ const fmtTime = new Intl.DateTimeFormat("ko-KR", {
   minute: "2-digit",
   hour12: false,
 });
+
+const STATE_STYLE = {
+  ok: { text: "정상", cls: "bg-emerald-50 text-emerald-700" },
+  late: { text: "늦음", cls: "bg-amber-50 text-amber-700" },
+  fail: { text: "실패", cls: "bg-red-50 text-red-700" },
+  none: { text: "기록 없음", cls: "bg-slate-100 text-slate-500" },
+} as const;
 
 // "TSA가 언제 수술일까지 시트에 반영됐나" — 실패 없이 끝난 실행 중 가장 늦은 끝 날짜
 function TsaCoverage({ runs }: { runs: { rangeTo: string; createdAt: Date; error: string | null }[] }) {
@@ -39,6 +49,13 @@ function TsaCoverage({ runs }: { runs: { rangeTo: string; createdAt: Date; error
   );
 }
 
+function heldText(h: SheetRef) {
+  const other = (h.dates ?? []).filter((d) => d !== h.date);
+  return other.length
+    ? `시트에는 ${other.join(", ")}로 있음 — 날짜 확인 필요(시트 ${h.rows.join(", ")}행)`
+    : `비슷한 행이 있어 넣지 않음(시트 ${h.rows.join(", ")}행)`;
+}
+
 export default async function HospitalPage({ searchParams }: PageProps<"/hospital">) {
   const { userId } = await verifySession();
   const now = new Date();
@@ -50,7 +67,7 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
   const month =
     typeof monthParam === "string" && /^\d{4}-\d{2}$/.test(monthParam) ? monthParam : (dateStr ?? tomorrow).slice(0, 7);
 
-  const [user, runs, lists] = await Promise.all([
+  const [user, runs, lists, jobs] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: { tsaScanFrom: true, tsaScanTo: true, tsaScanRequestedAt: true },
@@ -61,6 +78,7 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
       orderBy: { date: "asc" },
       select: { date: true, clinic: true, rows: true, updatedAt: true },
     }),
+    prisma.pcJobStatus.findMany({ where: { createdById: userId } }),
   ]);
 
   // 고른 날짜 → 없으면 내일 이후 가장 가까운 외래 → 그 달 마지막 외래
@@ -69,9 +87,68 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
     (dateStr ? undefined : (lists.find((l) => l.date >= tomorrow) ?? lists[lists.length - 1]));
   const rows = (selected?.rows ?? []) as OutpatientRow[];
 
+  // 외래 환자 중 이 사이트에 있는 환자(등록번호)와 다가오는 수술 계획 — 바로 그 환자 화면으로 간다
+  const chartNos = rows.map((r) => r.chartNo).filter(Boolean);
+  const known = chartNos.length
+    ? await prisma.patient.findMany({
+        where: { createdById: userId, chartNo: { in: chartNos } },
+        select: {
+          id: true,
+          chartNo: true,
+          opPlans: {
+            where: { createdById: userId, plannedDate: { gte: seoulTodayAsStoredDate() }, status: { not: "DONE" } },
+            orderBy: { plannedDate: "asc" },
+            take: 1,
+            select: { id: true, plannedDate: true },
+          },
+        },
+      })
+    : [];
+  const byChart = new Map(known.map((p) => [p.chartNo, p]));
+  const jobByKey = new Map(jobs.map((j) => [j.job, j]));
+
   return (
     <div className="space-y-8">
       <h1 className="text-lg font-semibold">병원 연동</h1>
+
+      <section className="space-y-3">
+        <h2 className="font-medium">병원 PC 작업</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="border-b border-slate-200 text-slate-500">
+              <tr>
+                <th className="py-2 pr-3 font-normal">작업</th>
+                <th className="py-2 pr-3 font-normal">상태</th>
+                <th className="py-2 pr-3 font-normal">마지막 실행</th>
+                <th className="py-2 font-normal">내용</th>
+              </tr>
+            </thead>
+            <tbody>
+              {PC_JOBS.map((def) => {
+                const s = jobByKey.get(def.key);
+                const state = STATE_STYLE[pcJobState(s, def.maxAgeHours, now)];
+                return (
+                  <tr key={def.key} className="border-b border-slate-100 align-top">
+                    <td className="py-2 pr-3 whitespace-nowrap">{def.label}</td>
+                    <td className="py-2 pr-3">
+                      <span className={`rounded-full px-2 py-0.5 text-xs ${state.cls}`}>{state.text}</span>
+                    </td>
+                    <td className="py-2 pr-3 whitespace-nowrap">{s ? fmtTime.format(s.lastRunAt) : "-"}</td>
+                    <td className="py-2">
+                      {s?.lastMessage && <p className={s.lastOk ? "text-slate-600" : "text-red-600"}>{s.lastMessage}</p>}
+                      {s?.lastOk && s.lastFailureAt && (
+                        <p className="text-xs text-slate-400">
+                          마지막 실패 {fmtTime.format(s.lastFailureAt)}: {s.lastFailure}
+                        </p>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <section className="space-y-3">
         <h2 className="font-medium">TSA 구글 시트</h2>
@@ -131,7 +208,7 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
                       {r.error && <p className="text-red-600">실패: {r.error}</p>}
                       {held.map((h, i) => (
                         <p key={`h${i}`} className="text-amber-700">
-                          {h.date} …{h.chart4}: 비슷한 행이 있어 넣지 않음(시트 {h.rows.join(", ")}행)
+                          {h.date} …{h.chart4}: {heldText(h)}
                         </p>
                       ))}
                       {dups.map((d, i) => (
@@ -175,19 +252,40 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
                         <th className="py-2 pr-3 font-normal">이름</th>
                         <th className="py-2 pr-3 font-normal">등록번호</th>
                         <th className="py-2 pr-3 font-normal">초재진</th>
-                        <th className="py-2 font-normal">주진단</th>
+                        <th className="py-2 pr-3 font-normal">주진단</th>
+                        <th className="py-2 font-normal">이 사이트</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {rows.map((p, i) => (
-                        <tr key={i} className="border-b border-slate-100">
-                          <td className="py-2 pr-3 whitespace-nowrap">{p.time}</td>
-                          <td className="py-2 pr-3 whitespace-nowrap">{p.name}</td>
-                          <td className="py-2 pr-3">{p.chartNo}</td>
-                          <td className="py-2 pr-3">{p.visit}</td>
-                          <td className="py-2">{p.diagnosis}</td>
-                        </tr>
-                      ))}
+                      {rows.map((p, i) => {
+                        const patient = byChart.get(p.chartNo);
+                        const plan = patient?.opPlans[0];
+                        return (
+                          <tr key={i} className="border-b border-slate-100">
+                            <td className="py-2 pr-3 whitespace-nowrap">{p.time}</td>
+                            <td className="py-2 pr-3 whitespace-nowrap">{p.name}</td>
+                            <td className="py-2 pr-3">{p.chartNo}</td>
+                            <td className="py-2 pr-3">{p.visit}</td>
+                            <td className="py-2 pr-3">{p.diagnosis}</td>
+                            <td className="py-2 whitespace-nowrap">
+                              {patient ? (
+                                <span className="flex flex-wrap gap-2">
+                                  <Link href={`/patients/${patient.id}`} className="text-emerald-700 underline">
+                                    환자
+                                  </Link>
+                                  {plan && (
+                                    <Link href={`/plans/${plan.id}`} className="text-emerald-700 underline">
+                                      수술 {safeDateStr(plan.plannedDate)}
+                                    </Link>
+                                  )}
+                                </span>
+                              ) : (
+                                <span className="text-slate-300">-</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

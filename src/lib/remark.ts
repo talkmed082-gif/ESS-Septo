@@ -46,6 +46,7 @@ export const CC_SYMPTOMS: { label: string; side: boolean }[] = [
   { label: "비출혈", side: true },
   { label: "코골이", side: false },
   { label: "재채기", side: false },
+  { label: "Foul odor", side: true },
 ];
 
 export const CC_SIDES = ["Rt.", "Lt.", "Both"] as const;
@@ -72,6 +73,22 @@ export function ccSymptomSide(cc: string, symptom: string): string | undefined {
     if (name === symptom) return side ?? "";
   }
   return undefined;
+}
+
+// 증상을 뺀다(없으면 그대로). 직접 적은 다른 내용은 건드리지 않는다.
+export function removeCcSymptom(cc: string, symptom: string): string {
+  return splitCc(cc)
+    .filter((item) => parseCcItem(item).name !== symptom)
+    .join(", ");
+}
+
+// 이미 들어간 증상의 방향만 바꾼다 — side가 없으면 방향 표시를 지운다. 없는 증상이면 붙인다.
+export function setCcSymptomSide(cc: string, symptom: string, side?: string): string {
+  const items = splitCc(cc);
+  const next = side ? `${symptom} (${side})` : symptom;
+  const index = items.findIndex((item) => parseCcItem(item).name === symptom);
+  if (index === -1) return [...items, next].join(", ");
+  return items.map((item, i) => (i === index ? next : item)).join(", ");
 }
 
 // 증상 버튼을 눌렀을 때 CC 문자열을 고친다. 같은 증상이 같은 방향으로 이미 있으면

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { pcJson } from "@/lib/pc-api";
 import { findUserByImportToken } from "@/lib/import-auth";
 import { applyReminderSync, getReminderSyncTargets, ReminderSyncBodySchema } from "@/lib/reminder-sync-store";
 
@@ -7,7 +8,7 @@ import { applyReminderSync, getReminderSyncTargets, ReminderSyncBodySchema } fro
 export async function GET(request: Request) {
   const user = await findUserByImportToken(request);
   if (!user) return notFound();
-  return NextResponse.json(await getReminderSyncTargets(user.id));
+  return pcJson(await getReminderSyncTargets(user.id));
 }
 
 export async function POST(request: Request) {
@@ -15,9 +16,9 @@ export async function POST(request: Request) {
   if (!user) return notFound();
 
   const parsed = ReminderSyncBodySchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "형식이 올바르지 않습니다." }, { status: 400 });
+  if (!parsed.success) return pcJson({ error: "형식이 올바르지 않습니다." }, { status: 400 });
 
-  return NextResponse.json(await applyReminderSync(user.id, parsed.data));
+  return pcJson(await applyReminderSync(user.id, parsed.data));
 }
 
 function notFound() {

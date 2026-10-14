@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import type { OutpatientRow, TsaRunBody } from "@/lib/hospital-link";
+import type { OutpatientRow, PcJobKey, TsaRunBody } from "@/lib/hospital-link";
 
 // 병원 PC가 10분마다 확인하는 "TSA 기간 확인" 요청(없으면 null)
 export async function getTsaScanRequest(userId: string) {
@@ -34,6 +34,18 @@ export async function recordTsaRun(userId: string, body: TsaRunBody) {
       data: { tsaScanFrom: null, tsaScanTo: null, tsaScanRequestedAt: null },
     });
   }
+  return { ok: true };
+}
+
+// 병원 PC 작업 결과 — 작업마다 한 줄을 덮어쓰고, 실패면 마지막 실패도 따로 남긴다
+export async function recordPcJob(userId: string, body: { job: PcJobKey; ok: boolean; message?: string }) {
+  const now = new Date();
+  const failure = body.ok ? {} : { lastFailureAt: now, lastFailure: body.message ?? null };
+  await prisma.pcJobStatus.upsert({
+    where: { createdById_job: { createdById: userId, job: body.job } },
+    create: { job: body.job, lastRunAt: now, lastOk: body.ok, lastMessage: body.message ?? null, createdById: userId, ...failure },
+    update: { lastRunAt: now, lastOk: body.ok, lastMessage: body.message ?? null, ...failure },
+  });
   return { ok: true };
 }
 

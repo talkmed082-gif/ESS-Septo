@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { pcJson } from "@/lib/pc-api";
 import { findUserByImportToken } from "@/lib/import-auth";
 import { TsaRunBodySchema } from "@/lib/hospital-link";
 import { getTsaScanRequest, recordTsaRun } from "@/lib/hospital-link-store";
@@ -8,7 +9,7 @@ import { getTsaScanRequest, recordTsaRun } from "@/lib/hospital-link-store";
 export async function GET(request: Request) {
   const user = await findUserByImportToken(request);
   if (!user) return notFound();
-  return NextResponse.json({ request: await getTsaScanRequest(user.id) });
+  return pcJson({ request: await getTsaScanRequest(user.id) });
 }
 
 export async function POST(request: Request) {
@@ -16,9 +17,9 @@ export async function POST(request: Request) {
   if (!user) return notFound();
 
   const parsed = TsaRunBodySchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "형식이 올바르지 않습니다." }, { status: 400 });
+  if (!parsed.success) return pcJson({ error: "형식이 올바르지 않습니다." }, { status: 400 });
 
-  return NextResponse.json(await recordTsaRun(user.id, parsed.data));
+  return pcJson(await recordTsaRun(user.id, parsed.data));
 }
 
 function notFound() {
