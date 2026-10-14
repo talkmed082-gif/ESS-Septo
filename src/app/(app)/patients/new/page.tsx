@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
+import { getTextTemplates } from "@/lib/text-templates";
 import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
 import { SurgeryPlanner } from "@/components/surgery-planner";
@@ -22,6 +23,7 @@ export default async function NewPatientPage() {
         환자 정보와 수술 계획을 한 번에 작성할 수 있습니다.
       </p>
       <SurgeryPlanner
+        templates={await getTextTemplates(user.id)}
         surgeryTypes={surgeryTypes.map((st) => ({
           id: st.id,
           code: st.code,

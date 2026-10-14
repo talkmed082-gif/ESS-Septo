@@ -30,7 +30,7 @@ import { useUnsavedChangesWarning } from "@/components/use-unsaved-changes-warni
 import { hasDsnValue, DSN_NO_DEGREE, DSN_NO_SIDE } from "@/components/dsn-sync";
 import { buttonStyles } from "@/lib/ui";
 import { peSideCopyPatch } from "@/lib/pe-side-copy";
-import { buildRemarkText } from "@/lib/remark";
+import { buildRemarkText, remarkExtras } from "@/lib/remark";
 import { localTodayStr } from "@/lib/date-format";
 import {
   applyFieldDefaults,
@@ -83,6 +83,42 @@ export interface EditPlanContext {
   planNote?: string;
   chiefComplaint?: string;
   postOpRemark?: string;
+}
+
+export interface TextTemplateOption {
+  id: string;
+  title: string;
+  body: string;
+}
+
+// 템플릿은 이미 쓴 내용을 지우지 않고 끝에 빈 줄 하나를 두고 붙인다
+export function appendTemplate(current: string, body: string): string {
+  return current.trim() ? `${current.replace(/\s+$/, "")}\n\n${body}` : body;
+}
+
+// "템플릿 넣기" — 고르면 onPick 후 다시 안내 문구로 돌아간다(같은 템플릿을 또 넣을 수 있게)
+function TemplatePicker({ templates, onPick }: { templates: TextTemplateOption[]; onPick: (body: string) => void }) {
+  if (templates.length === 0) return null;
+  return (
+    <select
+      value=""
+      aria-label="템플릿 넣기"
+      onChange={(e) => {
+        // 폼 전체 onChange(기록지 초안 재계산)로 퍼지지 않게 막는다.
+        e.stopPropagation();
+        const t = templates.find((x) => x.id === e.target.value);
+        if (t) onPick(t.body);
+      }}
+      className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600"
+    >
+      <option value="">템플릿 넣기…</option>
+      {templates.map((t) => (
+        <option key={t.id} value={t.id}>
+          {t.title}
+        </option>
+      ))}
+    </select>
+  );
 }
 
 export interface SurgeryPlannerFormState {
@@ -184,6 +220,7 @@ export function SurgeryPlanner({
   editPlan,
   defaultView,
   action,
+  templates = [],
 }: {
   surgeryTypes: SurgeryTypeOption[];
   loggedIn: boolean;
@@ -203,6 +240,8 @@ export function SurgeryPlanner({
   // 저장 시 호출할 서버 액션 — 생략하면 새 환자+계획 생성(createPatientWithPlan).
   // 계획 수정 시엔 updateOpPlan.bind(null, planId)처럼 넘긴다.
   action?: SurgeryPlannerAction;
+  // 내 문구 템플릿(설정에서 관리) — 계획 메모·수술 후 특이사항 칸에 골라 넣는다
+  templates?: TextTemplateOption[];
 }) {
   const [state, formAction, pending] = useActionState<
     SurgeryPlannerFormState | undefined,
@@ -238,6 +277,7 @@ export function SurgeryPlanner({
   const [chiefComplaint, setChiefComplaint] = useState(editPlan?.chiefComplaint ?? "");
   const [postOpRemark, setPostOpRemark] = useState(editPlan?.postOpRemark ?? "");
   const formRef = useRef<HTMLFormElement>(null);
+  const planNoteRef = useRef<HTMLTextAreaElement>(null);
   // 모바일에선 Op Plan 요약/기록지 초안이 긴 입력 폼 아래에 있어서, 하단 저장
   // 줄의 "요약 보기" 버튼으로 바로 내려갈 수 있게 한다.
   const previewRef = useRef<HTMLDivElement>(null);
@@ -558,6 +598,7 @@ export function SurgeryPlanner({
     // 자동 수술명을 못 만드는 커스텀 수술 종류는 종류 이름으로 대신한다.
     procedureName: procedureName || selected?.name,
     postOpRemark,
+    extras: remarkExtras(templateValues),
   });
 
   return (
@@ -946,7 +987,16 @@ export function SurgeryPlanner({
               <h2 className="text-sm font-semibold text-slate-700">차트 Remark</h2>
               <CopyButton text={remarkText} disabled={!remarkText} />
             </div>
-            <label className="mb-1 block text-xs font-medium text-slate-500">수술 후 특이사항</label>
+            <div className="mb-1 flex items-center justify-between gap-2">
+              <label className="block text-xs font-medium text-slate-500">수술 후 특이사항</label>
+              <TemplatePicker
+                templates={templates}
+                onPick={(body) => {
+                  setDirty(true);
+                  setPostOpRemark((prev) => appendTemplate(prev, body));
+                }}
+              />
+            </div>
             <textarea
               rows={3}
               value={postOpRemark}
@@ -1014,8 +1064,20 @@ export function SurgeryPlanner({
       <div className="mt-6 space-y-3">
         {selected && (
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">계획 메모</label>
+            <div className="mb-1 flex items-center justify-between gap-2">
+              <label className="block text-sm font-medium text-slate-700">계획 메모</label>
+              <TemplatePicker
+                templates={templates}
+                onPick={(body) => {
+                  const el = planNoteRef.current;
+                  if (!el) return;
+                  setDirty(true);
+                  el.value = appendTemplate(el.value, body);
+                }}
+              />
+            </div>
             <textarea
+              ref={planNoteRef}
               name="planNote"
               rows={3}
               defaultValue={editPlan?.planNote ?? ""}

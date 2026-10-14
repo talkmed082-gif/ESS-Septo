@@ -402,8 +402,8 @@ describe("차트 Remark", () => {
     );
     const remark = container.querySelector("textarea:not([name])") as HTMLTextAreaElement;
     fireEvent.change(remark, { target: { value: "출혈 많아 packing" } });
-    const pre = Array.from(container.querySelectorAll("pre")).find((p) => p.textContent?.startsWith("CC :"))!;
-    expect(pre.textContent).toMatch(/^CC : 코막힘\nOp : 2026-10-06 .+\n수술 후 특이사항 : 출혈 많아 packing$/);
+    const pre = Array.from(container.querySelectorAll("pre")).find((p) => p.textContent?.startsWith("코막힘 증상으로"))!;
+    expect(pre.textContent).toMatch(/^코막힘 증상으로 2026\.10\.06 .+ 시행하였음, 출혈 많아 packing\.$/);
 
     fireEvent.click(byText(container, "수술 전 (비강 소견 · Op Plan)"));
     const form = new FormData(container.querySelector("form")!);
@@ -488,5 +488,41 @@ describe("P/E 좌우 복사", () => {
     fireEvent.click(sinusitisButtons(container)[1]); // Frontal 좌측 해제
     act(() => byText(container, "좌측 → 우측 복사").click());
     expect(sinusitisState(container)).toBe("0000001100");
+  });
+});
+
+describe("문구 템플릿", () => {
+  const templates = [{ id: "t1", title: "수술 전 브리핑", body: "[수술 전 특이사항 및 브리핑]\n핵심 리스크: 출혈" }];
+
+  it("계획 메모: 고르면 칸 끝에 붙고, 이미 쓴 내용은 지우지 않는다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn templates={templates} />);
+    const note = container.querySelector("textarea[name='planNote']") as HTMLTextAreaElement;
+    note.value = "Navigation 준비";
+    const picker = container.querySelector("select[aria-label='템플릿 넣기']") as HTMLSelectElement;
+    fireEvent.change(picker, { target: { value: "t1" } });
+    expect(note.value).toBe("Navigation 준비\n\n[수술 전 특이사항 및 브리핑]\n핵심 리스크: 출혈");
+    expect(picker.value).toBe("");
+  });
+
+  it("수술 후 특이사항: 고르면 칸에 들어가고 remark 문장에도 반영된다", () => {
+    const { container } = render(
+      <SurgeryPlanner
+        surgeryTypes={types}
+        loggedIn
+        defaultView="post"
+        templates={[{ id: "t2", title: "짧은", body: "특이 합병증 없음" }]}
+        editPlan={{ surgeryTypeId: "1", plannedDate: "2026-10-16", values: {} }}
+      />,
+    );
+    const pickers = container.querySelectorAll("select[aria-label='템플릿 넣기']");
+    fireEvent.change(pickers[0], { target: { value: "t2" } }); // 수술 후 화면에서는 특이사항 칸이 먼저
+    const remark = container.querySelector("textarea:not([name])") as HTMLTextAreaElement;
+    expect(remark.value).toBe("특이 합병증 없음");
+    expect(Array.from(container.querySelectorAll("pre")).some((p) => p.textContent?.endsWith("특이 합병증 없음."))).toBe(true);
+  });
+
+  it("템플릿이 없으면 선택칸을 보이지 않는다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
+    expect(container.querySelector("select[aria-label='템플릿 넣기']")).toBeNull();
   });
 });

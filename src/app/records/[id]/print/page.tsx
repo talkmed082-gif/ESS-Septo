@@ -10,7 +10,7 @@ import { CopyButton } from "@/components/copy-button";
 import { AppNavBar } from "@/components/app-nav-bar";
 import { safeDateStr } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
-import { buildRemarkText } from "@/lib/remark";
+import { buildRemarkText, remarkExtras } from "@/lib/remark";
 
 function Row({ label, value }: { label: string; value?: string | null }) {
   return (
@@ -61,6 +61,7 @@ export default async function OpRecordPrintPage({
     surgeryDate: safeDateStr(record.operationDate) ?? "",
     procedureName: record.procedureName ?? "",
     postOpRemark: record.opPlan.postOpRemark ?? "",
+    extras: remarkExtras(values),
   });
 
   return (

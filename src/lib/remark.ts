@@ -1,28 +1,38 @@
-// 차트(EMR) remark 칸에 그대로 붙여넣을 수 있게 CC(주호소) · 수술명 · 수술 후
-// 특이사항을 한 덩어리로 묶는다. 비어 있는 항목은 줄째로 뺀다 — "CC : " 처럼
-// 빈 칸이 남아 있으면 붙여넣은 뒤 매번 지워야 해서.
+// 차트(EMR) remark 칸에 그대로 붙여넣을 한 문장(사용자 요청 형식, 2026-10-14):
+//   "코막힘, 후비루 증상으로 2026.10.16 Septoturbinoplasty + Both ESS 시행하였음, silastic sheet insertion 함, (특이사항)."
+// 비어 있는 부분은 문장에서 뺀다. 여러 줄로 적은 특이사항은 문장 다음 줄부터 그대로 붙인다.
 export function buildRemarkText({
   chiefComplaint,
   surgeryDate,
   procedureName,
   postOpRemark,
+  extras = [],
 }: {
   chiefComplaint?: string;
   surgeryDate?: string;
   procedureName?: string;
   postOpRemark?: string;
+  // 체크 항목에서 나온 덧붙임(예: "silastic sheet insertion 함") — remarkExtras로 만든다
+  extras?: string[];
 }): string {
-  const lines: string[] = [];
   const cc = chiefComplaint?.trim();
-  if (cc) lines.push(`CC : ${cc}`);
-  const op = [surgeryDate?.trim(), procedureName?.trim()].filter(Boolean).join(" ");
-  if (op) lines.push(`Op : ${op}`);
-  const remark = postOpRemark?.trim();
-  if (remark) {
-    // 여러 줄로 적은 특이사항은 머리말 다음 줄부터 그대로 이어 붙인다.
-    lines.push(remark.includes("\n") ? `수술 후 특이사항 :\n${remark}` : `수술 후 특이사항 : ${remark}`);
-  }
-  return lines.join("\n");
+  const date = surgeryDate?.trim().replace(/-/g, ".");
+  const op = [date, procedureName?.trim()].filter(Boolean).join(" ");
+  const remark = postOpRemark?.trim() ?? "";
+  const multiLine = remark.includes("\n");
+
+  const parts: string[] = [];
+  if (op) parts.push(`${cc ? `${cc} 증상으로 ` : ""}${op} 시행하였음`);
+  else if (cc) parts.push(`${cc} 증상`);
+  parts.push(...extras);
+  if (remark && !multiLine) parts.push(remark);
+  const sentence = parts.length ? `${parts.join(", ").replace(/[.\s]+$/, "")}.` : "";
+  return multiLine ? [sentence, remark].filter(Boolean).join("\n") : sentence;
+}
+
+// 기록지 값에서 remark에 덧붙일 항목 — 지금은 Silastic sheet 삽입만
+export function remarkExtras(values: Record<string, unknown> | null | undefined): string[] {
+  return values?.f_silastic_sheet === true ? ["silastic sheet insertion 함"] : [];
 }
 
 // CC 빠른 입력용 증상 목록 — side가 true인 증상은 방향(Rt./Lt./Both)을 붙일 수 있다.

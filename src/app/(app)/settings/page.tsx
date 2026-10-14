@@ -11,6 +11,7 @@ import { SurgeryTypesManager } from "../surgery-types/surgery-types-manager";
 import { CalendarSubscribeCard } from "./calendar-subscribe-card";
 import { ImportTokenCard } from "./import-token-card";
 import { AccountCard } from "./account-card";
+import { TextTemplatesCard } from "./text-templates-card";
 
 export default async function SettingsPage() {
   const user = await getCurrentUser();
@@ -32,6 +33,12 @@ export default async function SettingsPage() {
     where: { createdById: user.id, plannedDate: { gte: todayUtc }, status: { not: "DONE" } },
     orderBy: { plannedDate: "asc" },
     include: { surgeryType: { select: { code: true, name: true } } },
+  });
+
+  const templates = await prisma.textTemplate.findMany({
+    where: { createdById: user.id },
+    orderBy: { createdAt: "asc" },
+    select: { id: true, title: true, body: true },
   });
 
   return (
@@ -97,6 +104,11 @@ export default async function SettingsPage() {
       <div>
         <h2 className="mb-1 text-sm font-semibold text-slate-700">EMR 수술 일정 연동</h2>
         <ImportTokenCard token={user.importToken} />
+      </div>
+
+      <div>
+        <h2 className="mb-1 text-sm font-semibold text-slate-700">문구 템플릿</h2>
+        <TextTemplatesCard templates={templates} />
       </div>
 
       <div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
+import { getTextTemplates } from "@/lib/text-templates";
 import { parseFieldValues } from "@/lib/field-types";
 import { deleteOpPlan, updateOpPlan } from "@/app/actions/op-plans";
 import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
@@ -102,6 +103,7 @@ export default async function OpPlanPage({
       )}
 
       <SurgeryPlanner
+        templates={await getTextTemplates(user.id)}
         surgeryTypes={surgeryTypes.map((st) => ({
           id: st.id,
           code: st.code,

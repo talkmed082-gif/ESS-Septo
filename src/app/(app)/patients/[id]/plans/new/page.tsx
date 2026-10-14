@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
+import { getTextTemplates } from "@/lib/text-templates";
 import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
 import { getLatestNasalFindingsForPatient } from "@/lib/patient-nasal-findings";
@@ -30,6 +31,7 @@ export default async function NewOpPlanPage({
       <p className="mb-6 text-sm text-slate-500">환자: {patient.name}</p>
 
       <SurgeryPlanner
+        templates={await getTextTemplates(user.id)}
         surgeryTypes={surgeryTypes.map((st) => ({
           id: st.id,
           code: st.code,

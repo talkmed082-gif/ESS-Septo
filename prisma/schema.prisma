@@ -50,6 +50,7 @@ model User {
   reminders    Reminder[]
   tsaRuns         TsaRun[]
   outpatientLists OutpatientList[]
+  textTemplates   TextTemplate[]
 }
 
 // 수술 종류 (ESS, 비중격교정술, 기타 이비인후과 수술 등). fields 는 이 수술에 특화된
@@ -188,4 +189,17 @@ model OutpatientList {
   updatedAt   DateTime @updatedAt
 
   @@unique([createdById, date])
+}
+
+// 사용자가 만든 문구 템플릿 — 계획 메모·수술 후 특이사항 칸에 고르면 그대로 붙는다.
+model TextTemplate {
+  id          String   @id @default(cuid())
+  title       String
+  body        String
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([createdById])
 }

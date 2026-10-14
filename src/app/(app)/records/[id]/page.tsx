@@ -6,7 +6,7 @@ import { parseFieldValues } from "@/lib/field-types";
 import { isUnusedSideField, resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import { safeDateStr } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
-import { buildRemarkText } from "@/lib/remark";
+import { buildRemarkText, remarkExtras } from "@/lib/remark";
 import { CopyButton } from "@/components/copy-button";
 
 function Row({ label, value }: { label: string; value?: string | null }) {
@@ -42,6 +42,7 @@ export default async function OpRecordPage({
     surgeryDate: safeDateStr(record.operationDate) ?? "",
     procedureName: record.procedureName ?? "",
     postOpRemark: record.opPlan.postOpRemark ?? "",
+    extras: remarkExtras(values),
   });
 
   return (
