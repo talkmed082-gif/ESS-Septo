@@ -30,6 +30,10 @@ model User {
   // 리마인더 "동기화 요청" 버튼을 누른 시각 — 병원 PC가 평일 근무 시간에 10분마다 확인해
   // 요청이 있으면 EMR과 동기화하고 비운다.
   reminderSyncRequestedAt DateTime?
+  // "TSA 기간 확인" 요청 — 병원 PC가 10분마다 확인해 그 기간 수술장 명단의 TSA를 구글 시트에 넣고 비운다.
+  tsaScanFrom        String?
+  tsaScanTo          String?
+  tsaScanRequestedAt DateTime?
   // 로그인 실패 횟수와 잠금 시각 — 비밀번호를 계속 대입해 보는 것을 막는다.
   failedLoginCount     Int             @default(0)
   lockedUntil          DateTime?
@@ -44,6 +48,8 @@ model User {
   opPlans      OpPlan[]
   opRecords    OpRecord[]
   reminders    Reminder[]
+  tsaRuns         TsaRun[]
+  outpatientLists OutpatientList[]
 }
 
 // 수술 종류 (ESS, 비중격교정술, 기타 이비인후과 수술 등). fields 는 이 수술에 특화된
@@ -148,4 +154,38 @@ model OpRecord {
   createdBy         User     @relation(fields: [createdById], references: [id])
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+}
+
+// 병원 PC가 TSA 구글 시트에 넣은 결과(평일 일일 실행·기간 확인). "병원 연동" 화면에 보여준다.
+// held/dups에는 환자 이름 없이 수술일·등록번호 끝 4자리·시트 행 번호만 담는다.
+model TsaRun {
+  id          String   @id @default(cuid())
+  kind        String // DAILY | RANGE
+  rangeFrom   String
+  rangeTo     String
+  found       Int      @default(0)
+  added       Int      @default(0)
+  skipped     Int      @default(0)
+  held        Json     @default("[]")
+  dups        Json     @default("[]")
+  error       String?
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@index([createdById, createdAt])
+}
+
+// 병원 PC가 올리는 다음 날 외래 명단(텔레그램과 같은 내용). 로그인한 본인만 본다.
+model OutpatientList {
+  id          String   @id @default(cuid())
+  date        String // yyyy-MM-dd
+  clinic      String
+  rows        Json // [{ time, name, chartNo, visit, diagnosis }]
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([createdById, date])
 }

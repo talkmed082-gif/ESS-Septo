@@ -20,6 +20,9 @@ export async function AppNavBar() {
           <Link href="/import" className="text-sm text-slate-600 hover:text-slate-900">
             엑셀 가져오기
           </Link>
+          <Link href="/hospital" className="text-sm text-slate-600 hover:text-slate-900">
+            병원 연동
+          </Link>
           <Link href="/settings" className="text-sm text-slate-600 hover:text-slate-900">
             설정
           </Link>
