@@ -5,6 +5,9 @@ import { parseFieldDefs, type SurgeryFieldDef } from "./field-types";
 // 자동 생성 시 해당 그룹 내용을 포함할지 그대로 결정한다.
 export const SEPTO_PE_DONE_KEY = "n_septo_pe_done";
 export const ESS_PE_DONE_KEY = "n_ess_pe_done";
+// 수술 스케줄(EMR)에서 가져온 ESS 측(R/L/B) — 화면 항목은 아니고, 부비동 단계를 아직 안 고른
+// 계획의 수술명을 "Both ESS"처럼 보여주는 데만 쓴다(단계를 고르면 단계가 우선).
+export const SCHEDULE_ESS_SIDE_KEY = "f_sched_side";
 
 // "수술후 마무리" 섹션에 묶어서 보여줄 필드들(계획/기록지 작성 화면 공통) —
 // 시행 순서/Navigation/ESS 시행 부위/Turbinoplasty 다음, 수술의 실제

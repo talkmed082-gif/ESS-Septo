@@ -10,7 +10,7 @@ import { buildProcedureName } from "./op-note-generator";
 
 describe("mapScheduleProcedure", () => {
   it("ESS만이면 ESS", () => {
-    expect(mapScheduleProcedure("ESS[B]")).toEqual({ code: "ESS", overrides: {} });
+    expect(mapScheduleProcedure("ESS[B]")).toEqual({ code: "ESS", overrides: { f_sched_side: "B" } });
   });
 
   it("Septoplasty만이면 SEPTOPLASTY + Inferior 해제", () => {
@@ -34,18 +34,32 @@ describe("mapScheduleProcedure", () => {
     expect(mapScheduleProcedure("Septoturbinoplasty ; ESS[B]").overrides).toEqual({
       turb_inferior_right: true,
       turb_inferior_left: true,
+      f_sched_side: "B",
     });
   });
 
   it("ITR[side]는 해당 측 Inferior를 켠다", () => {
     expect(mapScheduleProcedure("ESS[B] ; Septoplasty ; ITR[B]")).toEqual({
       code: "COMBO",
-      overrides: { turb_inferior_right: true, turb_inferior_left: true },
+      overrides: { turb_inferior_right: true, turb_inferior_left: true, f_sched_side: "B" },
     });
     expect(mapScheduleProcedure("Septoplasty ; ITR[R]").overrides).toEqual({
       turb_inferior_right: true,
       turb_inferior_left: false,
     });
+  });
+
+  it("ESS 측(R/L/B)을 저장한다 — EMR 수술장 표기 (R)도", () => {
+    expect(mapScheduleProcedure("Endoscopic sinus surgery (R)").overrides).toEqual({ f_sched_side: "R" });
+    expect(mapScheduleProcedure("ESS").overrides).toEqual({});
+    expect(mapScheduleProcedure("Septoplasty[B]").overrides).not.toHaveProperty("f_sched_side");
+  });
+
+  it("부비동 단계를 고르기 전엔 스케줄 측으로 'Both ESS', 단계를 고르면 단계가 우선", () => {
+    expect(buildProcedureName("ESS", { f_sched_side: "B" })).toBe("Both ESS");
+    expect(buildProcedureName("ESS", { f_sched_side: "L" })).toBe("Lt. ESS");
+    expect(buildProcedureName("ESS", {})).toBe("ESS");
+    expect(buildProcedureName("ESS", { f_sched_side: "B", f_right_mma: true })).not.toMatch(/^Both/);
   });
 
   it("ESS·Septo가 없으면 지원 안 됨", () => {
@@ -55,7 +69,7 @@ describe("mapScheduleProcedure", () => {
   });
 
   it("EMR 수술장 표기도 같은 규칙으로 읽는다", () => {
-    expect(mapScheduleProcedure("Endoscopic sinus surgery (B)")).toEqual({ code: "ESS", overrides: {} });
+    expect(mapScheduleProcedure("Endoscopic sinus surgery (B)")).toEqual({ code: "ESS", overrides: { f_sched_side: "B" } });
     expect(mapScheduleProcedure("Functional endoscopic sinus surgery (L)").code).toBe("ESS");
     expect(mapScheduleProcedure("Endoscopic sinus surgery (B), Septoplasty").code).toBe("COMBO");
     expect(mapScheduleProcedure("Septoplasty + Inferior turbinoplasty (R)")).toEqual({

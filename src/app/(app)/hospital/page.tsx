@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { verifySession } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { kstDate, type OutpatientRow } from "@/lib/hospital-link";
 import { cancelTsaScan, requestTsaScan } from "@/app/actions/hospital-link";
 import { buttonStyles } from "@/lib/ui";
 import { TsaScanForm } from "./tsa-scan-form";
+import { OutpatientCalendar } from "./outpatient-calendar";
 
 // 병원 PC 연동 상태 — TSA 구글 시트 동기화 기록·기간 확인 요청, 병원 PC가 올린 외래 명단.
 // 로그인한 본인 계정 데이터만 보인다(createdById로 거름).
@@ -19,10 +19,36 @@ const fmtTime = new Intl.DateTimeFormat("ko-KR", {
   hour12: false,
 });
 
+// "TSA가 언제 수술일까지 시트에 반영됐나" — 실패 없이 끝난 실행 중 가장 늦은 끝 날짜
+function TsaCoverage({ runs }: { runs: { rangeTo: string; createdAt: Date; error: string | null }[] }) {
+  const ok = runs.filter((r) => !r.error);
+  const latestTo = ok.reduce<string | null>((m, r) => (m === null || r.rangeTo > m ? r.rangeTo : m), null);
+  const lastRun = runs[0];
+  return (
+    <div className="grid gap-2 sm:grid-cols-2">
+      <div className="rounded-md border border-slate-200 bg-white p-3">
+        <p className="text-xs text-slate-500">시트에 반영된 마지막 수술일</p>
+        <p className="text-xl font-semibold">{latestTo ?? "기록 없음"}</p>
+      </div>
+      <div className="rounded-md border border-slate-200 bg-white p-3">
+        <p className="text-xs text-slate-500">마지막 확인</p>
+        <p className="text-xl font-semibold">{lastRun ? fmtTime.format(lastRun.createdAt) : "기록 없음"}</p>
+        {lastRun?.error && <p className="text-sm text-red-600">실패: {lastRun.error}</p>}
+      </div>
+    </div>
+  );
+}
+
 export default async function HospitalPage({ searchParams }: PageProps<"/hospital">) {
   const { userId } = await verifySession();
   const now = new Date();
   const tomorrow = kstDate(now, 1);
+
+  const { date: dateParam, month: monthParam } = await searchParams;
+  const dateStr = typeof dateParam === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : undefined;
+  // 달력 달: ?month=yyyy-MM → 고른 날짜의 달 → 내일(다음 외래)이 있는 달
+  const month =
+    typeof monthParam === "string" && /^\d{4}-\d{2}$/.test(monthParam) ? monthParam : (dateStr ?? tomorrow).slice(0, 7);
 
   const [user, runs, lists] = await Promise.all([
     prisma.user.findUnique({
@@ -31,15 +57,16 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
     }),
     prisma.tsaRun.findMany({ where: { createdById: userId }, orderBy: { createdAt: "desc" }, take: 20 }),
     prisma.outpatientList.findMany({
-      where: { createdById: userId },
-      orderBy: { date: "desc" },
-      take: 14,
+      where: { createdById: userId, date: { gte: `${month}-01`, lte: `${month}-31` } },
+      orderBy: { date: "asc" },
       select: { date: true, clinic: true, rows: true, updatedAt: true },
     }),
   ]);
 
-  const { date: dateParam } = await searchParams;
-  const selected = lists.find((l) => l.date === dateParam) ?? lists[0];
+  // 고른 날짜 → 없으면 내일 이후 가장 가까운 외래 → 그 달 마지막 외래
+  const selected =
+    lists.find((l) => l.date === dateStr) ??
+    (dateStr ? undefined : (lists.find((l) => l.date >= tomorrow) ?? lists[lists.length - 1]));
   const rows = (selected?.rows ?? []) as OutpatientRow[];
 
   return (
@@ -48,6 +75,7 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
 
       <section className="space-y-3">
         <h2 className="font-medium">TSA 구글 시트</h2>
+        <TsaCoverage runs={runs} />
         <p className="text-sm text-slate-500">
           평일 17시에 다음 날 수술장 명단의 TSA를 시트에 넣습니다. 응급·주말 수술은 아래에서 기간을 정해 확인을
           요청하세요. 병원 PC가 평일 8시~16시 50분 사이 10분마다 확인해 처리합니다. 끝 날짜는 내일까지만 됩니다.
@@ -123,21 +151,17 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
 
       <section className="space-y-3">
         <h2 className="font-medium">외래 명단</h2>
+        <OutpatientCalendar
+          month={month}
+          counts={Object.fromEntries(lists.map((l) => [l.date, (l.rows as OutpatientRow[]).length]))}
+          selected={selected?.date}
+          today={kstDate(now)}
+        />
         {lists.length === 0 ? (
-          <p className="text-sm text-slate-400">아직 병원 PC가 올린 명단이 없습니다.</p>
+          <p className="text-sm text-slate-400">이 달에 병원 PC가 올린 명단이 없습니다.</p>
         ) : (
           <>
-            <div className="flex flex-wrap gap-2">
-              {lists.map((l) => (
-                <Link
-                  key={l.date}
-                  href={`/hospital?date=${l.date}`}
-                  className={l.date === selected?.date ? buttonStyles.primarySmall : buttonStyles.pill}
-                >
-                  {l.date.slice(5)}
-                </Link>
-              ))}
-            </div>
+            {!selected && <p className="text-sm text-slate-400">이 날짜에는 명단이 없습니다.</p>}
             {selected && (
               <div className="space-y-2">
                 <p className="text-sm text-slate-500">

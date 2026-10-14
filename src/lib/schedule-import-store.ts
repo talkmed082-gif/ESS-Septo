@@ -2,6 +2,8 @@ import "server-only";
 import * as z from "zod";
 import { prisma } from "@/lib/prisma";
 import type { ScheduleRow } from "@/lib/schedule-workbook";
+import { parseFieldValues } from "@/lib/field-types";
+import { SCHEDULE_ESS_SIDE_KEY } from "@/lib/op-note-defs";
 import {
   buildImportPlanData,
   buildImportPlanNote,
@@ -39,7 +41,7 @@ export async function existingPlan(userId: string, chartNo: string, date: string
       surgeryType: { code },
       patient: { chartNo, createdById: userId },
     },
-    select: { id: true },
+    select: { id: true, planData: true },
   });
 }
 
@@ -55,12 +57,21 @@ export async function importScheduleRows(
     const mapping = mapScheduleProcedure(row.procedure);
     const code = mapping.code;
     const type = code ? types.find((t) => t.code === code) : undefined;
-    if (
-      row.surgeon.trim() !== user.name.trim() ||
-      !code ||
-      !type ||
-      (await existingPlan(user.id, row.chartNo, row.date, code))
-    ) {
+    if (row.surgeon.trim() !== user.name.trim() || !code || !type) {
+      skipped++;
+      continue;
+    }
+    const existing = await existingPlan(user.id, row.chartNo, row.date, code);
+    if (existing) {
+      // 측 저장 전에 가져온 계획은 다시 올라올 때 스케줄 ESS 측(R/L/B)만 채운다
+      const side = mapping.overrides[SCHEDULE_ESS_SIDE_KEY];
+      const values = parseFieldValues(existing.planData);
+      if (side !== undefined && values[SCHEDULE_ESS_SIDE_KEY] === undefined) {
+        await prisma.opPlan.updateMany({
+          where: { id: existing.id, createdById: user.id },
+          data: { planData: { ...values, [SCHEDULE_ESS_SIDE_KEY]: side } },
+        });
+      }
       skipped++;
       continue;
     }

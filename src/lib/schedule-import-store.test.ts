@@ -7,12 +7,13 @@ const db = vi.hoisted(() => ({
   findFirstPatient: vi.fn(),
   createPatient: vi.fn(),
   createPlan: vi.fn(),
+  updateManyPlan: vi.fn(),
 }));
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     surgeryType: { findMany: db.findManyTypes },
-    opPlan: { findFirst: db.findFirstPlan },
+    opPlan: { findFirst: db.findFirstPlan, updateMany: db.updateManyPlan },
     $transaction: (fn: (tx: unknown) => unknown) =>
       fn({
         patient: { findFirst: db.findFirstPatient, create: db.createPatient },
@@ -79,6 +80,19 @@ describe("importScheduleRows", () => {
     db.findFirstPlan.mockResolvedValue({ id: "plan-1" });
     expect(await importScheduleRows(user, [row])).toEqual({ created: 0, skipped: 1 });
     expect(db.createPlan).not.toHaveBeenCalled();
+  });
+
+  it("측 저장 전에 만든 기존 계획에는 스케줄 ESS 측만 채우고, 이미 있으면 건드리지 않는다", async () => {
+    db.findFirstPlan.mockResolvedValue({ id: "plan-1", planData: { f_right_mma: false } });
+    await importScheduleRows(user, [row]);
+    expect(db.updateManyPlan).toHaveBeenCalledWith({
+      where: { id: "plan-1", createdById: "u1" },
+      data: { planData: { f_right_mma: false, f_sched_side: "B" } },
+    });
+    db.updateManyPlan.mockReset();
+    db.findFirstPlan.mockResolvedValue({ id: "plan-1", planData: { f_sched_side: "B" } });
+    await importScheduleRows(user, [row]);
+    expect(db.updateManyPlan).not.toHaveBeenCalled();
   });
 
   it("다른 집도의 행과 지원 안 되는 수술은 건너뛴다", async () => {

@@ -1,5 +1,5 @@
 import { applyFieldDefaults, type FieldValues } from "@/lib/field-types";
-import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
+import { resolveSurgeryTypeFields, SCHEDULE_ESS_SIDE_KEY } from "@/lib/op-note-defs";
 
 export type ImportSurgeryCode = "ESS" | "SEPTOPLASTY" | "COMBO";
 
@@ -22,6 +22,7 @@ export function mapScheduleProcedure(text: string): ProcedureMapping {
   let right = false;
   let left = false;
   let touchedInferior = false;
+  let essSide: string | undefined;
 
   for (const token of tokens) {
     // 측 표기: 엑셀 [B], EMR (B)
@@ -32,6 +33,7 @@ export function mapScheduleProcedure(text: string): ProcedureMapping {
       .trim();
     if (/^f?ess$/i.test(name) || /^(functional\s+)?endoscopic\s+sinus\s+surgery$/i.test(name)) {
       ess = true;
+      essSide = side ?? essSide;
     } else if (/^septoturbinoplasty$/i.test(name)) {
       septo = true;
       right = left = touchedInferior = true;
@@ -48,6 +50,8 @@ export function mapScheduleProcedure(text: string): ProcedureMapping {
   const code: ImportSurgeryCode | null = ess && septo ? "COMBO" : ess ? "ESS" : septo ? "SEPTOPLASTY" : null;
   const overrides: FieldValues =
     code && touchedInferior ? { turb_inferior_right: right, turb_inferior_left: left } : {};
+  // ESS 측(R/L/B)은 부비동 단계를 고르기 전 수술명("Both ESS")에 쓴다
+  if (code && code !== "SEPTOPLASTY" && essSide) overrides[SCHEDULE_ESS_SIDE_KEY] = essSide;
   return { code, overrides };
 }
 

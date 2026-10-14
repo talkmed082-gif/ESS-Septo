@@ -29,6 +29,7 @@ import { CcInput } from "@/components/cc-input";
 import { useUnsavedChangesWarning } from "@/components/use-unsaved-changes-warning";
 import { hasDsnValue, DSN_NO_DEGREE, DSN_NO_SIDE } from "@/components/dsn-sync";
 import { buttonStyles } from "@/lib/ui";
+import { peSideCopyPatch } from "@/lib/pe-side-copy";
 import { buildRemarkText } from "@/lib/remark";
 import { localTodayStr } from "@/lib/date-format";
 import {
@@ -454,6 +455,16 @@ export function SurgeryPlanner({
     patchFieldValues(patch);
   }
 
+  // P/E 소견(부비동염·폴립 위치·UP attach)의 한쪽 값을 반대쪽에 그대로 복사한다.
+  // 수술 방법(ESS 단계)은 건드리지 않는다 — 그건 아래 표의 좌우 복사로 따로 한다.
+  function copyPeSide(from: "right" | "left") {
+    if (!selected || !formRef.current) return;
+    const current = readCurrentValues();
+    if (!current) return;
+    // 소견 선택 화면 일부는 처음 값으로 자기 상태를 잡아 두므로 영역을 새 값으로 다시 그린다
+    applyCombo({ ...current, ...peSideCopyPatch(nasalFields.map((f) => f.key), current, from) });
+  }
+
   // Op Plan 표에서도 한쪽 값을 반대쪽에 그대로 복사할 수 있게 한다 —
   // 표에 보이는 부위(sideMatrix 행)만 대상으로 한다.
   function copySideInTable(from: "f_left_" | "f_right_") {
@@ -747,6 +758,14 @@ export function SurgeryPlanner({
               )}
               {showSinus && (
                 <CollapsibleFindingSection doneKey={ESS_PE_DONE_KEY} label="ESS P/E">
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" onClick={() => copyPeSide("right")} className={buttonStyles.pill}>
+                      우측 → 좌측 복사
+                    </button>
+                    <button type="button" onClick={() => copyPeSide("left")} className={buttonStyles.pill}>
+                      좌측 → 우측 복사
+                    </button>
+                  </div>
                   <UncinateAttachmentFields
                     fields={nasalFields.filter((f) => UNCINATE_FIELD_KEYS.includes(f.key))}
                     values={templateValues}

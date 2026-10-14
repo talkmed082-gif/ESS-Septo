@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
 import { parseFieldValues, fieldValuesFromFormData, type FieldValues } from "@/lib/field-types";
-import { isNasalFindingKey, REVISION_FLAG_KEYS, resolveSurgeryTypeFields } from "@/lib/op-note-defs";
+import { isNasalFindingKey, REVISION_FLAG_KEYS, resolveSurgeryTypeFields, SCHEDULE_ESS_SIDE_KEY } from "@/lib/op-note-defs";
 
 const OpPlanSchema = z.object({
   plannedDate: z.string().trim().optional(),
@@ -68,7 +68,10 @@ export async function updateOpPlan(
   // 하므로, 이후 저장부터는 planData의 절차(수술 방법) 항목을 더 이상
   // 덮어쓰지 않는다 — 비강 소견만 최신화하고, 수술 방법 쪽 수정은
   // actualData에만 반영해 기록지 초안에만 영향을 주게 한다.
-  let planData: FieldValues = submittedValues;
+  // 스케줄에서 가져온 ESS 측(화면 항목이 아니라 폼에 없음)은 저장해도 잃지 않게 이어 둔다
+  const schedSide = parseFieldValues(plan.planData)[SCHEDULE_ESS_SIDE_KEY];
+  let planData: FieldValues =
+    schedSide !== undefined ? { ...submittedValues, [SCHEDULE_ESS_SIDE_KEY]: schedSide } : submittedValues;
   let actualData: FieldValues | undefined;
   if (plan.status === "DONE") {
     const existingPlanValues = parseFieldValues(plan.planData);

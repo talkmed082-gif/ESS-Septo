@@ -1,5 +1,11 @@
 import type { FieldValues } from "./field-types";
-import { fessStepFieldKeys, fessStepLabels, isBuiltInSurgeryCode, type BuiltInSurgeryCode } from "./op-note-defs";
+import {
+  fessStepFieldKeys,
+  fessStepLabels,
+  isBuiltInSurgeryCode,
+  SCHEDULE_ESS_SIDE_KEY,
+  type BuiltInSurgeryCode,
+} from "./op-note-defs";
 
 export type OpNoteMode = "plan" | "record";
 
@@ -944,7 +950,12 @@ function buildFessProcedureName(
     // revision 태그(rev>)가 이미 해당 side의 sinus를 다 밝힌 경우(excludeSides로
     // 가려짐)에는 여기서 또 label만 덧붙이면 "... FEM) ESS"처럼 뒤에 군더더기가
     // 남으므로 빈 문자열을 돌려준다. 그 외에는 기존처럼 label만 표기한다.
-    return excludeSides.left || excludeSides.right ? "" : label;
+    if (excludeSides.left || excludeSides.right) return "";
+    // 스케줄에서 가져와 부비동을 아직 안 고른 계획은 스케줄의 측(ESS (B) 등)만이라도 보여준다
+    const schedSide = values[SCHEDULE_ESS_SIDE_KEY];
+    return schedSide === "R" || schedSide === "L" || schedSide === "B"
+      ? `${formatSideLabel(schedSide, style)} ${label}`
+      : label;
   }
 
   const leftEthmoidLabel = ethmoidLabelForSide("f_left_", values);

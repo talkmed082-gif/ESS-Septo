@@ -475,3 +475,18 @@ describe("소견 해제 시 시행 부위", () => {
     expect(form.get("field_f_right_mma")).toBe("on");
   });
 });
+
+describe("P/E 좌우 복사", () => {
+  it("우측 → 좌측 복사를 누르면 부비동염 우측 체크가 좌측에도 들어가고, 좌측 → 우측은 반대로", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
+    fireEvent.click(sinusitisButtons(container)[0]); // Frontal 우측
+    fireEvent.click(sinusitisButtons(container)[6]); // Maxillary 우측
+    expect(sinusitisState(container)).toBe("1000001000");
+    act(() => byText(container, "우측 → 좌측 복사").click());
+    expect(sinusitisState(container)).toBe("1100001100");
+
+    fireEvent.click(sinusitisButtons(container)[1]); // Frontal 좌측 해제
+    act(() => byText(container, "좌측 → 우측 복사").click());
+    expect(sinusitisState(container)).toBe("0000001100");
+  });
+});
