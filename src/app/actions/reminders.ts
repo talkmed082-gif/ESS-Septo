@@ -51,7 +51,7 @@ export async function createReminder(
   return { ok: true };
 }
 
-// "동기화 요청" — 병원 PC가 평일 근무 시간(08:00~16:50)에 10분마다 확인해서 처리한다.
+// "동기화 요청" — 병원 PC가 평일 근무 시간(08:00~20:00)에 10분마다 확인해서 처리한다.
 // 언제든 다시 누를 수 있고(요청 시각만 새로 바뀜), 처리되기 전에는 취소할 수 있다.
 export async function requestReminderSync(patientId: string): Promise<void> {
   const session = await verifySession();

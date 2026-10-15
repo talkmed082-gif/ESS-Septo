@@ -93,7 +93,7 @@ export default async function PatientDetailPage({
           </div>
         </div>
         <p className="mb-3 text-xs text-slate-400">
-          EMR Reminder(기본 탭)와 병원 PC가 평일 17:10에 동기화합니다. 동기화 요청을 누르면 평일 08:00~16:50에는 10분
+          EMR Reminder(기본 탭)와 병원 PC가 평일 17:10에 동기화합니다. 동기화 요청을 누르면 평일 08:00~20:00에는 10분
           안에, 그 밖의 시간이면 다음 평일 출근 시간(08:00)에 동기화합니다. 처리되기 전에는 요청을 취소할 수 있습니다.
           여기서 추가한 것은 동기화 때 EMR에 올라갑니다.
         </p>

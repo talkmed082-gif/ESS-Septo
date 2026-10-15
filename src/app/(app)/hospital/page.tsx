@@ -155,7 +155,7 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
         <TsaCoverage runs={runs} />
         <p className="text-sm text-slate-500">
           평일 17시에 다음 날 수술장 명단의 TSA를 시트에 넣습니다. 응급·주말 수술은 아래에서 기간을 정해 확인을
-          요청하세요. 병원 PC가 평일 8시~16시 50분 사이 10분마다 확인해 처리합니다. 끝 날짜는 내일까지만 됩니다.
+          요청하세요. 병원 PC가 평일 8시~20시 사이 10분마다 확인해 처리합니다. 끝 날짜는 내일까지만 됩니다.
         </p>
         {user?.tsaScanRequestedAt ? (
           <div className="flex flex-wrap items-center gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm">

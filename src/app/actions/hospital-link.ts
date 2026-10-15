@@ -10,7 +10,7 @@ export interface TsaScanFormState {
   ok?: boolean;
 }
 
-// "TSA 기간 확인" 요청 — 병원 PC가 평일 근무 시간(08:00~16:50)에 10분마다 확인해서 처리한다.
+// "TSA 기간 확인" 요청 — 병원 PC가 평일 근무 시간(08:00~20:00)에 10분마다 확인해서 처리한다.
 // 다시 누르면 기간·요청 시각만 바뀐다.
 export async function requestTsaScan(_prev: TsaScanFormState | undefined, formData: FormData): Promise<TsaScanFormState> {
   const session = await verifySession();
