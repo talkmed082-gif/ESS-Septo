@@ -302,6 +302,15 @@ export function SurgeryPlanner({
   const [postOpRemark, setPostOpRemark] = useState(editPlan?.postOpRemark ?? "");
   const formRef = useRef<HTMLFormElement>(null);
   const planNoteRef = useRef<HTMLTextAreaElement>(null);
+  // 계획 메모 칸 높이를 내용에 맞춘다(rows=5보다 작아지지는 않음)
+  function fitPlanNote() {
+    const el = planNoteRef.current;
+    // 화면에 안 그려진 상태(높이 0)에서는 건드리지 않는다
+    if (!el || el.scrollHeight === 0) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight + 2}px`;
+  }
+  useEffect(fitPlanNote, []);
   // 모바일에선 Op Plan 요약/기록지 초안이 긴 입력 폼 아래에 있어서, 하단 저장
   // 줄의 "요약 보기" 버튼으로 바로 내려갈 수 있게 한다.
   const previewRef = useRef<HTMLDivElement>(null);
@@ -1065,15 +1074,18 @@ export function SurgeryPlanner({
                   if (!el) return;
                   setDirty(true);
                   el.value = appendTemplate(el.value, body);
+                  fitPlanNote();
                 }}
               />
             </div>
+            {/* 기본 5줄, 내용이 길면 칸이 늘어나서 잘리지 않게(사용자 2026-10-16) */}
             <textarea
               ref={planNoteRef}
               name="planNote"
-              rows={3}
+              rows={5}
               defaultValue={editPlan?.planNote ?? ""}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              onInput={fitPlanNote}
+              className="w-full resize-y rounded-md border border-slate-300 px-3 py-2 text-sm leading-relaxed focus:border-slate-500 focus:outline-none"
             />
           </div>
         )}
