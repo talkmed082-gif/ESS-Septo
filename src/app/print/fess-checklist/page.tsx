@@ -2,7 +2,7 @@ import { SubPageNav } from "@/components/sub-page-nav";
 import { getCurrentUser } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { parseFieldValues } from "@/lib/field-types";
-import { ESS_ANATOMY_GROUPS, isBuiltInSurgeryCode } from "@/lib/op-note-defs";
+import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
 import { buildPlanTable, hasAnyRevision, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
 import { PrintButton } from "@/components/print-button";
@@ -13,9 +13,8 @@ import { CheckBox, DataCell } from "@/components/check-cell";
 // 부위 체크리스트. A4 한 장에 4장씩 나온다. 환자 목록에서 ?plans=id1,id2,...
 // 로 계획 id를 넘기면 그 계획들의 실제 체크 상태로 채워서 인쇄하고(부족한
 // 칸은 빈 양식), 아무것도 안 넘기면 전부 빈 양식으로 미리 뽑아둘 수 있다.
-// Turbinoplasty는 좌우 칸 대신 "동반 술식" 줄에 글로 쓴다(사용자 2026-10-16)
+// Turbinoplasty는 수술명에 쓴다. Uncinectomy는 ESS면 늘 하는 것이라 빈 양식에서도 뺀다(채운 칸에도 없음).
 const BLANK_ROWS = [
-  "Uncinectomy",
   "MMA (Middle meatal antrostomy)",
   "Ant. ethmoidectomy",
   "Post. ethmoidectomy",
@@ -30,9 +29,17 @@ interface CardRow {
 }
 
 // 빈 양식의 비강 소견 — 손으로 다 쓰기엔 너무 많아서 항목을 미리 적어 두고 체크만 한다(사용자 2026-10-16).
-// 맨 위 기본 4개(DSN·CHR·Concha bullosa·Polyp), 그 아래 Pre-op anatomy를 C/L/O/S/E 한 묶음씩.
-// 항목은 화면 입력과 같은 정의(ESS_ANATOMY_GROUPS)에서 가져와 둘이 어긋나지 않게 한다.
+// 맨 위 기본 4개(DSN·CHR·Concha bullosa·Polyp), 그 아래 Pre-op anatomy를 C/L/O/S/E 한 줄씩(S만 두 줄).
+// 인쇄 칸이 좁아 화면 입력 항목 중 핵심만 추린다(사용자 지정) — Asym. Keros는 Low skull base를
+// 한쪽만 체크하면 되고, S는 함기화 한 줄 + 경동맥/시신경 결손 한 줄.
 const BLANK_BASICS = ["DSN", "CHR", "Concha bullosa", "Polyp"];
+const BLANK_CLOSE: { letter: string; items: { label: string; options?: string[] }[] }[] = [
+  { letter: "C", items: [{ label: "Low skull base" }, { label: "SB 결손" }] },
+  { letter: "L", items: [{ label: "LP 결손" }, { label: "Haller cell" }] },
+  { letter: "O", items: [{ label: "Onodi cell" }, { label: "Onodi 내 시신경" }] },
+  { letter: "S", items: [{ label: "함기화", options: ["Conchal", "Presellar", "Sellar"] }, { label: "ICA/시신경 결손" }] },
+  { letter: "E", items: [{ label: "AEA 낮게 주행" }, { label: "Supraorbital" }] },
+];
 
 function BlankItem({ label, options = ["R", "L"], wide }: { label: string; options?: string[]; wide?: boolean }) {
   return (
@@ -49,7 +56,6 @@ function BlankItem({ label, options = ["R", "L"], wide }: { label: string; optio
 }
 
 function BlankFindings() {
-  const closeGroups = ESS_ANATOMY_GROUPS.filter((g) => g.letter);
   return (
     <div className="space-y-1 text-[12px]">
       <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 border-b border-slate-300 pb-1">
@@ -57,15 +63,13 @@ function BlankFindings() {
           <BlankItem key={label} label={label} />
         ))}
       </div>
-      {closeGroups.map((g) => (
+      {BLANK_CLOSE.map((g) => (
         <div key={g.letter} className="flex gap-1.5 border-b border-slate-200 pb-0.5">
           <span className="w-4 shrink-0 text-sm leading-5 font-bold">{g.letter}</span>
           <div className="grid flex-1 grid-cols-2 gap-x-3 gap-y-0.5">
-            {g.findings
-              .filter((f) => !f.legacy)
-              .map((f) => (
-                <BlankItem key={f.presentKey} label={f.short ?? f.label} options={f.options} wide={!!f.options} />
-              ))}
+            {g.items.map((f) => (
+              <BlankItem key={f.label} label={f.label} options={f.options} wide={!!f.options} />
+            ))}
           </div>
         </div>
       ))}
@@ -77,9 +81,8 @@ interface CardData {
   patientName: string;
   date: string | null;
   cc: string;
-  // 병행 수술 순서(있을 때만)와 동반 술식(수술명에 없는 것만)
+  // 병행 수술 순서(있을 때만). 동반 술식 줄은 뺐다 — 수술명에 쓴다(사용자 2026-10-16)
   order: string;
-  extra: string;
   procedureName: string;
   revision: boolean;
   findings: string;
@@ -127,25 +130,24 @@ function ChecklistCard({ data }: { data?: CardData }) {
             <span className="flex-1 border-b border-slate-400 font-medium">{data.order}</span>
           </div>
         )}
-        <div className="flex gap-1">
-          <span className="shrink-0 text-slate-500">동반 술식:</span>
-          <span className="flex-1 border-b border-slate-400 font-medium">{data?.extra || " "}</span>
-        </div>
       </div>
       {/* 1개 인쇄용 보기(PlanTableView)와 순서를 맞춘다 — 비강 소견이 Op
           Plan(시행 부위 표)보다 먼저 나온다. 값이 채워진 카드는 소견
           길이가 제각각이라 flex-1로 늘리면 표 시작 위치가 카드마다
           들쭉날쭉해지므로, 빈 양식일 때만 손글씨 줄을 늘려서 채운다. */}
-      <div className={`mb-2 flex flex-col ${data ? "" : "flex-1"}`}>
+      <div className="mb-2 flex flex-col">
         <span className="mb-1 text-sm font-semibold text-slate-700">비강 소견</span>
         {data ? (
-          <p className="text-[13px] leading-snug whitespace-pre-wrap text-slate-900">{data.findings || "-"}</p>
+          // 소견이 많으면 한 줄씩 쓸 때 표가 잘려서(사용자 2026-10-16) " · "로 이어 쓴다
+          <p className="text-[12px] leading-snug text-slate-900">
+            {data.findings ? data.findings.split("\n").join(" · ") : "-"}
+          </p>
         ) : (
           <BlankFindings />
         )}
       </div>
       {rows.length > 0 && (
-      <table className="w-full border-collapse text-sm">
+      <table className="w-full border-collapse text-[13px]">
         <thead>
           <tr>
             <th className="border border-slate-400 bg-slate-50 px-1.5 py-1 text-left font-medium">
@@ -162,7 +164,7 @@ function ChecklistCard({ data }: { data?: CardData }) {
         <tbody>
           {rows.map((row) => (
             <tr key={row.label}>
-              <td className="border border-slate-400 px-1.5 py-1">{row.label}</td>
+              <td className="border border-slate-400 px-1.5 py-0.5">{row.label}</td>
               {data ? (
                 <>
                   <DataCell checked={row.right} />
@@ -255,7 +257,7 @@ export default async function FessChecklistPrintPage({
           date: safeDateStr(plan.plannedDate),
           cc: plan.chiefComplaint ?? "",
           order: rowValue("시행 순서"),
-          extra: rowValue("동반 술식") === "-" ? "" : rowValue("동반 술식"),
+
           procedureName: table?.procedureName ?? plan.surgeryType.name,
           revision: hasAnyRevision(values),
           findings: table?.findings ?? "",
