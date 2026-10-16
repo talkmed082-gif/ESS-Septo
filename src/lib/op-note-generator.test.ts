@@ -126,7 +126,8 @@ describe("generateOpNote - 병행(Combo)", () => {
     const values = { ...fessSteps("both", ["mma"]), c_order: "좌 FESS → 비중격 → 우 FESS" };
     const { procedureDetail } = generateOpNote("COMBO", values, "record");
     const headers = lines(procedureDetail).filter((l) => l.startsWith("---"));
-    expect(headers).toEqual(["--- FESS - 좌측 ---", "--- 비중격교정술 ---", "--- FESS - 우측 ---", "--- 종료 ---"]);
+    // 비중격 구획도 술식 이름으로(양측 inf. turbinoplasty가 없으면 Septoplasty)
+    expect(headers).toEqual(["--- FESS - 좌측 ---", "--- Septoplasty ---", "--- FESS - 우측 ---", "--- 종료 ---"]);
 
     const numbers = lines(procedureDetail)
       .map((l) => /^(\d+)\. /.exec(l)?.[1])
@@ -227,7 +228,7 @@ describe("buildProcedureName", () => {
 
   it("약어 스타일은 side를 괄호형으로, 부위를 머리글자로 쓴다", () => {
     const style: NameStyle = { sideNotation: "bracket", abbreviateRegions: true };
-    expect(buildProcedureName("ESS", fessSteps("both"), style)).toBe("B] ESS(FEMS)");
+    expect(buildProcedureName("ESS", fessSteps("both"), style)).toBe("[B] ESS(FEMS)");
   });
 
   it("병행에서 Inferior 양측이면 Septoturbinoplasty + ESS로 쓴다", () => {
@@ -326,7 +327,7 @@ describe("부비동염/비용종 소견 문구의 순서", () => {
     const right: FieldValues = { n_ess_pe_done: true };
     for (const k of ["mm", "maxillary", "ant_ethmoid", "post_ethmoid", "sphenoid", "frontal", "choana"]) right[`n_polyp_right_site_${k}`] = true;
     expect(nasalFindingsText(right)).toContain(
-      "비용종: 우측(Middle meatus, Maxillary ostium, Ant. ethmoid, Post. ethmoid, Sphenoid, Frontal sinus, Extension to choana)",
+      "비용종: 우측(Middle meatus, Maxillary ostium, Ant. & post. ethmoid, Sphenoid, Frontal sinus, Extension to choana)",
     );
   });
 });
@@ -477,7 +478,7 @@ describe("병행 수술 순서 기본값", () => {
 
 // 계획표 표기(사용자 2026-10-16)
 describe("계획표 동반 술식·시행 순서·비용종 표기", () => {
-  it("병행: turbinoplasty는 동반 술식에 Septoturbinoplasty로, 시행 순서의 비중격도 술식 이름으로", () => {
+  it("병행: 시행 순서의 비중격은 술식 이름으로, 동반 술식에는 수술명에 이미 있는 turbinoplasty를 다시 쓰지 않는다", () => {
     const table = buildPlanTable("COMBO", {
       turb_inferior_right: true,
       turb_inferior_left: true,
@@ -485,14 +486,20 @@ describe("계획표 동반 술식·시행 순서·비용종 표기", () => {
     });
     const row = (label: string) => table.keyValueRows.find((r) => r.label === label)?.value;
     expect(row("시행 순서")).toBe("우 FESS → Septoturbinoplasty → 좌 FESS");
-    expect(row("동반 술식")).toContain("Septoturbinoplasty");
+    expect(table.procedureName).toContain("Septoturbinoplasty");
+    expect(row("동반 술식")).toBe("-");
   });
 
-  it("한쪽만 하거나 MT를 하면 방향과 함께 쓴다", () => {
+  it("ESS의 turbinoplasty도 수술명에만 쓰고 동반 술식 줄은 만들지 않는다", () => {
     const table = buildPlanTable("ESS", { turb_inferior_right: true, turb_middle_left: true, turb_middle_right: true });
-    expect(table.keyValueRows.find((r) => r.label === "동반 술식")?.value).toBe(
-      "우측 Inferior turbinoplasty, 양측 MT turbinoplasty",
-    );
+    expect(table.procedureName).toContain("Turbinoplasty");
+    expect(table.keyValueRows.find((r) => r.label === "동반 술식")).toBeUndefined();
+  });
+
+  it("비용종 Ant.·Post. ethmoid가 같이 있으면 하나로 묶는다", () => {
+    expect(
+      nasalFindingsText({ n_ess_pe_done: true, n_polyp_left_site_ant_ethmoid: true, n_polyp_left_site_post_ethmoid: true }),
+    ).toContain("비용종: 좌측(Ant. & post. ethmoid)");
   });
 
   it("비용종 위치가 좌우 같으면 양측으로 한 번만", () => {
@@ -516,7 +523,16 @@ describe("silastic sheet 두 종류(사용자 2026-10-16)", () => {
     expect(procedureDetail).toContain("septal silastic sheet를 삽입");
     const table = buildPlanTable("COMBO", { f_silastic_sheet: true, f_silastic_sheet_dir: "우측", s_splint: true });
     const extra = table.keyValueRows.find((r) => r.label === "동반 술식")?.value;
-    expect(extra).toContain("우측 MM silastic sheet");
-    expect(extra).toContain("Septal silastic sheet");
+    // 동반 술식에는 MM만 — septal sheet는 Septo면 당연히 넣는 것이라 쓰지 않는다
+    expect(extra).toBe("우측 MM silastic sheet");
+  });
+});
+
+describe("방향 표기 [B]", () => {
+  it("괄호 표기는 [R]/[L]/[B]로 앞뒤를 감싼다", () => {
+    const style: NameStyle = { sideNotation: "bracket", abbreviateRegions: true };
+    expect(buildProcedureName("COMBO", { ...fessSteps("both"), turb_inferior_right: true, turb_inferior_left: true }, style)).toBe(
+      "Septoturbinoplasty + [B] ESS(FEMS)",
+    );
   });
 });

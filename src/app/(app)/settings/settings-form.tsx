@@ -18,7 +18,7 @@ const SAMPLE_VALUES = {
 const SIDE_OPTIONS: { value: SideNotation; label: string; example: string }[] = [
   { value: "full", label: "Rt. / Lt. / Both", example: "Rt. ESS(...)" },
   { value: "paren", label: "R) / L) / B)", example: "R) ESS(...)" },
-  { value: "bracket", label: "R] / L] / B]", example: "R] ESS(...)" },
+  { value: "bracket", label: "[R] / [L] / [B]", example: "[R] ESS(...)" },
 ];
 
 export function SettingsForm({

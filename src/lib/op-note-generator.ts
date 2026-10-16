@@ -169,7 +169,13 @@ function polypSideKeyPrefix(side: "좌측" | "우측"): string {
 
 function polypSitesAt(side: "좌측" | "우측", values: FieldValues): string[] {
   const prefix = polypSideKeyPrefix(side);
-  return polypSiteFields.filter((f) => bool(values, `${prefix}${f.key}`)).map((f) => f.label);
+  const labels = polypSiteFields.filter((f) => bool(values, `${prefix}${f.key}`)).map((f) => f.label);
+  // Ant.·Post. ethmoid가 같이 있으면 "Ant. & post. ethmoid" 하나로(사용자 2026-10-16)
+  const ant = labels.indexOf("Ant. ethmoid");
+  if (ant >= 0 && labels.includes("Post. ethmoid")) {
+    return labels.filter((l) => l !== "Post. ethmoid").map((l, i) => (i === ant ? "Ant. & post. ethmoid" : l));
+  }
+  return labels;
 }
 
 function hasPolypAt(sideName: "좌측" | "우측", values: FieldValues): boolean {
@@ -786,7 +792,8 @@ function genCombo(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpN
   }
   for (const key of seq) {
     if (blocks[key].length === 0) continue;
-    parts.push(`--- ${comboBlockLabels[key]} ---`);
+    // 비중격 구획 이름도 시행 순서 표기처럼 술식 이름으로(사용자 2026-10-16)
+    parts.push(`--- ${key === "septo" ? comboOrderDisplay("비중격", values) : comboBlockLabels[key]} ---`);
     parts.push(numberSteps(blocks[key], n));
     n += blocks[key].length;
   }
@@ -828,7 +835,6 @@ function septoConciseItems(values: FieldValues, includePacking: boolean): string
     bool(values, "s_ans_release") && "ANS 부위 비중격 분리·절제 후 PDS 5-0 고정",
     bool(values, "s_spur") && "Bony spur 제거",
     bool(values, "s_quilting") && `Quilting suture (${quiltingSuture})`,
-    bool(values, "s_splint") && "Septal silastic sheet",
   ];
   if (includePacking) items.push("Nasocel Plus + Rhinocel packing 예정");
   return items.filter((s): s is string => Boolean(s));
@@ -901,7 +907,8 @@ function regionSegment(label: string, regions: string[], style: NameStyle, ethmo
 
 function formatSideLabel(side: "R" | "L" | "B", style: NameStyle): string {
   if (style.sideNotation === "paren") return `${side})`;
-  if (style.sideNotation === "bracket") return `${side}]`;
+  // "[B] ESS"처럼 앞뒤로 감싼다(사용자 2026-10-16 — 예전엔 "B]"만 붙었다)
+  if (style.sideNotation === "bracket") return `[${side}]`;
   return side === "R" ? "Rt." : side === "L" ? "Lt." : "Both";
 }
 
@@ -1145,19 +1152,14 @@ function packingCellValue(values: FieldValues): string {
   return parts.length > 0 ? parts.join(" + ") : "-";
 }
 
-// 계획표의 turbinoplasty — 좌우 칸 표 대신 "동반 술식" 칸에 글로 쓴다(사용자 2026-10-16).
-// Septo와 양측 inferior를 같이 하면 그냥 "Septoturbinoplasty".
-function turbinoplastyPlanItems(values: FieldValues, withSepto: boolean): string[] {
-  const sideWord = (f: { right: boolean; left: boolean }) => (f.right && f.left ? "양측" : f.right ? "우측" : "좌측");
-  const inf = turbSideFlags("inferior", values);
-  const mid = turbSideFlags("middle", values);
+// 계획표 "동반 술식"에는 수술명에 없는 것만 쓴다(사용자 2026-10-16) — turbinoplasty는 수술명
+// (Septoturbinoplasty, "... Turbinoplasty" 등)에 이미 들어 있고, septal silastic sheet는 Septo면
+// 당연히 넣는 것이라 뺀다. 남는 건 MM silastic sheet와 비중격 추가 술식(caudal·ANS·spur·quilting).
+function companionPlanItems(values: FieldValues, septoExtras: string[] = []): string[] {
   const items: string[] = [];
-  if (withSepto && inf.right && inf.left) items.push("Septoturbinoplasty");
-  else if (inf.right || inf.left) items.push(`${sideWord(inf)} Inferior turbinoplasty`);
-  if (mid.right || mid.left) items.push(`${sideWord(mid)} MT turbinoplasty`);
   const mm = mmSilasticSide(values);
   if (mm) items.push(`${mm} MM silastic sheet`);
-  return items;
+  return [...items, ...septoExtras];
 }
 
 // 시행 순서의 "비중격"을 실제 술식 이름으로 보여준다 — 저장 값(선택지)은 그대로 두고 표시만 바꾼다
@@ -1175,7 +1177,7 @@ export function buildPlanTable(
   const findings = nasalFindingsSummary(values);
   if (surgeryCode === "SEPTOPLASTY") {
     const [incision, ...rest] = septoConciseItems(values, false);
-    const extra = [...turbinoplastyPlanItems(values, true), ...rest];
+    const extra = companionPlanItems(values, rest);
     return {
       procedureName,
       findings,
@@ -1188,7 +1190,7 @@ export function buildPlanTable(
   }
 
   if (surgeryCode === "ESS") {
-    const turbItems = turbinoplastyPlanItems(values, false);
+    const turbItems = companionPlanItems(values);
     return {
       procedureName,
       findings,
@@ -1203,7 +1205,7 @@ export function buildPlanTable(
   }
 
   const [incision, ...rest] = septoConciseItems(values, false);
-  const extra = [...turbinoplastyPlanItems(values, true), ...rest];
+  const extra = companionPlanItems(values, rest);
   return {
     procedureName,
     findings,

@@ -77,9 +77,9 @@ interface CardData {
   patientName: string;
   date: string | null;
   cc: string;
-  // 시행 순서 / 동반 술식(turbinoplasty 포함)
+  // 병행 수술 순서(있을 때만)와 동반 술식(수술명에 없는 것만)
+  order: string;
   extra: string;
-  note: string;
   procedureName: string;
   revision: boolean;
   findings: string;
@@ -121,6 +121,12 @@ function ChecklistCard({ data }: { data?: CardData }) {
             {data?.procedureName ?? " "}
           </span>
         </div>
+        {data?.order && (
+          <div className="flex gap-1">
+            <span className="shrink-0 text-slate-500">순서:</span>
+            <span className="flex-1 border-b border-slate-400 font-medium">{data.order}</span>
+          </div>
+        )}
         <div className="flex gap-1">
           <span className="shrink-0 text-slate-500">동반 술식:</span>
           <span className="flex-1 border-b border-slate-400 font-medium">{data?.extra || " "}</span>
@@ -177,10 +183,10 @@ function ChecklistCard({ data }: { data?: CardData }) {
         </tbody>
       </table>
       )}
-      {/* 비고 한 줄(사용자 2026-10-16) — 채운 칸은 계획 메모 */}
+      {/* 비고 한 줄은 손으로 쓰는 빈칸(사용자 2026-10-16 — 계획 메모를 자동으로 넣으면 너무 길었다) */}
       <div className="mt-auto flex gap-1 pt-2 text-sm">
         <span className="shrink-0 text-slate-500">비고:</span>
-        <span className="flex-1 truncate border-b border-slate-400">{data?.note || " "}</span>
+        <span className="flex-1 border-b border-slate-400"> </span>
       </div>
     </div>
   );
@@ -248,8 +254,8 @@ export default async function FessChecklistPrintPage({
           patientName: plan.patient.name,
           date: safeDateStr(plan.plannedDate),
           cc: plan.chiefComplaint ?? "",
-          note: (plan.planNote ?? "").replace(/\s+/g, " ").trim(),
-          extra: [rowValue("시행 순서"), rowValue("동반 술식")].filter((v) => v && v !== "-").join(" / "),
+          order: rowValue("시행 순서"),
+          extra: rowValue("동반 술식") === "-" ? "" : rowValue("동반 술식"),
           procedureName: table?.procedureName ?? plan.surgeryType.name,
           revision: hasAnyRevision(values),
           findings: table?.findings ?? "",
