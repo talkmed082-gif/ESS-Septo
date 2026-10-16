@@ -489,7 +489,7 @@ function septoCore(values: FieldValues, turbs: TurbType[] = ALL_TURB_TYPES): str
     turbInferiorSide && `${turbInferiorSide} ${turbinoplastyTechniqueSentence("inferior")}`,
     quilting && `Flap을 원위치로 정복한 후 ${quiltingSuture}를 사용하여 quilting suture 시행`,
     "Incision 부위 Vicryl로 suture 시행함",
-    splint && `양측 비강에 silastic splint를 삽입하고 ${splintSuture}로 관통 봉합하여 고정함`,
+    splint && `양측 비강에 septal silastic sheet를 삽입하고 ${splintSuture}로 관통 봉합하여 고정함`,
   ];
   return steps.filter((s): s is string => Boolean(s));
 }
@@ -657,15 +657,22 @@ function fessSideBlock(
   return block;
 }
 
-// Silastic sheet 삽입 — 좌/우 각 블록 안에서 언급하지 않고, packing 직전에
-// 한 문장으로 모아서 서술한다. 좌우 구분 없이 하나의 체크박스로만 관리한다.
-function silasticSheetSentence(values: FieldValues): string {
+// MM(middle meatus) silastic sheet를 넣은 방향 — 직접 고른 방향(f_silastic_sheet_dir)이 있으면 그것,
+// 없으면 실제로 ESS를 시행한 쪽(예전엔 편측 ESS에도 "양측"으로 적혔다). 안 넣었으면 "".
+export function mmSilasticSide(values: FieldValues): "" | "양측" | "우측" | "좌측" {
   if (!bool(values, "f_silastic_sheet")) return "";
-  // 실제로 ESS를 시행한 쪽에만 넣는다 — 예전엔 편측 ESS에도 "양측"으로 적혔다.
+  const dir = str(values, "f_silastic_sheet_dir", "");
+  if (dir === "양측" || dir === "우측" || dir === "좌측") return dir;
   const right = sideHasFessSteps("f_right_", values);
   const left = sideHasFessSteps("f_left_", values);
-  const side = right && left ? "양측" : right ? "우측" : left ? "좌측" : "양측";
-  return `유착 방지를 위해 ${side} middle meatus에 silastic sheet를 삽입함`;
+  return right && left ? "양측" : right ? "우측" : left ? "좌측" : "양측";
+}
+
+// MM silastic sheet 삽입 — 좌/우 각 블록 안에서 언급하지 않고, packing 직전에 한 문장으로 모아서 서술한다.
+function silasticSheetSentence(values: FieldValues): string {
+  const side = mmSilasticSide(values);
+  if (!side) return "";
+  return `중비갑개 유착 방지를 위해 ${side} middle meatus에 silastic sheet를 삽입함`;
 }
 
 function fessCore(values: FieldValues): string[] {
@@ -821,7 +828,7 @@ function septoConciseItems(values: FieldValues, includePacking: boolean): string
     bool(values, "s_ans_release") && "ANS 부위 비중격 분리·절제 후 PDS 5-0 고정",
     bool(values, "s_spur") && "Bony spur 제거",
     bool(values, "s_quilting") && `Quilting suture (${quiltingSuture})`,
-    bool(values, "s_splint") && "Silastic splint 삽입",
+    bool(values, "s_splint") && "Septal silastic sheet",
   ];
   if (includePacking) items.push("Nasocel Plus + Rhinocel packing 예정");
   return items.filter((s): s is string => Boolean(s));
@@ -1148,6 +1155,8 @@ function turbinoplastyPlanItems(values: FieldValues, withSepto: boolean): string
   if (withSepto && inf.right && inf.left) items.push("Septoturbinoplasty");
   else if (inf.right || inf.left) items.push(`${sideWord(inf)} Inferior turbinoplasty`);
   if (mid.right || mid.left) items.push(`${sideWord(mid)} MT turbinoplasty`);
+  const mm = mmSilasticSide(values);
+  if (mm) items.push(`${mm} MM silastic sheet`);
   return items;
 }
 

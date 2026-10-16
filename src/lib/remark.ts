@@ -1,5 +1,8 @@
+import type { FieldValues } from "./field-types";
+import { mmSilasticSide } from "./op-note-generator";
+
 // 차트(EMR) remark 칸에 그대로 붙여넣을 한 문장(사용자 요청 형식, 2026-10-16):
-//   "코막힘, 후비루 증상 있어 10월 16일 Septoturbinoplasty + Both ESS 시행함, silastic sheet insertion 함,
+//   "코막힘, 후비루 증상 있어 10월 16일 Septoturbinoplasty + Both ESS 시행함, Both MM silastic sheet, septal silastic sheet insertion 함,
 //    1주일~10일 사이에 silastic sheet 제거해야함, (특이사항)."
 // 비어 있는 부분은 문장에서 뺀다. 여러 줄로 적은 특이사항은 문장 다음 줄부터 그대로 붙인다.
 export function buildRemarkText({
@@ -38,11 +41,19 @@ function remarkDate(date?: string): string {
   return m ? `${Number(m[1])}월 ${Number(m[2])}일` : d;
 }
 
-// 기록지 값에서 remark에 덧붙일 항목 — Silastic sheet(ESS) 또는 비중격 silastic splint를 넣었으면
-// 넣었다는 것과 제거 시기를 남긴다(사용자 2026-10-16).
-export function remarkExtras(values: Record<string, unknown> | null | undefined): string[] {
-  return values?.f_silastic_sheet === true || values?.s_splint === true
-    ? ["silastic sheet insertion 함", "1주일~10일 사이에 silastic sheet 제거해야함"]
+const REMARK_SIDE: Record<string, string> = { 양측: "Both", 우측: "Rt.", 좌측: "Lt." };
+
+// 기록지 값에서 remark에 덧붙일 항목 — silastic sheet 두 종류(MM: 중비갑개 유착 방지, septal: 비중격 고정)를
+// 이름으로 구분해 넣었다는 것과 제거 시기를 남긴다(사용자 2026-10-16).
+//   예: "Rt. MM silastic sheet, septal silastic sheet insertion 함, 1주일~10일 사이에 silastic sheet 제거해야함"
+export function remarkExtras(values: FieldValues | null | undefined): string[] {
+  if (!values) return [];
+  const sheets: string[] = [];
+  const mm = mmSilasticSide(values);
+  if (mm) sheets.push(`${REMARK_SIDE[mm]} MM silastic sheet`);
+  if (values.s_splint === true) sheets.push("septal silastic sheet");
+  return sheets.length
+    ? [`${sheets.join(", ")} insertion 함`, "1주일~10일 사이에 silastic sheet 제거해야함"]
     : [];
 }
 

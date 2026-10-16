@@ -504,3 +504,19 @@ describe("계획표 동반 술식·시행 순서·비용종 표기", () => {
     expect(nasalFindingsText(values)).toContain("비용종: 양측(");
   });
 });
+
+describe("silastic sheet 두 종류(사용자 2026-10-16)", () => {
+  it("MM은 고른 방향으로, septal은 비중격 문장으로 쓴다", () => {
+    const { procedureDetail } = generateOpNote(
+      "COMBO",
+      { ...fessSteps("both", ["mma"]), f_silastic_sheet: true, f_silastic_sheet_dir: "우측", s_splint: true },
+      "record",
+    );
+    expect(procedureDetail).toContain("우측 middle meatus에 silastic sheet");
+    expect(procedureDetail).toContain("septal silastic sheet를 삽입");
+    const table = buildPlanTable("COMBO", { f_silastic_sheet: true, f_silastic_sheet_dir: "우측", s_splint: true });
+    const extra = table.keyValueRows.find((r) => r.label === "동반 술식")?.value;
+    expect(extra).toContain("우측 MM silastic sheet");
+    expect(extra).toContain("Septal silastic sheet");
+  });
+});

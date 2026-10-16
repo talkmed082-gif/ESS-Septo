@@ -4,6 +4,7 @@ import { startTransition, useActionState, useRef, useState } from "react";
 import type { OpRecordFormState } from "@/app/actions/op-records";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import { OpNoteGenerateButton } from "@/components/op-note-generate-button";
+import { OccasionalFields } from "@/components/occasional-fields";
 import {
   SeptumDiagram,
   SinusDiagram,
@@ -34,6 +35,8 @@ import {
   SEPTO_PE_DONE_KEY,
   ESS_PE_DONE_KEY,
   POST_OP_FINISH_KEYS,
+  postOpFinishFields,
+  OCCASIONAL_KEYS,
   DSN_FIELD_KEYS,
 } from "@/lib/op-note-defs";
 import { hasDsnValue } from "@/components/dsn-sync";
@@ -353,7 +356,7 @@ export function RecordForm({
             <div className="rounded-md border border-slate-200 p-3">
               <p className="mb-2 text-sm font-medium text-slate-700">수술후 마무리</p>
               <SurgeryFieldInputs
-                fields={fields.filter((f) => POST_OP_FINISH_KEYS.includes(f.key))}
+                fields={postOpFinishFields(fields)}
                 values={liveFieldValues}
               />
             </div>
@@ -368,8 +371,10 @@ export function RecordForm({
               "c_order",
               "f_nav",
               ...POST_OP_FINISH_KEYS,
+              ...OCCASIONAL_KEYS,
             ]}
           />
+          <OccasionalFields fields={fields} values={liveFieldValues} />
           {/* Septoturbinoplasty는 기본이 양측 시행이라 좌우 복사 버튼이 불필요하고,
               수술 순서상으로도 비중격 처치 다음에 하는 것이라 맨 아래에 둔다. */}
           {surgeryTypeCode === "SEPTOPLASTY" && (

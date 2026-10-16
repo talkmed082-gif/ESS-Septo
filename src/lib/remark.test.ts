@@ -9,10 +9,10 @@ describe("buildRemarkText", () => {
         surgeryDate: "2026-10-16",
         procedureName: "Septoturbinoplasty + Both ESS",
         postOpRemark: "Rt. lamina papyracea 일부 노출, 지혈 확인",
-        extras: remarkExtras({ f_silastic_sheet: true }),
+        extras: remarkExtras({ f_silastic_sheet: true, s_splint: true }),
       }),
     ).toBe(
-      "코막힘, 후비루 증상 있어 10월 16일 Septoturbinoplasty + Both ESS 시행함, silastic sheet insertion 함, 1주일~10일 사이에 silastic sheet 제거해야함, Rt. lamina papyracea 일부 노출, 지혈 확인.",
+      "코막힘, 후비루 증상 있어 10월 16일 Septoturbinoplasty + Both ESS 시행함, Both MM silastic sheet, septal silastic sheet insertion 함, 1주일~10일 사이에 silastic sheet 제거해야함, Rt. lamina papyracea 일부 노출, 지혈 확인.",
     );
   });
 
@@ -25,7 +25,10 @@ describe("buildRemarkText", () => {
     );
     expect(buildRemarkText({})).toBe("");
     expect(remarkExtras({ f_silastic_sheet: false })).toEqual([]);
-    expect(remarkExtras({ s_splint: true })).toHaveLength(2);
+    expect(remarkExtras({ s_splint: true })[0]).toBe("septal silastic sheet insertion 함");
+    // MM은 고른 방향, 안 골랐으면 ESS 한 쪽
+    expect(remarkExtras({ f_silastic_sheet: true, f_silastic_sheet_dir: "좌측" })[0]).toBe("Lt. MM silastic sheet insertion 함");
+    expect(remarkExtras({ f_silastic_sheet: true, f_right_mma: true })[0]).toBe("Rt. MM silastic sheet insertion 함");
   });
 
   it("여러 줄 특이사항은 문장 다음 줄부터 그대로 붙인다", () => {

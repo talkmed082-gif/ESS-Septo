@@ -12,7 +12,45 @@ export const SCHEDULE_ESS_SIDE_KEY = "f_sched_side";
 // "수술후 마무리" 섹션에 묶어서 보여줄 필드들(계획/기록지 작성 화면 공통) —
 // 시행 순서/Navigation/ESS 시행 부위/Turbinoplasty 다음, 수술의 실제
 // 마지막 단계(패킹/실라스틱 시트)를 순서 그대로 배치한다.
-export const POST_OP_FINISH_KEYS = ["f_silastic_sheet", "f_nasocel", "f_rhinocel", "dermacol"];
+// 수술 후 마무리 칸에 모아 보여줄 항목(이 순서로) — silastic sheet 두 종류(MM / septal)를 한 칸에 나란히 두어
+// 이름으로 구분되게 한다(사용자 2026-10-16).
+export const POST_OP_FINISH_KEYS = [
+  "s_splint",
+  "f_nasocel",
+  "f_rhinocel",
+  "dermacol",
+];
+
+function pickFields(fields: SurgeryFieldDef[], keys: string[]): SurgeryFieldDef[] {
+  return keys.map((k) => fields.find((f) => f.key === k)).filter((f): f is SurgeryFieldDef => !!f);
+}
+
+export function postOpFinishFields(fields: SurgeryFieldDef[]): SurgeryFieldDef[] {
+  return pickFields(fields, POST_OP_FINISH_KEYS);
+}
+
+// 가끔만 하는 것·거의 안 바꾸는 문구 — 수술 후 화면의 접힌 "특이사항" 칸으로 뺀다(사용자 2026-10-16).
+// MM silastic sheet도 거의 안 넣어서 여기로.
+export const OCCASIONAL_KEYS = [
+  "f_silastic_sheet",
+  "f_silastic_sheet_dir",
+  "s_caudal",
+  "s_ans_release",
+  "s_spur",
+  "s_quilting",
+  "s_quilting_suture",
+  "s_local_anesthetic",
+  "s_splint_suture",
+];
+
+export function occasionalFields(fields: SurgeryFieldDef[]): SurgeryFieldDef[] {
+  return pickFields(fields, OCCASIONAL_KEYS);
+}
+
+// 이 중 하나라도 체크돼 있으면 칸을 펼쳐서 연다
+export function hasOccasionalChecked(values: Record<string, unknown> | undefined): boolean {
+  return OCCASIONAL_KEYS.some((k) => values?.[k] === true);
+}
 
 // 비강 소견 - 비중격/하비갑개 그룹 (Septoturbinoplasty용) — 비중격교정술
 // 단독 시행 시에는 이 그룹만 있으면 충분하고, ESS/FESS 관련 CT 소견은
@@ -286,7 +324,8 @@ export const septoFields: SurgeryFieldDef[] = [
   // 술식 — septum을 ANS에서 분리한 후 절제하고 PDS 5-0로 고정한다.
   { key: "s_ans_release", label: "ANS 부위 비중격 분리·절제 후 PDS 5-0 고정", type: "checkbox" },
   { key: "s_spur", label: "Bony spur 제거", type: "checkbox" },
-  { key: "s_splint", label: "Silastic splint 삽입", type: "checkbox", default: "true" },
+  // 예전 이름 "Silastic splint" — MM silastic sheet와 헷갈려서 위치를 붙인 이름으로(키는 그대로)
+  { key: "s_splint", label: "Septal silastic sheet (비중격 고정)", type: "checkbox", default: "true" },
   { key: "dermacol", label: "Dermacol 도포", type: "checkbox", default: "true" },
   {
     key: "s_local_anesthetic",
@@ -305,7 +344,7 @@ export const septoFields: SurgeryFieldDef[] = [
   },
   {
     key: "s_splint_suture",
-    label: "Splint 고정 봉합사",
+    label: "Septal silastic sheet 고정 봉합사",
     type: "text",
     default: "4-0 Vicryl",
   },
@@ -350,7 +389,14 @@ export const fessFields: SurgeryFieldDef[] = [
     label: `좌측 - ${fessStepLabels[k]}`,
     type: "checkbox" as const,
   })),
-  { key: "f_silastic_sheet", label: "Silastic sheet 삽입 (유착 방지)", type: "checkbox" },
+  { key: "f_silastic_sheet", label: "MM silastic sheet (MT 유착 방지)", type: "checkbox" },
+  // 한쪽에만 넣을 수도 있어서 방향을 고른다. 비워 두면 ESS를 한 쪽 기준(양쪽이면 양측).
+  {
+    key: "f_silastic_sheet_dir",
+    label: "MM silastic sheet 방향 (비우면 ESS 한 쪽)",
+    type: "select",
+    options: ["양측", "우측", "좌측"],
+  },
   { key: "f_nav", label: "Navigation 병용", type: "checkbox" },
   { key: "f_nasocel", label: "Nasocel Plus packing", type: "checkbox", default: "true" },
   { key: "f_rhinocel", label: "Rhinocel packing", type: "checkbox", default: "true" },
@@ -423,8 +469,8 @@ export const septoplastyFullFields: SurgeryFieldDef[] = withDefaults(
 ).filter((f) => f.key !== "dermacol");
 // 병행 수술명에는 항상 "Septoplasty"와 "ESS"가 함께 들어가므로 두 P/E를 모두
 // 기본으로 체크해두고, 비중격교정술 단독과 마찬가지로 CHR도 양측 기본으로 켜둔다.
-// Septo가 들어가면 Septoturbinoplasty(양측 inf. turbinoplasty)가 기본 세트이고, silastic sheet도
-// 기본으로 넣는다(사용자 2026-10-16 — 안 넣었으면 지우면 된다).
+// Septo가 들어가면 Septoturbinoplasty(양측 inf. turbinoplasty)가 기본 세트이고, septal silastic sheet
+// (s_splint, septoFields에서 기본 체크)도 넣는다. MM silastic sheet는 기본으로 넣지 않는다(사용자 2026-10-16).
 export const comboFullFields: SurgeryFieldDef[] = withDefaults(
   [...nasalFindingFields, ...turbinoplastyFields, ...septoFieldsForCombo, ...fessFieldsForCombo, ...comboOnlyFields],
   {
@@ -433,7 +479,6 @@ export const comboFullFields: SurgeryFieldDef[] = withDefaults(
     n_chr: "양측",
     turb_inferior_right: "true",
     turb_inferior_left: "true",
-    f_silastic_sheet: "true",
   },
 );
 
@@ -441,7 +486,6 @@ export const comboFullFields: SurgeryFieldDef[] = withDefaults(
 export const SEPTO_BASE_SET: Record<string, boolean> = {
   turb_inferior_right: true,
   turb_inferior_left: true,
-  f_silastic_sheet: true,
   s_splint: true,
 };
 

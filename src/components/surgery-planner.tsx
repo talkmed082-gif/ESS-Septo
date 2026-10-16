@@ -26,6 +26,7 @@ import { TurbinoplastyTypePicker, TURBINOPLASTY_FIELD_KEYS } from "@/components/
 import { PlanTableView } from "@/components/plan-table";
 import { CopyButton } from "@/components/copy-button";
 import { CcInput } from "@/components/cc-input";
+import { OccasionalFields } from "@/components/occasional-fields";
 import { useUnsavedChangesWarning } from "@/components/use-unsaved-changes-warning";
 import { hasDsnValue, DSN_NO_DEGREE, DSN_NO_SIDE } from "@/components/dsn-sync";
 import { buttonStyles } from "@/lib/ui";
@@ -49,6 +50,8 @@ import {
   SINUSITIS_TO_FESS_FIELD,
   POLYP_TO_FESS_FIELD,
   POST_OP_FINISH_KEYS,
+  postOpFinishFields,
+  OCCASIONAL_KEYS,
   DSN_FIELD_KEYS,
   DSN_SIDE_KEY,
   SEPTO_BASE_SET,
@@ -1019,7 +1022,7 @@ export function SurgeryPlanner({
                 <div className="rounded-md border border-slate-200 p-3">
                   <p className="mb-2 text-sm font-medium text-slate-700">수술후 마무리</p>
                   <SurgeryFieldInputs
-                    fields={selected.fields.filter((f) => POST_OP_FINISH_KEYS.includes(f.key))}
+                    fields={postOpFinishFields(selected.fields)}
                     values={templateValues}
                   />
                 </div>
@@ -1034,8 +1037,10 @@ export function SurgeryPlanner({
                   "c_order",
                   "f_nav",
                   ...POST_OP_FINISH_KEYS,
+                  ...OCCASIONAL_KEYS,
                 ]}
               />
+              <OccasionalFields fields={selected.fields} values={templateValues} />
               {/* Septoturbinoplasty는 기본이 양측 시행이라 좌우 복사 버튼이 불필요하고,
                   수술 순서상으로도 비중격 처치 다음에 하는 것이라 맨 아래에 둔다. */}
               {view === "post" && selected.code === "SEPTOPLASTY" && (

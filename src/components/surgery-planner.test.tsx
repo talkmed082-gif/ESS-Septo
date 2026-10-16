@@ -557,14 +557,15 @@ describe("병행 수술 순서는 P/E(DSN)를 따른다", () => {
 });
 
 describe("Septo 기본 세트", () => {
-  it("ESS에서 Septo를 켜면 양측 inf. turbinoplasty와 silastic sheet가 체크된다", () => {
+  it("ESS에서 Septo를 켜면 양측 inf. turbinoplasty와 septal silastic sheet가 체크되고, MM silastic sheet는 기본으로 안 켜진다", () => {
     const { container } = render(<SurgeryPlanner surgeryTypes={allTypes} loggedIn />);
     const septo = Array.from(container.querySelectorAll("label")).find((l) => l.textContent?.trim() === "Septo")!.querySelector("input") as HTMLInputElement;
     fireEvent.click(septo);
     const form = new FormData(container.querySelector("form")!);
     expect(form.get("field_turb_inferior_right")).toBe("on");
     expect(form.get("field_turb_inferior_left")).toBe("on");
-    expect(form.get("field_f_silastic_sheet")).toBe("on");
+    expect(form.get("field_s_splint")).toBe("on");
+    expect(form.get("field_f_silastic_sheet")).toBeNull();
   });
 
   it("Turbinoplasty 시행을 켜면 양측 inferior가 체크되고, Middle은 MT 버튼을 눌러야 보인다", () => {
@@ -662,5 +663,38 @@ describe("Pre-op anatomy 시신경/경동맥 분리", () => {
     );
     openAnatomic(container);
     expect(container.textContent).toContain("시신경/경동맥 골 결손");
+  });
+});
+
+describe("특이사항 (가끔 하는 것)", () => {
+  it("MM silastic sheet·quilting 등은 접힌 칸에 있고, 접혀 있어도 값이 전송된다", () => {
+    const { container } = render(
+      <SurgeryPlanner
+        surgeryTypes={allTypes}
+        loggedIn
+        defaultView="post"
+        editPlan={{ surgeryTypeId: "3", plannedDate: "2026-10-16", values: {} }}
+      />,
+    );
+    const details = Array.from(container.querySelectorAll("details")).find((d) =>
+      d.querySelector("summary")?.textContent?.includes("특이사항 (가끔 하는 것)"),
+    )!;
+    expect(details.open).toBe(false);
+    expect(details.textContent).toContain("MM silastic sheet");
+    expect(details.textContent).toContain("Quilting suture");
+    // 수술 후 마무리 칸에는 septal silastic sheet만
+    expect(new FormData(container.querySelector("form")!).get("field_s_splint")).toBe("on");
+  });
+
+  it("하나라도 체크돼 있으면 펼쳐서 연다", () => {
+    const { container } = render(
+      <SurgeryPlanner
+        surgeryTypes={allTypes}
+        loggedIn
+        defaultView="post"
+        editPlan={{ surgeryTypeId: "3", plannedDate: "2026-10-16", values: { s_quilting: true } }}
+      />,
+    );
+    expect(container.querySelector("details")?.open).toBe(true);
   });
 });
