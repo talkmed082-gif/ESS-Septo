@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState, type ChangeEvent, type ReactNode } from "react";
+import { useActionState, useEffect, useRef, useState, useTransition, type ChangeEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { createPatientWithPlan } from "@/app/actions/patient-plan";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
@@ -232,6 +232,7 @@ export function SurgeryPlanner({
   templates = [],
   heading,
   headerActions,
+  silasticReminder,
 }: {
   surgeryTypes: SurgeryTypeOption[];
   loggedIn: boolean;
@@ -256,6 +257,8 @@ export function SurgeryPlanner({
   // 계획 화면 맨 윗줄 — 환자 이름 제목과 버튼들. 수술 종류·날짜와 같은 줄에 놓는다(사용자 2026-10-16).
   heading?: ReactNode;
   headerActions?: ReactNode;
+  // Silastic을 넣으면 수술 후 화면에서 제거 리마인더(수술일+7일)를 버튼 하나로 만든다(사용자 2026-10-16)
+  silasticReminder?: { exists: boolean; add: (surgeryDate: string) => Promise<{ ok?: boolean; message?: string }> };
 }) {
   const [state, formAction, pending] = useActionState<
     SurgeryPlannerFormState | undefined,
@@ -289,6 +292,10 @@ export function SurgeryPlanner({
   // 차트 remark용 — CC(주호소)는 수술 전에, 특이사항은 수술 후에 적고, 둘을
   // 수술명과 함께 묶어 한 번에 복사한다.
   const [chiefComplaint, setChiefComplaint] = useState(editPlan?.chiefComplaint ?? "");
+  const [silasticState, setSilasticState] = useState<{ done: boolean; message?: string }>({
+    done: silasticReminder?.exists ?? false,
+  });
+  const [silasticPending, startSilastic] = useTransition();
   const [postOpRemark, setPostOpRemark] = useState(editPlan?.postOpRemark ?? "");
   const formRef = useRef<HTMLFormElement>(null);
   const planNoteRef = useRef<HTMLTextAreaElement>(null);
@@ -1093,16 +1100,14 @@ export function SurgeryPlanner({
         )}
         {/* 특이사항 입력란은 수술 후 화면에서만 보이지만, 수술 전 화면에서 저장해도
             값이 지워지지 않게 실제 전송은 항상 그려지는 숨은 입력으로 한다.
-            Remark는 짧아서 긴 기록지 초안 위에 둔다 — 폰에서 한참 내려가지 않게. */}
+            Remark 칸은 기록지 아래에 있다. */}
         <input type="hidden" name="postOpRemark" value={postOpRemark} />
         {view === "post" && (
           <div className="rounded-lg border border-slate-200 bg-white p-4">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-              {/* 여기는 복사해서 EMR에 붙이는 초안이고, 저장·인쇄하는 정식 기록지는 계획
-                  화면 위쪽 버튼으로 따로 쓴다 — 이름이 같아 둘을 헷갈렸다. */}
-              <h2 className="text-sm font-semibold text-slate-700">
-                수술기록지 초안 <span className="font-normal text-slate-400">(복사용)</span>
-              </h2>
+              {/* 기록지는 여기 하나로 합쳤다(사용자 2026-10-16) — 예전 "정식 기록지"는 따로 만들지 않는다.
+                  복사해서 EMR에 붙인다. */}
+              <h2 className="text-sm font-semibold text-slate-700">수술기록지</h2>
               <div className="flex gap-2">
                 <CopyButton text={recordText} />
                 <a
@@ -1153,6 +1158,28 @@ export function SurgeryPlanner({
               </pre>
             ) : (
               <p className="text-sm text-slate-500">CC와 특이사항을 적으면 여기에 remark가 만들어집니다.</p>
+            )}
+            {silasticReminder && remarkExtras(templateValues).length > 0 && (
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+                {silasticState.done ? (
+                  <span className="text-emerald-700">✓ Silastic 제거 리마인더 있음 (환자 화면에서 확인)</span>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={silasticPending}
+                    onClick={() =>
+                      startSilastic(async () => {
+                        const res = await silasticReminder.add(surgeryDate);
+                        setSilasticState(res.ok ? { done: true } : { done: false, message: res.message });
+                      })
+                    }
+                    className={buttonStyles.smallOutlineAccent}
+                  >
+                    {silasticPending ? "추가 중..." : "Silastic 제거 리마인더 추가 (수술일 +7일)"}
+                  </button>
+                )}
+                {silasticState.message && <span className="text-red-600">{silasticState.message}</span>}
+              </div>
             )}
           </div>
         )}

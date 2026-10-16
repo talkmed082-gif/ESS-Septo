@@ -121,7 +121,7 @@ function PresentSidedGroup({
               {g.letter && <span className="text-base font-bold text-emerald-700">{g.letter}</span>}
               {g.title}
             </p>
-        {g.findings.map((f) => {
+        {g.findings.filter((f) => !f.legacy || state[f.presentKey].present).map((f) => {
           const entry = state[f.presentKey];
           return (
             <div key={f.presentKey} className="flex flex-wrap items-center gap-2">

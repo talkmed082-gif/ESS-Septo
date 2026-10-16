@@ -198,12 +198,9 @@ export function PatientListTable({
                   수술 계획표 확인
                 </Link>
               ) : null}
-              {p.recordId ? (
-                <Link href={`/records/${p.recordId}`} className={buttonStyles.smallOutline}>
-                  수술기록 확인
-                </Link>
-              ) : p.surgeryPlanId ? (
-                <Link href={`/plans/${p.surgeryPlanId}/record`} className={buttonStyles.smallOutlineAccent}>
+              {/* 기록지는 수술 계획의 수술 후 화면 하나로 합쳤다 */}
+              {p.surgeryPlanId ? (
+                <Link href={`/plans/${p.surgeryPlanId}?view=post`} className={buttonStyles.smallOutlineAccent}>
                   수술기록 확인
                 </Link>
               ) : null}
@@ -303,12 +300,8 @@ export function PatientListTable({
                   )}
                 </td>
                 <td className="px-2 py-2 whitespace-nowrap">
-                  {p.recordId ? (
-                    <Link href={`/records/${p.recordId}`} className={buttonStyles.smallOutline}>
-                      수술기록 확인
-                    </Link>
-                  ) : p.surgeryPlanId ? (
-                    <Link href={`/plans/${p.surgeryPlanId}/record`} className={buttonStyles.smallOutlineAccent}>
+                  {p.surgeryPlanId ? (
+                    <Link href={`/plans/${p.surgeryPlanId}?view=post`} className={buttonStyles.smallOutlineAccent}>
                       수술기록 확인
                     </Link>
                   ) : (

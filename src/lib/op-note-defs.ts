@@ -95,6 +95,10 @@ export interface EssAnatomyFinding {
   label: string;
   defaultSide: string;
   options?: string[];
+  // 빈 인쇄 양식에 쓰는 짧은 이름
+  short?: string;
+  // 예전 합친 항목 — 이미 체크된 계획에서만 보이고 새로는 고르지 않는다
+  legacy?: boolean;
 }
 
 export const ESS_ANATOMY_GROUPS: { letter: string; title: string; findings: EssAnatomyFinding[] }[] = [
@@ -102,27 +106,27 @@ export const ESS_ANATOMY_GROUPS: { letter: string; title: string; findings: EssA
     letter: "C",
     title: "Cribriform plate",
     findings: [
-      { presentKey: "n_skull_base_risk_present", sideKey: "n_skull_base_risk_side", label: "Low skull base (Keros II/III)", defaultSide: "양측" },
-      { presentKey: "n_keros_asym_present", sideKey: "n_keros_asym_side", label: "Asymmetric Keros (낮은 쪽)", defaultSide: "" },
-      { presentKey: "n_sb_dehiscence_present", sideKey: "n_sb_dehiscence_side", label: "Skull base 골 결손", defaultSide: "" },
+      { presentKey: "n_skull_base_risk_present", sideKey: "n_skull_base_risk_side", label: "Low skull base (Keros II/III)", short: "Low skull base", defaultSide: "양측" },
+      { presentKey: "n_keros_asym_present", sideKey: "n_keros_asym_side", label: "Asymmetric Keros (낮은 쪽)", short: "Asym. Keros", defaultSide: "" },
+      { presentKey: "n_sb_dehiscence_present", sideKey: "n_sb_dehiscence_side", label: "Skull base 골 결손", short: "SB 결손", defaultSide: "" },
     ],
   },
   {
     letter: "L",
     title: "Lamina papyracea",
     findings: [
-      { presentKey: "n_lp_dehiscence_present", sideKey: "n_lp_dehiscence_side", label: "Lamina papyracea 결손", defaultSide: "" },
-      { presentKey: "n_orbital_prolapse_present", sideKey: "n_orbital_prolapse_side", label: "안와 내용물 사골동 탈출", defaultSide: "" },
-      { presentKey: "n_haller_present", sideKey: "n_haller_side", label: "Haller's cell", defaultSide: "" },
-      { presentKey: "n_up_orbit_present", sideKey: "n_up_orbit_side", label: "Uncinate가 안와벽에 닿음", defaultSide: "" },
+      { presentKey: "n_lp_dehiscence_present", sideKey: "n_lp_dehiscence_side", label: "Lamina papyracea 결손", short: "LP 결손", defaultSide: "" },
+      { presentKey: "n_orbital_prolapse_present", sideKey: "n_orbital_prolapse_side", label: "안와 내용물 사골동 탈출", short: "안와 탈출", defaultSide: "" },
+      { presentKey: "n_haller_present", sideKey: "n_haller_side", label: "Haller's cell", short: "Haller cell", defaultSide: "" },
+      { presentKey: "n_up_orbit_present", sideKey: "n_up_orbit_side", label: "Uncinate가 안와벽에 닿음", short: "UP-안와벽", defaultSide: "" },
     ],
   },
   {
     letter: "O",
     title: "Onodi cell",
     findings: [
-      { presentKey: "n_onodi_present", sideKey: "n_onodi_side", label: "Onodi's cell", defaultSide: "" },
-      { presentKey: "n_onodi_optic_present", sideKey: "n_onodi_optic_side", label: "Onodi cell 안 시신경 결손", defaultSide: "" },
+      { presentKey: "n_onodi_present", sideKey: "n_onodi_side", label: "Onodi's cell", short: "Onodi cell", defaultSide: "" },
+      { presentKey: "n_onodi_optic_present", sideKey: "n_onodi_optic_side", label: "Onodi cell 안 시신경 결손", short: "Onodi 내 시신경", defaultSide: "" },
     ],
   },
   {
@@ -133,20 +137,24 @@ export const ESS_ANATOMY_GROUPS: { letter: string; title: string; findings: EssA
         presentKey: "n_sphenoid_pneum_present",
         sideKey: "n_sphenoid_pneum_side",
         label: "Sphenoid 함기화 형태",
+        short: "함기화",
         defaultSide: "",
         options: ["Conchal", "Presellar", "Sellar"],
       },
-      { presentKey: "n_sphenoid_ext_present", sideKey: "n_sphenoid_ext_side", label: "Skull base·Ant. clinoid까지 함기화", defaultSide: "" },
-      { presentKey: "n_dehiscence_present", sideKey: "n_dehiscence_side", label: "시신경/경동맥 골 결손", defaultSide: "" },
-      { presentKey: "n_sphenoid_septation_present", sideKey: "n_sphenoid_septation_side", label: "Septation이 경동맥관에 붙음", defaultSide: "" },
+      { presentKey: "n_sphenoid_ext_present", sideKey: "n_sphenoid_ext_side", label: "Skull base·Ant. clinoid까지 함기화", short: "Clinoid 함기화", defaultSide: "" },
+      // 시신경·경동맥 결손을 논문 표처럼 따로 기록한다(사용자 2026-10-16). 예전 합친 항목은 legacy로 남긴다.
+      { presentKey: "n_carotid_dehiscence_present", sideKey: "n_carotid_dehiscence_side", label: "경동맥관 골 결손", short: "ICA 결손", defaultSide: "" },
+      { presentKey: "n_optic_dehiscence_present", sideKey: "n_optic_dehiscence_side", label: "시신경관 골 결손 (접형동)", short: "시신경 결손", defaultSide: "" },
+      { presentKey: "n_dehiscence_present", sideKey: "n_dehiscence_side", label: "시신경/경동맥 골 결손", defaultSide: "", legacy: true },
+      { presentKey: "n_sphenoid_septation_present", sideKey: "n_sphenoid_septation_side", label: "Septation이 경동맥관에 붙음", short: "Septation-ICA", defaultSide: "" },
     ],
   },
   {
     letter: "E",
     title: "(Ant.) Ethmoidal artery",
     findings: [
-      { presentKey: "n_aea_low_present", sideKey: "n_aea_low_side", label: "AEA가 skull base 아래로 주행", defaultSide: "" },
-      { presentKey: "n_supraorbital_present", sideKey: "n_supraorbital_side", label: "Supraorbital pneumatization", defaultSide: "" },
+      { presentKey: "n_aea_low_present", sideKey: "n_aea_low_side", label: "AEA가 skull base 아래로 주행", short: "AEA 낮게 주행", defaultSide: "" },
+      { presentKey: "n_supraorbital_present", sideKey: "n_supraorbital_side", label: "Supraorbital pneumatization", short: "Supraorbital", defaultSide: "" },
     ],
   },
   {

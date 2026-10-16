@@ -113,3 +113,6 @@ export function toggleCcSymptom(cc: string, symptom: string, side?: string): str
   if (items[index] === next) return items.filter((_, i) => i !== index).join(", ");
   return items.map((item, i) => (i === index ? next : item)).join(", ");
 }
+
+// Silastic 제거 리마인더 제목 — 이미 만들었는지 확인할 때도 같은 값을 쓴다("use server" 파일엔 상수를 못 둬서 여기에)
+export const SILASTIC_REMINDER_TITLE = "Silastic sheet 제거";

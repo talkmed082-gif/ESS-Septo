@@ -611,3 +611,56 @@ describe("저장 버튼", () => {
     expect(new FormData(container.querySelector("form")!).get("chiefComplaint")).toBe("코막힘");
   });
 });
+
+describe("Silastic 제거 리마인더", () => {
+  it("silastic을 넣었으면 수술 후 화면에 버튼이 보이고, 누르면 수술 날짜로 추가한다", async () => {
+    const add = vi.fn().mockResolvedValue({ ok: true });
+    const { container, findByText } = render(
+      <SurgeryPlanner
+        surgeryTypes={allTypes}
+        loggedIn
+        defaultView="post"
+        editPlan={{ surgeryTypeId: "3", plannedDate: "2026-10-16", values: { f_silastic_sheet: true } }}
+        silasticReminder={{ exists: false, add }}
+      />,
+    );
+    fireEvent.click(byText(container, "Silastic 제거 리마인더 추가 (수술일 +7일)"));
+    expect(add).toHaveBeenCalledWith("2026-10-16");
+    expect(await findByText("✓ Silastic 제거 리마인더 있음 (환자 화면에서 확인)")).toBeTruthy();
+  });
+
+  it("silastic이 없으면 버튼을 보이지 않는다", () => {
+    const { container } = render(
+      <SurgeryPlanner
+        surgeryTypes={types}
+        loggedIn
+        defaultView="post"
+        editPlan={{ surgeryTypeId: "1", plannedDate: "2026-10-16", values: { f_silastic_sheet: false } }}
+        silasticReminder={{ exists: false, add: vi.fn() }}
+      />,
+    );
+    expect(container.textContent).not.toContain("Silastic 제거 리마인더");
+  });
+});
+
+describe("Pre-op anatomy 시신경/경동맥 분리", () => {
+  it("새 항목 두 개가 보이고, 예전 합친 항목은 체크된 적 없으면 안 보인다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
+    openAnatomic(container);
+    expect(container.textContent).toContain("경동맥관 골 결손");
+    expect(container.textContent).toContain("시신경관 골 결손 (접형동)");
+    expect(container.textContent).not.toContain("시신경/경동맥 골 결손");
+  });
+
+  it("예전 합친 항목이 체크된 계획은 그대로 보인다", () => {
+    const { container } = render(
+      <SurgeryPlanner
+        surgeryTypes={types}
+        loggedIn
+        editPlan={{ surgeryTypeId: "1", plannedDate: "", values: { n_dehiscence_present: true, n_dehiscence_side: "우측" } }}
+      />,
+    );
+    openAnatomic(container);
+    expect(container.textContent).toContain("시신경/경동맥 골 결손");
+  });
+});

@@ -9,6 +9,8 @@ import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
 import { SurgeryPlanner } from "@/components/surgery-planner";
+import { addSilasticReminder } from "@/app/actions/reminders";
+import { SILASTIC_REMINDER_TITLE } from "@/lib/remark";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { buttonStyles } from "@/lib/ui";
 
@@ -56,6 +58,7 @@ export default async function OpPlanPage({
   const values = isDone ? { ...planValues, ...actualValues } : planValues;
 
   const reminderCount = plan.patient.reminders.length;
+  const hasSilasticReminder = plan.patient.reminders.some((r) => r.title === SILASTIC_REMINDER_TITLE);
 
   return (
     <div className="space-y-6">
@@ -67,14 +70,10 @@ export default async function OpPlanPage({
         heading={<h1 className="text-xl font-semibold">{plan.patient.name} 수술 계획</h1>}
         headerActions={
           <>
-            {/* 저장·인쇄하는 정식 기록지로 가는 길 */}
-            {plan.opRecord ? (
-              <Link href={`/records/${plan.opRecord.id}`} className={buttonStyles.primarySmall}>
-                정식 기록지 보기
-              </Link>
-            ) : (
-              <Link href={`/plans/${plan.id}/record`} className={buttonStyles.primarySmall}>
-                정식 기록지 작성
+            {/* 기록지는 수술 후 화면 하나로 합쳤다(사용자 2026-10-16). 예전에 저장한 정식 기록지만 링크로 남긴다. */}
+            {plan.opRecord && (
+              <Link href={`/records/${plan.opRecord.id}`} className={buttonStyles.secondarySmall}>
+                예전 정식 기록지
               </Link>
             )}
             {/* 기본 인쇄는 A4 한 장에 이 계획 + 빈 양식 3칸(종이 절약), 크게 한 장은 따로 */}
@@ -84,6 +83,14 @@ export default async function OpPlanPage({
             <Link href={`/plans/${plan.id}/print`} className={buttonStyles.secondarySmall}>
               이 계획만 크게 인쇄
             </Link>
+            {safeDateStr(plan.plannedDate) && (
+              <Link
+                href={`/print/fess-checklist?date=${safeDateStr(plan.plannedDate)}`}
+                className={buttonStyles.secondarySmall}
+              >
+                이날 수술 전체 인쇄
+              </Link>
+            )}
             {/* 리마인더는 이 화면에 펼치지 않고 환자 화면에서 본다(사용자 2026-10-16) */}
             <Link href={`/patients/${plan.patient.id}#reminders`} className={buttonStyles.secondarySmall}>
               리마인더{reminderCount > 0 ? ` (${reminderCount})` : ""}
@@ -127,6 +134,7 @@ export default async function OpPlanPage({
           postOpRemark: plan.postOpRemark ?? "",
         }}
         action={updateOpPlan.bind(null, plan.id)}
+        silasticReminder={{ exists: hasSilasticReminder, add: addSilasticReminder.bind(null, plan.id) }}
       />
     </div>
   );

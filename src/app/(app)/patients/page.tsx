@@ -160,7 +160,7 @@ export default async function PatientsPage({
                     <span className="text-slate-600">{procedureName}</span>
                   </Link>
                   <Link
-                    href={`/plans/${plan.id}/record`}
+                    href={`/plans/${plan.id}?view=post`}
                     className={`shrink-0 ${buttonStyles.smallOutlineAccent}`}
                   >
                     기록지 작성

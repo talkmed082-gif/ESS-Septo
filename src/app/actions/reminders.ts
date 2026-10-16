@@ -4,6 +4,7 @@ import * as z from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
+import { SILASTIC_REMINDER_TITLE } from "@/lib/remark";
 
 const ReminderSchema = z.object({
   title: z.string().trim().min(1, { error: "제목을 입력하세요." }).max(100),
@@ -73,4 +74,37 @@ export async function deleteReminder(reminderId: string, patientId: string): Pro
     where: { id: reminderId, createdById: session.userId, source: "ESS", emrRegSeq: null },
   });
   revalidatePath(`/patients/${patientId}`);
+}
+
+
+
+// Silastic을 넣은 계획에서 "제거 리마인더 추가" — 수술일 + 7일로 만든다(사용자 2026-10-16, 1주일~10일 사이 제거).
+// 같은 환자에 이미 같은 제목이 있으면 또 만들지 않는다. 병원 PC가 다음 동기화 때 EMR에 올린다.
+export async function addSilasticReminder(planId: string, surgeryDate: string): Promise<ReminderFormState> {
+  const session = await verifySession();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(surgeryDate)) return { message: "수술 날짜를 먼저 정해 주세요." };
+  const plan = await prisma.opPlan.findFirst({
+    where: { id: planId, createdById: session.userId },
+    select: { patientId: true },
+  });
+  if (!plan) return { message: "수술 계획을 찾을 수 없습니다." };
+  const exists = await prisma.reminder.findFirst({
+    where: { patientId: plan.patientId, createdById: session.userId, title: SILASTIC_REMINDER_TITLE },
+    select: { id: true },
+  });
+  if (exists) return { ok: true };
+  const due = new Date(Date.parse(surgeryDate) + 7 * 86400000);
+  await prisma.reminder.create({
+    data: {
+      patientId: plan.patientId,
+      title: SILASTIC_REMINDER_TITLE,
+      dueDate: due,
+      content: `수술(${surgeryDate}) 후 1주일~10일 사이에 silastic sheet 제거`,
+      source: "ESS",
+      createdById: session.userId,
+    },
+  });
+  revalidatePath(`/patients/${plan.patientId}`);
+  revalidatePath(`/plans/${planId}`);
+  return { ok: true };
 }

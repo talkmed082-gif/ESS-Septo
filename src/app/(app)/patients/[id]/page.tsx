@@ -129,15 +129,9 @@ export default async function PatientDetailPage({
                 <Link href={`/plans/${plan.id}`} className={buttonStyles.smallOutline}>
                   계획 수정
                 </Link>
-                {plan.opRecord ? (
-                  <Link href={`/records/${plan.opRecord.id}/edit`} className={buttonStyles.smallOutline}>
-                    기록지 수정
-                  </Link>
-                ) : (
-                  <Link href={`/plans/${plan.id}/record`} className={buttonStyles.smallOutlineAccent}>
-                    기록지 작성
-                  </Link>
-                )}
+                <Link href={`/plans/${plan.id}?view=post`} className={buttonStyles.smallOutlineAccent}>
+                  기록지
+                </Link>
               </div>
             </div>
 

@@ -2,7 +2,7 @@ import { SubPageNav } from "@/components/sub-page-nav";
 import { getCurrentUser } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { parseFieldValues } from "@/lib/field-types";
-import { isBuiltInSurgeryCode } from "@/lib/op-note-defs";
+import { ESS_ANATOMY_GROUPS, isBuiltInSurgeryCode } from "@/lib/op-note-defs";
 import { buildPlanTable, hasAnyRevision, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
 import { PrintButton } from "@/components/print-button";
@@ -29,36 +29,44 @@ interface CardRow {
   left: boolean;
 }
 
-// 빈 양식의 비강 소견 — 손으로 다 쓰기엔 너무 많아서 자주 보는 항목을 미리 적어 두고 체크만 한다
-// (사용자 2026-10-16). Pre-op anatomy는 CLOSE 순서. options가 있으면 우/좌 대신 그 중에서 고른다.
-const BLANK_FINDINGS: { label: string; options?: string[] }[] = [
-  { label: "DSN" },
-  { label: "CHR" },
-  { label: "Concha bullosa" },
-  { label: "Polyp" },
-  { label: "C Low skull base" },
-  { label: "C Asym. Keros" },
-  { label: "L LP 결손" },
-  { label: "L Haller cell" },
-  { label: "O Onodi cell" },
-  { label: "S 시신경/ICA 결손" },
-  { label: "E AEA 낮게 주행" },
-  { label: "E Supraorbital cell" },
-  { label: "S 함기화", options: ["Conchal", "Presellar", "Sellar"] },
-];
+// 빈 양식의 비강 소견 — 손으로 다 쓰기엔 너무 많아서 항목을 미리 적어 두고 체크만 한다(사용자 2026-10-16).
+// 맨 위 기본 4개(DSN·CHR·Concha bullosa·Polyp), 그 아래 Pre-op anatomy를 C/L/O/S/E 한 묶음씩.
+// 항목은 화면 입력과 같은 정의(ESS_ANATOMY_GROUPS)에서 가져와 둘이 어긋나지 않게 한다.
+const BLANK_BASICS = ["DSN", "CHR", "Concha bullosa", "Polyp"];
+
+function BlankItem({ label, options = ["R", "L"], wide }: { label: string; options?: string[]; wide?: boolean }) {
+  return (
+    <div className={`flex items-center gap-1 ${wide ? "col-span-2" : ""}`}>
+      <span className="flex-1 truncate">{label}</span>
+      {options.map((o) => (
+        <span key={o} className="flex shrink-0 items-center gap-0.5 text-[11px] text-slate-600">
+          <CheckBox />
+          {o}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 function BlankFindings() {
+  const closeGroups = ESS_ANATOMY_GROUPS.filter((g) => g.letter);
   return (
-    <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[13px]">
-      {BLANK_FINDINGS.map((f) => (
-        <div key={f.label} className={`flex items-center gap-1.5 ${f.options ? "col-span-2" : ""}`}>
-          <span className="flex-1 truncate">{f.label}</span>
-          {(f.options ?? ["R", "L"]).map((o) => (
-            <span key={o} className="flex shrink-0 items-center gap-0.5 text-xs text-slate-600">
-              <CheckBox />
-              {o}
-            </span>
-          ))}
+    <div className="space-y-1 text-[12px]">
+      <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 border-b border-slate-300 pb-1">
+        {BLANK_BASICS.map((label) => (
+          <BlankItem key={label} label={label} />
+        ))}
+      </div>
+      {closeGroups.map((g) => (
+        <div key={g.letter} className="flex gap-1.5 border-b border-slate-200 pb-0.5">
+          <span className="w-4 shrink-0 text-sm leading-5 font-bold">{g.letter}</span>
+          <div className="grid flex-1 grid-cols-2 gap-x-3 gap-y-0.5">
+            {g.findings
+              .filter((f) => !f.legacy)
+              .map((f) => (
+                <BlankItem key={f.presentKey} label={f.short ?? f.label} options={f.options} wide={!!f.options} />
+              ))}
+          </div>
         </div>
       ))}
     </div>
@@ -71,6 +79,7 @@ interface CardData {
   cc: string;
   // 시행 순서 / 동반 술식(turbinoplasty 포함)
   extra: string;
+  note: string;
   procedureName: string;
   revision: boolean;
   findings: string;
@@ -81,24 +90,6 @@ function chunk<T>(arr: T[], size: number): T[][] {
   const out: T[][] = [];
   for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
   return out;
-}
-
-// 손으로 밑줄을 그을 수 있는 빈 줄들 — 예전엔 고정된 개수(4줄)를 남는
-// 세로 공간에 억지로 늘려 붙여서 표 한 칸보다 줄 간격이 훨씬 넓어 보였다.
-// 그 대신 표의 한 행 높이(28px)와 같은 간격으로 선을 반복해서, 공간이
-// 남으면 그만큼 줄이 더 생기고 줄 사이 간격은 항상 표와 비슷하게 유지된다.
-const CHECKLIST_ROW_HEIGHT = 28;
-function BlankLines() {
-  return (
-    <div
-      className="flex-1"
-      style={{
-        backgroundImage: `repeating-linear-gradient(to bottom, transparent 0, transparent ${
-          CHECKLIST_ROW_HEIGHT - 1
-        }px, #cbd5e1 ${CHECKLIST_ROW_HEIGHT - 1}px, #cbd5e1 ${CHECKLIST_ROW_HEIGHT}px)`,
-      }}
-    />
-  );
 }
 
 function ChecklistCard({ data }: { data?: CardData }) {
@@ -120,14 +111,15 @@ function ChecklistCard({ data }: { data?: CardData }) {
               그대로 유지한다 (값이 채워진 카드도 동일). */}
           <CheckBox checked={data?.revision === true} />
           <span className="shrink-0 text-slate-500">Revision case</span>
-          <span className="ml-2 shrink-0 text-slate-500">수술명:</span>
+          {/* CC는 짧아서 Revision 옆에, 수술명은 길어서 한 줄 전체에(사용자 2026-10-16) */}
+          <span className="ml-2 shrink-0 text-slate-500">CC:</span>
+          <span className="flex-1 border-b border-slate-400 font-medium">{data?.cc || " "}</span>
+        </div>
+        <div className="flex gap-1">
+          <span className="shrink-0 text-slate-500">수술명:</span>
           <span className="flex-1 border-b border-slate-400 font-semibold">
             {data?.procedureName ?? " "}
           </span>
-        </div>
-        <div className="flex gap-1">
-          <span className="shrink-0 text-slate-500">CC:</span>
-          <span className="flex-1 border-b border-slate-400 font-medium">{data?.cc || " "}</span>
         </div>
         <div className="flex gap-1">
           <span className="shrink-0 text-slate-500">동반 술식:</span>
@@ -143,10 +135,7 @@ function ChecklistCard({ data }: { data?: CardData }) {
         {data ? (
           <p className="text-[13px] leading-snug whitespace-pre-wrap text-slate-900">{data.findings || "-"}</p>
         ) : (
-          <>
-            <BlankFindings />
-            <BlankLines />
-          </>
+          <BlankFindings />
         )}
       </div>
       {rows.length > 0 && (
@@ -188,6 +177,11 @@ function ChecklistCard({ data }: { data?: CardData }) {
         </tbody>
       </table>
       )}
+      {/* 비고 한 줄(사용자 2026-10-16) — 채운 칸은 계획 메모 */}
+      <div className="mt-auto flex gap-1 pt-2 text-sm">
+        <span className="shrink-0 text-slate-500">비고:</span>
+        <span className="flex-1 truncate border-b border-slate-400">{data?.note || " "}</span>
+      </div>
     </div>
   );
 }
@@ -214,8 +208,19 @@ export default async function FessChecklistPrintPage({
   searchParams,
 }: PageProps<"/print/fess-checklist">) {
   const user = await getCurrentUser();
-  const { plans } = await searchParams;
-  const planIds = (typeof plans === "string" ? plans.split(",") : []).filter(Boolean);
+  const { plans, date } = await searchParams;
+  let planIds = (typeof plans === "string" ? plans.split(",") : []).filter(Boolean);
+  // ?date=YYYY-MM-DD — 그날 수술 계획 전체를 한 번에(사용자 2026-10-16). 등록한 순서대로.
+  const day = typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : null;
+  if (day) {
+    const start = new Date(day);
+    const sameDay = await prisma.opPlan.findMany({
+      where: { createdById: user.id, plannedDate: { gte: start, lt: new Date(start.getTime() + 86400000) } },
+      orderBy: { createdAt: "asc" },
+      select: { id: true },
+    });
+    planIds = sameDay.map((p) => p.id);
+  }
 
   const nameStyle: NameStyle = {
     sideNotation: user.sideNotation as SideNotation,
@@ -243,6 +248,7 @@ export default async function FessChecklistPrintPage({
           patientName: plan.patient.name,
           date: safeDateStr(plan.plannedDate),
           cc: plan.chiefComplaint ?? "",
+          note: (plan.planNote ?? "").replace(/\s+/g, " ").trim(),
           extra: [rowValue("시행 순서"), rowValue("동반 술식")].filter((v) => v && v !== "-").join(" / "),
           procedureName: table?.procedureName ?? plan.surgeryType.name,
           revision: hasAnyRevision(values),
@@ -274,7 +280,7 @@ export default async function FessChecklistPrintPage({
         </div>
         <p className="mb-3 text-xs text-slate-500 print:hidden">
           {cardsData.length > 0
-            ? "선택한 환자들의 최신 수술 계획으로 채워서 인쇄합니다. 4명 단위로 한 페이지씩 나뉘고, 남는 칸은 빈 양식입니다."
+            ? `${day ? `${day} 수술 ${cardsData.length}명의` : "선택한 환자들의"} 최신 수술 계획으로 채워서 인쇄합니다. 4명 단위로 한 페이지씩 나뉘고, 남는 칸은 빈 양식입니다.`
             : "환자 데이터와 무관한 빈 양식입니다. 미리 여러 장 인쇄해두고 수술방에서 케이스마다 한 장씩 손으로 체크해서 쓰면 됩니다."}{" "}
           가운데 점선을 따라 위아래·좌우로 한 번씩 자르면 4장으로 나뉩니다. (인쇄 대화상자의
           &ldquo;설정 더보기&rdquo;에서 &ldquo;머리글과 바닥글&rdquo;을 꺼두면 날짜/URL 같은
