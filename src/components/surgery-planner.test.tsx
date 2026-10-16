@@ -4,6 +4,9 @@ import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import Link from "next/link";
 
 vi.mock("@/app/actions/patient-plan", () => ({ createPatientWithPlan: vi.fn() }));
+// 저장 안 한 채 떠날 때 창의 "저장 안 하고 이동"이 쓰는 라우터 — 테스트에는 앱 라우터가 없어서 대역을 둔다
+const routerPush = vi.hoisted(() => vi.fn());
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: routerPush }) }));
 
 import { SurgeryPlanner } from "./surgery-planner";
 import { comboFullFields, essFullFields, septoplastyFullFields } from "@/lib/op-note-defs";
@@ -372,21 +375,47 @@ describe("계획 화면 사용성", () => {
     expect(leave()).toBe(false);
   });
 
-  it("입력을 바꾼 뒤 앱 안의 다른 링크를 누르면 확인을 묻고, 취소하면 이동하지 않는다", () => {
-    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
-    const { container } = render(
+  // 사용자 2026-10-16: 확인/취소만 있는 브라우저 창 대신 저장하고 이동 / 저장 안 하고 이동 / 취소
+  const renderDirty = () => {
+    const utils = render(
       <>
         <Link href="/patients">환자 목록</Link>
         <SurgeryPlanner surgeryTypes={types} loggedIn fixedPatient={{ id: "p", name: "홍길동" }} />
       </>,
     );
-    fireEvent.change(container.querySelector('textarea[name="planNote"]')!, { target: { value: "메모" } });
-    const link = container.querySelector('a[href="/patients"]')!;
+    fireEvent.change(utils.container.querySelector('textarea[name="planNote"]')!, { target: { value: "메모" } });
     const ev = new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 });
-    link.dispatchEvent(ev);
-    expect(confirm).toHaveBeenCalled();
+    act(() => {
+      utils.container.querySelector('a[href="/patients"]')!.dispatchEvent(ev);
+    });
+    return { ...utils, ev };
+  };
+
+  it("입력을 바꾼 뒤 앱 안의 다른 링크를 누르면 이동을 막고 세 가지 선택 창을 띄운다, 취소하면 남는다", () => {
+    routerPush.mockClear();
+    const { container, ev } = renderDirty();
     expect(ev.defaultPrevented).toBe(true);
-    confirm.mockRestore();
+    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    fireEvent.click(byText(container, "취소 (이 화면에 남기)"));
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(routerPush).not.toHaveBeenCalled();
+  });
+
+  it("저장 안 하고 이동은 누르려던 화면으로 간다", () => {
+    routerPush.mockClear();
+    const { container } = renderDirty();
+    fireEvent.click(byText(container, "저장 안 하고 이동"));
+    expect(routerPush).toHaveBeenCalledWith("/patients");
+  });
+
+  it("저장하고 이동은 갈 주소를 실어 저장 버튼으로 제출한다", () => {
+    const submit = vi.spyOn(HTMLFormElement.prototype, "requestSubmit").mockImplementation(() => {});
+    const { container } = renderDirty();
+    fireEvent.click(byText(container, "계획 저장 후 이동"));
+    const form = container.querySelector("form")!;
+    expect(submit).toHaveBeenCalledWith(form.querySelector('button[name="saveIntent"]'));
+    expect((form.querySelector('input[name="nextHref"]') as HTMLInputElement).value).toBe("/patients");
+    submit.mockRestore();
   });
 });
 

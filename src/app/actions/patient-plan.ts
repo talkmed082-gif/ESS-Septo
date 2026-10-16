@@ -2,6 +2,7 @@
 
 import * as z from "zod";
 import { redirect } from "next/navigation";
+import { safeNextHref } from "@/lib/next-href";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
@@ -127,5 +128,6 @@ export async function createPatientWithPlan(
   // 계획 작성 화면 자체가 환자 기본 화면이라, 만든 뒤 바로 그 계획
   // 화면으로 이동한다. "저장 후 기록지 작성" 버튼으로 저장했으면 수술 후
   // 기본화면(수술 방법·기록지)이 바로 열리게 view를 지정해서 넘긴다.
-  redirect(`/plans/${plan.id}${data.saveIntent === "record" ? "?view=post" : ""}`);
+  // "저장하고 이동"으로 저장했으면 누르려던 화면으로 간다
+  redirect(safeNextHref(formData.get("nextHref")) ?? `/plans/${plan.id}${data.saveIntent === "record" ? "?view=post" : ""}`);
 }

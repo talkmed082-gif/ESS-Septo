@@ -2,6 +2,8 @@
 
 import { useActionState, useEffect, useRef, useState, useTransition, type ChangeEvent, type ReactNode } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { flushSync } from "react-dom";
 import { createPatientWithPlan } from "@/app/actions/patient-plan";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
 import {
@@ -321,7 +323,13 @@ export function SurgeryPlanner({
   // 저장 실패 때만 state가 새로 바뀌므로(성공하면 redirect), 누를 때의 state와
   // 달라졌으면 실패로 본다.
   const [stateAtSubmit, setStateAtSubmit] = useState(state);
-  useUnsavedChangesWarning(loggedIn && (dirty || state !== stateAtSubmit));
+  // 저장 안 한 채 다른 화면 링크를 누르면 브라우저 확인창 대신 "저장하고 이동 / 저장 안 하고 이동 / 취소"
+  // 창을 띄운다(사용자 2026-10-16). leaveHref = 누르려던 주소, nextHref = 저장 뒤 갈 주소(폼으로 전송).
+  const [leaveHref, setLeaveHref] = useState<string | null>(null);
+  const [nextHref, setNextHref] = useState("");
+  const saveButtonRef = useRef<HTMLButtonElement>(null);
+  const router = useRouter();
+  useUnsavedChangesWarning(loggedIn && (dirty || state !== stateAtSubmit), undefined, setLeaveHref);
   // "수술 전" 화면(비강 소견 입력 + Op Plan 요약)과 "수술 후" 화면(수술 방법
   // 입력 + 수술기록지 초안)을 하나의 토글로 오간다 — 계획이 완료 상태면
   // 수술 후 화면을 기본으로 열어서, 매번 수동으로 넘길 필요가 없게 한다.
@@ -674,6 +682,13 @@ export function SurgeryPlanner({
   }
 
   const showPatientSection = loggedIn && !fixedPatient;
+  const saveLabel = editPlan
+    ? view === "post" && !editPlan.isDone
+      ? "저장 · 수술 완료로 변경"
+      : "저장"
+    : fixedPatient
+      ? "계획 저장"
+      : "환자 등록 + 계획 저장";
   const canSave = loggedIn;
   const remarkText = buildRemarkText({
     chiefComplaint,
@@ -1243,22 +1258,64 @@ export function SurgeryPlanner({
           {/* 예전 "저장"과 "저장 후 기록지 초안"은 저장 뒤 열리는 화면만 달라서 하나로 합쳤다(사용자 2026-10-16).
               저장 뒤에는 지금 보던 화면으로 돌아오고, 수술 후 화면에서 저장하면 계획이 완료로 바뀐다. */}
           <button
+            ref={saveButtonRef}
             type="submit"
             name="saveIntent"
             value={view === "post" ? "record" : "save"}
             disabled={pending}
+            // 그냥 저장할 때는 이 화면에 남는다(앞서 "저장하고 이동"이 실패했어도 그 주소로 가지 않게)
+            onClick={() => {
+              if (nextHref) flushSync(() => setNextHref(""));
+            }}
             className={`flex-1 ${buttonStyles.primary}`}
           >
-            {pending
-              ? "저장 중..."
-              : editPlan
-                ? view === "post" && !editPlan.isDone
-                  ? "저장 · 수술 완료로 변경"
-                  : "저장"
-                : fixedPatient
-                  ? "계획 저장"
-                  : "환자 등록 + 계획 저장"}
+            {pending ? "저장 중..." : saveLabel}
           </button>
+        </div>
+      )}
+      <input type="hidden" name="nextHref" value={nextHref} />
+      {leaveHref && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setLeaveHref(null);
+          }}
+        >
+          <div className="w-full max-w-sm space-y-4 rounded-lg bg-white p-5 shadow-xl">
+            <p className="text-sm font-medium text-slate-800">저장하지 않은 내용이 있습니다.</p>
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                className={buttonStyles.primary}
+                onClick={() => {
+                  const href = leaveHref;
+                  setLeaveHref(null);
+                  // 숨은 nextHref 값이 폼에 들어간 뒤에 제출해야 해서 먼저 화면에 반영한다
+                  flushSync(() => setNextHref(href));
+                  formRef.current?.requestSubmit(saveButtonRef.current ?? undefined);
+                }}
+              >
+                {saveLabel === "저장" ? "저장하고 이동" : `${saveLabel} 후 이동`}
+              </button>
+              <button
+                type="button"
+                className={buttonStyles.secondary}
+                onClick={() => {
+                  const href = leaveHref;
+                  setLeaveHref(null);
+                  setDirty(false);
+                  router.push(href);
+                }}
+              >
+                저장 안 하고 이동
+              </button>
+              <button type="button" className={buttonStyles.link} onClick={() => setLeaveHref(null)}>
+                취소 (이 화면에 남기)
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </form>

@@ -2,6 +2,7 @@
 
 import * as z from "zod";
 import { redirect } from "next/navigation";
+import { safeNextHref } from "@/lib/next-href";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
@@ -112,7 +113,8 @@ export async function updateOpPlan(
   if (markDone) revalidatePath("/patients");
   // 이 화면(계획 작성) 자체가 환자 기본 화면이라, 저장 후 그대로 이 화면에
   // 남는다. 저장할 때 보던 화면(수술 전/후)으로 다시 연다.
-  redirect(`/plans/${planId}?view=${saveIntent === "record" ? "post" : "pre"}`);
+  // "저장하고 이동"으로 저장했으면 누르려던 화면으로 간다
+  redirect(safeNextHref(formData.get("nextHref")) ?? `/plans/${planId}?view=${saveIntent === "record" ? "post" : "pre"}`);
 }
 
 

@@ -3,6 +3,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, render } from "@testing-library/react";
 
 vi.mock("@/app/actions/patient-plan", () => ({ createPatientWithPlan: vi.fn() }));
+// 저장 안 한 채 떠날 때 창의 "저장 안 하고 이동"이 쓰는 라우터 — 테스트에는 앱 라우터가 없어서 대역을 둔다
+const routerPush = vi.hoisted(() => vi.fn());
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: routerPush }) }));
 
 import { SurgeryPlanner } from "./surgery-planner";
 import { comboFullFields, essFullFields } from "@/lib/op-note-defs";
