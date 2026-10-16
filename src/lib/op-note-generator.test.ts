@@ -478,7 +478,7 @@ describe("병행 수술 순서 기본값", () => {
 
 // 계획표 표기(사용자 2026-10-16)
 describe("계획표 동반 술식·시행 순서·비용종 표기", () => {
-  it("병행: 시행 순서의 비중격은 술식 이름으로, 동반 술식에는 수술명에 이미 있는 turbinoplasty를 다시 쓰지 않는다", () => {
+  it("병행: 시행 순서의 비중격은 술식 이름으로, 계획표에 동반 술식 칸은 없다", () => {
     const table = buildPlanTable("COMBO", {
       turb_inferior_right: true,
       turb_inferior_left: true,
@@ -487,7 +487,9 @@ describe("계획표 동반 술식·시행 순서·비용종 표기", () => {
     const row = (label: string) => table.keyValueRows.find((r) => r.label === label)?.value;
     expect(row("시행 순서")).toBe("우 FESS → Septoturbinoplasty → 좌 FESS");
     expect(table.procedureName).toContain("Septoturbinoplasty");
-    expect(row("동반 술식")).toBe("-");
+    expect(row("동반 술식")).toBeUndefined();
+    const septo = buildPlanTable("SEPTOPLASTY", { s_quilting: true });
+    expect(septo.keyValueRows.some((r) => r.label === "동반 술식")).toBe(false);
   });
 
   it("ESS의 turbinoplasty도 수술명에만 쓰고 동반 술식 줄은 만들지 않는다", () => {
@@ -521,10 +523,7 @@ describe("silastic sheet 두 종류(사용자 2026-10-16)", () => {
     );
     expect(procedureDetail).toContain("우측 middle meatus에 silastic sheet");
     expect(procedureDetail).toContain("septal silastic sheet를 삽입");
-    const table = buildPlanTable("COMBO", { f_silastic_sheet: true, f_silastic_sheet_dir: "우측", s_splint: true });
-    const extra = table.keyValueRows.find((r) => r.label === "동반 술식")?.value;
-    // 동반 술식에는 MM만 — septal sheet는 Septo면 당연히 넣는 것이라 쓰지 않는다
-    expect(extra).toBe("우측 MM silastic sheet");
+
   });
 });
 

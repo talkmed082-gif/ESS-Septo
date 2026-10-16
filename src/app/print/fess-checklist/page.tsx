@@ -29,28 +29,48 @@ interface CardRow {
 }
 
 // 빈 양식의 비강 소견 — 손으로 다 쓰기엔 너무 많아서 항목을 미리 적어 두고 체크만 한다(사용자 2026-10-16).
-// 맨 위 기본 4개(DSN·CHR·Concha bullosa·Polyp), 그 아래 Pre-op anatomy를 C/L/O/S/E 한 줄씩(S만 두 줄).
-// 인쇄 칸이 좁아 화면 입력 항목 중 핵심만 추린다(사용자 지정) — Asym. Keros는 Low skull base를
-// 한쪽만 체크하면 되고, S는 함기화 한 줄 + 경동맥/시신경 결손 한 줄.
+// 맨 위 기본 4개(DSN·CHR·Concha bullosa·Polyp), UP attach, 그 아래 Pre-op anatomy를 C/L/O/S/E 한 줄씩.
+// 인쇄 칸이 좁아 화면 입력 항목 중 핵심만 추린다(사용자 지정) — Asym. Keros는 Low skull base를 한쪽만
+// 체크하면 되고, S는 경동맥/시신경 결손 + Conchal 함기화 한 줄.
+// 모든 줄 앞에 같은 폭의 머리글 칸(C/L/O/S/E, 없으면 빈칸)을 둬서 체크박스 열이 위아래로 맞게 한다.
 const BLANK_BASICS = ["DSN", "CHR", "Concha bullosa", "Polyp"];
-const BLANK_CLOSE: { letter: string; items: { label: string; options?: string[] }[] }[] = [
-  { letter: "C", items: [{ label: "Low skull base" }, { label: "SB 결손" }] },
-  { letter: "L", items: [{ label: "LP 결손" }, { label: "Haller cell" }] },
-  { letter: "O", items: [{ label: "Onodi cell" }, { label: "Onodi 내 시신경" }] },
-  { letter: "S", items: [{ label: "함기화", options: ["Conchal", "Presellar", "Sellar"] }, { label: "ICA/시신경 결손" }] },
-  { letter: "E", items: [{ label: "AEA 낮게 주행" }, { label: "Supraorbital" }] },
+const BLANK_CLOSE: { letter: string; items: string[] }[] = [
+  { letter: "C", items: ["Low skull base", "SB 결손"] },
+  { letter: "L", items: ["LP 결손", "Haller cell"] },
+  { letter: "O", items: ["Onodi cell", "Onodi 내 시신경"] },
+  { letter: "S", items: ["ICA/시신경 결손", "Conchal 함기화"] },
+  { letter: "E", items: ["AEA 낮게 주행", "Supraorbital"] },
 ];
+// UP attachment는 양쪽 다 있는 것이라 방향 체크 없이 측마다 부착 부위만 고른다
+const UP_OPTIONS = ["LP", "SB", "MT", "Mix"];
 
-function BlankItem({ label, options = ["R", "L"], wide }: { label: string; options?: string[]; wide?: boolean }) {
+function Checks({ options }: { options: string[] }) {
   return (
-    <div className={`flex items-center gap-1 ${wide ? "col-span-2" : ""}`}>
-      <span className="flex-1 truncate">{label}</span>
+    <>
       {options.map((o) => (
         <span key={o} className="flex shrink-0 items-center gap-0.5 text-[11px] text-slate-600">
           <CheckBox />
           {o}
         </span>
       ))}
+    </>
+  );
+}
+
+function BlankItem({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-1">
+      <span className="flex-1 truncate">{label}</span>
+      <Checks options={["R", "L"]} />
+    </div>
+  );
+}
+
+function BlankRow({ letter = "", children, strong }: { letter?: string; children: React.ReactNode; strong?: boolean }) {
+  return (
+    <div className={`flex gap-1.5 border-b pb-0.5 ${strong ? "border-slate-300" : "border-slate-200"}`}>
+      <span className={`w-4 shrink-0 leading-5 font-bold ${letter.length > 1 ? "text-[9px]" : "text-sm"}`}>{letter}</span>
+      <div className="grid flex-1 grid-cols-2 gap-x-3 gap-y-0.5">{children}</div>
     </div>
   );
 }
@@ -58,20 +78,25 @@ function BlankItem({ label, options = ["R", "L"], wide }: { label: string; optio
 function BlankFindings() {
   return (
     <div className="space-y-1 text-[12px]">
-      <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 border-b border-slate-300 pb-1">
+      <BlankRow>
         {BLANK_BASICS.map((label) => (
           <BlankItem key={label} label={label} />
         ))}
-      </div>
-      {BLANK_CLOSE.map((g) => (
-        <div key={g.letter} className="flex gap-1.5 border-b border-slate-200 pb-0.5">
-          <span className="w-4 shrink-0 text-sm leading-5 font-bold">{g.letter}</span>
-          <div className="grid flex-1 grid-cols-2 gap-x-3 gap-y-0.5">
-            {g.items.map((f) => (
-              <BlankItem key={f.label} label={f.label} options={f.options} wide={!!f.options} />
-            ))}
+      </BlankRow>
+      <BlankRow letter="UP" strong>
+        {(["R", "L"] as const).map((side) => (
+          <div key={side} className="flex items-center gap-0.5">
+            <span className="flex-1 font-semibold">{side}</span>
+            <Checks options={UP_OPTIONS} />
           </div>
-        </div>
+        ))}
+      </BlankRow>
+      {BLANK_CLOSE.map((g) => (
+        <BlankRow key={g.letter} letter={g.letter}>
+          {g.items.map((label) => (
+            <BlankItem key={label} label={label} />
+          ))}
+        </BlankRow>
       ))}
     </div>
   );

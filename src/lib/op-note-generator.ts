@@ -1152,15 +1152,7 @@ function packingCellValue(values: FieldValues): string {
   return parts.length > 0 ? parts.join(" + ") : "-";
 }
 
-// 계획표 "동반 술식"에는 수술명에 없는 것만 쓴다(사용자 2026-10-16) — turbinoplasty는 수술명
-// (Septoturbinoplasty, "... Turbinoplasty" 등)에 이미 들어 있고, septal silastic sheet는 Septo면
-// 당연히 넣는 것이라 뺀다. 남는 건 MM silastic sheet와 비중격 추가 술식(caudal·ANS·spur·quilting).
-function companionPlanItems(values: FieldValues, septoExtras: string[] = []): string[] {
-  const items: string[] = [];
-  const mm = mmSilasticSide(values);
-  if (mm) items.push(`${mm} MM silastic sheet`);
-  return [...items, ...septoExtras];
-}
+// 계획표에는 "동반 술식" 칸을 두지 않는다 — 필요한 건 수술명에 쓴다(사용자 2026-10-16).
 
 // 시행 순서의 "비중격"을 실제 술식 이름으로 보여준다 — 저장 값(선택지)은 그대로 두고 표시만 바꾼다
 export function comboOrderDisplay(order: string, values: FieldValues): string {
@@ -1176,26 +1168,24 @@ export function buildPlanTable(
   const procedureName = buildProcedureName(surgeryCode, values, style);
   const findings = nasalFindingsSummary(values);
   if (surgeryCode === "SEPTOPLASTY") {
-    const [incision, ...rest] = septoConciseItems(values, false);
-    const extra = companionPlanItems(values, rest);
+    const [incision] = septoConciseItems(values, false);
     return {
       procedureName,
       findings,
       keyValueRows: [
         { label: "절개", value: incision },
-        { label: "동반 술식", value: extra.length > 0 ? extra.join(", ") : "-" },
         { label: "Packing / Material", value: "Rhinocel" },
       ],
     };
   }
 
   if (surgeryCode === "ESS") {
-    const turbItems = companionPlanItems(values);
+
     return {
       procedureName,
       findings,
       keyValueRows: [
-        ...(turbItems.length > 0 ? [{ label: "동반 술식", value: turbItems.join(", ") }] : []),
+
         { label: "Navigation", value: bool(values, "f_nav") ? "사용" : "미사용", toggleKey: "f_nav" },
         { label: "Packing / Material", value: packingCellValue(values) },
       ],
@@ -1204,8 +1194,7 @@ export function buildPlanTable(
     };
   }
 
-  const [incision, ...rest] = septoConciseItems(values, false);
-  const extra = companionPlanItems(values, rest);
+  const [incision] = septoConciseItems(values, false);
   return {
     procedureName,
     findings,
@@ -1215,7 +1204,7 @@ export function buildPlanTable(
         value: comboOrderDisplay(str(values, "c_order", comboOrderForDsn(values.n_dev_side)), values),
       },
       { label: "절개(Septo)", value: incision },
-      { label: "동반 술식", value: extra.length > 0 ? extra.join(", ") : "-" },
+
       { label: "Navigation", value: bool(values, "f_nav") ? "사용" : "미사용", toggleKey: "f_nav" },
       { label: "Packing / Material(공통)", value: packingCellValue(values) },
     ],
