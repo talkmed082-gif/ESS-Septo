@@ -137,13 +137,12 @@ function ChecklistCard({ data }: { data?: CardData }) {
           <span className="flex-1 border-b border-slate-400 font-medium">{data?.date ?? " "}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          {/* Revision case는 표 밖의 항목이라 표 칸과 달리 체크박스 형태를
-              그대로 유지한다 (값이 채워진 카드도 동일). */}
+          {/* CC를 앞에, 그 뒤 "Revision□"(다른 체크칸처럼 글자 뒤에 상자) — 사용자 2026-10-16.
+              Revision은 표 밖의 항목이라 값이 채워진 카드도 체크박스 모양 그대로. */}
+          <span className="shrink-0 text-slate-500">CC:</span>
+          <span className="flex-1 self-stretch border-b border-slate-400 font-medium">{data?.cc || " "}</span>
+          <span className="ml-2 shrink-0 text-slate-500">Revision</span>
           <CheckBox checked={data?.revision === true} />
-          <span className="shrink-0 text-slate-500">Revision case</span>
-          {/* CC는 짧아서 Revision 옆에, 수술명은 길어서 한 줄 전체에(사용자 2026-10-16) */}
-          <span className="ml-2 shrink-0 text-slate-500">CC:</span>
-          <span className="flex-1 border-b border-slate-400 font-medium">{data?.cc || " "}</span>
         </div>
         <div className="flex gap-1">
           <span className="shrink-0 text-slate-500">수술명:</span>
