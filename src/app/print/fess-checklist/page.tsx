@@ -41,16 +41,18 @@ const BLANK_CLOSE: { letter: string; items: string[] }[] = [
   { letter: "S", items: ["ICA/시신경 결손", "Conchal 함기화"] },
   { letter: "E", items: ["AEA 낮게 주행", "Supraorbital"] },
 ];
-// UP attachment는 양쪽 다 있는 것이라 방향 체크 없이 측마다 부착 부위만 고른다
-const UP_OPTIONS = ["LP", "SB", "MT", "Mix"];
+// UP attachment는 양쪽 다 있는 것이라 방향 체크 없이 측마다 부착 부위만 고른다.
+// Mixed는 따로 두지 않는다 — 여러 개 체크하면 그게 mixed(사용자 2026-10-16)
+const UP_OPTIONS = ["LP", "SB", "MT"];
 
+// 글자 뒤에 상자(R□ L□) — 상자가 앞 글자에 붙으면 그 글자를 체크하는 칸처럼 보여서(사용자 2026-10-16)
 function Checks({ options }: { options: string[] }) {
   return (
     <>
       {options.map((o) => (
         <span key={o} className="flex shrink-0 items-center gap-0.5 text-[11px] text-slate-600">
-          <CheckBox />
           {o}
+          <CheckBox />
         </span>
       ))}
     </>
@@ -85,8 +87,8 @@ function BlankFindings() {
       </BlankRow>
       <BlankRow letter="UP" strong>
         {(["R", "L"] as const).map((side) => (
-          <div key={side} className="flex items-center gap-0.5">
-            <span className="flex-1 font-semibold">{side}</span>
+          <div key={side} className="flex items-center gap-1">
+            <span className="flex-1 font-semibold">{side === "R" ? "Rt:" : "Lt:"}</span>
             <Checks options={UP_OPTIONS} />
           </div>
         ))}
