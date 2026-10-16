@@ -185,6 +185,8 @@ function polypFindingText(values: FieldValues): string {
   const right = polypSitesAt("우측", values);
   const left = polypSitesAt("좌측", values);
   if (right.length === 0 && left.length === 0) return "비용종 없음";
+  // 좌우 위치가 같으면 "양측"으로 한 번만 쓴다(사용자 2026-10-16)
+  if (right.join(",") === left.join(",")) return `비용종: 양측(${right.join(", ")})`;
   const parts: string[] = [];
   if (right.length > 0) parts.push(`우측(${right.join(", ")})`);
   if (left.length > 0) parts.push(`좌측(${left.join(", ")})`);
@@ -335,7 +337,9 @@ export function nasalFindingsSummary(values: FieldValues): string {
   // 정보라, 다른 항목과 달리 "흔한 값(LP)"이어도 요약에서 빼지 않고 항상 넣는다.
   const uncLeft = str(values, "n_uncinate_left", "");
   const uncRight = str(values, "n_uncinate_right", "");
-  if (uncLeft || uncRight) {
+  if (uncLeft && uncLeft === uncRight) {
+    items.push(`UP attach 양측 ${uncLeft}`);
+  } else if (uncLeft || uncRight) {
     const parts: string[] = [];
     if (uncRight) parts.push(`우측 ${uncRight}`);
     if (uncLeft) parts.push(`좌측 ${uncLeft}`);
@@ -377,10 +381,6 @@ const turbinateFields: { key: string; side: "좌측" | "우측"; label: string }
 
 function turbinateLabelsForSide(side: "좌측" | "우측", values: FieldValues): string[] {
   return turbinateFields.filter((f) => f.side === side && bool(values, f.key)).map((f) => f.label);
-}
-
-function allTurbinateItems(values: FieldValues): string[] {
-  return turbinateFields.filter((f) => bool(values, f.key)).map((f) => `${f.side} ${f.label}`);
 }
 
 // 중비갑개 축소술은 하비갑개 축소술과 임상적 의미가 달라 수술명에도 별개로
@@ -1138,6 +1138,25 @@ function packingCellValue(values: FieldValues): string {
   return parts.length > 0 ? parts.join(" + ") : "-";
 }
 
+// 계획표의 turbinoplasty — 좌우 칸 표 대신 "동반 술식" 칸에 글로 쓴다(사용자 2026-10-16).
+// Septo와 양측 inferior를 같이 하면 그냥 "Septoturbinoplasty".
+function turbinoplastyPlanItems(values: FieldValues, withSepto: boolean): string[] {
+  const sideWord = (f: { right: boolean; left: boolean }) => (f.right && f.left ? "양측" : f.right ? "우측" : "좌측");
+  const inf = turbSideFlags("inferior", values);
+  const mid = turbSideFlags("middle", values);
+  const items: string[] = [];
+  if (withSepto && inf.right && inf.left) items.push("Septoturbinoplasty");
+  else if (inf.right || inf.left) items.push(`${sideWord(inf)} Inferior turbinoplasty`);
+  if (mid.right || mid.left) items.push(`${sideWord(mid)} MT turbinoplasty`);
+  return items;
+}
+
+// 시행 순서의 "비중격"을 실제 술식 이름으로 보여준다 — 저장 값(선택지)은 그대로 두고 표시만 바꾼다
+export function comboOrderDisplay(order: string, values: FieldValues): string {
+  const septoWord = bool(values, "turb_inferior_right") && bool(values, "turb_inferior_left") ? "Septoturbinoplasty" : "Septoplasty";
+  return order.replace("비중격", septoWord);
+}
+
 export function buildPlanTable(
   surgeryCode: BuiltInSurgeryCode,
   values: FieldValues,
@@ -1145,29 +1164,27 @@ export function buildPlanTable(
 ): PlanTable {
   const procedureName = buildProcedureName(surgeryCode, values, style);
   const findings = nasalFindingsSummary(values);
-  const turbItems = allTurbinateItems(values);
-  const turbRow: PlanKeyValueRow[] =
-    turbItems.length > 0 ? [{ label: "Turbinoplasty", value: turbItems.join(", ") }] : [];
-
   if (surgeryCode === "SEPTOPLASTY") {
     const [incision, ...rest] = septoConciseItems(values, false);
+    const extra = [...turbinoplastyPlanItems(values, true), ...rest];
     return {
       procedureName,
       findings,
       keyValueRows: [
         { label: "절개", value: incision },
-        { label: "동반 술식", value: rest.length > 0 ? rest.join(", ") : "-" },
-        ...turbRow,
+        { label: "동반 술식", value: extra.length > 0 ? extra.join(", ") : "-" },
         { label: "Packing / Material", value: "Rhinocel" },
       ],
     };
   }
 
   if (surgeryCode === "ESS") {
+    const turbItems = turbinoplastyPlanItems(values, false);
     return {
       procedureName,
       findings,
       keyValueRows: [
+        ...(turbItems.length > 0 ? [{ label: "동반 술식", value: turbItems.join(", ") }] : []),
         { label: "Navigation", value: bool(values, "f_nav") ? "사용" : "미사용", toggleKey: "f_nav" },
         { label: "Packing / Material", value: packingCellValue(values) },
       ],
@@ -1177,13 +1194,17 @@ export function buildPlanTable(
   }
 
   const [incision, ...rest] = septoConciseItems(values, false);
+  const extra = [...turbinoplastyPlanItems(values, true), ...rest];
   return {
     procedureName,
     findings,
     keyValueRows: [
-      { label: "시행 순서", value: str(values, "c_order", comboOrderForDsn(values.n_dev_side)) },
-      { label: "절개(비중격)", value: incision },
-      { label: "동반 술식(비중격)", value: rest.length > 0 ? rest.join(", ") : "-" },
+      {
+        label: "시행 순서",
+        value: comboOrderDisplay(str(values, "c_order", comboOrderForDsn(values.n_dev_side)), values),
+      },
+      { label: "절개(Septo)", value: incision },
+      { label: "동반 술식", value: extra.length > 0 ? extra.join(", ") : "-" },
       { label: "Navigation", value: bool(values, "f_nav") ? "사용" : "미사용", toggleKey: "f_nav" },
       { label: "Packing / Material(공통)", value: packingCellValue(values) },
     ],

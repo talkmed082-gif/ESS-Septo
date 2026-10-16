@@ -363,6 +363,17 @@ export const comboOnlyFields: SurgeryFieldDef[] = [
       "우 FESS → 좌 FESS → 비중격",
       "좌 FESS → 우 FESS → 비중격",
     ],
+    // 저장 값은 예전 그대로 두고 화면에서만 "비중격" 대신 술식 이름으로(사용자 2026-10-16)
+    optionLabels: Object.fromEntries(
+      [
+        "비중격 → 우 FESS → 좌 FESS",
+        "비중격 → 좌 FESS → 우 FESS",
+        "우 FESS → 비중격 → 좌 FESS",
+        "좌 FESS → 비중격 → 우 FESS",
+        "우 FESS → 좌 FESS → 비중격",
+        "좌 FESS → 우 FESS → 비중격",
+      ].map((o) => [o, o.replace("비중격", "Septoturbinoplasty")]),
+    ),
   },
 ];
 

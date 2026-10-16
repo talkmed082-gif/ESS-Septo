@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { SubPageNav } from "@/components/sub-page-nav";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
@@ -7,7 +7,6 @@ import { updateOpRecord } from "@/app/actions/op-records";
 import { resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import type { NameStyle, SideNotation } from "@/lib/op-note-generator";
 import { safeDateStr, seoulNow } from "@/lib/date-format";
-import { buttonStyles } from "@/lib/ui";
 import { RecordForm } from "../../record-form";
 
 export default async function EditOpRecordPage({
@@ -32,9 +31,12 @@ export default async function EditOpRecordPage({
 
   return (
     <div className="max-w-3xl">
-      <Link href={`/records/${record.id}`} className={buttonStyles.link}>
-        ← 기록지로 돌아가기
-      </Link>
+      <SubPageNav
+        links={[
+          { href: `/plans/${record.opPlan.id}`, label: "수술 계획 화면" },
+          { href: `/records/${record.id}`, label: "기록지 화면" },
+        ]}
+      />
       <h1 className="mt-2 mb-1 text-xl font-semibold">수술기록지 수정</h1>
       <p className="mb-6 text-sm text-slate-500">
         환자: {record.opPlan.patient.name} · {record.opPlan.surgeryType.name}

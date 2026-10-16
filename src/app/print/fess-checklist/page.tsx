@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { SubPageNav } from "@/components/sub-page-nav";
 import { getCurrentUser } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { parseFieldValues } from "@/lib/field-types";
@@ -8,13 +8,12 @@ import { safeDateStr } from "@/lib/date-format";
 import { PrintButton } from "@/components/print-button";
 import { AppNavBar } from "@/components/app-nav-bar";
 import { CheckBox, DataCell } from "@/components/check-cell";
-import { buttonStyles } from "@/lib/ui";
 
 // 수술방에서 내시경 모니터 앞에 붙여두고 손으로 체크하는 용도의 FESS 시행
 // 부위 체크리스트. A4 한 장에 4장씩 나온다. 환자 목록에서 ?plans=id1,id2,...
 // 로 계획 id를 넘기면 그 계획들의 실제 체크 상태로 채워서 인쇄하고(부족한
 // 칸은 빈 양식), 아무것도 안 넘기면 전부 빈 양식으로 미리 뽑아둘 수 있다.
-const FESS_ONLY_ROW_LABELS = ["Middle turbinoplasty", "Inferior turbinoplasty"];
+// Turbinoplasty는 좌우 칸 대신 "동반 술식" 줄에 글로 쓴다(사용자 2026-10-16)
 const BLANK_ROWS = [
   "Uncinectomy",
   "MMA (Middle meatal antrostomy)",
@@ -22,7 +21,6 @@ const BLANK_ROWS = [
   "Post. ethmoidectomy",
   "Sphenoidotomy",
   "Frontal sinusotomy",
-  ...FESS_ONLY_ROW_LABELS,
 ];
 
 interface CardRow {
@@ -71,6 +69,8 @@ interface CardData {
   patientName: string;
   date: string | null;
   cc: string;
+  // 시행 순서 / 동반 술식(turbinoplasty 포함)
+  extra: string;
   procedureName: string;
   revision: boolean;
   findings: string;
@@ -129,6 +129,10 @@ function ChecklistCard({ data }: { data?: CardData }) {
           <span className="shrink-0 text-slate-500">CC:</span>
           <span className="flex-1 border-b border-slate-400 font-medium">{data?.cc || " "}</span>
         </div>
+        <div className="flex gap-1">
+          <span className="shrink-0 text-slate-500">동반 술식:</span>
+          <span className="flex-1 border-b border-slate-400 font-medium">{data?.extra || " "}</span>
+        </div>
       </div>
       {/* 1개 인쇄용 보기(PlanTableView)와 순서를 맞춘다 — 비강 소견이 Op
           Plan(시행 부위 표)보다 먼저 나온다. 값이 채워진 카드는 소견
@@ -145,6 +149,7 @@ function ChecklistCard({ data }: { data?: CardData }) {
           </>
         )}
       </div>
+      {rows.length > 0 && (
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr>
@@ -182,6 +187,7 @@ function ChecklistCard({ data }: { data?: CardData }) {
           ))}
         </tbody>
       </table>
+      )}
     </div>
   );
 }
@@ -230,23 +236,14 @@ export default async function FessChecklistPrintPage({
         const values = parseFieldValues(plan.planData);
         const code = plan.surgeryType.code;
         const table = isBuiltInSurgeryCode(code) ? buildPlanTable(code, values, nameStyle) : null;
-        const rows: CardRow[] = [
-          ...(table?.sideMatrix?.rows.map((r) => ({ label: r.label, right: r.right, left: r.left })) ?? []),
-          {
-            label: "Middle turbinoplasty",
-            right: values.turb_middle_right === true,
-            left: values.turb_middle_left === true,
-          },
-          {
-            label: "Inferior turbinoplasty",
-            right: values.turb_inferior_right === true,
-            left: values.turb_inferior_left === true,
-          },
-        ];
+        const rows: CardRow[] =
+          table?.sideMatrix?.rows.map((r) => ({ label: r.label, right: r.right, left: r.left })) ?? [];
+        const rowValue = (label: string) => table?.keyValueRows.find((r) => r.label === label)?.value ?? "";
         return {
           patientName: plan.patient.name,
           date: safeDateStr(plan.plannedDate),
           cc: plan.chiefComplaint ?? "",
+          extra: [rowValue("시행 순서"), rowValue("동반 술식")].filter((v) => v && v !== "-").join(" / "),
           procedureName: table?.procedureName ?? plan.surgeryType.name,
           revision: hasAnyRevision(values),
           findings: table?.findings ?? "",
@@ -271,10 +268,8 @@ export default async function FessChecklistPrintPage({
       <AppNavBar />
       <div className="mx-auto w-full max-w-3xl bg-white px-3 pt-4 pb-3 text-slate-900 sm:px-8 sm:pt-6 sm:pb-8 print:max-w-none print:p-0">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2 print:hidden">
-          {/* 계획 화면의 "계획 인쇄"로 한 명만 넘어오면 그 계획으로 돌아간다 */}
-          <Link href={planIds.length === 1 ? `/plans/${planIds[0]}` : "/patients"} className={buttonStyles.link}>
-            {planIds.length === 1 ? "← 계획으로 돌아가기" : "← 목록으로 돌아가기"}
-          </Link>
+          {/* 계획 화면의 "계획 인쇄"로 한 명만 넘어오면 그 계획 화면 링크도 둔다 */}
+          <SubPageNav links={planIds.length === 1 ? [{ href: `/plans/${planIds[0]}`, label: "수술 계획 화면" }] : []} />
           <PrintButton />
         </div>
         <p className="mb-3 text-xs text-slate-500 print:hidden">

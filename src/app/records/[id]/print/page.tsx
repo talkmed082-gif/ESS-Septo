@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { SubPageNav } from "@/components/sub-page-nav";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
@@ -69,9 +69,12 @@ export default async function OpRecordPrintPage({
       <AppNavBar />
       <div className="mx-auto w-full max-w-3xl bg-white px-3 pt-4 pb-3 text-slate-900 sm:px-8 sm:pt-6 sm:pb-8 print:max-w-none print:p-0">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2 print:hidden">
-          <Link href={`/records/${record.id}`} className={buttonStyles.link}>
-            ← 기록지로 돌아가기
-          </Link>
+          <SubPageNav
+            links={[
+              { href: `/plans/${record.opPlan.id}`, label: "수술 계획 화면" },
+              { href: `/records/${record.id}`, label: "기록지 화면" },
+            ]}
+          />
           <div className="flex flex-wrap gap-2">
             <CopyButton text={copyText} label="내용 복사" className={buttonStyles.secondary} />
             <CopyButton

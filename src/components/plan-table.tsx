@@ -155,7 +155,8 @@ export function PlanTableView({
         />
       )}
 
-      {table.turbMatrix && (interactive || turbExpanded) && (
+      {/* 인쇄·완료 계획표에서는 좌우 칸 대신 "동반 술식" 칸의 글로 보여준다(사용자 2026-10-16) */}
+      {table.turbMatrix && interactive && (
         <div>
           {interactive && (
             <label className="mb-1 flex items-center gap-1.5 text-xs font-medium text-slate-600">
@@ -168,7 +169,7 @@ export function PlanTableView({
               Turbinoplasty
             </label>
           )}
-          {(turbExpanded || !interactive) && (
+          {turbExpanded && (
             <SideMatrixTable
               title={table.turbMatrix.title}
               rows={table.turbMatrix.rows}

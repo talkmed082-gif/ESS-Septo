@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import Link from "next/link";
+import { SubPageNav } from "@/components/sub-page-nav";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
 import { parseFieldValues } from "@/lib/field-types";
@@ -7,7 +7,6 @@ import { createOpRecord } from "@/app/actions/op-records";
 import { buildProcedureName, generateOpNote, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { isBuiltInSurgeryCode, resolveSurgeryTypeFields } from "@/lib/op-note-defs";
 import { safeDateStr, seoulNow } from "@/lib/date-format";
-import { buttonStyles } from "@/lib/ui";
 import { RecordForm } from "../../../records/record-form";
 
 export default async function NewOpRecordPage({
@@ -46,9 +45,7 @@ export default async function NewOpRecordPage({
 
   return (
     <div className="max-w-3xl">
-      <Link href={`/plans/${plan.id}`} className={buttonStyles.link}>
-        ← 수술 계획으로 돌아가기
-      </Link>
+      <SubPageNav links={[{ href: `/plans/${plan.id}`, label: "수술 계획 화면" }]} />
       <h1 className="mt-2 mb-1 text-xl font-semibold">수술기록지 작성</h1>
       <p className="mb-6 text-sm text-slate-500">
         환자: {plan.patient.name} · {plan.surgeryType.name}

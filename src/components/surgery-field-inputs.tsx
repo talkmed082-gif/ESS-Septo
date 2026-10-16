@@ -129,7 +129,7 @@ function SurgeryFieldInputsImpl({
                     <option value="">선택 안 함</option>
                     {(field.options ?? []).map((opt) => (
                       <option key={opt} value={opt}>
-                        {opt}
+                        {field.optionLabels?.[opt] ?? opt}
                       </option>
                     ))}
                   </select>

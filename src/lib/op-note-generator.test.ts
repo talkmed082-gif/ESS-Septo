@@ -474,3 +474,33 @@ describe("병행 수술 순서 기본값", () => {
     expect(comboOrderForDsn("특이 만곡 없음")).toBe("우 FESS → 비중격 → 좌 FESS");
   });
 });
+
+// 계획표 표기(사용자 2026-10-16)
+describe("계획표 동반 술식·시행 순서·비용종 표기", () => {
+  it("병행: turbinoplasty는 동반 술식에 Septoturbinoplasty로, 시행 순서의 비중격도 술식 이름으로", () => {
+    const table = buildPlanTable("COMBO", {
+      turb_inferior_right: true,
+      turb_inferior_left: true,
+      c_order: "우 FESS → 비중격 → 좌 FESS",
+    });
+    const row = (label: string) => table.keyValueRows.find((r) => r.label === label)?.value;
+    expect(row("시행 순서")).toBe("우 FESS → Septoturbinoplasty → 좌 FESS");
+    expect(row("동반 술식")).toContain("Septoturbinoplasty");
+  });
+
+  it("한쪽만 하거나 MT를 하면 방향과 함께 쓴다", () => {
+    const table = buildPlanTable("ESS", { turb_inferior_right: true, turb_middle_left: true, turb_middle_right: true });
+    expect(table.keyValueRows.find((r) => r.label === "동반 술식")?.value).toBe(
+      "우측 Inferior turbinoplasty, 양측 MT turbinoplasty",
+    );
+  });
+
+  it("비용종 위치가 좌우 같으면 양측으로 한 번만", () => {
+    const values = {
+      n_ess_pe_done: true,
+      n_polyp_right_site_mm: true,
+      n_polyp_left_site_mm: true,
+    };
+    expect(nasalFindingsText(values)).toContain("비용종: 양측(");
+  });
+});

@@ -11,6 +11,8 @@ export interface SurgeryFieldDef {
   label: string;
   type: SurgeryFieldType;
   options?: string[];
+  // 화면에 보일 선택지 이름(저장 값과 다를 때만)
+  optionLabels?: Record<string, string>;
   default?: string;
 }
 

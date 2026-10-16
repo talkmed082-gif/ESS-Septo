@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SubPageNav } from "@/components/sub-page-nav";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
@@ -49,9 +50,12 @@ export default async function OpRecordPage({
     <div className="max-w-3xl space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <Link href={`/patients/${record.opPlan.patientId}`} className={buttonStyles.link}>
-            ← {record.opPlan.patient.name} 환자로 돌아가기
-          </Link>
+          <SubPageNav
+            links={[
+              { href: `/patients/${record.opPlan.patientId}`, label: `${record.opPlan.patient.name} 환자 화면` },
+              { href: `/plans/${record.opPlan.id}`, label: "수술 계획 화면" },
+            ]}
+          />
           <h1 className="mt-2 text-xl font-semibold">
             {record.opPlan.surgeryType.name} 수술기록지
           </h1>
