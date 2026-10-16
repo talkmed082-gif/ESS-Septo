@@ -80,25 +80,6 @@ export default async function OpRecordPage({
         </dl>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-5">
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold text-slate-700">차트 Remark</h2>
-          <div className="flex gap-2">
-            <Link href={`/plans/${record.opPlan.id}?view=post`} className={buttonStyles.smallOutline}>
-              CC·특이사항 수정
-            </Link>
-            <CopyButton text={remarkText} disabled={!remarkText} />
-          </div>
-        </div>
-        {remarkText ? (
-          <pre className="whitespace-pre-wrap rounded-md bg-slate-50 p-3 font-sans text-sm text-slate-800">
-            {remarkText}
-          </pre>
-        ) : (
-          <p className="text-sm text-slate-500">수술 계획 화면에서 CC와 수술 후 특이사항을 적으면 여기에 표시됩니다.</p>
-        )}
-      </div>
-
       {fields.length > 0 && (
         <div className="rounded-lg border border-slate-200 bg-white p-5">
           <h2 className="mb-3 text-sm font-semibold text-slate-700">
@@ -130,6 +111,30 @@ export default async function OpRecordPage({
             value={[record.findings, record.procedureDetail].filter(Boolean).join("\n\n")}
           />
         </dl>
+      </div>
+
+      {/* Remark는 기록지 아래(사용자 2026-10-16) */}
+      <div className="rounded-lg border border-slate-200 bg-white p-5">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold text-slate-700">차트 Remark</h2>
+          <div className="flex gap-2">
+            {/* CC는 수술 전 화면, 특이사항은 수술 후 화면에서 고친다 */}
+            <Link href={`/plans/${record.opPlan.id}?view=pre`} className={buttonStyles.smallOutline}>
+              CC 수정
+            </Link>
+            <Link href={`/plans/${record.opPlan.id}?view=post`} className={buttonStyles.smallOutline}>
+              특이사항 수정
+            </Link>
+            <CopyButton text={remarkText} disabled={!remarkText} />
+          </div>
+        </div>
+        {remarkText ? (
+          <pre className="whitespace-pre-wrap rounded-md bg-slate-50 p-3 font-sans text-sm text-slate-800">
+            {remarkText}
+          </pre>
+        ) : (
+          <p className="text-sm text-slate-500">수술 계획 화면에서 CC와 수술 후 특이사항을 적으면 여기에 표시됩니다.</p>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useActionState, useEffect, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { createPatientWithPlan } from "@/app/actions/patient-plan";
 import { SurgeryFieldInputs } from "@/components/surgery-field-inputs";
@@ -50,6 +50,9 @@ import {
   POLYP_TO_FESS_FIELD,
   POST_OP_FINISH_KEYS,
   DSN_FIELD_KEYS,
+  DSN_SIDE_KEY,
+  SEPTO_BASE_SET,
+  comboOrderForDsn,
 } from "@/lib/op-note-defs";
 import {
   buildProcedureName,
@@ -201,6 +204,12 @@ function buildTextsFrozenAware(
   };
 }
 
+// 병행 수술인데 순서가 아직 없으면 P/E(DSN 방향)로 정한 기본 순서를 넣는다.
+function withComboOrder(code: string, values: FieldValues): FieldValues {
+  if (code !== "COMBO" || (typeof values.c_order === "string" && values.c_order)) return values;
+  return { ...values, c_order: comboOrderForDsn(values[DSN_SIDE_KEY]) };
+}
+
 // 퀵 도구(비로그인 미리보기) · 새 환자 등록 · 기존 환자의 새 계획 작성을
 // 한 컴포넌트로 통일한 것 — 예전엔 이 세 화면이 각각 따로 구현돼 있어서
 // 필드/픽커 관련 기능을 추가할 때마다 세 곳을 다 고쳐야 했다. 이제는
@@ -221,6 +230,8 @@ export function SurgeryPlanner({
   defaultView,
   action,
   templates = [],
+  heading,
+  headerActions,
 }: {
   surgeryTypes: SurgeryTypeOption[];
   loggedIn: boolean;
@@ -242,6 +253,9 @@ export function SurgeryPlanner({
   action?: SurgeryPlannerAction;
   // 내 문구 템플릿(설정에서 관리) — 계획 메모·수술 후 특이사항 칸에 골라 넣는다
   templates?: TextTemplateOption[];
+  // 계획 화면 맨 윗줄 — 환자 이름 제목과 버튼들. 수술 종류·날짜와 같은 줄에 놓는다(사용자 2026-10-16).
+  heading?: ReactNode;
+  headerActions?: ReactNode;
 }) {
   const [state, formAction, pending] = useActionState<
     SurgeryPlannerFormState | undefined,
@@ -298,8 +312,13 @@ export function SurgeryPlanner({
   // 거친다 — 그냥 editPlan?.values(빈 값)만 넘기면 CollapsibleFindingSection
   // 등 controlled 입력들이 죄다 "선택 안 됨" 상태로 시작해 default가 무시된다.
   const [templateValues, setTemplateValues] = useState<FieldValues | undefined>(() =>
-    initialSelected ? applyFieldDefaults(editPlan?.values ?? {}, initialSelected.fields) : editPlan?.values,
+    initialSelected
+      ? withComboOrder(initialSelected.code, applyFieldDefaults(editPlan?.values ?? {}, initialSelected.fields))
+      : editPlan?.values,
   );
+  // P/E의 DSN 방향이 바뀌었을 때만 수술 순서를 따라 바꾸려고 마지막으로 본 방향을 기억한다 —
+  // 순서를 손으로 바꾼 뒤에도 DSN을 안 건드리면 그 순서를 그대로 둔다.
+  const lastDevSideRef = useRef<unknown>(templateValues?.[DSN_SIDE_KEY]);
   const [templateKey, setTemplateKey] = useState(0);
   // 방금 applyCombo로 정한 값 — 화면(폼)이 그 값으로 다시 그려지기 전까지는 폼이
   // 옛 값을 들고 있어서, 그 사이에 연달아 들어온 클릭이 옛 값을 기준으로 계산되어
@@ -412,7 +431,37 @@ export function SurgeryPlanner({
     setDirty(true);
     const values = readCurrentValues();
     if (!values) return;
+    const orderPatch = followDsnOrder(values);
+    if (orderPatch) {
+      writeToForm(orderPatch);
+      const updated = { ...values, ...orderPatch };
+      setTemplateValues(updated);
+      setTexts(computeTexts(updated));
+      return;
+    }
     setTexts(computeTexts(values));
+  }
+
+  // P/E → 수술 순서 한 방향만 잇는다: DSN 방향이 바뀐 경우에만 병행 순서를 넓은 쪽 ESS →
+  // 비중격 → 좁은 쪽 ESS로 다시 맞춘다. 순서를 바꿔도 P/E는 그대로다.
+  function followDsnOrder(values: FieldValues): Record<string, string> | null {
+    const dev = values[DSN_SIDE_KEY];
+    if (dev === lastDevSideRef.current) return null;
+    lastDevSideRef.current = dev;
+    if (selected?.code !== "COMBO") return null;
+    const order = comboOrderForDsn(dev);
+    return values.c_order === order ? null : { c_order: order };
+  }
+
+  function writeToForm(patch: Record<string, boolean | string>) {
+    if (!formRef.current) return;
+    for (const [key, value] of Object.entries(patch)) {
+      // 같은 이름의 입력이 여럿(보이는 select + 숨은 입력)일 수 있어 전부 맞춘다.
+      for (const el of formRef.current.querySelectorAll(`[name="field_${key}"]`)) {
+        if (el instanceof HTMLInputElement && typeof value === "boolean") el.checked = value;
+        else if (el instanceof HTMLSelectElement || el instanceof HTMLInputElement) el.value = String(value);
+      }
+    }
   }
 
   // 체크박스 몇 개만 바꿀 때 쓴다. applyCombo와 달리 영역 전체를 다시 만들지
@@ -423,19 +472,16 @@ export function SurgeryPlanner({
     const current = readCurrentValues();
     if (!current || !formRef.current) return;
     setDirty(true);
-    for (const [key, value] of Object.entries(patch)) {
-      // 같은 이름의 입력이 여럿(보이는 select + 숨은 입력)일 수 있어 전부 맞춘다.
-      for (const el of formRef.current.querySelectorAll(`[name="field_${key}"]`)) {
-        if (el instanceof HTMLInputElement && typeof value === "boolean") el.checked = value;
-        else if (el instanceof HTMLSelectElement || el instanceof HTMLInputElement) el.value = String(value);
-      }
-    }
-    const updated: FieldValues = { ...current, ...patch };
+    const merged: FieldValues = { ...current, ...patch };
+    const full = { ...patch, ...(followDsnOrder(merged) ?? {}) };
+    writeToForm(full);
+    const updated: FieldValues = { ...current, ...full };
     setTemplateValues(updated);
     setTexts(computeTexts(updated));
   }
 
-  function applyCombo(values: FieldValues) {
+  function applyCombo(input: FieldValues) {
+    const values = { ...input, ...(followDsnOrder(input) ?? {}) };
     setDirty(true);
     pendingValuesRef.current = values;
     setTemplateValues(values);
@@ -547,7 +593,12 @@ export function SurgeryPlanner({
     patchFieldValues(patch);
   }
 
-  function handleSurgeryTypeChange(id: string, e?: ChangeEvent<HTMLSelectElement | HTMLInputElement>) {
+  function handleSurgeryTypeChange(
+    id: string,
+    e?: ChangeEvent<HTMLSelectElement | HTMLInputElement>,
+    // 이미 있던 값보다 우선해서 켤 값 — Septo를 새로 켜면 Septoturbinoplasty 기본 세트
+    forced?: Record<string, boolean>,
+  ) {
     // 이 select도 <form onChange={regenerateFromForm}> 안에 있어서, 바뀌면
     // change 이벤트가 폼까지 버블링된다. 아래 setTexts로 이미 새 수술
     // 종류에 맞는 올바른 미리보기를 계산해뒀는데, regenerateFromForm이 뒤이어
@@ -572,7 +623,20 @@ export function SurgeryPlanner({
       const defaultValue = f.type === "checkbox" ? f.default === "true" : f.default;
       if (carried[f.key] === defaultValue) delete carried[f.key];
     }
-    const nextValues = next ? applyFieldDefaults(carried, next.fields) : undefined;
+    const nextValues = next
+      ? withComboOrder(
+          next.code,
+          applyFieldDefaults(
+            {
+              ...carried,
+              // 새 종류에 있는 항목만(Septo 단독엔 f_silastic_sheet가 없다)
+              ...Object.fromEntries(Object.entries(forced ?? {}).filter(([k]) => next.fields.some((f) => f.key === k))),
+            },
+            next.fields,
+          ),
+        )
+      : undefined;
+    lastDevSideRef.current = nextValues?.[DSN_SIDE_KEY];
     setTemplateValues(nextValues);
     setTemplateKey((k) => k + 1);
     setTexts(
@@ -606,86 +670,109 @@ export function SurgeryPlanner({
         setDirty(false);
         setStateAtSubmit(state);
       }}>
+      {/* 맨 윗줄: 환자 이름 + 수술 종류·날짜 + 버튼, 그 아래 수술 전/후 탭(사용자 2026-10-16) */}
+      <div className="mb-4 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            {heading}
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700">
+              {showPatientSection && (
+                // 아래 "수술 전/후" 탭은 보는 화면만 바꾸고, 이건 저장될 계획 상태라
+                // 이름을 다르게 둔다(같은 이름이 두 군데 있어 헷갈렸다).
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-slate-500">상태</span>
+                  <label className="flex items-center gap-1.5">
+                    <input type="radio" name="planStatus" value="PLANNED" defaultChecked onChange={() => changeView("pre")} />
+                    예정
+                  </label>
+                  <label className="flex items-center gap-1.5">
+                    <input
+                      type="radio"
+                      name="planStatus"
+                      value="DONE"
+                      onChange={(e) => {
+                        changeView("post");
+                        // 이미 끝난 수술을 등록하는 경우라 날짜가 비어 있으면 오늘로 채운다.
+                        // 폼 onChange는 아직 빈 날짜를 보고 초안을 다시 덮어쓰므로 막는다.
+                        if (!surgeryDate) {
+                          e.stopPropagation();
+                          changeSurgeryDate(localTodayStr());
+                        }
+                      }}
+                    />
+                    완료
+                  </label>
+                </div>
+              )}
+              <input type="hidden" name="surgeryTypeId" value={selectedId} />
+              {essType && (
+                <label className="flex items-center gap-1.5">
+                  <input
+                    type="checkbox"
+                    checked={essChecked}
+                    onChange={(e) => handleSurgeryTypeChange(idForBuiltInCombo(septoChecked, e.target.checked), e)}
+                    className="h-4 w-4 rounded border-slate-300"
+                  />
+                  ESS
+                </label>
+              )}
+              {septoType && (
+                <label className="flex items-center gap-1.5">
+                  <input
+                    type="checkbox"
+                    checked={septoChecked}
+                    onChange={(e) =>
+                      handleSurgeryTypeChange(
+                        idForBuiltInCombo(e.target.checked, essChecked),
+                        e,
+                        e.target.checked ? SEPTO_BASE_SET : undefined,
+                      )
+                    }
+                    className="h-4 w-4 rounded border-slate-300"
+                  />
+                  Septo
+                </label>
+              )}
+              {/* 날짜는 수술 전/후 어느 화면에서 저장해도 항상 전송되도록 늘 그려지는
+                  이 줄에 둔다 — 예전엔 수술 후 화면에만 있어서, 수술 전 화면에서 저장하면
+                  날짜가 빠져 저장이 실패하거나 날짜가 지워졌다. */}
+              <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                <label className="flex items-center gap-1.5">
+                  수술 날짜
+                  <input
+                    type="date"
+                    name="plannedDate"
+                    value={surgeryDate}
+                    onChange={handleSurgeryDateChange}
+                    className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-xs text-slate-700"
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => changeSurgeryDate(localTodayStr())}
+                  className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-xs text-slate-600 hover:bg-slate-100"
+                >
+                  오늘
+                </button>
+              </div>
+            </div>
+          </div>
+          {headerActions && <div className="flex flex-wrap gap-2">{headerActions}</div>}
+        </div>
+        {selected && (
+          <div className="flex gap-2 border-b border-slate-200 pb-3">
+            <button type="button" onClick={() => changeView("pre")} className={viewButtonClass(view === "pre")}>
+              수술 전 (비강 소견 · Op Plan)
+            </button>
+            <button type="button" onClick={() => changeView("post")} className={viewButtonClass(view === "post")}>
+              수술 후 (수술 방법 · 기록지)
+            </button>
+          </div>
+        )}
+      </div>
       <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-4">
         {fixedPatient && <input type="hidden" name="existingPatientId" value={fixedPatient.id} />}
-
-        {/* 첫 줄: 수술 전/후 상태 + 수술 종류(Septo/ESS) — 한눈에 보이게 컴팩트하게 묶는다. */}
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700">
-          {showPatientSection && (
-            // 아래 "수술 전/후" 탭은 보는 화면만 바꾸고, 이건 저장될 계획 상태라
-            // 이름을 다르게 둔다(같은 이름이 두 군데 있어 헷갈렸다).
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-slate-500">상태</span>
-              <label className="flex items-center gap-1.5">
-                <input type="radio" name="planStatus" value="PLANNED" defaultChecked onChange={() => changeView("pre")} />
-                예정
-              </label>
-              <label className="flex items-center gap-1.5">
-                <input
-                  type="radio"
-                  name="planStatus"
-                  value="DONE"
-                  onChange={(e) => {
-                    changeView("post");
-                    // 이미 끝난 수술을 등록하는 경우라 날짜가 비어 있으면 오늘로 채운다.
-                    // 폼 onChange는 아직 빈 날짜를 보고 초안을 다시 덮어쓰므로 막는다.
-                    if (!surgeryDate) {
-                      e.stopPropagation();
-                      changeSurgeryDate(localTodayStr());
-                    }
-                  }}
-                />
-                완료
-              </label>
-            </div>
-          )}
-          <input type="hidden" name="surgeryTypeId" value={selectedId} />
-          {essType && (
-            <label className="flex items-center gap-1.5">
-              <input
-                type="checkbox"
-                checked={essChecked}
-                onChange={(e) => handleSurgeryTypeChange(idForBuiltInCombo(septoChecked, e.target.checked), e)}
-                className="h-4 w-4 rounded border-slate-300"
-              />
-              ESS
-            </label>
-          )}
-          {septoType && (
-            <label className="flex items-center gap-1.5">
-              <input
-                type="checkbox"
-                checked={septoChecked}
-                onChange={(e) => handleSurgeryTypeChange(idForBuiltInCombo(e.target.checked, essChecked), e)}
-                className="h-4 w-4 rounded border-slate-300"
-              />
-              Septo
-            </label>
-          )}
-          {/* 날짜는 수술 전/후 어느 화면에서 저장해도 항상 전송되도록 늘 그려지는
-              이 줄에 둔다 — 예전엔 수술 후 화면에만 있어서, 수술 전 화면에서 저장하면
-              날짜가 빠져 저장이 실패하거나 날짜가 지워졌다. */}
-          <div className="flex items-center gap-1.5 text-xs text-slate-500">
-            <label className="flex items-center gap-1.5">
-              수술 날짜
-              <input
-                type="date"
-                name="plannedDate"
-                value={surgeryDate}
-                onChange={handleSurgeryDateChange}
-                className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-xs text-slate-700"
-              />
-            </label>
-            <button
-              type="button"
-              onClick={() => changeSurgeryDate(localTodayStr())}
-              className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-xs text-slate-600 hover:bg-slate-100"
-            >
-              오늘
-            </button>
-          </div>
-        </div>
 
         {customTypes.length > 0 && (
           <div>
@@ -753,7 +840,8 @@ export function SurgeryPlanner({
           </div>
         )}
 
-        {selected && (
+        {/* CC는 수술 전 화면에서만 입력한다(사용자 2026-10-16). 수술 후 화면에서 저장해도 지워지지 않게 숨은 값으로 보낸다. */}
+        {selected && view === "pre" ? (
           <CcInput
             value={chiefComplaint}
             onChange={(next) => {
@@ -761,6 +849,8 @@ export function SurgeryPlanner({
               setChiefComplaint(next);
             }}
           />
+        ) : (
+          <input type="hidden" name="chiefComplaint" value={chiefComplaint} />
         )}
 
         {selected && (
@@ -779,14 +869,6 @@ export function SurgeryPlanner({
                 </button>
               </div>
             )}
-            <div className="flex gap-2 border-b border-slate-200 pb-3">
-              <button type="button" onClick={() => changeView("pre")} className={viewButtonClass(view === "pre")}>
-                수술 전 (비강 소견 · Op Plan)
-              </button>
-              <button type="button" onClick={() => changeView("post")} className={viewButtonClass(view === "post")}>
-                수술 후 (수술 방법 · 기록지)
-              </button>
-            </div>
             <div className={view === "pre" ? "space-y-4" : "hidden"}>
               {showSeptum && (
                 <CollapsibleFindingSection doneKey={SEPTO_PE_DONE_KEY} label="Septoturbinoplasty P/E">
@@ -959,12 +1041,44 @@ export function SurgeryPlanner({
       </div>
 
       <div ref={previewRef} className="scroll-mt-4 space-y-4">
+        {/* 계획 메모는 수술 전·후 어느 화면에서든 맨 위에서 보이게(사용자 2026-10-16) */}
+        {selected && (
+          <div>
+            <div className="mb-1 flex items-center justify-between gap-2">
+              <label className="block text-sm font-medium text-slate-700">계획 메모</label>
+              <TemplatePicker
+                templates={templates}
+                onPick={(body) => {
+                  const el = planNoteRef.current;
+                  if (!el) return;
+                  setDirty(true);
+                  el.value = appendTemplate(el.value, body);
+                }}
+              />
+            </div>
+            <textarea
+              ref={planNoteRef}
+              name="planNote"
+              rows={3}
+              defaultValue={editPlan?.planNote ?? ""}
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            />
+          </div>
+        )}
+
         {view === "pre" && (
           <div className="rounded-lg border border-slate-200 bg-white p-4">
             <div className="mb-2 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-700">Op Plan 요약</h2>
               {planTable && <CopyButton text={planTableToText(planTable)} />}
             </div>
+            {/* 수술 중에 보는 계획표에도 CC를 같이(사용자 2026-10-16) */}
+            {chiefComplaint.trim() && (
+              <p className="mb-2 text-sm">
+                <span className="font-semibold">CC: </span>
+                {chiefComplaint}
+              </p>
+            )}
             {planTable ? (
               <PlanTableView
                 table={planTable}
@@ -981,6 +1095,30 @@ export function SurgeryPlanner({
             값이 지워지지 않게 실제 전송은 항상 그려지는 숨은 입력으로 한다.
             Remark는 짧아서 긴 기록지 초안 위에 둔다 — 폰에서 한참 내려가지 않게. */}
         <input type="hidden" name="postOpRemark" value={postOpRemark} />
+        {view === "post" && (
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              {/* 여기는 복사해서 EMR에 붙이는 초안이고, 저장·인쇄하는 정식 기록지는 계획
+                  화면 위쪽 버튼으로 따로 쓴다 — 이름이 같아 둘을 헷갈렸다. */}
+              <h2 className="text-sm font-semibold text-slate-700">
+                수술기록지 초안 <span className="font-normal text-slate-400">(복사용)</span>
+              </h2>
+              <div className="flex gap-2">
+                <CopyButton text={recordText} />
+                <a
+                  href={`mailto:${encodeURIComponent(userEmail ?? "")}?subject=${encodeURIComponent(
+                    `수술기록지${fixedPatient ? ` - ${fixedPatient.name}` : ""}`,
+                  )}&body=${encodeURIComponent(recordText)}`}
+                  className={buttonStyles.smallOutline}
+                >
+                  메일로 보내기
+                </a>
+              </div>
+            </div>
+            <pre className="whitespace-pre-wrap font-sans text-sm text-slate-800">{recordText}</pre>
+          </div>
+        )}
+        {/* Remark는 기록지 초안 아래(사용자 2026-10-16) */}
         {view === "post" && selected && (
           <div className="rounded-lg border border-slate-200 bg-white p-4">
             <div className="mb-2 flex items-center justify-between gap-2">
@@ -1018,29 +1156,6 @@ export function SurgeryPlanner({
             )}
           </div>
         )}
-        {view === "post" && (
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-              {/* 여기는 복사해서 EMR에 붙이는 초안이고, 저장·인쇄하는 정식 기록지는 계획
-                  화면 위쪽 버튼으로 따로 쓴다 — 이름이 같아 둘을 헷갈렸다. */}
-              <h2 className="text-sm font-semibold text-slate-700">
-                수술기록지 초안 <span className="font-normal text-slate-400">(복사용)</span>
-              </h2>
-              <div className="flex gap-2">
-                <CopyButton text={recordText} />
-                <a
-                  href={`mailto:${encodeURIComponent(userEmail ?? "")}?subject=${encodeURIComponent(
-                    `수술기록지${fixedPatient ? ` - ${fixedPatient.name}` : ""}`,
-                  )}&body=${encodeURIComponent(recordText)}`}
-                  className={buttonStyles.smallOutline}
-                >
-                  메일로 보내기
-                </a>
-              </div>
-            </div>
-            <pre className="whitespace-pre-wrap font-sans text-sm text-slate-800">{recordText}</pre>
-          </div>
-        )}
         <p className="text-xs text-slate-500">
           자동 생성된 초안입니다. 실제 소견에 맞게 검토 후 사용해주세요.
           {!loggedIn && (
@@ -1062,30 +1177,6 @@ export function SurgeryPlanner({
       </div>
 
       <div className="mt-6 space-y-3">
-        {selected && (
-          <div>
-            <div className="mb-1 flex items-center justify-between gap-2">
-              <label className="block text-sm font-medium text-slate-700">계획 메모</label>
-              <TemplatePicker
-                templates={templates}
-                onPick={(body) => {
-                  const el = planNoteRef.current;
-                  if (!el) return;
-                  setDirty(true);
-                  el.value = appendTemplate(el.value, body);
-                }}
-              />
-            </div>
-            <textarea
-              ref={planNoteRef}
-              name="planNote"
-              rows={3}
-              defaultValue={editPlan?.planNote ?? ""}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-            />
-          </div>
-        )}
-
         {state?.message && <p className="text-sm text-red-600">{state.message}</p>}
 
         {!canSave && (
@@ -1105,11 +1196,24 @@ export function SurgeryPlanner({
           >
             {view === "pre" ? "요약 보기" : "Remark·기록지"}
           </button>
-          <button type="submit" name="saveIntent" value="save" disabled={pending} className={`flex-1 ${buttonStyles.secondary}`}>
-            {pending ? "저장 중..." : editPlan ? "저장" : fixedPatient ? "계획 저장" : "환자 등록 + 계획 저장"}
-          </button>
-          <button type="submit" name="saveIntent" value="record" disabled={pending} className={`flex-1 ${buttonStyles.primary}`}>
-            {pending ? "저장 중..." : "저장 후 기록지 초안"}
+          {/* 예전 "저장"과 "저장 후 기록지 초안"은 저장 뒤 열리는 화면만 달라서 하나로 합쳤다(사용자 2026-10-16).
+              저장 뒤에는 지금 보던 화면으로 돌아오고, 수술 후 화면에서 저장하면 계획이 완료로 바뀐다. */}
+          <button
+            type="submit"
+            name="saveIntent"
+            value={view === "post" ? "record" : "save"}
+            disabled={pending}
+            className={`flex-1 ${buttonStyles.primary}`}
+          >
+            {pending
+              ? "저장 중..."
+              : editPlan
+                ? view === "post" && !editPlan.isDone
+                  ? "저장 · 수술 완료로 변경"
+                  : "저장"
+                : fixedPatient
+                  ? "계획 저장"
+                  : "환자 등록 + 계획 저장"}
           </button>
         </div>
       )}

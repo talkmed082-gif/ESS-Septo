@@ -84,6 +84,95 @@ export const SEPTUM_DETAIL_FIELD_KEYS = ["n_deviation", "n_septal_perforation", 
 // 먼저 보여준다.
 export const UNCINATE_FIELD_KEYS = ["n_uncinate_right", "n_uncinate_left"];
 
+// Pre-op anatomy — CLOSE 암기법(Cribriform plate / Lamina papyracea / Onodi cell /
+// Sphenoid sinus / (anterior) Ethmoidal artery) 순서로 묶는다(사용자 요청 2026-10-16, 논문 표 기준).
+// 예전부터 있던 항목(Low skull base, Haller, LP 결손, Onodi, 시신경/경동맥 결손)은 저장된 값이
+// 그대로 이어지도록 키를 바꾸지 않고 해당 묶음으로만 옮겼다. CLOSE에 없는 Concha bullosa는 "기타".
+// options가 있으면 방향 대신 그 값 중에서 고른다(접형동 함기화 형태).
+export interface EssAnatomyFinding {
+  presentKey: string;
+  sideKey: string;
+  label: string;
+  defaultSide: string;
+  options?: string[];
+}
+
+export const ESS_ANATOMY_GROUPS: { letter: string; title: string; findings: EssAnatomyFinding[] }[] = [
+  {
+    letter: "C",
+    title: "Cribriform plate",
+    findings: [
+      { presentKey: "n_skull_base_risk_present", sideKey: "n_skull_base_risk_side", label: "Low skull base (Keros II/III)", defaultSide: "양측" },
+      { presentKey: "n_keros_asym_present", sideKey: "n_keros_asym_side", label: "Asymmetric Keros (낮은 쪽)", defaultSide: "" },
+      { presentKey: "n_sb_dehiscence_present", sideKey: "n_sb_dehiscence_side", label: "Skull base 골 결손", defaultSide: "" },
+    ],
+  },
+  {
+    letter: "L",
+    title: "Lamina papyracea",
+    findings: [
+      { presentKey: "n_lp_dehiscence_present", sideKey: "n_lp_dehiscence_side", label: "Lamina papyracea 결손", defaultSide: "" },
+      { presentKey: "n_orbital_prolapse_present", sideKey: "n_orbital_prolapse_side", label: "안와 내용물 사골동 탈출", defaultSide: "" },
+      { presentKey: "n_haller_present", sideKey: "n_haller_side", label: "Haller's cell", defaultSide: "" },
+      { presentKey: "n_up_orbit_present", sideKey: "n_up_orbit_side", label: "Uncinate가 안와벽에 닿음", defaultSide: "" },
+    ],
+  },
+  {
+    letter: "O",
+    title: "Onodi cell",
+    findings: [
+      { presentKey: "n_onodi_present", sideKey: "n_onodi_side", label: "Onodi's cell", defaultSide: "" },
+      { presentKey: "n_onodi_optic_present", sideKey: "n_onodi_optic_side", label: "Onodi cell 안 시신경 결손", defaultSide: "" },
+    ],
+  },
+  {
+    letter: "S",
+    title: "Sphenoid sinus",
+    findings: [
+      {
+        presentKey: "n_sphenoid_pneum_present",
+        sideKey: "n_sphenoid_pneum_side",
+        label: "Sphenoid 함기화 형태",
+        defaultSide: "",
+        options: ["Conchal", "Presellar", "Sellar"],
+      },
+      { presentKey: "n_sphenoid_ext_present", sideKey: "n_sphenoid_ext_side", label: "Skull base·Ant. clinoid까지 함기화", defaultSide: "" },
+      { presentKey: "n_dehiscence_present", sideKey: "n_dehiscence_side", label: "시신경/경동맥 골 결손", defaultSide: "" },
+      { presentKey: "n_sphenoid_septation_present", sideKey: "n_sphenoid_septation_side", label: "Septation이 경동맥관에 붙음", defaultSide: "" },
+    ],
+  },
+  {
+    letter: "E",
+    title: "(Ant.) Ethmoidal artery",
+    findings: [
+      { presentKey: "n_aea_low_present", sideKey: "n_aea_low_side", label: "AEA가 skull base 아래로 주행", defaultSide: "" },
+      { presentKey: "n_supraorbital_present", sideKey: "n_supraorbital_side", label: "Supraorbital pneumatization", defaultSide: "" },
+    ],
+  },
+  {
+    letter: "",
+    title: "기타",
+    findings: [{ presentKey: "n_cb_present", sideKey: "n_cb_side", label: "Concha bullosa", defaultSide: "양측" }],
+  },
+];
+
+export const ESS_ANATOMY_FINDINGS: EssAnatomyFinding[] = ESS_ANATOMY_GROUPS.flatMap((g) => g.findings);
+
+const ANATOMY_SIDES = ["우측", "양측", "좌측"];
+
+function essAnatomyFieldDefs(): SurgeryFieldDef[] {
+  return ESS_ANATOMY_FINDINGS.flatMap((f) => [
+    { key: f.presentKey, label: `${f.label} 있음`, type: "checkbox" as const },
+    {
+      key: f.sideKey,
+      label: `${f.label} - ${f.options ? "형태" : "방향"}`,
+      type: "select" as const,
+      options: f.options ?? ANATOMY_SIDES,
+      ...(f.defaultSide ? { default: f.defaultSide } : {}),
+    },
+  ]);
+}
+
 // 비강 소견 - ESS(FESS)용 그룹 — 부비동 내시경수술 접근/안전 계획에 필요한
 // 내시경·CT 소견. 비중격교정술 단독 시행 시에는 필요 없다.
 export const essFindingFields: SurgeryFieldDef[] = [
@@ -107,56 +196,8 @@ export const essFindingFields: SurgeryFieldDef[] = [
     options: ["LP", "SB", "MT", "Mixed"],
     default: "LP",
   },
-  // 문제(이상 소견)가 있는지부터 체크하고, 있을 때만 좌/우/양측을 고르는
-  // 2단계 구조 — 기본이 "정상/없음"인 항목을 매번 드롭다운에서 고르게
-  // 하지 않고 체크 안 하면 그대로 넘어가게 해서 입력을 줄인다. Keros
-  // Type을 좌우 각각 재는 대신 "Low skull base 있는지"만 체크한다.
-  { key: "n_cb_present", label: "Concha bullosa 있음", type: "checkbox" },
-  {
-    key: "n_cb_side",
-    label: "Concha bullosa - 방향",
-    type: "select",
-    options: ["우측", "양측", "좌측"],
-    default: "양측",
-  },
-  {
-    key: "n_skull_base_risk_present",
-    label: "Low skull base 있음 (Keros II/III 의심)",
-    type: "checkbox",
-  },
-  {
-    key: "n_skull_base_risk_side",
-    label: "Low skull base - 방향",
-    type: "select",
-    options: ["우측", "양측", "좌측"],
-    default: "양측",
-  },
-  { key: "n_onodi_present", label: "Onodi's cell 있음 (접형사골동)", type: "checkbox" },
-  { key: "n_onodi_side", label: "Onodi's cell - 방향", type: "select", options: ["우측", "양측", "좌측"] },
-  { key: "n_haller_present", label: "Haller's cell 있음 (안하사골봉소)", type: "checkbox" },
-  { key: "n_haller_side", label: "Haller's cell - 방향", type: "select", options: ["우측", "양측", "좌측"] },
-  {
-    key: "n_lp_dehiscence_present",
-    label: "Lamina papyracea 결손 있음",
-    type: "checkbox",
-  },
-  {
-    key: "n_lp_dehiscence_side",
-    label: "Lamina papyracea 결손 - 방향",
-    type: "select",
-    options: ["우측", "양측", "좌측"],
-  },
-  {
-    key: "n_dehiscence_present",
-    label: "시신경/경동맥 골 결손 있음 (Optic nerve/ICA dehiscence)",
-    type: "checkbox",
-  },
-  {
-    key: "n_dehiscence_side",
-    label: "시신경/경동맥 골 결손 - 방향",
-    type: "select",
-    options: ["우측", "양측", "좌측"],
-  },
+  // Pre-op anatomy(해부학적 이상 소견) — 문제 있는 것만 체크하고 방향을 고른다. 항목은 위 ESS_ANATOMY_GROUPS(CLOSE)에서 만든다.
+  ...essAnatomyFieldDefs(),
   // 해부학적 이상 소견뿐 아니라 염증(부비동염) 소견도 남겨야 비강 소견이
   // 완결된다 — Op Plan 표(FESS 시행 부위)와 같은 4개 부비동 × 좌/우 체크
   // 구조를 그대로 써서, 체크하면 그 부비동의 시행 부위도 자동으로 이어서
@@ -363,10 +404,35 @@ export const septoplastyFullFields: SurgeryFieldDef[] = withDefaults(
 ).filter((f) => f.key !== "dermacol");
 // 병행 수술명에는 항상 "Septoplasty"와 "ESS"가 함께 들어가므로 두 P/E를 모두
 // 기본으로 체크해두고, 비중격교정술 단독과 마찬가지로 CHR도 양측 기본으로 켜둔다.
+// Septo가 들어가면 Septoturbinoplasty(양측 inf. turbinoplasty)가 기본 세트이고, silastic sheet도
+// 기본으로 넣는다(사용자 2026-10-16 — 안 넣었으면 지우면 된다).
 export const comboFullFields: SurgeryFieldDef[] = withDefaults(
   [...nasalFindingFields, ...turbinoplastyFields, ...septoFieldsForCombo, ...fessFieldsForCombo, ...comboOnlyFields],
-  { [SEPTO_PE_DONE_KEY]: "true", [ESS_PE_DONE_KEY]: "true", n_chr: "양측" },
+  {
+    [SEPTO_PE_DONE_KEY]: "true",
+    [ESS_PE_DONE_KEY]: "true",
+    n_chr: "양측",
+    turb_inferior_right: "true",
+    turb_inferior_left: "true",
+    f_silastic_sheet: "true",
+  },
 );
+
+// Septo를 새로 켤 때 이미 있던 값(ESS에서 꺼 둔 turbinoplasty 등)보다 우선해서 켜는 기본 세트
+export const SEPTO_BASE_SET: Record<string, boolean> = {
+  turb_inferior_right: true,
+  turb_inferior_left: true,
+  f_silastic_sheet: true,
+  s_splint: true,
+};
+
+// 병행 수술 순서 기본값 — 넓은 쪽 ESS → 비중격 → 좁은 쪽 ESS(사용자 2026-10-16).
+// 비중격이 휜 쪽이 좁은 쪽이다. 휘지 않았거나 S자면 우측부터.
+// P/E(DSN 방향)가 순서를 정하고, 순서를 바꿔도 P/E는 건드리지 않는다.
+export function comboOrderForDsn(devSide: unknown): string {
+  if (devSide === "우측") return "좌 FESS → 비중격 → 우 FESS";
+  return "우 FESS → 비중격 → 좌 FESS";
+}
 
 // "있음" 체크 없이 방향 값만 남아 있는 소견 — 방향 칸은 기본값(양측)이 있어서,
 // 기록지 항목 목록에 그대로 나열하면 없는 소견이 "방향: 양측"으로 보였다.

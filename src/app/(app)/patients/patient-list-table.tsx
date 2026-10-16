@@ -180,9 +180,14 @@ export function PatientListTable({
             </div>
             <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
               {p.surgeryPlanId ? (
-                <Link href={`/plans/${p.surgeryPlanId}`} className="font-medium text-slate-900 hover:underline">
-                  {procedureLabel(p)}
-                </Link>
+                <>
+                  <Link href={`/plans/${p.surgeryPlanId}`} className="font-medium text-slate-900 hover:underline">
+                    {procedureLabel(p)}
+                  </Link>
+                  <Link href={`/plans/${p.surgeryPlanId}`} className={buttonStyles.smallOutline}>
+                    수술 계획 수정
+                  </Link>
+                </>
               ) : (
                 <span className="text-slate-400">-</span>
               )}
@@ -190,7 +195,7 @@ export function PatientListTable({
             <div className="mt-2 flex gap-2">
               {p.surgeryPlanId ? (
                 <Link href={`/plans/${p.surgeryPlanId}/print`} className={buttonStyles.smallOutline}>
-                  수술 계획 확인
+                  수술 계획표 확인
                 </Link>
               ) : null}
               {p.recordId ? (
@@ -273,9 +278,17 @@ export function PatientListTable({
                 </td>
                 <td className="px-4 py-2 text-slate-600">
                   {p.surgeryPlanId ? (
-                    <Link href={`/plans/${p.surgeryPlanId}`} className="font-medium text-slate-900 hover:underline">
-                      {procedureLabel(p)}
-                    </Link>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link href={`/plans/${p.surgeryPlanId}`} className="font-medium text-slate-900 hover:underline">
+                        {procedureLabel(p)}
+                      </Link>
+                      <Link
+                        href={`/plans/${p.surgeryPlanId}`}
+                        className={`whitespace-nowrap ${buttonStyles.smallOutline}`}
+                      >
+                        수술 계획 수정
+                      </Link>
+                    </div>
                   ) : (
                     "-"
                   )}
@@ -283,7 +296,7 @@ export function PatientListTable({
                 <td className="px-2 py-2 whitespace-nowrap">
                   {p.surgeryPlanId ? (
                     <Link href={`/plans/${p.surgeryPlanId}/print`} className={buttonStyles.smallOutline}>
-                      수술 계획 확인
+                      수술 계획표 확인
                     </Link>
                   ) : (
                     "-"

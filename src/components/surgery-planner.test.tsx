@@ -179,7 +179,7 @@ function dsn(container: HTMLElement, kind: "side" | "degree", value: string): HT
 }
 
 function openAnatomic(container: HTMLElement) {
-  const box = Array.from(container.querySelectorAll("label")).find((l) => l.textContent?.includes("해부학적 이상 소견"))!.querySelector("input") as HTMLInputElement;
+  const box = Array.from(container.querySelectorAll("label")).find((l) => l.textContent?.includes("Pre-op anatomy"))!.querySelector("input") as HTMLInputElement;
   if (!box.checked) fireEvent.click(box);
 }
 
@@ -402,8 +402,8 @@ describe("차트 Remark", () => {
     );
     const remark = container.querySelector("textarea:not([name])") as HTMLTextAreaElement;
     fireEvent.change(remark, { target: { value: "출혈 많아 packing" } });
-    const pre = Array.from(container.querySelectorAll("pre")).find((p) => p.textContent?.startsWith("코막힘 증상으로"))!;
-    expect(pre.textContent).toMatch(/^코막힘 증상으로 2026\.10\.06 .+ 시행하였음, 출혈 많아 packing\.$/);
+    const pre = Array.from(container.querySelectorAll("pre")).find((p) => p.textContent?.startsWith("코막힘 증상 있어"))!;
+    expect(pre.textContent).toMatch(/^코막힘 증상 있어 10월 6일 .+ 시행함, 출혈 많아 packing\.$/);
 
     fireEvent.click(byText(container, "수술 전 (비강 소견 · Op Plan)"));
     const form = new FormData(container.querySelector("form")!);
@@ -514,7 +514,7 @@ describe("문구 템플릿", () => {
       />,
     );
     const pickers = container.querySelectorAll("select[aria-label='템플릿 넣기']");
-    fireEvent.change(pickers[0], { target: { value: "t2" } }); // 수술 후 화면에서는 특이사항 칸이 먼저
+    fireEvent.change(pickers[1], { target: { value: "t2" } }); // 계획 메모가 맨 위라 특이사항 칸은 두 번째
     const remark = container.querySelector("textarea:not([name])") as HTMLTextAreaElement;
     expect(remark.value).toBe("특이 합병증 없음");
     expect(Array.from(container.querySelectorAll("pre")).some((p) => p.textContent?.endsWith("특이 합병증 없음."))).toBe(true);
@@ -523,5 +523,91 @@ describe("문구 템플릿", () => {
   it("템플릿이 없으면 선택칸을 보이지 않는다", () => {
     const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn />);
     expect(container.querySelector("select[aria-label='템플릿 넣기']")).toBeNull();
+  });
+});
+
+// 사용자 요청 2026-10-16
+describe("병행 수술 순서는 P/E(DSN)를 따른다", () => {
+  const renderCombo = () => {
+    const utils = render(<SurgeryPlanner surgeryTypes={allTypes} loggedIn />);
+    const septo = Array.from(utils.container.querySelectorAll("label")).find((l) => l.textContent?.trim() === "Septo")!.querySelector("input") as HTMLInputElement;
+    fireEvent.click(septo);
+    openAnatomic(utils.container);
+    return utils;
+  };
+  const order = (c: HTMLElement) => fieldEls(c, "c_order")[0].value;
+
+  it("기본은 넓은 쪽 ESS → 비중격 → 좁은 쪽 ESS, DSN 방향을 바꾸면 순서가 따라 바뀐다", () => {
+    const { container } = renderCombo();
+    expect(order(container)).toBe("우 FESS → 비중격 → 좌 FESS");
+    fireEvent.click(dsn(container, "side", "우측")); // 우측으로 휨 → 우측이 좁다 → 좌측(넓은 쪽)부터
+    expect(order(container)).toBe("좌 FESS → 비중격 → 우 FESS");
+    fireEvent.click(dsn(container, "side", "좌측"));
+    expect(order(container)).toBe("우 FESS → 비중격 → 좌 FESS");
+  });
+
+  it("순서를 손으로 바꿔도 DSN은 그대로다", () => {
+    const { container } = renderCombo();
+    fireEvent.click(dsn(container, "side", "우측"));
+    const select = fieldEls(container, "c_order").find((el) => el instanceof HTMLSelectElement) as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: "비중격 → 우 FESS → 좌 FESS" } });
+    expect(order(container)).toBe("비중격 → 우 FESS → 좌 FESS");
+    expect(fieldEls(container, "n_dev_side")[0].value).toBe("우측");
+  });
+});
+
+describe("Septo 기본 세트", () => {
+  it("ESS에서 Septo를 켜면 양측 inf. turbinoplasty와 silastic sheet가 체크된다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={allTypes} loggedIn />);
+    const septo = Array.from(container.querySelectorAll("label")).find((l) => l.textContent?.trim() === "Septo")!.querySelector("input") as HTMLInputElement;
+    fireEvent.click(septo);
+    const form = new FormData(container.querySelector("form")!);
+    expect(form.get("field_turb_inferior_right")).toBe("on");
+    expect(form.get("field_turb_inferior_left")).toBe("on");
+    expect(form.get("field_f_silastic_sheet")).toBe("on");
+  });
+
+  it("Turbinoplasty 시행을 켜면 양측 inferior가 체크되고, Middle은 MT 버튼을 눌러야 보인다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={types} loggedIn defaultView="post" />);
+    const performed = Array.from(container.querySelectorAll("label")).find((l) => l.textContent?.includes("Turbinoplasty 시행"))!.querySelector("input") as HTMLInputElement;
+    fireEvent.click(performed);
+    const form = () => new FormData(container.querySelector("form")!);
+    expect(form().get("field_turb_inferior_right")).toBe("on");
+    expect(form().get("field_turb_inferior_left")).toBe("on");
+    expect(container.textContent).not.toContain("Middle turbinoplasty");
+    fireEvent.click(byText(container, "MT turbinoplasty"));
+    expect(container.textContent).toContain("Middle turbinoplasty");
+  });
+});
+
+describe("저장 버튼", () => {
+  it("버튼은 하나이고, 수술 후 화면에서는 완료로 바꾸는 저장(record)이 된다", () => {
+    const { container } = render(
+      <SurgeryPlanner
+        surgeryTypes={types}
+        loggedIn
+        defaultView="pre"
+        editPlan={{ surgeryTypeId: "1", plannedDate: "2026-10-16", values: {} }}
+      />,
+    );
+    const saves = () => Array.from(container.querySelectorAll("button[name='saveIntent']")) as HTMLButtonElement[];
+    expect(saves()).toHaveLength(1);
+    expect(saves()[0].value).toBe("save");
+    fireEvent.click(byText(container, "수술 후 (수술 방법 · 기록지)"));
+    expect(saves()[0].value).toBe("record");
+    expect(saves()[0].textContent).toBe("저장 · 수술 완료로 변경");
+  });
+
+  it("CC는 수술 전 화면에서만 보이고, 수술 후 화면에서도 값은 전송된다", () => {
+    const { container } = render(
+      <SurgeryPlanner
+        surgeryTypes={types}
+        loggedIn
+        defaultView="post"
+        editPlan={{ surgeryTypeId: "1", plannedDate: "2026-10-16", values: {}, chiefComplaint: "코막힘" }}
+      />,
+    );
+    expect(container.textContent).not.toContain("CC (주호소)");
+    expect(new FormData(container.querySelector("form")!).get("chiefComplaint")).toBe("코막힘");
   });
 });

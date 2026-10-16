@@ -2,7 +2,7 @@
 import { buildRemarkText, ccSymptomSide, remarkExtras, removeCcSymptom, setCcSymptomSide, toggleCcSymptom } from "./remark";
 
 describe("buildRemarkText", () => {
-  it("'~ 증상으로 날짜 수술명 시행하였음, 덧붙임, 특이사항.' 한 문장으로 묶는다", () => {
+  it("'~ 증상 있어 M월 D일 수술명 시행함, 덧붙임, 특이사항.' 한 문장으로 묶는다", () => {
     expect(
       buildRemarkText({
         chiefComplaint: "코막힘, 후비루",
@@ -12,25 +12,26 @@ describe("buildRemarkText", () => {
         extras: remarkExtras({ f_silastic_sheet: true }),
       }),
     ).toBe(
-      "코막힘, 후비루 증상으로 2026.10.16 Septoturbinoplasty + Both ESS 시행하였음, silastic sheet insertion 함, Rt. lamina papyracea 일부 노출, 지혈 확인.",
+      "코막힘, 후비루 증상 있어 10월 16일 Septoturbinoplasty + Both ESS 시행함, silastic sheet insertion 함, 1주일~10일 사이에 silastic sheet 제거해야함, Rt. lamina papyracea 일부 노출, 지혈 확인.",
     );
   });
 
   it("비어 있는 부분은 문장에서 빼고, 특이사항 끝의 마침표는 겹치지 않게", () => {
     expect(buildRemarkText({ chiefComplaint: "  ", procedureName: "Septoplasty", postOpRemark: "" })).toBe(
-      "Septoplasty 시행하였음.",
+      "Septoplasty 시행함.",
     );
     expect(buildRemarkText({ surgeryDate: "2026-10-16", procedureName: "Both ESS", postOpRemark: "특이 없음." })).toBe(
-      "2026.10.16 Both ESS 시행하였음, 특이 없음.",
+      "10월 16일 Both ESS 시행함, 특이 없음.",
     );
     expect(buildRemarkText({})).toBe("");
     expect(remarkExtras({ f_silastic_sheet: false })).toEqual([]);
+    expect(remarkExtras({ s_splint: true })).toHaveLength(2);
   });
 
   it("여러 줄 특이사항은 문장 다음 줄부터 그대로 붙인다", () => {
     expect(
       buildRemarkText({ chiefComplaint: "코막힘", procedureName: "Both ESS", postOpRemark: "출혈 많음\nMerocel 유지" }),
-    ).toBe("코막힘 증상으로 Both ESS 시행하였음.\n출혈 많음\nMerocel 유지");
+    ).toBe("코막힘 증상 있어 Both ESS 시행함.\n출혈 많음\nMerocel 유지");
   });
 });
 

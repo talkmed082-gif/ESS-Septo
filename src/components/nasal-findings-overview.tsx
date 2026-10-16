@@ -50,7 +50,7 @@ export function NasalFindingsOverview({
             onChange={(e) => onToggleAnatomic(e.target.checked)}
             className="h-4 w-4 rounded border-slate-300"
           />
-          해부학적 이상 소견
+          Pre-op anatomy (CLOSE)
         </label>
       </div>
     </div>

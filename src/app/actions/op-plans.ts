@@ -73,7 +73,11 @@ export async function updateOpPlan(
   let planData: FieldValues =
     schedSide !== undefined ? { ...submittedValues, [SCHEDULE_ESS_SIDE_KEY]: schedSide } : submittedValues;
   let actualData: FieldValues | undefined;
-  if (plan.status === "DONE") {
+  // 수술 후 화면(수술 방법·기록지)에서 저장했다는 건 수술이 끝났다는 뜻이라 완료로 바꾼다(사용자
+  // 2026-10-16). 바뀌는 순간부터 원래 계획(planData)의 수술 방법은 그대로 두고, 수술 후 화면에서
+  // 고친 내용은 실제 시행 내역(actualData)으로 들어간다 — 이미 완료된 계획과 같은 방식.
+  const markDone = saveIntent === "record" && plan.status !== "DONE";
+  if (plan.status === "DONE" || markDone) {
     const existingPlanValues = parseFieldValues(plan.planData);
     const existingActualValues = parseFieldValues(plan.actualData);
     const nasalPart: FieldValues = {};
@@ -99,15 +103,16 @@ export async function updateOpPlan(
       postOpRemark: postOpRemark || null,
       planData,
       ...(actualData !== undefined ? { actualData } : {}),
+      ...(markDone ? { status: "DONE" } : {}),
     },
   });
 
   revalidatePath(`/plans/${planId}`);
   revalidatePath(`/patients/${plan.patientId}`);
+  if (markDone) revalidatePath("/patients");
   // 이 화면(계획 작성) 자체가 환자 기본 화면이라, 저장 후 그대로 이 화면에
-  // 남는다. "저장 후 기록지 작성" 버튼으로 저장했으면 수술 후 기본화면
-  // (수술 방법·기록지)이 바로 열리게 view를 지정해서 넘긴다.
-  redirect(`/plans/${planId}${saveIntent === "record" ? "?view=post" : ""}`);
+  // 남는다. 저장할 때 보던 화면(수술 전/후)으로 다시 연다.
+  redirect(`/plans/${planId}?view=${saveIntent === "record" ? "post" : "pre"}`);
 }
 
 

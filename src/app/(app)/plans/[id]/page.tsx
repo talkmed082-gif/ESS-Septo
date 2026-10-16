@@ -11,7 +11,6 @@ import { safeDateStr } from "@/lib/date-format";
 import { SurgeryPlanner } from "@/components/surgery-planner";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { buttonStyles } from "@/lib/ui";
-import { ReminderList } from "@/components/reminder-list";
 
 export default async function OpPlanPage({
   params,
@@ -56,53 +55,48 @@ export default async function OpPlanPage({
   // 실제 시행 내역(actualData)은 지우지 않고 남겨서, 다시 완료로 바꾸면 돌아온다.
   const values = isDone ? { ...planValues, ...actualValues } : planValues;
 
+  const reminderCount = plan.patient.reminders.length;
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold">{plan.patient.name} 수술 계획</h1>
-          <p className="mt-1 text-sm text-slate-500">{plan.surgeryType.name}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {/* 저장·인쇄하는 정식 기록지로 가는 길 — 예전엔 기록지를 저장하고 이 화면으로
-              돌아와도 기록지로 갈 버튼이 없어서 환자 화면을 거쳐야 했다. */}
-          {plan.opRecord ? (
-            <Link href={`/records/${plan.opRecord.id}`} className={buttonStyles.primarySmall}>
-              정식 기록지 보기
+      {/* 삭제 폼은 계획 폼 안에 겹쳐 둘 수 없어서 밖에 두고, 버튼이 id로 가리킨다 */}
+      <form id="delete-plan-form" action={deleteOpPlan.bind(null, plan.id, plan.patientId)} />
+
+      <SurgeryPlanner
+        // 환자 이름·수술 종류·날짜·버튼을 한 줄에(사용자 2026-10-16)
+        heading={<h1 className="text-xl font-semibold">{plan.patient.name} 수술 계획</h1>}
+        headerActions={
+          <>
+            {/* 저장·인쇄하는 정식 기록지로 가는 길 */}
+            {plan.opRecord ? (
+              <Link href={`/records/${plan.opRecord.id}`} className={buttonStyles.primarySmall}>
+                정식 기록지 보기
+              </Link>
+            ) : (
+              <Link href={`/plans/${plan.id}/record`} className={buttonStyles.primarySmall}>
+                정식 기록지 작성
+              </Link>
+            )}
+            {/* 기본 인쇄는 A4 한 장에 이 계획 + 빈 양식 3칸(종이 절약), 크게 한 장은 따로 */}
+            <Link href={`/print/fess-checklist?plans=${plan.id}`} className={buttonStyles.secondarySmall}>
+              계획 인쇄
             </Link>
-          ) : (
-            <Link href={`/plans/${plan.id}/record`} className={buttonStyles.primarySmall}>
-              정식 기록지 작성
+            <Link href={`/plans/${plan.id}/print`} className={buttonStyles.secondarySmall}>
+              이 계획만 크게 인쇄
             </Link>
-          )}
-          <Link href={`/plans/${plan.id}/print`} className={buttonStyles.secondarySmall}>
-            계획 인쇄
-          </Link>
-          <form action={deleteOpPlan.bind(null, plan.id, plan.patientId)}>
+            {/* 리마인더는 이 화면에 펼치지 않고 환자 화면에서 본다(사용자 2026-10-16) */}
+            <Link href={`/patients/${plan.patient.id}#reminders`} className={buttonStyles.secondarySmall}>
+              리마인더{reminderCount > 0 ? ` (${reminderCount})` : ""}
+            </Link>
             <ConfirmSubmitButton
+              form="delete-plan-form"
               message={`${plan.patient.name} 환자의 이 수술 계획을 삭제할까요? 되돌릴 수 없습니다.`}
               className={buttonStyles.danger}
             >
               계획 삭제
             </ConfirmSubmitButton>
-          </form>
-        </div>
-      </div>
-
-      {/* 수술 전·후 탭은 SurgeryPlanner 안에서 바뀌므로, 탭 바깥에 두어 두 화면 모두에서 보이게 한다 */}
-      {plan.patient.reminders.length > 0 && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold text-slate-700">리마인더</h2>
-            <Link href={`/patients/${plan.patient.id}`} className={buttonStyles.link}>
-              환자 화면에서 추가
-            </Link>
-          </div>
-          <ReminderList reminders={plan.patient.reminders} patientId={plan.patient.id} />
-        </div>
-      )}
-
-      <SurgeryPlanner
+          </>
+        }
         templates={await getTextTemplates(user.id)}
         surgeryTypes={surgeryTypes.map((st) => ({
           id: st.id,

@@ -31,9 +31,46 @@ interface CardRow {
   left: boolean;
 }
 
+// 빈 양식의 비강 소견 — 손으로 다 쓰기엔 너무 많아서 자주 보는 항목을 미리 적어 두고 체크만 한다
+// (사용자 2026-10-16). Pre-op anatomy는 CLOSE 순서. options가 있으면 우/좌 대신 그 중에서 고른다.
+const BLANK_FINDINGS: { label: string; options?: string[] }[] = [
+  { label: "DSN" },
+  { label: "CHR" },
+  { label: "Concha bullosa" },
+  { label: "Polyp" },
+  { label: "C Low skull base" },
+  { label: "C Asym. Keros" },
+  { label: "L LP 결손" },
+  { label: "L Haller cell" },
+  { label: "O Onodi cell" },
+  { label: "S 시신경/ICA 결손" },
+  { label: "E AEA 낮게 주행" },
+  { label: "E Supraorbital cell" },
+  { label: "S 함기화", options: ["Conchal", "Presellar", "Sellar"] },
+];
+
+function BlankFindings() {
+  return (
+    <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[13px]">
+      {BLANK_FINDINGS.map((f) => (
+        <div key={f.label} className={`flex items-center gap-1.5 ${f.options ? "col-span-2" : ""}`}>
+          <span className="flex-1 truncate">{f.label}</span>
+          {(f.options ?? ["R", "L"]).map((o) => (
+            <span key={o} className="flex shrink-0 items-center gap-0.5 text-xs text-slate-600">
+              <CheckBox />
+              {o}
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 interface CardData {
   patientName: string;
   date: string | null;
+  cc: string;
   procedureName: string;
   revision: boolean;
   findings: string;
@@ -68,8 +105,8 @@ function ChecklistCard({ data }: { data?: CardData }) {
   const rows: CardRow[] = data?.rows ?? BLANK_ROWS.map((label) => ({ label, right: false, left: false }));
 
   return (
-    <div className="flex h-full flex-col p-3">
-      <div className="mb-2 space-y-1.5 text-xs">
+    <div className="flex h-full flex-col overflow-hidden p-3">
+      <div className="mb-2 space-y-1.5 text-sm">
         <div className="flex gap-1">
           <span className="shrink-0 text-slate-500">환자명:</span>
           <span className="flex-1 border-b border-slate-400 font-medium">
@@ -84,9 +121,13 @@ function ChecklistCard({ data }: { data?: CardData }) {
           <CheckBox checked={data?.revision === true} />
           <span className="shrink-0 text-slate-500">Revision case</span>
           <span className="ml-2 shrink-0 text-slate-500">수술명:</span>
-          <span className="flex-1 border-b border-slate-400 font-medium">
+          <span className="flex-1 border-b border-slate-400 font-semibold">
             {data?.procedureName ?? " "}
           </span>
+        </div>
+        <div className="flex gap-1">
+          <span className="shrink-0 text-slate-500">CC:</span>
+          <span className="flex-1 border-b border-slate-400 font-medium">{data?.cc || " "}</span>
         </div>
       </div>
       {/* 1개 인쇄용 보기(PlanTableView)와 순서를 맞춘다 — 비강 소견이 Op
@@ -94,23 +135,26 @@ function ChecklistCard({ data }: { data?: CardData }) {
           길이가 제각각이라 flex-1로 늘리면 표 시작 위치가 카드마다
           들쭉날쭉해지므로, 빈 양식일 때만 손글씨 줄을 늘려서 채운다. */}
       <div className={`mb-2 flex flex-col ${data ? "" : "flex-1"}`}>
-        <span className="mb-1 text-xs font-medium text-slate-600">비강 소견</span>
+        <span className="mb-1 text-sm font-semibold text-slate-700">비강 소견</span>
         {data ? (
-          <p className="text-[11px] whitespace-pre-wrap text-slate-700">{data.findings || "-"}</p>
+          <p className="text-[13px] leading-snug whitespace-pre-wrap text-slate-900">{data.findings || "-"}</p>
         ) : (
-          <BlankLines />
+          <>
+            <BlankFindings />
+            <BlankLines />
+          </>
         )}
       </div>
-      <table className="w-full border-collapse text-xs">
+      <table className="w-full border-collapse text-sm">
         <thead>
           <tr>
-            <th className="border border-slate-400 bg-slate-50 px-1.5 py-1.5 text-left font-medium">
+            <th className="border border-slate-400 bg-slate-50 px-1.5 py-1 text-left font-medium">
               시행 부위
             </th>
-            <th className="w-12 border border-slate-400 bg-slate-50 px-1.5 py-1.5 font-medium">
+            <th className="w-12 border border-slate-400 bg-slate-50 px-1.5 py-1 font-medium">
               우측
             </th>
-            <th className="w-12 border border-slate-400 bg-slate-50 px-1.5 py-1.5 font-medium">
+            <th className="w-12 border border-slate-400 bg-slate-50 px-1.5 py-1 font-medium">
               좌측
             </th>
           </tr>
@@ -118,7 +162,7 @@ function ChecklistCard({ data }: { data?: CardData }) {
         <tbody>
           {rows.map((row) => (
             <tr key={row.label}>
-              <td className="border border-slate-400 px-1.5 py-1.5">{row.label}</td>
+              <td className="border border-slate-400 px-1.5 py-1">{row.label}</td>
               {data ? (
                 <>
                   <DataCell checked={row.right} />
@@ -202,6 +246,7 @@ export default async function FessChecklistPrintPage({
         return {
           patientName: plan.patient.name,
           date: safeDateStr(plan.plannedDate),
+          cc: plan.chiefComplaint ?? "",
           procedureName: table?.procedureName ?? plan.surgeryType.name,
           revision: hasAnyRevision(values),
           findings: table?.findings ?? "",
@@ -226,8 +271,9 @@ export default async function FessChecklistPrintPage({
       <AppNavBar />
       <div className="mx-auto w-full max-w-3xl bg-white px-3 pt-4 pb-3 text-slate-900 sm:px-8 sm:pt-6 sm:pb-8 print:max-w-none print:p-0">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2 print:hidden">
-          <Link href="/patients" className={buttonStyles.link}>
-            ← 목록으로 돌아가기
+          {/* 계획 화면의 "계획 인쇄"로 한 명만 넘어오면 그 계획으로 돌아간다 */}
+          <Link href={planIds.length === 1 ? `/plans/${planIds[0]}` : "/patients"} className={buttonStyles.link}>
+            {planIds.length === 1 ? "← 계획으로 돌아가기" : "← 목록으로 돌아가기"}
           </Link>
           <PrintButton />
         </div>

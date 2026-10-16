@@ -9,6 +9,7 @@ import {
   type NameStyle,
 } from "./op-note-generator";
 import type { FieldValues } from "./field-types";
+import { comboOrderForDsn } from "./op-note-defs";
 
 const ALL_STEPS = ["mma", "ant_eth", "post_eth", "sphenoid", "frontal"] as const;
 
@@ -441,5 +442,35 @@ describe("procedureNameFor", () => {
   it("기본 수술 종류는 자동 생성하고, 사용자가 추가한 종류는 그 이름을 쓴다", () => {
     expect(procedureNameFor({ code: "ESS", name: "부비동내시경수술" }, fessSteps("right", ["mma"]))).toBe("Rt. MMA");
     expect(procedureNameFor({ code: "TONSIL", name: "편도절제술" }, {})).toBe("편도절제술");
+  });
+});
+
+// Pre-op anatomy CLOSE(사용자 2026-10-16)
+describe("CLOSE 해부학 소견", () => {
+  it("새 항목도 기록지 소견과 요약에 CLOSE 순서로 들어간다", () => {
+    const values = {
+      n_ess_pe_done: true,
+      n_onodi_present: true,
+      n_onodi_side: "우측",
+      n_keros_asym_present: true,
+      n_keros_asym_side: "좌측",
+      n_sphenoid_pneum_present: true,
+      n_sphenoid_pneum_side: "Sellar",
+    };
+    const text = nasalFindingsText(values);
+    expect(text).toContain("Asymmetric Keros (낮은 쪽): 좌측");
+    expect(text).toContain("Sphenoid 함기화 형태: Sellar");
+    expect(text.indexOf("Asymmetric Keros")).toBeLessThan(text.indexOf("Onodi's cell"));
+    const summary = nasalFindingsSummary(values);
+    expect(summary).toContain("우측 Onodi's cell");
+    expect(summary).toContain("Sphenoid 함기화 형태 Sellar");
+  });
+});
+
+describe("병행 수술 순서 기본값", () => {
+  it("순서를 안 골랐으면 DSN으로 넓은 쪽 ESS부터", () => {
+    expect(comboOrderForDsn("우측")).toBe("좌 FESS → 비중격 → 우 FESS");
+    expect(comboOrderForDsn("좌측")).toBe("우 FESS → 비중격 → 좌 FESS");
+    expect(comboOrderForDsn("특이 만곡 없음")).toBe("우 FESS → 비중격 → 좌 FESS");
   });
 });

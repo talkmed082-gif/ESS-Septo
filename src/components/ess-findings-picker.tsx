@@ -15,42 +15,12 @@ import {
   writeDsn,
   type DsnKind,
 } from "@/components/dsn-sync";
+import { ESS_ANATOMY_FINDINGS, ESS_ANATOMY_GROUPS, type EssAnatomyFinding } from "@/lib/op-note-defs";
 
 const SIDE_OPTIONS = ["우측", "양측", "좌측"] as const;
 
-type PresentSidedFinding = {
-  presentKey: string;
-  sideKey: string;
-  label: string;
-  defaultSide: string;
-};
-
-// Concha bullosa/Low skull base는 대부분 양측 소견이라 defaultSide로
-// "양측"을 미리 골라두고, 나머지(비대칭인 경우가 많은 소견)는 방향을
-// 직접 고르게 defaultSide 없이 둔다.
-const ESS_RISK_FINDINGS: PresentSidedFinding[] = [
-  { presentKey: "n_cb_present", sideKey: "n_cb_side", label: "Concha bullosa", defaultSide: "양측" },
-  {
-    presentKey: "n_skull_base_risk_present",
-    sideKey: "n_skull_base_risk_side",
-    label: "Low skull base",
-    defaultSide: "양측",
-  },
-  { presentKey: "n_onodi_present", sideKey: "n_onodi_side", label: "Onodi's cell", defaultSide: "" },
-  { presentKey: "n_haller_present", sideKey: "n_haller_side", label: "Haller's cell", defaultSide: "" },
-  {
-    presentKey: "n_lp_dehiscence_present",
-    sideKey: "n_lp_dehiscence_side",
-    label: "Lamina papyracea 결손",
-    defaultSide: "",
-  },
-  {
-    presentKey: "n_dehiscence_present",
-    sideKey: "n_dehiscence_side",
-    label: "시신경/경동맥 골 결손",
-    defaultSide: "",
-  },
-];
+type PresentSidedFinding = EssAnatomyFinding;
+type FindingGroup = { letter: string; title: string; findings: PresentSidedFinding[] };
 
 // 해부학적 이상 소견과는 별개로, 염증(부비동염) 소견도 남긴다 — Op Plan의
 // FESS 시행 부위 표와 똑같이 부비동 × 좌/우 체크 모양으로 둬서, 체크하면
@@ -71,11 +41,11 @@ export const SINUSITIS_FIELD_KEYS = SINUSITIS_TYPES.flatMap((t) => [
   `n_sinusitis_${t.key}_left`,
 ]);
 
-export const ESS_FINDINGS_FIELD_KEYS = [...ESS_RISK_FINDINGS.flatMap((f) => [f.presentKey, f.sideKey]), ...SINUSITIS_FIELD_KEYS];
+export const ESS_FINDINGS_FIELD_KEYS = [...ESS_ANATOMY_FINDINGS.flatMap((f) => [f.presentKey, f.sideKey]), ...SINUSITIS_FIELD_KEYS];
 
 // 간략 정보 카드(NasalFindingsOverview)에서 이 그룹이 "있다"고 볼 근거이자,
 // 그룹을 접을 때 꺼야 할 체크박스 키들.
-export const ANATOMIC_RISK_PRESENT_KEYS = ESS_RISK_FINDINGS.map((f) => f.presentKey);
+export const ANATOMIC_RISK_PRESENT_KEYS = ESS_ANATOMY_FINDINGS.map((f) => f.presentKey);
 export const SINUSITIS_PRESENT_KEYS = SINUSITIS_FIELD_KEYS;
 
 function findForm(el: HTMLElement | null): HTMLFormElement | null {
@@ -93,13 +63,13 @@ function getInput(form: HTMLFormElement | null, name: string) {
 // 말지는 이 컴포넌트가 아니라 상위(NasalFindingsOverview)가 결정한다.
 function PresentSidedGroup({
   title,
-  findings,
+  groups,
   values,
   onChange,
   header,
 }: {
   title: string;
-  findings: PresentSidedFinding[];
+  groups: FindingGroup[];
   values?: FieldValues;
   onChange?: () => void;
   header?: React.ReactNode;
@@ -107,7 +77,7 @@ function PresentSidedGroup({
   const rootRef = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<Record<string, { present: boolean; side: string }>>(() => {
     const init: Record<string, { present: boolean; side: string }> = {};
-    for (const f of findings) {
+    for (const f of groups.flatMap((g) => g.findings)) {
       init[f.presentKey] = {
         present: values?.[f.presentKey] === true,
         side:
@@ -143,8 +113,15 @@ function PresentSidedGroup({
     <div ref={rootRef} className="rounded-md border border-slate-200 p-3">
       <p className="mb-2 text-xs font-medium text-slate-600">{title}</p>
       {header}
-      <div className="space-y-2">
-        {findings.map((f) => {
+      <div className="space-y-3">
+        {groups.map((g) => (
+          <div key={g.title} className="space-y-2">
+            {/* CLOSE 머리글자를 크게 보여줘서 외운 순서대로 훑을 수 있게 한다 */}
+            <p className="flex items-baseline gap-1.5 border-b border-slate-100 pb-0.5 text-xs font-semibold text-slate-500">
+              {g.letter && <span className="text-base font-bold text-emerald-700">{g.letter}</span>}
+              {g.title}
+            </p>
+        {g.findings.map((f) => {
           const entry = state[f.presentKey];
           return (
             <div key={f.presentKey} className="flex flex-wrap items-center gap-2">
@@ -159,7 +136,7 @@ function PresentSidedGroup({
               </label>
               {entry.present && (
                 <div className="flex gap-1.5">
-                  {SIDE_OPTIONS.map((side) => (
+                  {(f.options ?? SIDE_OPTIONS).map((side) => (
                     <TapButton
                       key={side}
                       onTap={() => pickSide(f.presentKey, f.sideKey, side)}
@@ -177,6 +154,8 @@ function PresentSidedGroup({
             </div>
           );
         })}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -247,8 +226,8 @@ export function AnatomicRiskFindingsPicker({
 }) {
   return (
     <PresentSidedGroup
-      title="ESS 대비 이상 소견 (문제 있는 것만 체크)"
-      findings={ESS_RISK_FINDINGS}
+      title="Pre-op anatomy — CLOSE (문제 있는 것만 체크)"
+      groups={ESS_ANATOMY_GROUPS}
       values={values}
       onChange={onChange}
       header={<DsnRow values={values} onChange={onChange} />}

@@ -7,14 +7,18 @@ export function ConfirmSubmitButton({
   message,
   className,
   children,
+  form,
 }: {
   message: string;
   className?: string;
   children: ReactNode;
+  // 다른 폼 안에 놓일 때 — 폼은 겹칠 수 없어서 바깥 폼을 id로 가리킨다
+  form?: string;
 }) {
   return (
     <button
       type="submit"
+      form={form}
       className={className}
       onClick={(e) => {
         if (!window.confirm(message)) e.preventDefault();

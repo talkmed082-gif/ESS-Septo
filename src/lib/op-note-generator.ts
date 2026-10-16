@@ -1,5 +1,7 @@
 import type { FieldValues } from "./field-types";
 import {
+  comboOrderForDsn,
+  ESS_ANATOMY_FINDINGS,
   fessStepFieldKeys,
   fessStepLabels,
   isBuiltInSurgeryCode,
@@ -266,26 +268,12 @@ export function nasalFindingsText(values: FieldValues): string {
         ? `Concha bullosa: ${presentSide(values, "n_cb_side")}`
         : "Concha bullosa 없음",
     );
-    const skullBase = presentSidedLine("Low skull base", "n_skull_base_risk_present", "n_skull_base_risk_side", values);
-    if (skullBase) lines.push(skullBase);
-    const onodi = presentSidedLine("Onodi's cell", "n_onodi_present", "n_onodi_side", values);
-    if (onodi) lines.push(onodi);
-    const haller = presentSidedLine("Haller's cell", "n_haller_present", "n_haller_side", values);
-    if (haller) lines.push(haller);
-    const lpDehiscence = presentSidedLine(
-      "Lamina papyracea 결손",
-      "n_lp_dehiscence_present",
-      "n_lp_dehiscence_side",
-      values,
-    );
-    if (lpDehiscence) lines.push(lpDehiscence);
-    const dehiscence = presentSidedLine(
-      "시신경/경동맥 골 결손",
-      "n_dehiscence_present",
-      "n_dehiscence_side",
-      values,
-    );
-    if (dehiscence) lines.push(dehiscence);
+    // Pre-op anatomy — CLOSE 순서(Concha bullosa는 위에서 따로 씀)
+    for (const f of ESS_ANATOMY_FINDINGS) {
+      if (f.presentKey === "n_cb_present") continue;
+      const line = presentSidedLine(f.label, f.presentKey, f.sideKey, values);
+      if (line) lines.push(line);
+    }
     for (const s of sinusitisFindings(values)) lines.push(s);
     lines.push(polypFindingText(values));
   }
@@ -361,24 +349,10 @@ export function nasalFindingsSummary(values: FieldValues): string {
     items.push(`${presentSide(values, "n_cb_side")} concha bullosa`);
   }
 
-  if (bool(values, "n_skull_base_risk_present")) {
-    items.push(`${presentSide(values, "n_skull_base_risk_side")} Low skull base`);
-  }
-
-  if (bool(values, "n_onodi_present")) {
-    items.push(`${presentSide(values, "n_onodi_side")} Onodi's cell`);
-  }
-
-  if (bool(values, "n_haller_present")) {
-    items.push(`${presentSide(values, "n_haller_side")} Haller's cell`);
-  }
-
-  if (bool(values, "n_lp_dehiscence_present")) {
-    items.push(`${presentSide(values, "n_lp_dehiscence_side")} Lamina papyracea 결손`);
-  }
-
-  if (bool(values, "n_dehiscence_present")) {
-    items.push(`${presentSide(values, "n_dehiscence_side")} 시신경/경동맥 골 결손`);
+  for (const f of ESS_ANATOMY_FINDINGS) {
+    if (f.presentKey === "n_cb_present" || !bool(values, f.presentKey)) continue;
+    // 함기화 형태처럼 방향이 아닌 값은 "Sphenoid 함기화 형태 Sellar"로, 방향이면 "우측 Onodi's cell"로 쓴다.
+    items.push(f.options ? `${f.label} ${presentSide(values, f.sideKey)}` : `${presentSide(values, f.sideKey)} ${f.label}`);
   }
 
   for (const s of sinusitisFindings(values)) items.push(s);
@@ -777,7 +751,7 @@ const comboBlockLabels: Record<"septo" | "left" | "right", string> = {
 
 function genCombo(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpNoteResult {
   const nav = bool(values, "f_nav");
-  const order = str(values, "c_order", "비중격 → 우 FESS → 좌 FESS");
+  const order = str(values, "c_order", comboOrderForDsn(values.n_dev_side));
 
   const opening: string[] = [];
   if (mode === "record") {
@@ -1207,7 +1181,7 @@ export function buildPlanTable(
     procedureName,
     findings,
     keyValueRows: [
-      { label: "시행 순서", value: str(values, "c_order", "비중격 → 우 FESS → 좌 FESS") },
+      { label: "시행 순서", value: str(values, "c_order", comboOrderForDsn(values.n_dev_side)) },
       { label: "절개(비중격)", value: incision },
       { label: "동반 술식(비중격)", value: rest.length > 0 ? rest.join(", ") : "-" },
       { label: "Navigation", value: bool(values, "f_nav") ? "사용" : "미사용", toggleKey: "f_nav" },

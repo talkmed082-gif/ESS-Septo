@@ -91,7 +91,7 @@ export default async function OpPlanPrintPage({
           </div>
 
           {table ? (
-            <PlanTableView table={table} />
+            <PlanTableView table={table} size="large" />
           ) : (
             <p className="whitespace-pre-wrap text-sm sm:text-lg">{plan.planNote}</p>
           )}

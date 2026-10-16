@@ -6,8 +6,8 @@ import type { FieldValues } from "@/lib/field-types";
 import { buttonStyles } from "@/lib/ui";
 
 const TURB_TYPES = [
-  { key: "middle", label: "Middle turbinoplasty" },
   { key: "inferior", label: "Inferior turbinoplasty" },
+  { key: "middle", label: "Middle turbinoplasty" },
 ] as const;
 
 const SIDES = [
@@ -52,11 +52,34 @@ export function TurbinoplastyTypePicker({
   // 2단계 구조. 기존 값 중 하나라도 체크돼 있으면 이미 시행한 것이므로
   // 처음부터 열어서 보여준다.
   const [performed, setPerformed] = useState(() => Object.values(checked).some(Boolean));
+  // Middle turbinoplasty는 아주 가끔 하는 것이라 평소엔 숨기고 "MT turbinoplasty"를 눌러야 보인다
+  // (사용자 2026-10-16). 이미 값이 있으면 처음부터 보여준다.
+  const [showMiddle, setShowMiddle] = useState(() => checked.turb_middle_right || checked.turb_middle_left);
+
+  function setKeys(keys: string[], val: boolean) {
+    const form = findForm(rootRef.current);
+    for (const key of keys) {
+      const el = getInput(form, `field_${key}`);
+      if (el) el.checked = val;
+    }
+    setChecked((c) => ({ ...c, ...Object.fromEntries(keys.map((k) => [k, val])) }));
+  }
+
+  function toggleMiddle() {
+    const next = !showMiddle;
+    setShowMiddle(next);
+    // 숨길 때는 화면에 안 보이는 체크가 남지 않게 끈다
+    if (!next) setKeys(["turb_middle_right", "turb_middle_left"], false);
+    onChange?.();
+  }
 
   function togglePerformed() {
     const next = !performed;
     setPerformed(next);
+    // 시행을 켜면 기본인 양측 inferior turbinoplasty를 바로 체크한다(사용자 2026-10-16)
+    if (next) setKeys(["turb_inferior_right", "turb_inferior_left"], true);
     if (!next) {
+      setShowMiddle(false);
       // 시행 안 함으로 되돌리면 감춰지는 세부 선택도 실제로 다 꺼서, 화면에
       // 안 보이는 체크가 폼에 남아 있지 않게 한다.
       const form = findForm(rootRef.current);
@@ -114,6 +137,18 @@ export function TurbinoplastyTypePicker({
           />
           Turbinoplasty 시행
         </label>
+        {performed && (
+          <div className="flex gap-1">
+            <TapButton
+              onTap={toggleMiddle}
+              className={`rounded-full border px-2.5 py-1 text-xs ${
+                showMiddle ? "border-emerald-600 bg-emerald-50 text-emerald-700" : "border-slate-300 text-slate-500"
+              }`}
+            >
+              MT turbinoplasty
+            </TapButton>
+          </div>
+        )}
         {performed && !hideCopyButtons && (
           <div className="flex gap-1">
             <TapButton onTap={() => copyToOtherSide("right")} className={buttonStyles.pill}>
@@ -130,7 +165,7 @@ export function TurbinoplastyTypePicker({
           {SIDES.map((side) => (
             <div key={side.prefix} className="flex flex-col gap-2">
               <span className="text-xs font-medium text-slate-500">{side.label}</span>
-              {TURB_TYPES.map((t) => {
+              {TURB_TYPES.filter((t) => t.key !== "middle" || showMiddle).map((t) => {
                 const key = `turb_${t.key}_${side.prefix}`;
                 return (
                   <TapButton
