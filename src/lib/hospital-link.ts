@@ -46,6 +46,7 @@ export const OutpatientRowSchema = z.object({
   chartNo: z.string().max(20),
   visit: z.string().max(20),
   diagnosis: z.string().max(200),
+  soap: z.string().max(6000).optional(), // 병원 PC가 명단 뒤에 따로 올리는 AI SOAP(참고용)
 });
 export type OutpatientRow = z.infer<typeof OutpatientRowSchema>;
 
@@ -56,6 +57,7 @@ export const PC_JOBS = [
   { key: "REMINDER_SYNC", label: "리마인더 정기 동기화(평일 17:10)", maxAgeHours: 80 },
   { key: "REMINDER_POLL", label: "요청 확인(평일 8:00~20:00, 10분마다)", maxAgeHours: 80 },
   { key: "OUTPATIENT", label: "외래 명단(월·목 17:20)", maxAgeHours: 4 * 24 + 6 },
+  { key: "OUTPATIENT_SOAP", label: "외래 SOAP(외래 명단 뒤)", maxAgeHours: 4 * 24 + 6 },
   { key: "TSA_RANGE", label: "TSA 기간 확인(요청 시)", maxAgeHours: null },
   { key: "CRED_CHECK", label: "설정 파일 점검", maxAgeHours: null },
 ] as const;
@@ -84,3 +86,21 @@ export const OutpatientListBodySchema = z.object({
   clinic: z.string().max(50),
   rows: z.array(OutpatientRowSchema).max(300),
 });
+
+export const OutpatientSoapBodySchema = z.object({
+  date: z.string().regex(DATE),
+  items: z.array(z.object({ chartNo: z.string().min(1).max(20), soap: z.string().max(6000) })).max(300),
+});
+
+// 등록번호가 같은 명단 행에 SOAP를 붙인다(명단에 없는 등록번호는 버림)
+export function mergeOutpatientSoap(rows: OutpatientRow[], items: { chartNo: string; soap: string }[]) {
+  const byChart = new Map(items.map((i) => [i.chartNo, i.soap]));
+  let matched = 0;
+  const merged = rows.map((r) => {
+    const soap = byChart.get(r.chartNo);
+    if (soap === undefined) return r;
+    matched++;
+    return { ...r, soap };
+  });
+  return { rows: merged, matched };
+}

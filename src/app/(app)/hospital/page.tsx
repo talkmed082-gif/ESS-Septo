@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import Link from "next/link";
 import { verifySession } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
@@ -261,7 +262,8 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
                         const patient = byChart.get(p.chartNo);
                         const plan = patient?.opPlans[0];
                         return (
-                          <tr key={i} className="border-b border-slate-100">
+                          <Fragment key={i}>
+                          <tr className={p.soap ? "" : "border-b border-slate-100"}>
                             <td className="py-2 pr-3 whitespace-nowrap">{p.time}</td>
                             <td className="py-2 pr-3 whitespace-nowrap">{p.name}</td>
                             <td className="py-2 pr-3">{p.chartNo}</td>
@@ -284,6 +286,17 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
                               )}
                             </td>
                           </tr>
+                          {p.soap && (
+                            <tr className="border-b border-slate-100">
+                              <td colSpan={6} className="pb-2">
+                                <details>
+                                  <summary className="cursor-pointer text-emerald-700">SOAP (AI 요약, 참고용)</summary>
+                                  <p className="mt-1 whitespace-pre-wrap break-words rounded bg-slate-50 p-3 text-slate-700">{p.soap}</p>
+                                </details>
+                              </td>
+                            </tr>
+                          )}
+                          </Fragment>
                         );
                       })}
                     </tbody>

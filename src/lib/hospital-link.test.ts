@@ -1,5 +1,5 @@
 ﻿import { describe, expect, it } from "vitest";
-import { kstDate, OutpatientListBodySchema, PcJobBodySchema, pcJobState, TsaRunBodySchema, validateTsaScanRange } from "@/lib/hospital-link";
+import { kstDate, mergeOutpatientSoap, OutpatientListBodySchema, OutpatientSoapBodySchema, PcJobBodySchema, pcJobState, TsaRunBodySchema, validateTsaScanRange } from "@/lib/hospital-link";
 
 // 2026-10-14 16:00 UTC = 10/15 01:00 KST
 const NOW = new Date("2026-10-14T16:00:00Z");
@@ -64,5 +64,23 @@ describe("pcJobState", () => {
   it("작업 이름이 목록에 없으면 거절", () => {
     expect(PcJobBodySchema.safeParse({ job: "SURGERY_DAILY", ok: true }).success).toBe(true);
     expect(PcJobBodySchema.safeParse({ job: "WHATEVER", ok: true }).success).toBe(false);
+  });
+});
+
+describe("외래 SOAP 붙이기", () => {
+  const rows = [
+    { time: "09:00", name: "홍*동", chartNo: "111", visit: "재진", diagnosis: "CRS" },
+    { time: "09:10", name: "김*수", chartNo: "222", visit: "초진", diagnosis: "DNS" },
+  ];
+  it("등록번호가 같은 행에만 붙이고, 명단에 없는 번호는 버림", () => {
+    const r = mergeOutpatientSoap(rows, [{ chartNo: "222", soap: "S: x" }, { chartNo: "999", soap: "S: y" }]);
+    expect(r.matched).toBe(1);
+    expect(r.rows[1].soap).toBe("S: x");
+    expect(r.rows[0].soap).toBeUndefined();
+  });
+  it("형식 검사: 날짜 꼴·빈 등록번호 거절", () => {
+    expect(OutpatientSoapBodySchema.safeParse({ date: "2026-10-20", items: [{ chartNo: "1", soap: "a" }] }).success).toBe(true);
+    expect(OutpatientSoapBodySchema.safeParse({ date: "10/20", items: [] }).success).toBe(false);
+    expect(OutpatientSoapBodySchema.safeParse({ date: "2026-10-20", items: [{ chartNo: "", soap: "a" }] }).success).toBe(false);
   });
 });
