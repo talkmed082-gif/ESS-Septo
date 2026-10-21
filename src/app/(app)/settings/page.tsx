@@ -12,6 +12,8 @@ import { CalendarSubscribeCard } from "./calendar-subscribe-card";
 import { ImportTokenCard } from "./import-token-card";
 import { AccountCard } from "./account-card";
 import { TextTemplatesCard } from "./text-templates-card";
+import { AutomationPauseCard } from "./automation-pause-card";
+import { kstDate } from "@/lib/hospital-link";
 
 export default async function SettingsPage() {
   const user = await getCurrentUser();
@@ -33,6 +35,14 @@ export default async function SettingsPage() {
     where: { createdById: user.id, plannedDate: { gte: todayUtc }, status: { not: "DONE" } },
     orderBy: { plannedDate: "asc" },
     include: { surgeryType: { select: { code: true, name: true } } },
+  });
+
+  // 자동화 쉬는 날 — 끝나지 않은 기간만(서울 오늘 기준)
+  const today = kstDate(new Date());
+  const pauses = await prisma.automationPause.findMany({
+    where: { createdById: user.id, to: { gte: today } },
+    orderBy: { from: "asc" },
+    select: { id: true, from: true, to: true, note: true },
   });
 
   const templates = await prisma.textTemplate.findMany({
@@ -104,6 +114,11 @@ export default async function SettingsPage() {
       <div>
         <h2 className="mb-1 text-sm font-semibold text-slate-700">EMR 수술 일정 연동</h2>
         <ImportTokenCard token={user.importToken} />
+      </div>
+
+      <div>
+        <h2 className="mb-1 text-sm font-semibold text-slate-700">병원 PC 자동화 쉬는 날</h2>
+        <AutomationPauseCard pauses={pauses} today={today} />
       </div>
 
       <div>

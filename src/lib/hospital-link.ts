@@ -58,6 +58,7 @@ export const PC_JOBS = [
   { key: "REMINDER_POLL", label: "요청 확인(평일 8:00~20:00, 10분마다)", maxAgeHours: 80 },
   { key: "OUTPATIENT", label: "외래 명단(월·목 17:20)", maxAgeHours: 4 * 24 + 6 },
   { key: "OUTPATIENT_SOAP", label: "외래 SOAP(외래 명단 뒤)", maxAgeHours: 4 * 24 + 6 },
+  { key: "OUTPATIENT_REFRESH", label: "외래 명단 새로 고침(평일 8:00, 7일)", maxAgeHours: 80 },
   { key: "TSA_RANGE", label: "TSA 기간 확인(요청 시)", maxAgeHours: null },
   { key: "CRED_CHECK", label: "설정 파일 점검", maxAgeHours: null },
 ] as const;
@@ -92,6 +93,24 @@ export const OutpatientSoapBodySchema = z.object({
   items: z.array(z.object({ chartNo: z.string().min(1).max(20), soap: z.string().max(6000) })).max(300),
 });
 
+// 명단을 다시 올릴 때(매일 아침 새로 고침) 이미 붙어 있던 SOAP를 등록번호로 옮겨 붙인다
+export function carryOverSoap(oldRows: OutpatientRow[], newRows: OutpatientRow[]) {
+  const old = new Map(oldRows.filter((r) => r.soap).map((r) => [r.chartNo, r.soap]));
+  return newRows.map((r) => (r.soap || !old.has(r.chartNo) ? r : { ...r, soap: old.get(r.chartNo) }));
+}
+
+// 등록번호(일부, 숫자 4자리 이상)로 외래 명단 이력 찾기 — 최근 날짜부터
+export function searchOutpatientHistory(
+  lists: { date: string; clinic: string; rows: OutpatientRow[] }[],
+  query: string,
+) {
+  const q = query.replace(/\D/g, "");
+  if (q.length < 4) return [];
+  return lists
+    .flatMap((l) => l.rows.filter((r) => r.chartNo.includes(q)).map((row) => ({ date: l.date, clinic: l.clinic, row })))
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
 // 등록번호가 같은 명단 행에 SOAP를 붙인다(명단에 없는 등록번호는 버림)
 export function mergeOutpatientSoap(rows: OutpatientRow[], items: { chartNo: string; soap: string }[]) {
   const byChart = new Map(items.map((i) => [i.chartNo, i.soap]));
@@ -103,4 +122,19 @@ export function mergeOutpatientSoap(rows: OutpatientRow[], items: { chartNo: str
     return { ...r, soap };
   });
   return { rows: merged, matched };
+}
+
+// 자동화 쉬는 날(출장 등) — 설정 화면에서 기간을 넣는다. 하루짜리는 from=to. 너무 긴 기간은 실수로 보고 막는다(최대 92일).
+export const AutomationPauseSchema = z
+  .object({
+    from: z.string().regex(DATE),
+    to: z.string().regex(DATE),
+    note: z.string().trim().max(60).optional(),
+  })
+  .refine((p) => p.from <= p.to, { message: "끝 날짜가 시작 날짜보다 앞입니다." })
+  .refine((p) => (Date.parse(p.to) - Date.parse(p.from)) / 86400000 <= 92, { message: "한 번에 92일까지만 넣을 수 있습니다." });
+
+// 그 날짜(yyyy-MM-dd)가 쉬는 기간 안이면 그 기간을 돌려준다(없으면 undefined)
+export function findPause<T extends { from: string; to: string }>(pauses: T[], date: string): T | undefined {
+  return pauses.find((p) => p.from <= date && date <= p.to);
 }

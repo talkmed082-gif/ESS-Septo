@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import { mergeOutpatientSoap, type OutpatientRow, type PcJobKey, type TsaRunBody } from "@/lib/hospital-link";
+import { carryOverSoap, mergeOutpatientSoap, type OutpatientRow, type PcJobKey, type TsaRunBody } from "@/lib/hospital-link";
 
 // 병원 PC가 10분마다 확인하는 "TSA 기간 확인" 요청(없으면 null)
 export async function getTsaScanRequest(userId: string) {
@@ -53,15 +53,21 @@ export async function saveOutpatientList(
   userId: string,
   body: { date: string; clinic: string; rows: OutpatientRow[] },
 ) {
+  // 같은 날짜를 다시 올리면(매일 아침 새로 고침) 붙어 있던 SOAP는 등록번호로 유지한다
+  const existing = await prisma.outpatientList.findUnique({
+    where: { createdById_date: { createdById: userId, date: body.date } },
+    select: { rows: true },
+  });
+  const rows = existing ? carryOverSoap(existing.rows as OutpatientRow[], body.rows) : body.rows;
   await prisma.outpatientList.upsert({
     where: { createdById_date: { createdById: userId, date: body.date } },
-    create: { date: body.date, clinic: body.clinic, rows: body.rows, createdById: userId },
-    update: { clinic: body.clinic, rows: body.rows },
+    create: { date: body.date, clinic: body.clinic, rows, createdById: userId },
+    update: { clinic: body.clinic, rows },
   });
   return { ok: true, count: body.rows.length };
 }
 
-// 명단(saveOutpatientList)이 먼저 올라와 있어야 한다(없으면 null). 명단을 다시 올리면 SOAP는 지워진다.
+// 명단(saveOutpatientList)이 먼저 올라와 있어야 한다(없으면 null).
 export async function saveOutpatientSoap(userId: string, body: { date: string; items: { chartNo: string; soap: string }[] }) {
   const list = await prisma.outpatientList.findUnique({ where: { createdById_date: { createdById: userId, date: body.date } } });
   if (!list) return null;
