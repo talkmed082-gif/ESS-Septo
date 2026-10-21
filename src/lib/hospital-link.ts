@@ -138,3 +138,6 @@ export const AutomationPauseSchema = z
 export function findPause<T extends { from: string; to: string }>(pauses: T[], date: string): T | undefined {
   return pauses.find((p) => p.from <= date && date <= p.to);
 }
+
+// YES 근무 변동(출장·휴가)에서 자동으로 넣은 쉬는 날의 메모 머리 — 동기화 때 이것만 바꾼다
+export const YES_PAUSE_PREFIX = "[YES]";
