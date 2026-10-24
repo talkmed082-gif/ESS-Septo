@@ -56,7 +56,10 @@ function TsaCoverage({ runs }: { runs: { rangeTo: string; createdAt: Date; error
 // 외래 명단 행 아래 AI 정리 — SOAP(오늘 진료)와 로드맵(경과·현재·할 일·확인). 둘 다 참고용
 // 로드맵은 환자별 최신 판(진료 후 갱신 포함, 할 일 체크 가능) — 없으면 명단 행에 붙은 것
 type LatestRoadmap = { id: string; text: string; done: string[]; source: string; createdAt: Date };
-function AiNotes({ row, rm }: { row: OutpatientRow; rm?: LatestRoadmap }) {
+type Care = { planType: string | null; nextVisit: string | null } | undefined;
+const PLAN_LABEL: Record<string, string> = { surgery: "수술", medication: "약물치료", observation: "경과관찰" };
+function AiNotes({ row, rm, care }: { row: OutpatientRow; rm?: LatestRoadmap; care?: Care }) {
+  const careText = [care?.planType ? `Plan: ${PLAN_LABEL[care.planType] ?? care.planType}` : "", care?.nextVisit ? `다음 외래 ${care.nextVisit}` : ""].filter(Boolean).join(" · ");
   const box = "mt-1 whitespace-pre-wrap break-words rounded bg-slate-50 p-3 text-slate-700";
   const when = (d: Date) => d.toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric" });
   return (
@@ -74,7 +77,7 @@ function AiNotes({ row, rm }: { row: OutpatientRow; rm?: LatestRoadmap }) {
             <RoadmapBox
               text={rm.text}
               done={rm.done}
-              meta={`${when(rm.createdAt)} ${rm.source === "visit" ? "진료 후 갱신" : "외래 전 정리"}`}
+              meta={`${when(rm.createdAt)} ${rm.source === "visit" ? "진료 후 갱신" : "외래 전 정리"}${careText ? ` · ${careText}` : ""}`}
               toggle={toggleTodo.bind(null, rm.id)}
             />
           ) : (
@@ -161,7 +164,12 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
       })
     : [];
   const byChart = new Map(known.map((p) => [p.chartNo, p]));
-  const roadmaps = await latestRoadmaps(userId, [...new Set([...chartNos, ...history.map((h) => h.row.chartNo)])]);
+  const careCharts = [...new Set([...chartNos, ...history.map((h) => h.row.chartNo)])];
+  const [roadmaps, careRows] = await Promise.all([
+    latestRoadmaps(userId, careCharts),
+    prisma.patientCare.findMany({ where: { createdById: userId, chartNo: { in: careCharts } }, select: { chartNo: true, planType: true, nextVisit: true } }),
+  ]);
+  const cares = new Map(careRows.map((r) => [r.chartNo, r]));
   const jobByKey = new Map(jobs.map((j) => [j.job, j]));
 
   return (
@@ -315,7 +323,7 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
                   </Link>{" "}
                   {h.row.time} {h.row.name} {h.row.chartNo} ({h.row.visit}) {h.row.diagnosis}
                 </p>
-                {h.row.soap || h.row.roadmap || roadmaps.has(h.row.chartNo) ? <AiNotes row={h.row} rm={roadmaps.get(h.row.chartNo)} /> : <p className="text-slate-400">SOAP 없음</p>}
+                {h.row.soap || h.row.roadmap || roadmaps.has(h.row.chartNo) ? <AiNotes row={h.row} rm={roadmaps.get(h.row.chartNo)} care={cares.get(h.row.chartNo)} /> : <p className="text-slate-400">SOAP 없음</p>}
               </div>
             ))}
           </div>
@@ -380,7 +388,7 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
                           {(p.soap || p.roadmap || roadmaps.has(p.chartNo)) && (
                             <tr className="border-b border-slate-100">
                               <td colSpan={6} className="pb-2">
-                                <AiNotes row={p} rm={roadmaps.get(p.chartNo)} />
+                                <AiNotes row={p} rm={roadmaps.get(p.chartNo)} care={cares.get(p.chartNo)} />
                               </td>
                             </tr>
                           )}

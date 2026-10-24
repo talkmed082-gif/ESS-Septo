@@ -4,10 +4,14 @@ import { AUDIENCES, TEMPLATE_KINDS, type Audience, type TemplateKind } from "@/l
 import { prisma } from "@/lib/prisma";
 import { endAllDeviceSessions } from "@/app/actions/device";
 import { OtpCard } from "./otp-card";
+import { RxBundleForm } from "./rx-bundle-form";
+import { getRxBundles } from "@/lib/rx-bundles-store";
+import { createDefaultRx, deleteRxBundle, updateRxBundle } from "@/app/actions/rx-bundles";
 import {
   createDefaultTemplates,
   createOutpatientTemplate,
   deleteOutpatientTemplate,
+  replaceTemplatesWithDefaults,
   updateOutpatientTemplate,
 } from "@/app/actions/outpatient-templates";
 import { buttonStyles } from "@/lib/ui";
@@ -16,10 +20,11 @@ import { TemplateForm, type SetOrderOption } from "./template-form";
 // 외래 템플릿 — 진료실 PC 프로그램이 받아 EMR 기록지 칸을 채우고 연결한 약속처방을 오더창에 넣는다.
 export default async function TemplatesPage() {
   const { userId } = await verifySession();
-  const [templates, sets, activeDevices] = await Promise.all([
+  const [templates, sets, activeDevices, rxBundles] = await Promise.all([
     getOutpatientTemplates(userId),
     getEmrSetOrders(userId),
     prisma.deviceSession.count({ where: { createdById: userId, expiresAt: { gt: new Date() } } }),
+    getRxBundles(userId),
   ]);
 
   // 고를 수 있는 건 세트만(폴더 = 바로 다음 줄이 더 깊은 같은 사람 노드)
@@ -81,9 +86,19 @@ export default async function TemplatesPage() {
           t.kind === "exam" ? null : explicit ? t.shortcut : numbered.indexOf(t) + 1;
         return (
           <section key={aud} className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-700">
-              {AUDIENCES[aud]} 템플릿 <span className="font-normal text-slate-400">(Ctrl+Shift+{aud === "adult" ? "A" : "P"})</span>
-            </h2>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold text-slate-700">
+                {AUDIENCES[aud]} 템플릿 <span className="font-normal text-slate-400">(Ctrl+Shift+{aud === "adult" ? "A" : "P"})</span>
+              </h2>
+              {list.length > 0 && (
+                <form action={replaceTemplatesWithDefaults.bind(null, aud)} className="flex items-center gap-2 text-xs text-slate-400">
+                  <span>증상·진단 템플릿을 코 중심 새 초안으로(고친 문구는 사라짐, 비인강경은 그대로)</span>
+                  <button type="submit" className={buttonStyles.danger}>
+                    새 초안으로 바꾸기
+                  </button>
+                </form>
+              )}
+            </div>
             {list.length === 0 && (
               <form action={createDefaultTemplates.bind(null, aud)} className="rounded-md border border-slate-200 bg-white p-3 text-sm">
                 <p className="mb-2 text-slate-600">
@@ -120,6 +135,39 @@ export default async function TemplatesPage() {
           </section>
         );
       })}
+      <section className="space-y-2">
+        <h2 className="text-sm font-semibold text-slate-700">처방 묶음(약물치료)</h2>
+        <p className="text-xs text-slate-500">
+          진료실 프로그램 [약물치료]에서 골라 오더 표에 바로 넣습니다(전송은 직접). 병원에서 지금 처방 가능한 약만 넣었고, 소아는 나이·몸무게로
+          KIMS 허가 용량을 계산합니다. 숫자는 초안이니 확인 후 고쳐 쓰세요.
+        </p>
+        {(["adult", "child"] as const).map((aud) => {
+          const list = rxBundles.filter((b) => b.audience === aud);
+          return (
+            <div key={aud} className="space-y-2">
+              <p className="text-xs font-semibold text-slate-500">{AUDIENCES[aud]}</p>
+              {list.length === 0 && (
+                <form action={createDefaultRx.bind(null, aud)}>
+                  <button type="submit" className={buttonStyles.primarySmall}>
+                    {AUDIENCES[aud]} 처방 묶음 초안 만들기
+                  </button>
+                </form>
+              )}
+              {list.map((b) => (
+                <details key={b.id} className="rounded-md border border-slate-200 bg-white p-3">
+                  <summary className="cursor-pointer text-sm font-medium text-slate-800">
+                    {b.title} <span className="text-xs font-normal text-slate-400">약 {b.items.length}개</span>
+                  </summary>
+                  <div className="mt-2">
+                    <RxBundleForm bundle={b} action={updateRxBundle.bind(null, b.id)} deleteAction={deleteRxBundle.bind(null, b.id)} />
+                  </div>
+                </details>
+              ))}
+            </div>
+          );
+        })}
+      </section>
+
       <details className="rounded-md border border-dashed border-slate-300 bg-white p-3">
         <summary className="cursor-pointer text-sm font-medium text-slate-700">새 템플릿</summary>
         <div className="mt-3">

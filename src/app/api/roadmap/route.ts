@@ -4,6 +4,7 @@ import { findUserForProgram } from "@/lib/device-auth";
 import { findUserByImportToken } from "@/lib/import-auth";
 import { RoadmapUpdateBodySchema } from "@/lib/roadmap";
 import { applyVisitRoadmaps, latestRoadmaps } from "@/lib/roadmap-store";
+import { prisma } from "@/lib/prisma";
 
 // GET ?chartNo= : 진료실 프로그램이 지금 연 환자의 최신 로드맵을 보여 준다
 export async function GET(request: Request) {
@@ -11,8 +12,14 @@ export async function GET(request: Request) {
   if (!user) return new NextResponse("Not found", { status: 404 });
   const chartNo = new URL(request.url).searchParams.get("chartNo") ?? "";
   if (!/^\d{4,12}$/.test(chartNo)) return pcJson({ error: "등록번호가 올바르지 않습니다." }, { status: 400 });
-  const r = (await latestRoadmaps(user.id, [chartNo])).get(chartNo);
-  return pcJson(r ? { text: r.text, done: r.done, source: r.source, createdAt: r.createdAt.toISOString() } : { text: null });
+  const [r, care] = await Promise.all([
+    latestRoadmaps(user.id, [chartNo]).then((m) => m.get(chartNo)),
+    prisma.patientCare.findUnique({
+      where: { createdById_chartNo: { createdById: user.id, chartNo } },
+      select: { planType: true, nextVisit: true, nextVisitLabel: true },
+    }),
+  ]);
+  return pcJson({ ...(r ? { text: r.text, done: r.done, source: r.source, createdAt: r.createdAt.toISOString() } : { text: null }), care });
 }
 
 // POST: 노트북 저녁 작업이 진료 기록으로 갱신한 로드맵을 올린다(병원 PC 자동화 토큰만)

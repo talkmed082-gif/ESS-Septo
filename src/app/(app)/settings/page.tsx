@@ -14,6 +14,8 @@ import { AccountCard } from "./account-card";
 import { TextTemplatesCard } from "./text-templates-card";
 import { AutomationPauseCard } from "./automation-pause-card";
 import { kstDate } from "@/lib/hospital-link";
+import { ClinicScheduleCard } from "./clinic-schedule-card";
+import { parseSchedule } from "@/lib/clinic-schedule";
 
 export default async function SettingsPage() {
   const user = await getCurrentUser();
@@ -44,6 +46,15 @@ export default async function SettingsPage() {
     orderBy: { from: "asc" },
     select: { id: true, from: true, to: true, note: true },
   });
+
+  // 내 외래 스케줄 + 최근 90일 외래 명단이 있던 요일(참고)
+  const [me, recentLists] = await Promise.all([
+    prisma.user.findUnique({ where: { id: user.id }, select: { clinicSchedule: true } }),
+    prisma.outpatientList.findMany({ where: { createdById: user.id, date: { gte: kstDate(new Date(), -90) } }, select: { date: true, rows: true } }),
+  ]);
+  const dayCount = new Map<number, number>();
+  for (const l of recentLists) if (Array.isArray(l.rows) && l.rows.length) { const wd = new Date(`${l.date}T00:00:00Z`).getUTCDay(); dayCount.set(wd, (dayCount.get(wd) ?? 0) + 1); }
+  const historyDays = [...dayCount.entries()].sort((a, b) => a[0] - b[0]).map(([wd, n]) => `${"일월화수목금토"[wd]}(${n})`).join(" ");
 
   const templates = await prisma.textTemplate.findMany({
     where: { createdById: user.id },
@@ -119,6 +130,11 @@ export default async function SettingsPage() {
       <div>
         <h2 className="mb-1 text-sm font-semibold text-slate-700">병원 PC 자동화 쉬는 날</h2>
         <AutomationPauseCard pauses={pauses} today={today} />
+      </div>
+
+      <div>
+        <h2 className="mb-1 text-sm font-semibold text-slate-700">내 외래 스케줄</h2>
+        <ClinicScheduleCard schedule={parseSchedule(me?.clinicSchedule)} historyDays={historyDays} />
       </div>
 
       <div>

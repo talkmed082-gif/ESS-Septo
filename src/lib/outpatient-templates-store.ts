@@ -22,6 +22,17 @@ export async function createDefaultOutpatientTemplates(userId: string, audience:
   return r.count;
 }
 
+// 그 대상의 증상·진단 템플릿을 새 초안으로 바꾼다(코 중심 개편, 사용자 2026-10-24). 검사(비인강경 등)와 그 약속처방 연결은 그대로 둔다
+export async function replaceWithDefaultTemplates(userId: string, audience: Audience) {
+  const hasExam = (await prisma.outpatientTemplate.count({ where: { createdById: userId, audience, kind: "exam" } })) > 0;
+  const drafts = (audience === "child" ? DEFAULT_CHILD_TEMPLATES : DEFAULT_TEMPLATES).filter((t) => !(hasExam && t.kind === "exam"));
+  const [, created] = await prisma.$transaction([
+    prisma.outpatientTemplate.deleteMany({ where: { createdById: userId, audience, kind: { in: ["symptom", "diagnosis"] } } }),
+    prisma.outpatientTemplate.createMany({ data: drafts.map((t) => ({ ...t, setOrders: [], createdById: userId })) }),
+  ]);
+  return created.count;
+}
+
 // 진료실 PC가 올린 약속처방 목록으로 그 사번 것을 통째로 바꾼다(EMR에서 지운 세트는 여기서도 빠진다)
 export async function replaceEmrSetOrders(userId: string, body: EmrSetOrderBody) {
   const now = new Date();

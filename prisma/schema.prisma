@@ -57,6 +57,10 @@ model User {
   deviceSessions  DeviceSession[]
   roadmapVersions RoadmapVersion[]
   visitNotes      VisitNote[]
+  patientCares    PatientCare[]
+  rxBundles       RxBundle[]
+  // 내 외래 스케줄 — [{ weekday: 0(일)~6(토), session: "AM" | "PM" }]. 다음 외래 날짜 계산에 쓴다(휴진은 AutomationPause)
+  clinicSchedule  Json            @default("[]")
   automationPauses AutomationPause[]
   pcJobs          PcJobStatus[]
 }
@@ -305,6 +309,36 @@ model RoadmapVersion {
   createdAt   DateTime @default(now())
 
   @@index([createdById, chartNo, createdAt])
+}
+
+// 처방 묶음(약물치료) — 진료실 프로그램이 오더 표에 바로 넣는다(EMR 세트 대신). items = [{ code, name, dose, freq, days, ped? }]
+// 소아(audience=child)는 약마다 계산 규칙(ped: 나이 구간 / 체중당 mg / 체중 구간)으로 나이·몸무게에 맞춰 1회량·용법을 정한다
+model RxBundle {
+  id          String   @id @default(cuid())
+  title       String
+  audience    String   @default("adult")
+  sortOrder   Int      @default(0)
+  items       Json     @default("[]")
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([createdById])
+}
+
+// 환자별 관리 방향 — 진료실 프로그램에서 Plan(수술/약물치료/경과관찰)과 다음 외래를 고른다. 로드맵 갱신 때 함께 본다
+model PatientCare {
+  id             String   @id @default(cuid())
+  chartNo        String
+  planType       String? // surgery | medication | observation
+  nextVisit      String? // yyyy-MM-dd(서울)
+  nextVisitLabel String? // "4주" 등 고른 간격
+  createdById    String
+  createdBy      User     @relation(fields: [createdById], references: [id])
+  updatedAt      DateTime @updatedAt
+
+  @@unique([createdById, chartNo])
 }
 
 // 진료실 프로그램 [로드맵 저장]으로 올린 그날 기록지 글 — 저녁에 노트북이 모아 로드맵을 갱신하고 processedAt을 찍는다

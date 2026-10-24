@@ -45,8 +45,19 @@ export async function pendingVisitNotes(userId: string) {
     select: { id: true, chartNo: true, visitDate: true, kind: true, text: true },
     take: 200,
   });
-  const latest = await latestRoadmaps(userId, [...new Set(notes.map((n) => n.chartNo))]);
-  return notes.map((n) => ({ ...n, roadmap: latest.get(n.chartNo)?.text ?? null, done: latest.get(n.chartNo)?.done ?? [] }));
+  const charts = [...new Set(notes.map((n) => n.chartNo))];
+  const [latest, cares] = await Promise.all([
+    latestRoadmaps(userId, charts),
+    prisma.patientCare.findMany({ where: { createdById: userId, chartNo: { in: charts } }, select: { chartNo: true, planType: true, nextVisit: true } }),
+  ]);
+  const care = new Map(cares.map((c) => [c.chartNo, c]));
+  return notes.map((n) => ({
+    ...n,
+    roadmap: latest.get(n.chartNo)?.text ?? null,
+    done: latest.get(n.chartNo)?.done ?? [],
+    planType: care.get(n.chartNo)?.planType ?? null,
+    nextVisit: care.get(n.chartNo)?.nextVisit ?? null,
+  }));
 }
 
 export async function applyVisitRoadmaps(userId: string, items: { chartNo: string; text: string; noteIds: string[] }[]) {

@@ -1,0 +1,43 @@
+import { saveClinicSchedule } from "@/app/actions/clinic-schedule";
+import type { ClinicSession } from "@/lib/clinic-schedule";
+import { buttonStyles } from "@/lib/ui";
+
+const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
+
+// 내 외래 스케줄 — 진료실 프로그램의 다음 외래 버튼(2주~6개월)이 이 요일 중 가장 가까운 날을 고른다. 휴진은 "자동화 쉬는 날"
+export function ClinicScheduleCard({ schedule, historyDays }: { schedule: ClinicSession[]; historyDays: string }) {
+  const on = (wd: number, s: "AM" | "PM") => schedule.some((x) => x.weekday === wd && x.session === s);
+  return (
+    <form action={saveClinicSchedule} className="space-y-2 rounded-md border border-slate-200 bg-white p-3 text-sm">
+      <table className="text-center">
+        <thead>
+          <tr>
+            <th />
+            {[1, 2, 3, 4, 5, 6].map((wd) => (
+              <th key={wd} className="px-2 font-normal text-slate-500">
+                {DAYS[wd]}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {(["AM", "PM"] as const).map((s) => (
+            <tr key={s}>
+              <td className="pr-2 text-slate-500">{s === "AM" ? "오전" : "오후"}</td>
+              {[1, 2, 3, 4, 5, 6].map((wd) => (
+                <td key={wd} className="px-2">
+                  <input type="checkbox" name={`s-${wd}-${s}`} defaultChecked={on(wd, s)} aria-label={`${DAYS[wd]} ${s === "AM" ? "오전" : "오후"}`} />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {historyDays && <p className="text-xs text-slate-400">최근 외래 명단 기준 외래 요일: {historyDays}</p>}
+      <p className="text-xs text-slate-400">휴진(학회·휴가)은 위 &quot;병원 PC 자동화 쉬는 날&quot;에 넣으면 다음 외래 날짜에서 빠집니다.</p>
+      <button type="submit" className={buttonStyles.primarySmall}>
+        저장
+      </button>
+    </form>
+  );
+}

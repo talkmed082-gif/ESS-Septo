@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { verifySession } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { FIRST_FIELDS, FOLLOW_FIELDS, TemplateInputSchema } from "@/lib/outpatient-templates";
-import { createDefaultOutpatientTemplates } from "@/lib/outpatient-templates-store";
+import { createDefaultOutpatientTemplates, replaceWithDefaultTemplates } from "@/lib/outpatient-templates-store";
 
 // 외래 템플릿 — 본인 것만 고친다. 약속처방은 화면에서 JSON(hidden 칸)으로 넘어온다.
 function parse(formData: FormData) {
@@ -57,5 +57,12 @@ export async function deleteOutpatientTemplate(id: string): Promise<void> {
 export async function createDefaultTemplates(audience: "adult" | "child"): Promise<void> {
   const session = await verifySession();
   await createDefaultOutpatientTemplates(session.userId, audience);
+  refresh();
+}
+
+// 증상·진단 템플릿을 새 초안으로 바꾸기(고쳐 쓴 문구는 사라짐 — 화면에서 확인 후 누름)
+export async function replaceTemplatesWithDefaults(audience: "adult" | "child"): Promise<void> {
+  const session = await verifySession();
+  await replaceWithDefaultTemplates(session.userId, audience);
   refresh();
 }
