@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
 import { parseFieldValues } from "@/lib/field-types";
 import { procedureNameFor, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
-import { safeDateStr, seoulTodayAsStoredDate } from "@/lib/date-format";
+import { safeDateStr } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
 import { PatientsListTitle } from "@/components/patients-list-title";
 import { PatientListTable } from "./patient-list-table";
@@ -17,32 +17,15 @@ export default async function PatientsPage({
     sideNotation: user.sideNotation as SideNotation,
     abbreviateRegions: user.abbreviateRegions,
   };
-  // 한국 시간 기준 오늘 — UTC로 자르면 오전 9시 전까지 어제 수술도 "다가오는 수술"에 남았다.
-  const todayUtc = seoulTodayAsStoredDate();
 
   const { q, sort: sortParam, dir: dirParam } = await searchParams;
   const query = typeof q === "string" ? q.trim() : "";
   const sort = typeof sortParam === "string" ? sortParam : "createdAt";
   const dir = dirParam === "asc" ? "asc" : dirParam === "desc" ? "desc" : "desc";
 
-  // 두 조회는 서로 상관없어서 동시에 보낸다. 수술 종류는 이름 표시에 필요한
-  // code·name만 — 종류마다 딸린 입력 항목 정의(fields) 전체를 계획마다 끌어오지 않게.
-  const [upcomingPlans, patients] = await Promise.all([
-    prisma.opPlan.findMany({
-      // "완료"로 표시해둔 계획은 기록지를 아직 안 썼어도 더 이상 "다가오는
-      // 수술"이 아니므로 제외한다.
-      where: { createdById: user.id, plannedDate: { gte: todayUtc }, opRecord: null, status: { not: "DONE" } },
-      orderBy: { plannedDate: "asc" },
-      take: 10,
-      select: {
-        id: true,
-        plannedDate: true,
-        planData: true,
-        patient: { select: { name: true } },
-        surgeryType: { select: { code: true, name: true } },
-      },
-    }),
-    prisma.patient.findMany({
+  // 수술 종류는 이름 표시에 필요한 code·name만 — 종류마다 딸린 입력 항목 정의(fields) 전체를 계획마다 끌어오지 않게.
+  // 다가오는 수술은 수술 메뉴로 옮겼다(사용자 2026-10-24).
+  const patients = await prisma.patient.findMany({
     where: {
       createdById: user.id,
       ...(query
@@ -62,8 +45,7 @@ export default async function PatientsPage({
         },
       },
     },
-    }),
-  ]);
+  });
 
   const rows: PatientRow[] = patients.map((p) => {
     const withDates = p.opPlans.filter(
@@ -127,50 +109,11 @@ export default async function PatientsPage({
       <div className="mb-6 flex items-center justify-between">
         <PatientsListTitle />
         <div className="flex items-center gap-3">
-          {/* "선택한 환자 Op Plan 인쇄"(체크한 환자로 채워서 인쇄)와 헷갈리지
-              않도록, 환자 데이터 없이 빈 칸으로 인쇄하는 이 링크는 "빈"을
-              명시한다. */}
-          <Link href="/print/fess-checklist" className={buttonStyles.secondarySmall}>
-            빈 체크리스트 양식 인쇄
-          </Link>
           <Link href="/patients/new" className={buttonStyles.primary}>
             + 새 환자 등록
           </Link>
         </div>
       </div>
-
-      {upcomingPlans.length > 0 && (
-        <div className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-          <h2 className="mb-3 text-sm font-semibold text-emerald-900">
-            다가오는 수술 ({upcomingPlans.length}건)
-          </h2>
-          <ul className="space-y-2">
-            {upcomingPlans.map((plan) => {
-              const values = parseFieldValues(plan.planData);
-              const procedureName = procedureNameFor(plan.surgeryType, values, nameStyle);
-              return (
-                <li key={plan.id} className="flex items-center justify-between text-sm">
-                  <Link href={`/plans/${plan.id}`} className="hover:underline">
-                    <span className="font-medium text-slate-900">
-                      {safeDateStr(plan.plannedDate)}
-                    </span>
-                    <span className="mx-2 text-slate-400">·</span>
-                    <span className="text-slate-900">{plan.patient.name}</span>
-                    <span className="mx-2 text-slate-400">·</span>
-                    <span className="text-slate-600">{procedureName}</span>
-                  </Link>
-                  <Link
-                    href={`/plans/${plan.id}?view=post`}
-                    className={`shrink-0 ${buttonStyles.smallOutlineAccent}`}
-                  >
-                    기록지 작성
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
 
       <form className="mb-3 flex max-w-sm gap-2">
         <input

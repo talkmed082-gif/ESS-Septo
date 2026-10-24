@@ -29,13 +29,13 @@ export function OutpatientCalendar({
   return (
     <div className="max-w-md space-y-2">
       <div className="flex items-center justify-between">
-        <Link href={`/hospital?month=${shiftMonth(month, -1)}`} className={buttonStyles.smallOutline} aria-label="이전 달">
+        <Link href={`/outpatient?month=${shiftMonth(month, -1)}`} className={buttonStyles.smallOutline} aria-label="이전 달">
           ←
         </Link>
         <span className="font-medium">
           {y}년 {m}월
         </span>
-        <Link href={`/hospital?month=${shiftMonth(month, 1)}`} className={buttonStyles.smallOutline} aria-label="다음 달">
+        <Link href={`/outpatient?month=${shiftMonth(month, 1)}`} className={buttonStyles.smallOutline} aria-label="다음 달">
           →
         </Link>
       </div>
@@ -63,7 +63,7 @@ export function OutpatientCalendar({
             </>
           );
           return n !== undefined ? (
-            <Link key={date} href={`/hospital?date=${date}`} className={`${base} ${tone}`}>
+            <Link key={date} href={`/outpatient?date=${date}`} className={`${base} ${tone}`}>
               {label}
             </Link>
           ) : (

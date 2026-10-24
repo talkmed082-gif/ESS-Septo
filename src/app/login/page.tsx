@@ -12,7 +12,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
         <h1 className="mb-1 text-xl font-semibold text-slate-900">로그인</h1>
         <p className="mb-6 text-sm text-slate-500">
-          Op Plan &amp; 수술기록지 시스템
+          진료 어시스트
         </p>
         <form action={action} className="space-y-4">
           <div>

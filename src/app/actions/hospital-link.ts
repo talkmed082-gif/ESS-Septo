@@ -22,7 +22,7 @@ export async function requestTsaScan(_prev: TsaScanFormState | undefined, formDa
     where: { id: session.userId },
     data: { tsaScanFrom: from, tsaScanTo: to, tsaScanRequestedAt: new Date() },
   });
-  revalidatePath("/hospital");
+  revalidatePath("/surgery");
   return { ok: true };
 }
 
@@ -32,5 +32,5 @@ export async function cancelTsaScan(): Promise<void> {
     where: { id: session.userId },
     data: { tsaScanFrom: null, tsaScanTo: null, tsaScanRequestedAt: null },
   });
-  revalidatePath("/hospital");
+  revalidatePath("/surgery");
 }

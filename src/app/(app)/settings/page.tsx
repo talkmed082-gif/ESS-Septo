@@ -9,13 +9,12 @@ import { buttonStyles } from "@/lib/ui";
 import { SettingsForm } from "./settings-form";
 import { SurgeryTypesManager } from "../surgery-types/surgery-types-manager";
 import { CalendarSubscribeCard } from "./calendar-subscribe-card";
-import { ImportTokenCard } from "./import-token-card";
 import { AccountCard } from "./account-card";
 import { TextTemplatesCard } from "./text-templates-card";
-import { AutomationPauseCard } from "./automation-pause-card";
 import { kstDate } from "@/lib/hospital-link";
 import { ClinicScheduleCard } from "./clinic-schedule-card";
 import { parseSchedule } from "@/lib/clinic-schedule";
+import { SETTINGS_TABS, SectionTabs } from "@/components/section-tabs";
 
 export default async function SettingsPage() {
   const user = await getCurrentUser();
@@ -39,14 +38,6 @@ export default async function SettingsPage() {
     include: { surgeryType: { select: { code: true, name: true } } },
   });
 
-  // 자동화 쉬는 날 — 끝나지 않은 기간만(서울 오늘 기준)
-  const today = kstDate(new Date());
-  const pauses = await prisma.automationPause.findMany({
-    where: { createdById: user.id, to: { gte: today } },
-    orderBy: { from: "asc" },
-    select: { id: true, from: true, to: true, note: true },
-  });
-
   // 내 외래 스케줄 + 최근 90일 외래 명단이 있던 요일(참고)
   const [me, recentLists] = await Promise.all([
     prisma.user.findUnique({ where: { id: user.id }, select: { clinicSchedule: true } }),
@@ -63,10 +54,16 @@ export default async function SettingsPage() {
   });
 
   return (
-    <div className="max-w-lg space-y-8">
+    <div className="space-y-8">
       <div>
-        <h1 className="mb-1 text-xl font-semibold">설정</h1>
-        <p className="mb-6 text-sm text-slate-500">
+        <h1 className="mb-4 text-xl font-semibold">설정</h1>
+        <SectionTabs tabs={SETTINGS_TABS} current="/settings" />
+      </div>
+
+      <div className="max-w-lg space-y-8">
+      <div>
+        <h2 className="mb-1 text-sm font-semibold text-slate-700">수술명 표기</h2>
+        <p className="mb-3 text-sm text-slate-500">
           자동 생성되는 수술명의 방향/부위 표기 방식을 정할 수 있습니다.
         </p>
         <SettingsForm
@@ -123,16 +120,6 @@ export default async function SettingsPage() {
       </div>
 
       <div>
-        <h2 className="mb-1 text-sm font-semibold text-slate-700">EMR 수술 일정 연동</h2>
-        <ImportTokenCard token={user.importToken} />
-      </div>
-
-      <div>
-        <h2 className="mb-1 text-sm font-semibold text-slate-700">병원 PC 자동화 쉬는 날</h2>
-        <AutomationPauseCard pauses={pauses} today={today} />
-      </div>
-
-      <div>
         <h2 className="mb-1 text-sm font-semibold text-slate-700">내 외래 스케줄</h2>
         <ClinicScheduleCard schedule={parseSchedule(me?.clinicSchedule)} historyDays={historyDays} />
       </div>
@@ -172,6 +159,7 @@ export default async function SettingsPage() {
           확인할 수 있습니다.
         </p>
         <SurgeryTypesManager />
+      </div>
       </div>
     </div>
   );

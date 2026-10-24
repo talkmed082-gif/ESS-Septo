@@ -1,9 +1,8 @@
 import { verifySession } from "@/lib/dal";
 import { getEmrSetOrders, getOutpatientTemplates } from "@/lib/outpatient-templates-store";
 import { AUDIENCES, TEMPLATE_KINDS, type Audience, type TemplateKind } from "@/lib/outpatient-templates";
-import { prisma } from "@/lib/prisma";
-import { endAllDeviceSessions } from "@/app/actions/device";
-import { OtpCard } from "./otp-card";
+import Link from "next/link";
+import { OUTPATIENT_TABS, SectionTabs } from "@/components/section-tabs";
 import { RxBundleForm } from "./rx-bundle-form";
 import { getRxBundles } from "@/lib/rx-bundles-store";
 import { createDefaultRx, deleteRxBundle, updateRxBundle } from "@/app/actions/rx-bundles";
@@ -20,10 +19,9 @@ import { TemplateForm, type SetOrderOption } from "./template-form";
 // 외래 템플릿 — 진료실 PC 프로그램이 받아 EMR 기록지 칸을 채우고 연결한 약속처방을 오더창에 넣는다.
 export default async function TemplatesPage() {
   const { userId } = await verifySession();
-  const [templates, sets, activeDevices, rxBundles] = await Promise.all([
+  const [templates, sets, rxBundles] = await Promise.all([
     getOutpatientTemplates(userId),
     getEmrSetOrders(userId),
-    prisma.deviceSession.count({ where: { createdById: userId, expiresAt: { gt: new Date() } } }),
     getRxBundles(userId),
   ]);
 
@@ -39,7 +37,8 @@ export default async function TemplatesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="mb-1 text-xl font-semibold">외래 템플릿</h1>
+        <h1 className="mb-4 text-xl font-semibold">외래</h1>
+        <SectionTabs tabs={OUTPATIENT_TABS} current="/templates" />
         <p className="text-sm text-slate-500">
           진료실 PC 프로그램에서 템플릿을 고르면 EMR 외래초진·경과 기록지 칸이 채워지고 통증평가는 &quot;없음&quot;으로
           체크됩니다. 진료 후에는 연결한 약속처방이 오더창에 들어갑니다. 저장·서명·오더 전송은 직접 누릅니다.
@@ -67,7 +66,13 @@ export default async function TemplatesPage() {
             Windows가 &quot;PC 보호&quot; 창을 띄우면 &quot;추가 정보 → 실행&quot;(서명하지 않은 프로그램이라 처음 한 번 뜰 수
             있음).
           </li>
-          <li>켤 때마다 아래 [연결 코드 받기]의 6자리를 넣습니다. 프로그램을 끄면 연결이 끊깁니다.</li>
+          <li>
+            켤 때마다 상단 메뉴{" "}
+            <Link href="/otp" className="underline">
+              OTP 받기
+            </Link>
+            의 6자리를 넣습니다. 프로그램을 끄면 연결이 끊깁니다.
+          </li>
           <li>
             YES에서 기록지(외래초진/경과)를 열면 통증 &quot;없음&quot;이 자동 체크되고, 환자 나이로 성인/소아 템플릿이 정해집니다(15세
             미만 소아, 프로그램에서 바꾸면 그 환자는 다음에도 그대로). F8 = 템플릿 고르기 창(숫자 또는 Enter, 0 = 템플릿 없이 비인강경만
@@ -76,8 +81,6 @@ export default async function TemplatesPage() {
           </li>
         </ol>
       </div>
-
-      <OtpCard activeCount={activeDevices} endAll={endAllDeviceSessions} />
 
       {(Object.keys(AUDIENCES) as Audience[]).map((aud) => {
         const list = templates.filter((t) => (t.audience ?? "adult") === aud);

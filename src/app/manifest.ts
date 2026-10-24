@@ -5,10 +5,10 @@ import type { MetadataRoute } from "next";
 // 필요하지 않다.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Op Plan & 수술기록지",
-    short_name: "OpPlan",
-    description: "수술 계획 및 수술기록지 작성 시스템",
-    start_url: "/patients",
+    name: "진료 어시스트",
+    short_name: "진료 어시스트",
+    description: "외래·수술·환자 관리",
+    start_url: "/otp",
     scope: "/",
     display: "standalone",
     background_color: "#f8fafc",

@@ -19,5 +19,5 @@ export async function issueOtp(): Promise<OtpState> {
 export async function endAllDeviceSessions(): Promise<void> {
   const session = await verifySession();
   await prisma.deviceSession.deleteMany({ where: { createdById: session.userId } });
-  revalidatePath("/templates");
+  revalidatePath("/otp");
 }

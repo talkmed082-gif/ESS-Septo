@@ -8,5 +8,5 @@ import { toggleRoadmapTodo } from "@/lib/roadmap-store";
 export async function toggleTodo(versionId: string, item: string): Promise<void> {
   const session = await verifySession();
   await toggleRoadmapTodo(session.userId, versionId, item);
-  revalidatePath("/hospital");
+  revalidatePath("/outpatient");
 }

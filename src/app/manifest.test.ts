@@ -6,9 +6,9 @@ import manifest from "./manifest";
 describe("PWA manifest", () => {
   const m = manifest();
 
-  it("홈 화면 앱으로 설치되도록 독립 실행(standalone)이고 로그인 후 첫 화면(환자 목록)에서 시작한다", () => {
+  it("홈 화면 앱으로 설치되도록 독립 실행(standalone)이고 로그인 후 첫 화면(OTP 받기)에서 시작한다", () => {
     expect(m.display).toBe("standalone");
-    expect(m.start_url).toBe("/patients");
+    expect(m.start_url).toBe("/otp");
     expect(m.name).toBeTruthy();
     expect(m.short_name && m.short_name.length).toBeLessThanOrEqual(12); // 홈 화면 아이콘 밑 글자
   });

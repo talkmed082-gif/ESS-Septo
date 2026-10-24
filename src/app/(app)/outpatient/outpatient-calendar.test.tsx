@@ -13,10 +13,10 @@ describe("OutpatientCalendar", () => {
     const cells = Array.from(container.querySelectorAll(".grid > *")).slice(7); // 요일 머리 7칸 제외
     expect(cells.slice(0, 4).every((c) => c.textContent === "")).toBe(true); // 일~수 빈칸
     expect(cells[4].textContent).toBe("1");
-    const links = Array.from(container.querySelectorAll("a[href^='/hospital?date=']"));
+    const links = Array.from(container.querySelectorAll("a[href^='/outpatient?date=']"));
     expect(links.map((a) => [a.getAttribute("href"), a.textContent])).toEqual([
-      ["/hospital?date=2026-10-20", "209명"],
-      ["/hospital?date=2026-10-23", "232명"],
+      ["/outpatient?date=2026-10-20", "209명"],
+      ["/outpatient?date=2026-10-23", "232명"],
     ]);
   });
 

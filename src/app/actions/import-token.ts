@@ -13,5 +13,5 @@ export async function regenerateImportToken(): Promise<void> {
     where: { id: session.userId },
     data: { importToken: generateCalendarToken() },
   });
-  revalidatePath("/settings");
+  revalidatePath("/hospital");
 }

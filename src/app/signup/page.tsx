@@ -14,7 +14,7 @@ export default function SignupPage() {
           회원가입
         </h1>
         <p className="mb-6 text-sm text-slate-500">
-          Op Plan &amp; 수술기록지 시스템 계정 만들기
+          진료 어시스트 계정 만들기
         </p>
         <form action={action} className="space-y-4">
           <div>

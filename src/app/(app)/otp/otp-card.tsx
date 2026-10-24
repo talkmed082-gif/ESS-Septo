@@ -8,23 +8,20 @@ import { buttonStyles } from "@/lib/ui";
 export function OtpCard({ activeCount, endAll }: { activeCount: number; endAll: () => Promise<void> }) {
   const [state, action, pending] = useActionState<OtpState>(issueOtp, undefined);
   return (
-    <div className="space-y-2 rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-600">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="font-medium text-slate-800">프로그램 연결 코드</p>
-        <form action={action}>
-          <button type="submit" disabled={pending} className={buttonStyles.primarySmall}>
-            {pending ? "만드는 중..." : "연결 코드 받기"}
-          </button>
-        </form>
-      </div>
+    <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-5 text-sm text-slate-600">
+      <form action={action}>
+        <button type="submit" disabled={pending} className="w-full rounded-md bg-slate-900 px-4 py-3 text-base font-medium text-white hover:bg-slate-700 disabled:opacity-50">
+          {pending ? "만드는 중..." : state ? "새 코드 받기" : "연결 코드 받기"}
+        </button>
+      </form>
       {state && (
-        <p>
-          <span className="font-mono text-2xl font-semibold tracking-widest text-slate-900">{state.code}</span>
-          <span className="ml-2 text-xs text-slate-500">{state.until}까지, 한 번만 쓰임</span>
-        </p>
+        <div className="text-center">
+          <p className="font-mono text-5xl font-semibold tracking-[0.3em] text-slate-900">{state.code}</p>
+          <p className="mt-2 text-xs text-slate-500">{state.until}까지, 한 번만 쓰임</p>
+        </div>
       )}
       <p className="text-xs text-slate-500">
-        외래 도우미를 켜면 코드를 묻습니다. 프로그램을 끄면 연결이 끊기고, 다음에 켤 때 새 코드를 받습니다.
+        외래 도우미(OpdHelper)를 켜면 코드를 묻습니다. 프로그램을 끄면 연결이 끊기고, 다음에 켤 때 새 코드를 받습니다.
       </p>
       {activeCount > 0 && (
         <form action={endAll} className="flex items-center gap-2 text-xs">
