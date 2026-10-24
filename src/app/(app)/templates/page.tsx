@@ -46,7 +46,7 @@ export default async function TemplatesPage() {
         <form action={createDefaultTemplates} className="rounded-md border border-slate-200 bg-white p-3 text-sm">
           <p className="mb-2 text-slate-600">
             템플릿이 없습니다. 증상 7개(코골이/수면무호흡, 콧물, 코막힘, 두통/안면통, 재채기/알레르기, 인후두 이물감,
-            무후각증)와 진단 2개(부비동염, 종물) 초안을 만들어 고쳐 쓸 수 있습니다.
+            무후각증), 진단 2개(부비동염, 종물), 검사 1개(비인강경 — 프로그램의 [비인강경] 버튼이 씀) 초안을 만들어 고쳐 쓸 수 있습니다.
           </p>
           <button type="submit" className={buttonStyles.primarySmall}>
             기본 템플릿 초안 만들기

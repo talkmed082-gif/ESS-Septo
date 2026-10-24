@@ -2,7 +2,7 @@ import * as z from "zod";
 
 // 외래 템플릿 — 진료실 PC 프로그램이 EMR 외래초진/경과 기록지 칸에 그대로 채운다.
 // 칸 이름은 EMR 기록지 탭과 같다(초진: CC·PI·ROS·PE·Assessment·Plan, 경과: S·O·A·P).
-export const TEMPLATE_KINDS = { symptom: "증상", diagnosis: "진단 받고 옴" } as const;
+export const TEMPLATE_KINDS = { symptom: "증상", diagnosis: "진단 받고 옴", exam: "검사" } as const;
 export type TemplateKind = keyof typeof TEMPLATE_KINDS;
 
 export const FIRST_FIELDS = [
@@ -34,7 +34,7 @@ export type SetOrderRef = z.infer<typeof SetOrderRefSchema>;
 const fieldText = z.string().max(4000);
 export const TemplateInputSchema = z.object({
   title: z.string().trim().min(1).max(60),
-  kind: z.enum(["symptom", "diagnosis"]),
+  kind: z.enum(["symptom", "diagnosis", "exam"]),
   sortOrder: z.coerce.number().int().min(0).max(999),
   ...(Object.fromEntries([...FIRST_FIELDS, ...FOLLOW_FIELDS].map(([k]) => [k, fieldText])) as Record<
     FieldKey,
@@ -72,6 +72,8 @@ export type EmrSetOrderBody = z.infer<typeof EmrSetOrderBodySchema>;
 const empty = Object.fromEntries([...FIRST_FIELDS, ...FOLLOW_FIELDS].map(([k]) => [k, ""])) as Record<FieldKey, string>;
 
 // 처음 쓸 때 만드는 기본 템플릿 초안(사용자가 고쳐 쓴다). 빈칸은 진료 중 채울 자리.
+// CC는 EMR 초진 화면 아래 CC 목록의 이름과 같아야 프로그램이 골라 준다(목록에 없으면 비워 둠 → 직접 고름).
+// "비인강경"(검사)은 이름으로 찾는다 — 프로그램의 [비인강경] 버튼이 초진 PE/경과 Objective에 덧붙이고 연결한 약속처방을 넣는다.
 export const DEFAULT_TEMPLATES: Omit<TemplateInput, "setOrders">[] = [
   {
     ...empty,
@@ -104,7 +106,7 @@ export const DEFAULT_TEMPLATES: Omit<TemplateInput, "setOrders">[] = [
     title: "코막힘",
     kind: "symptom",
     sortOrder: 30,
-    firstCc: "nasal obstruction",
+    firstCc: "obstruction, nose",
     firstPi: "onset:\n양측/편측(교대 여부):\n지속/간헐:\n수면 중 입벌림:\n외상력:\n비강 스프레이 사용(종류, 기간):\n이전 치료/수술:",
     firstRos: "rhinorrhea ( )\nsneezing ( )\nhyposmia ( )\nsnoring ( )",
     firstPe: "nasal cavity: septum / turbinate / polyp\nexternal nose:",
@@ -116,7 +118,7 @@ export const DEFAULT_TEMPLATES: Omit<TemplateInput, "setOrders">[] = [
     title: "두통/안면통",
     kind: "symptom",
     sortOrder: 40,
-    firstCc: "headache / facial pain",
+    firstCc: "",
     firstPi: "onset:\n부위:\n양상/강도:\n지속 시간/빈도:\n코 증상 동반(코막힘, 농성 콧물, 후각저하):\n악화 요인:\n진통제/이전 치료:",
     firstRos: "nasal obstruction ( )\npurulent rhinorrhea ( )\nhyposmia ( )",
     firstPe: "nasal cavity: middle meatus discharge / septum / turbinate",
@@ -140,7 +142,7 @@ export const DEFAULT_TEMPLATES: Omit<TemplateInput, "setOrders">[] = [
     title: "인후두 이물감",
     kind: "symptom",
     sortOrder: 60,
-    firstCc: "throat discomfort",
+    firstCc: "foreign body sense",
     firstPi: "onset:\n위치:\n삼킴 곤란/통증:\n쉰목소리:\n위산 역류 증상(가슴쓰림, 신물):\n흡연/음주:\n체중 감소:",
     firstRos: "dysphagia ( )\nhoarseness ( )\nheartburn ( )",
     firstPe: "oral cavity / oropharynx:\nlaryngoscopy:",
@@ -164,7 +166,7 @@ export const DEFAULT_TEMPLATES: Omit<TemplateInput, "setOrders">[] = [
     title: "부비동염(진단 후 의뢰)",
     kind: "diagnosis",
     sortOrder: 110,
-    firstCc: "sinusitis",
+    firstCc: "",
     firstPi: "의뢰 병원/진단 시점:\n외부 영상(CT) 소견:\n증상(코막힘, 농성 콧물, 후각저하, 안면통):\n기간:\n이전 약물치료(항생제, 스테로이드, 기간):\n이전 수술:",
     firstRos: "",
     firstPe: "nasal cavity: middle meatus / polyp / discharge / septum",
@@ -182,5 +184,13 @@ export const DEFAULT_TEMPLATES: Omit<TemplateInput, "setOrders">[] = [
     firstPe: "nasal cavity / nasopharynx:\nneck:",
     firstAssessment: "",
     firstPlan: "",
+  },
+{
+    ...empty,
+    title: "비인강경",
+    kind: "exam",
+    sortOrder: 200,
+    firstPe: "<비강 소견>",
+    followObjective: "<비강 소견>",
   },
 ];
