@@ -6,6 +6,7 @@ import { RoadmapUpdateBodySchema } from "@/lib/roadmap";
 import { applyVisitRoadmaps, latestRoadmaps } from "@/lib/roadmap-store";
 import { prisma } from "@/lib/prisma";
 import { patientRoadmaps } from "@/lib/pathway-store";
+import { kstDate, type OutpatientRow } from "@/lib/hospital-link";
 import { PATHWAYS, pathwayById, pathwayText, stageOf, summaryLine } from "@/lib/pathways";
 
 // GET ?chartNo= : 진료실 프로그램이 지금 연 환자의 최신 로드맵을 보여 준다
@@ -22,6 +23,10 @@ export async function GET(request: Request) {
     }),
     patientRoadmaps(user.id, [chartNo]).then((m) => m.get(chartNo)),
   ]);
+  // 오늘 외래 명단의 이 환자 SOAP(외래 전날 AI) — "핵심:"·"P:" 줄만 진료실 프로그램 "이 환자" 칸에
+  const todayList = await prisma.outpatientList.findUnique({ where: { createdById_date: { createdById: user.id, date: kstDate(new Date()) } }, select: { rows: true } });
+  const todaySoap = ((todayList?.rows ?? []) as OutpatientRow[]).find((row) => row.chartNo?.replace(/^0+/, "") === chartNo.replace(/^0+/, ""))?.soap ?? "";
+  const soapLine = (key: string) => new RegExp(`^\\s*${key}\\s*:\\s*(.+)$`, "m").exec(todaySoap)?.[1].trim() ?? null;
   // pathwayText: 진료 경로(단계·할 일·갈림길), visits: 외래별 요약
   const pathwayTextAll = (pw?.pathways ?? []).map(pathwayText).filter(Boolean).join("\n\n");
   return pcJson({
@@ -31,6 +36,8 @@ export async function GET(request: Request) {
     visits: pw?.visits ?? [],
     // 작성 탭 한 줄: AI 요약 + 지금 단계, 다음 외래 권장(첫 경로) — 도우미가 그 간격 버튼을 강조
     summary: summaryLine(r?.text),
+    soapCore: soapLine("핵심"),
+    soapPlan: soapLine("P"),
     stageNow: (pw?.pathways ?? [])
       .map((p) => { const d = pathwayById(p.pathwayId); const s = d && stageOf(d, p.stageId); return d && s ? `${d.name.replace(/\s*\(.*\)$/, "")} ● ${s.name}${p.confirmed ? "" : "(AI)"}` : ""; })
       .filter(Boolean).join(" / ") || null,
