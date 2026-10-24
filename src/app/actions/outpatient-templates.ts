@@ -22,6 +22,7 @@ function parse(formData: FormData) {
     kind: formData.get("kind"),
     audience: formData.get("audience") ?? "adult",
     shortcut: formData.get("shortcut"),
+    dxCodes: String(formData.get("dxCodes") ?? ""),
     sortOrder: formData.get("sortOrder") || 0,
     ...fields,
     setOrders,

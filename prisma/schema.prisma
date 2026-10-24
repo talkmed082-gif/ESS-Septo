@@ -238,6 +238,7 @@ model OutpatientTemplate {
   followObjective  String   @default("")
   followAssessment String   @default("")
   followPlan       String   @default("")
+  dxCodes          String   @default("") // 진단 코드 "J342,J343" — 진료실 프로그램이 경증 아닌 첫 코드를 주진단, 나머지는 부상병
   setOrders        Json     @default("[]")
   createdById      String
   createdBy        User     @relation(fields: [createdById], references: [id])

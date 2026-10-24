@@ -6,6 +6,7 @@ import {
   FIRST_FIELDS,
   FOLLOW_FIELDS,
   TemplateInputSchema,
+  normalizeDxCodes,
   parseSetOrderRefs,
 } from "./outpatient-templates";
 
@@ -64,5 +65,17 @@ describe("외래 템플릿 형식", () => {
     expect(EmrSetOrderBodySchema.safeParse({ ownerEmpNo: "abc", items: [item] }).success).toBe(false);
     const withLines = { ...item, lines: [{ code: "X1", name: "약", dose: "1" }] };
     expect(EmrSetOrderBodySchema.parse({ ownerEmpNo: "2026539", items: [withLines] }).ownerName).toBe("");
+  });
+});
+
+describe("진단 코드 정리", () => {
+  it("점·공백·소문자 정리, 잘못된 코드·중복은 버림", () => {
+    expect(normalizeDxCodes("J34.2, j343  J32.9;J34.2 / xx 123")).toBe("J342,J343,J329");
+    expect(normalizeDxCodes("")).toBe("");
+  });
+  it("폼 입력도 같은 규칙", () => {
+    const { dxCodes: _d, ...base } = { ...DEFAULT_TEMPLATES[0], setOrders: [] };
+    expect(TemplateInputSchema.parse({ ...base, dxCodes: "r43.0 J33.9" }).dxCodes).toBe("R430,J339");
+    expect(TemplateInputSchema.parse(base).dxCodes).toBe("");
   });
 });

@@ -7,7 +7,7 @@ import { buttonStyles } from "@/lib/ui";
 const inputClass = "w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none";
 
 export type SetOrderOption = SetOrderRef & { path: string; ownerName: string };
-type Template = { title: string; kind: string; sortOrder: number; audience?: string; shortcut?: number | null; setOrders: SetOrderRef[] } & Record<string, unknown>;
+type Template = { title: string; kind: string; sortOrder: number; audience?: string; shortcut?: number | null; dxCodes?: string; setOrders: SetOrderRef[] } & Record<string, unknown>;
 
 const sameRef = (a: SetOrderRef, b: SetOrderRef) => a.ownerEmpNo === b.ownerEmpNo && a.key === b.key;
 
@@ -64,6 +64,7 @@ export function TemplateForm({
           ))}
         </select>
         <input name="shortcut" type="number" min={1} max={9} defaultValue={template?.shortcut ?? ""} aria-label="단축 번호" title="단축 번호 1~9 — 프로그램 고르기 창(F8)에서 숫자, 1~3은 Alt+번호로 바로" placeholder="번호" className="w-16 rounded-md border border-slate-300 px-2 text-sm" />
+        <input name="dxCodes" maxLength={200} defaultValue={template?.dxCodes ?? ""} placeholder="진단 코드(예: J34.2, J34.3)" aria-label="진단 코드" title="순서대로 — 프로그램이 경증 아닌 첫 코드를 주진단, 나머지는 부상병으로. 모두 경증이면 J34.2 주진단 + Objective +DSN" className="w-56 rounded-md border border-slate-300 px-2 text-sm" />
         <input name="sortOrder" type="number" min={0} max={999} defaultValue={template?.sortOrder ?? 0} aria-label="순서" title="순서(작을수록 위)" className="w-20 rounded-md border border-slate-300 px-2 text-sm" />
       </div>
 

@@ -34,6 +34,12 @@ export const SetOrderRefSchema = z.object({
 });
 export type SetOrderRef = z.infer<typeof SetOrderRefSchema>;
 
+// "J34.2, j343 J32.9" → "J342,J343,J329" (점·공백 정리, 잘못된 코드는 버림, 중복 제거)
+export function normalizeDxCodes(v: string): string {
+  const codes = v.toUpperCase().replace(/\./g, "").split(/[\s,;/]+/).filter((x) => /^[A-Z]\d{2}[A-Z0-9]{0,4}$/.test(x));
+  return [...new Set(codes)].slice(0, 10).join(",");
+}
+
 const fieldText = z.string().max(4000);
 export const TemplateInputSchema = z.object({
   title: z.string().trim().min(1).max(60),
@@ -41,6 +47,8 @@ export const TemplateInputSchema = z.object({
   audience: z.enum(["adult", "child"]),
   shortcut: z.preprocess((v) => (v === "" || v == null ? null : v), z.coerce.number().int().min(1).max(9).nullable()),
   sortOrder: z.coerce.number().int().min(0).max(999),
+  // 진단 코드(KCD) — 순서대로, 프로그램이 경증 아닌 첫 코드를 주진단, 나머지는 부상병으로 넣는다. 모두 경증이면 J34.2 주진단
+  dxCodes: z.string().max(200).default("").transform(normalizeDxCodes),
   ...(Object.fromEntries([...FIRST_FIELDS, ...FOLLOW_FIELDS].map(([k]) => [k, fieldText])) as Record<
     FieldKey,
     typeof fieldText
@@ -75,7 +83,7 @@ export const EmrSetOrderBodySchema = z.object({
 export type EmrSetOrderBody = z.infer<typeof EmrSetOrderBodySchema>;
 
 const empty = Object.fromEntries([...FIRST_FIELDS, ...FOLLOW_FIELDS].map(([k]) => [k, ""])) as Record<FieldKey, string>;
-type Draft = Omit<TemplateInput, "setOrders" | "audience" | "shortcut">;
+type Draft = Omit<TemplateInput, "setOrders" | "audience" | "shortcut" | "dxCodes">;
 
 // 처음 쓸 때 만드는 기본 템플릿 초안(사용자가 고쳐 쓴다). 빈칸은 진료 중 채울 자리.
 // CC는 EMR 초진 화면 아래 CC 목록의 이름과 같아야 프로그램이 골라 준다(목록에 없으면 비워 둠 → 직접 고름).
@@ -254,9 +262,11 @@ export const DEFAULT_TEMPLATES: Omit<TemplateInput, "setOrders">[] = ADULT.map((
   ...t,
   audience: "adult" as const,
   shortcut: t.kind === "symptom" && i < 9 ? i + 1 : null, // 증상 9개만 번호, 진단 의뢰·검사는 버튼으로만
+  dxCodes: "",
 }));
 export const DEFAULT_CHILD_TEMPLATES: Omit<TemplateInput, "setOrders">[] = CHILD.map((t, i) => ({
   ...t,
   audience: "child" as const,
   shortcut: i + 1,
+  dxCodes: "",
 }));
