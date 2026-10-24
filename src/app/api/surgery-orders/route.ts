@@ -4,6 +4,7 @@ import { findUserForProgram } from "@/lib/device-auth";
 import { prisma } from "@/lib/prisma";
 import { parseFieldValues } from "@/lib/field-types";
 import { surgeryOrdersFor } from "@/lib/surgery-orders";
+import { buildRemarkText, remarkExtras } from "@/lib/remark";
 
 // GET ?chartNo= : 그 환자의 가장 최근 수술기록으로 EMR 수술 오더 목록(진료실 프로그램 [수술 오더 넣기]).
 // 값은 계획(planData) ← 수술 후 수정(actualData) ← 수술기록(recordData) 순으로 덮어 쓴 것
@@ -18,15 +19,27 @@ export async function GET(request: Request) {
     ? await prisma.opRecord.findFirst({
         where: { createdById: user.id, opPlan: { patientId: { in: ids } } },
         orderBy: { operationDate: "desc" },
-        include: { opPlan: { select: { planData: true, actualData: true, surgeryType: { select: { code: true } } } } },
+        include: { opPlan: { select: { planData: true, actualData: true, chiefComplaint: true, postOpRemark: true, surgeryType: { select: { code: true } } } } },
       })
     : null;
   if (!rec) return pcJson({ found: false });
   const values = { ...parseFieldValues(rec.opPlan.planData), ...parseFieldValues(rec.opPlan.actualData), ...parseFieldValues(rec.recordData) };
+  const operationDate = rec.operationDate.toISOString().slice(0, 10);
   return pcJson({
     found: true,
-    operationDate: rec.operationDate.toISOString().slice(0, 10),
+    operationDate,
     procedureName: rec.procedureName,
     orders: surgeryOrdersFor(rec.opPlan.surgeryType.code, values),
+    // EMR 수술기록지(CreateOpNote) 넣기: 본문 = 소견 + 수술 과정(사이트 기록지와 같음), 비고 = 차트 Remark 문장
+    note: {
+      body: [rec.findings, rec.procedureDetail].filter(Boolean).join("\n\n"),
+      remark: buildRemarkText({
+        chiefComplaint: rec.opPlan.chiefComplaint ?? "",
+        surgeryDate: operationDate,
+        procedureName: rec.procedureName ?? "",
+        postOpRemark: rec.opPlan.postOpRemark ?? "",
+        extras: remarkExtras(values),
+      }),
+    },
   });
 }
