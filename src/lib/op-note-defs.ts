@@ -300,6 +300,14 @@ export const septoFields: SurgeryFieldDef[] = [
   // 구분해서 표시해야 해서, ESS 쪽 revision(f_revision_ess_right/left)과
   // 별개의 플래그로 둔다.
   { key: "f_revision_septo", label: "Septoturbinoplasty Revision case (재수술)", type: "checkbox" },
+  // EMR 수술 오더(진료 어시스트 [수술 오더 넣기])에 쓸 비중격교정술 코드 — 기본 골(사용자 2026-10-25)
+  {
+    key: "o_septo_code",
+    label: "비중격교정술 수술 오더 (EMR)",
+    type: "select",
+    options: ["골 (O1006)", "연골 (O1005)", "재건 (O1007)"],
+    default: "골 (O1006)",
+  },
   {
     key: "s_incision",
     label: "절개(Incision) 방법",
@@ -438,6 +446,11 @@ export const comboOnlyFields: SurgeryFieldDef[] = [
 const septoFieldsForCombo = septoFields;
 const fessFieldsForCombo = fessFields.filter((f) => f.key !== "dermacol" && f.key !== "f_side_order");
 
+// EMR 수술 오더 전용 — 모든 수술에 접구개신경절차단술(LA235)을 측마다 넣는다(사용자 2026-10-25)
+export const orderFields: SurgeryFieldDef[] = [
+  { key: "o_spg_block", label: "접구개신경절차단술 오더 (LA235)", type: "select", options: ["양측", "우측", "좌측", "안 함"], default: "양측" },
+];
+
 // 특정 수술 종류에서만 다르게 적용할 default 값을 덮어쓴다 — 같은 필드
 // 정의(예: CHR, P/E 시행 체크)를 여러 수술 종류가 공유하지만, 그 수술을
 // 할 때 임상적으로 흔한/기본적인 값은 수술 종류마다 다르기 때문.
@@ -451,7 +464,7 @@ function withDefaults(fields: SurgeryFieldDef[], overrides: Record<string, strin
 // 비중격도 같이 하므로 nasalFindingFields(두 그룹 다)를 그대로 쓴다.
 // ESS 수술명에는 항상 "ESS"가 들어가므로 ESS P/E도 기본으로 체크해둔다.
 export const essFullFields: SurgeryFieldDef[] = withDefaults(
-  [...essFindingFields, ...dsnFields, ...turbinoplastyFields, ...fessFields],
+  [...essFindingFields, ...dsnFields, ...turbinoplastyFields, ...fessFields, ...orderFields],
   { [ESS_PE_DONE_KEY]: "true" },
 );
 // 비중격교정술은 하비갑개 비후(CHR)를 양측에 동반하는 경우가 대부분이고,
@@ -459,7 +472,7 @@ export const essFullFields: SurgeryFieldDef[] = withDefaults(
 // 술식이라 관련 항목들을 기본으로 켜둔다. Packing 재료에서 Rhinocel/Dermacol은
 // 쓰지 않아서(genSeptoplasty 참고) dermacol 항목 자체를 뺀다.
 export const septoplastyFullFields: SurgeryFieldDef[] = withDefaults(
-  [...septumTurbinateFindingFields, ...turbinoplastyFields, ...septoFields],
+  [...septumTurbinateFindingFields, ...turbinoplastyFields, ...septoFields, ...orderFields],
   {
     [SEPTO_PE_DONE_KEY]: "true",
     n_chr: "양측",
@@ -472,7 +485,7 @@ export const septoplastyFullFields: SurgeryFieldDef[] = withDefaults(
 // Septo가 들어가면 Septoturbinoplasty(양측 inf. turbinoplasty)가 기본 세트이고, septal silastic sheet
 // (s_splint, septoFields에서 기본 체크)도 넣는다. MM silastic sheet는 기본으로 넣지 않는다(사용자 2026-10-16).
 export const comboFullFields: SurgeryFieldDef[] = withDefaults(
-  [...nasalFindingFields, ...turbinoplastyFields, ...septoFieldsForCombo, ...fessFieldsForCombo, ...comboOnlyFields],
+  [...nasalFindingFields, ...turbinoplastyFields, ...septoFieldsForCombo, ...fessFieldsForCombo, ...comboOnlyFields, ...orderFields],
   {
     [SEPTO_PE_DONE_KEY]: "true",
     [ESS_PE_DONE_KEY]: "true",
