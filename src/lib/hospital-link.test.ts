@@ -78,6 +78,16 @@ describe("외래 SOAP 붙이기", () => {
     expect(r.rows[1].soap).toBe("S: x");
     expect(r.rows[0].soap).toBeUndefined();
   });
+  it("로드맵도 같이 붙이고, 로드맵이 안 온 항목은 있던 로드맵을 둔다", () => {
+    const withRoadmap = [{ ...rows[0], roadmap: "옛 로드맵" }, rows[1]];
+    const r = mergeOutpatientSoap(withRoadmap, [
+      { chartNo: rows[0].chartNo, soap: "S: a" },
+      { chartNo: rows[1].chartNo, soap: "S: b", roadmap: "경과: x" },
+    ]);
+    expect(r.rows[0]).toMatchObject({ soap: "S: a", roadmap: "옛 로드맵" });
+    expect(r.rows[1]).toMatchObject({ soap: "S: b", roadmap: "경과: x" });
+    expect(OutpatientSoapBodySchema.safeParse({ date: "2026-10-20", items: [{ chartNo: "1", soap: "a", roadmap: "b" }] }).success).toBe(true);
+  });
   it("형식 검사: 날짜 꼴·빈 등록번호 거절", () => {
     expect(OutpatientSoapBodySchema.safeParse({ date: "2026-10-20", items: [{ chartNo: "1", soap: "a" }] }).success).toBe(true);
     expect(OutpatientSoapBodySchema.safeParse({ date: "10/20", items: [] }).success).toBe(false);
@@ -90,6 +100,10 @@ describe("외래 명단 새로 고침·검색", () => {
   it("다시 올려도 같은 등록번호의 SOAP는 유지, 새 환자는 SOAP 없음, 빠진 환자는 빠짐", () => {
     const r = carryOverSoap([row("111", "S: a"), row("222", "S: b")], [row("111"), row("333")]);
     expect(r).toEqual([row("111", "S: a"), row("333")]);
+  });
+  it("다시 올려도 로드맵도 등록번호로 유지", () => {
+    const r = carryOverSoap([{ ...row("111", "S: a"), roadmap: "경과: a" }, { ...row("222"), roadmap: "경과: b" }], [row("111"), row("222")]);
+    expect(r).toEqual([{ ...row("111", "S: a"), roadmap: "경과: a" }, { ...row("222"), roadmap: "경과: b" }]);
   });
   it("새 행에 SOAP가 있으면 그것을 씀", () => {
     expect(carryOverSoap([row("111", "old")], [row("111", "new")])[0].soap).toBe("new");

@@ -47,6 +47,7 @@ export const OutpatientRowSchema = z.object({
   visit: z.string().max(20),
   diagnosis: z.string().max(200),
   soap: z.string().max(6000).optional(), // 병원 PC가 명단 뒤에 따로 올리는 AI SOAP(참고용)
+  roadmap: z.string().max(4000).optional(), // 같은 AI 호출의 로드맵(경과·현재·할 일·확인) — SOAP는 오늘 진료, 로드맵은 긴 흐름
 });
 export type OutpatientRow = z.infer<typeof OutpatientRowSchema>;
 
@@ -90,13 +91,30 @@ export const OutpatientListBodySchema = z.object({
 
 export const OutpatientSoapBodySchema = z.object({
   date: z.string().regex(DATE),
-  items: z.array(z.object({ chartNo: z.string().min(1).max(20), soap: z.string().max(6000) })).max(300),
+  items: z
+    .array(
+      z.object({
+        chartNo: z.string().min(1).max(20),
+        soap: z.string().max(6000),
+        roadmap: z.string().max(4000).optional(),
+      }),
+    )
+    .max(300),
 });
+export type OutpatientSoapItem = z.infer<typeof OutpatientSoapBodySchema>["items"][number];
 
-// 명단을 다시 올릴 때(매일 아침 새로 고침) 이미 붙어 있던 SOAP를 등록번호로 옮겨 붙인다
+// 명단을 다시 올릴 때(매일 아침 새로 고침) 이미 붙어 있던 SOAP·로드맵을 등록번호로 옮겨 붙인다
 export function carryOverSoap(oldRows: OutpatientRow[], newRows: OutpatientRow[]) {
-  const old = new Map(oldRows.filter((r) => r.soap).map((r) => [r.chartNo, r.soap]));
-  return newRows.map((r) => (r.soap || !old.has(r.chartNo) ? r : { ...r, soap: old.get(r.chartNo) }));
+  const old = new Map(oldRows.filter((r) => r.soap || r.roadmap).map((r) => [r.chartNo, r]));
+  return newRows.map((r) => {
+    const o = old.get(r.chartNo);
+    if (!o) return r;
+    return {
+      ...r,
+      ...(!r.soap && o.soap ? { soap: o.soap } : {}),
+      ...(!r.roadmap && o.roadmap ? { roadmap: o.roadmap } : {}),
+    };
+  });
 }
 
 // 등록번호(일부, 숫자 4자리 이상)로 외래 명단 이력 찾기 — 최근 날짜부터
@@ -111,15 +129,15 @@ export function searchOutpatientHistory(
     .sort((a, b) => b.date.localeCompare(a.date));
 }
 
-// 등록번호가 같은 명단 행에 SOAP를 붙인다(명단에 없는 등록번호는 버림)
-export function mergeOutpatientSoap(rows: OutpatientRow[], items: { chartNo: string; soap: string }[]) {
-  const byChart = new Map(items.map((i) => [i.chartNo, i.soap]));
+// 등록번호가 같은 명단 행에 SOAP(+로드맵)를 붙인다(명단에 없는 등록번호는 버림). 로드맵이 안 온 항목은 있던 로드맵을 둔다
+export function mergeOutpatientSoap(rows: OutpatientRow[], items: OutpatientSoapItem[]) {
+  const byChart = new Map(items.map((i) => [i.chartNo, i]));
   let matched = 0;
   const merged = rows.map((r) => {
-    const soap = byChart.get(r.chartNo);
-    if (soap === undefined) return r;
+    const item = byChart.get(r.chartNo);
+    if (!item) return r;
     matched++;
-    return { ...r, soap };
+    return { ...r, soap: item.soap, ...(item.roadmap !== undefined ? { roadmap: item.roadmap } : {}) };
   });
   return { rows: merged, matched };
 }

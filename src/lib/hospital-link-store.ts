@@ -1,6 +1,13 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import { carryOverSoap, mergeOutpatientSoap, type OutpatientRow, type PcJobKey, type TsaRunBody } from "@/lib/hospital-link";
+import {
+  carryOverSoap,
+  mergeOutpatientSoap,
+  type OutpatientRow,
+  type OutpatientSoapItem,
+  type PcJobKey,
+  type TsaRunBody,
+} from "@/lib/hospital-link";
 
 // 병원 PC가 10분마다 확인하는 "TSA 기간 확인" 요청(없으면 null)
 export async function getTsaScanRequest(userId: string) {
@@ -68,7 +75,7 @@ export async function saveOutpatientList(
 }
 
 // 명단(saveOutpatientList)이 먼저 올라와 있어야 한다(없으면 null).
-export async function saveOutpatientSoap(userId: string, body: { date: string; items: { chartNo: string; soap: string }[] }) {
+export async function saveOutpatientSoap(userId: string, body: { date: string; items: OutpatientSoapItem[] }) {
   const list = await prisma.outpatientList.findUnique({ where: { createdById_date: { createdById: userId, date: body.date } } });
   if (!list) return null;
   const { rows, matched } = mergeOutpatientSoap(list.rows as OutpatientRow[], body.items);

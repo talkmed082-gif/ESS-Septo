@@ -50,6 +50,27 @@ function TsaCoverage({ runs }: { runs: { rangeTo: string; createdAt: Date; error
   );
 }
 
+// 외래 명단 행 아래 AI 정리 — SOAP(오늘 진료)와 로드맵(경과·현재·할 일·확인). 둘 다 참고용
+function AiNotes({ row }: { row: OutpatientRow }) {
+  const box = "mt-1 whitespace-pre-wrap break-words rounded bg-slate-50 p-3 text-slate-700";
+  return (
+    <div className="space-y-1">
+      {row.soap && (
+        <details>
+          <summary className="cursor-pointer text-emerald-700">SOAP (AI 요약, 참고용)</summary>
+          <p className={box}>{row.soap}</p>
+        </details>
+      )}
+      {row.roadmap && (
+        <details>
+          <summary className="cursor-pointer text-emerald-700">로드맵 (AI 정리, 참고용)</summary>
+          <p className={box}>{row.roadmap}</p>
+        </details>
+      )}
+    </div>
+  );
+}
+
 function heldText(h: SheetRef) {
   const other = (h.dates ?? []).filter((d) => d !== h.date);
   return other.length
@@ -278,14 +299,7 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
                   </Link>{" "}
                   {h.row.time} {h.row.name} {h.row.chartNo} ({h.row.visit}) {h.row.diagnosis}
                 </p>
-                {h.row.soap ? (
-                  <details>
-                    <summary className="cursor-pointer text-emerald-700">SOAP (AI 요약, 참고용)</summary>
-                    <p className="mt-1 whitespace-pre-wrap break-words rounded bg-slate-50 p-3 text-slate-700">{h.row.soap}</p>
-                  </details>
-                ) : (
-                  <p className="text-slate-400">SOAP 없음</p>
-                )}
+                {h.row.soap || h.row.roadmap ? <AiNotes row={h.row} /> : <p className="text-slate-400">SOAP 없음</p>}
               </div>
             ))}
           </div>
@@ -324,7 +338,7 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
                         const plan = patient?.opPlans[0];
                         return (
                           <Fragment key={i}>
-                          <tr className={p.soap ? "" : "border-b border-slate-100"}>
+                          <tr className={p.soap || p.roadmap ? "" : "border-b border-slate-100"}>
                             <td className="py-2 pr-3 whitespace-nowrap">{p.time}</td>
                             <td className="py-2 pr-3 whitespace-nowrap">{p.name}</td>
                             <td className="py-2 pr-3">{p.chartNo}</td>
@@ -347,13 +361,10 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
                               )}
                             </td>
                           </tr>
-                          {p.soap && (
+                          {(p.soap || p.roadmap) && (
                             <tr className="border-b border-slate-100">
                               <td colSpan={6} className="pb-2">
-                                <details>
-                                  <summary className="cursor-pointer text-emerald-700">SOAP (AI 요약, 참고용)</summary>
-                                  <p className="mt-1 whitespace-pre-wrap break-words rounded bg-slate-50 p-3 text-slate-700">{p.soap}</p>
-                                </details>
+                                <AiNotes row={p} />
                               </td>
                             </tr>
                           )}
