@@ -6,6 +6,7 @@ import {
   FIRST_FIELDS,
   FOLLOW_FIELDS,
   TemplateInputSchema,
+  DEFAULT_DX_CODES,
   normalizeDxCodes,
   parseSetOrderRefs,
 } from "./outpatient-templates";
@@ -77,5 +78,14 @@ describe("진단 코드 정리", () => {
     const { dxCodes: _d, ...base } = { ...DEFAULT_TEMPLATES[0], setOrders: [] };
     expect(TemplateInputSchema.parse({ ...base, dxCodes: "r43.0 J33.9" }).dxCodes).toBe("R430,J339");
     expect(TemplateInputSchema.parse(base).dxCodes).toBe("");
+  });
+});
+
+describe("초안 진단 코드", () => {
+  it("비인강경 말고 모든 초안에 코드가 있고, 이름표의 이름은 모두 초안에 있으며 코드 형식이 맞다", () => {
+    const all = [...DEFAULT_TEMPLATES, ...DEFAULT_CHILD_TEMPLATES];
+    for (const t of all) expect(t.dxCodes === "", t.title).toBe(t.title === "비인강경");
+    for (const k of Object.keys(DEFAULT_DX_CODES)) expect(all.some((t) => t.title === k), k).toBe(true);
+    for (const v of Object.values(DEFAULT_DX_CODES)) expect(normalizeDxCodes(v)).toBe(v);
   });
 });

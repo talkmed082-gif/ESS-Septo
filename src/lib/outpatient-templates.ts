@@ -258,15 +258,40 @@ const CHILD: Draft[] = [
     followSubjective: "발음 변화:", followObjective: "lingual frenulum:",
   },
 ];
+// 초안 진단 코드(사용자 확인 2026-10-25) — 프로그램이 경증 아닌 첫 코드를 주진단, 모두 경증이면 J34.2 주진단 + "+DSN".
+// 같은 값을 prisma/migrations/20261025150000_template_dx_codes 가 이미 있는 템플릿(이름 같고 코드 빈 것)에 넣는다
+export const DEFAULT_DX_CODES: Record<string, string> = {
+  "코막힘(비중격·비갑개)": "J342,J343",
+  "만성 부비동염": "J329",
+  "알레르기 비염": "J304",
+  "후각저하": "R438",
+  "코피": "R040",
+  "코골이·수면무호흡": "G4730",
+  "비강·부비동 종물": "D140",
+  "수술 후 추적(ESS·비중격)": "J342,J329",
+  "인후두 이물감·후비루": "J312",
+  "부비동염(진단 후 의뢰)": "J329",
+  "종물(진단 후 의뢰)": "D140",
+  "두통·안면통(진단 후 의뢰)": "R51,J329",
+  "코골이·입벌림(소아)": "J353,R065",
+  "콧물·코막힘(소아)": "J310",
+  "알레르기 비염(소아)": "J304",
+  "부비동염(소아)": "J329",
+  "코피(소아)": "R040",
+  "코 이물(소아)": "T171",
+  "코 외상(소아)": "S0220",
+  "편도염·목 통증(소아)": "J350",
+  "설소대·발음(소아)": "Q381",
+};
 export const DEFAULT_TEMPLATES: Omit<TemplateInput, "setOrders">[] = ADULT.map((t, i) => ({
   ...t,
   audience: "adult" as const,
   shortcut: t.kind === "symptom" && i < 9 ? i + 1 : null, // 증상 9개만 번호, 진단 의뢰·검사는 버튼으로만
-  dxCodes: "",
+  dxCodes: DEFAULT_DX_CODES[t.title] ?? "",
 }));
 export const DEFAULT_CHILD_TEMPLATES: Omit<TemplateInput, "setOrders">[] = CHILD.map((t, i) => ({
   ...t,
   audience: "child" as const,
   shortcut: i + 1,
-  dxCodes: "",
+  dxCodes: DEFAULT_DX_CODES[t.title] ?? "",
 }));
