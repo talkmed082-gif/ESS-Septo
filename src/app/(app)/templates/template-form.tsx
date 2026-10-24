@@ -63,7 +63,7 @@ export function TemplateForm({
             </option>
           ))}
         </select>
-        <input name="shortcut" type="number" min={1} max={9} defaultValue={template?.shortcut ?? ""} aria-label="단축 번호" title="단축 번호 1~9 — 프로그램 고르기 창(Ctrl+Shift+Q)에서 숫자, 1~3은 Ctrl+Shift+번호로 바로" placeholder="번호" className="w-16 rounded-md border border-slate-300 px-2 text-sm" />
+        <input name="shortcut" type="number" min={1} max={9} defaultValue={template?.shortcut ?? ""} aria-label="단축 번호" title="단축 번호 1~9 — 프로그램 고르기 창(F8)에서 숫자, 1~3은 Alt+번호로 바로" placeholder="번호" className="w-16 rounded-md border border-slate-300 px-2 text-sm" />
         <input name="sortOrder" type="number" min={0} max={999} defaultValue={template?.sortOrder ?? 0} aria-label="순서" title="순서(작을수록 위)" className="w-20 rounded-md border border-slate-300 px-2 text-sm" />
       </div>
 
