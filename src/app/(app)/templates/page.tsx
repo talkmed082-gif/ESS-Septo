@@ -69,9 +69,9 @@ export default async function TemplatesPage() {
           </li>
           <li>켤 때마다 아래 [연결 코드 받기]의 6자리를 넣습니다. 프로그램을 끄면 연결이 끊깁니다.</li>
           <li>
-            YES에서 기록지(외래초진/경과)를 열면 통증 &quot;없음&quot;이 자동 체크됩니다. Ctrl+Shift+번호 = 그 번호 템플릿 +
-            비인강경, Ctrl+Shift+Q = 템플릿 없이 비인강경, Ctrl+Shift+A/P = 성인/소아 전환(맥: Control+Shift+…). 이미 쓴 칸은
-            지우지 않고 뒤에 덧붙입니다.
+            YES에서 기록지(외래초진/경과)를 열면 통증 &quot;없음&quot;이 자동 체크되고, 환자 나이로 성인/소아 템플릿이 정해집니다(15세
+            미만 소아). Ctrl+Shift+Q = 템플릿 고르기 창(숫자 또는 Enter, 0 = 템플릿 없이 비인강경만 — 초진은 고른 CC에 맞는 템플릿이
+            먼저 선택됨), Ctrl+Shift+1~3 = 그 번호 템플릿 바로(맥: Control+Shift+…). 이미 쓴 칸은 지우지 않고 뒤에 덧붙입니다.
           </li>
         </ol>
       </div>
@@ -88,7 +88,7 @@ export default async function TemplatesPage() {
           <section key={aud} className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-sm font-semibold text-slate-700">
-                {AUDIENCES[aud]} 템플릿 <span className="font-normal text-slate-400">(Ctrl+Shift+{aud === "adult" ? "A" : "P"})</span>
+                {AUDIENCES[aud]} 템플릿 <span className="font-normal text-slate-400">({aud === "adult" ? "15세 이상" : "15세 미만"})</span>
               </h2>
               {list.length > 0 && (
                 <form action={replaceTemplatesWithDefaults.bind(null, aud)} className="flex items-center gap-2 text-xs text-slate-400">

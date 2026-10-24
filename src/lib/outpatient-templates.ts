@@ -4,7 +4,7 @@ import * as z from "zod";
 // 칸 이름은 EMR 기록지 탭과 같다(초진: CC·PI·ROS·PE·Assessment·Plan, 경과: S·O·A·P).
 export const TEMPLATE_KINDS = { symptom: "증상", diagnosis: "진단 받고 옴", exam: "검사" } as const;
 export type TemplateKind = keyof typeof TEMPLATE_KINDS;
-// 대상 — 프로그램에서 Ctrl+Shift+A(성인)/P(소아)로 바꾸고, 단축 번호(1~9)는 대상별로 따로
+// 대상 — 프로그램이 환자 나이로 고르고(15세 미만 소아), 단축 번호(1~9)는 대상별로 따로
 export const AUDIENCES = { adult: "성인", child: "소아" } as const;
 export type Audience = keyof typeof AUDIENCES;
 
