@@ -42,6 +42,27 @@ export default async function TemplatesPage() {
         )}
       </div>
 
+      <div className="space-y-2 rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-600">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="font-medium text-slate-800">진료실 PC 프로그램 (외래 도우미)</p>
+          <a href="/templates/download" className={buttonStyles.accent}>
+            OpdHelper.exe 내려받기
+          </a>
+        </div>
+        <ol className="list-decimal space-y-1 pl-5">
+          <li>설치 없이 파일 하나로 실행합니다. 관리자 권한 확인 창이 뜨면 &quot;예&quot;(YES가 관리자 권한으로 돌기 때문).</li>
+          <li>
+            Windows가 &quot;PC 보호&quot; 창을 띄우면 &quot;추가 정보 → 실행&quot;(서명하지 않은 프로그램이라 처음 한 번 뜰 수
+            있음).
+          </li>
+          <li>처음 실행 때 토큰을 물으면 설정 → EMR 수술 일정 연동의 토큰을 붙여넣습니다.</li>
+          <li>
+            YES에서 기록지(외래초진/경과)나 오더창을 연 상태로 템플릿을 고르고 [기록지 채우기]·[비인강경]·[약속처방
+            넣기]를 누릅니다. 이미 쓴 칸은 건드리지 않습니다.
+          </li>
+        </ol>
+      </div>
+
       {templates.length === 0 && (
         <form action={createDefaultTemplates} className="rounded-md border border-slate-200 bg-white p-3 text-sm">
           <p className="mb-2 text-slate-600">
