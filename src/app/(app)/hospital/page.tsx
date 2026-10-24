@@ -8,6 +8,9 @@ import { safeDateStr, seoulTodayAsStoredDate } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
 import { TsaScanForm } from "./tsa-scan-form";
 import { OutpatientCalendar } from "./outpatient-calendar";
+import { RoadmapBox } from "./roadmap-box";
+import { toggleTodo } from "@/app/actions/roadmap";
+import { latestRoadmaps } from "@/lib/roadmap-store";
 
 // 병원 PC 연동 상태 — 병원 PC 작업 상태판, TSA 구글 시트 동기화 기록·기간 확인 요청, 외래 명단.
 // 로그인한 본인 계정 데이터만 보인다(createdById로 거름).
@@ -51,8 +54,11 @@ function TsaCoverage({ runs }: { runs: { rangeTo: string; createdAt: Date; error
 }
 
 // 외래 명단 행 아래 AI 정리 — SOAP(오늘 진료)와 로드맵(경과·현재·할 일·확인). 둘 다 참고용
-function AiNotes({ row }: { row: OutpatientRow }) {
+// 로드맵은 환자별 최신 판(진료 후 갱신 포함, 할 일 체크 가능) — 없으면 명단 행에 붙은 것
+type LatestRoadmap = { id: string; text: string; done: string[]; source: string; createdAt: Date };
+function AiNotes({ row, rm }: { row: OutpatientRow; rm?: LatestRoadmap }) {
   const box = "mt-1 whitespace-pre-wrap break-words rounded bg-slate-50 p-3 text-slate-700";
+  const when = (d: Date) => d.toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric" });
   return (
     <div className="space-y-1">
       {row.soap && (
@@ -61,10 +67,19 @@ function AiNotes({ row }: { row: OutpatientRow }) {
           <p className={box}>{row.soap}</p>
         </details>
       )}
-      {row.roadmap && (
+      {(rm || row.roadmap) && (
         <details>
           <summary className="cursor-pointer text-emerald-700">로드맵 (AI 정리, 참고용)</summary>
-          <p className={box}>{row.roadmap}</p>
+          {rm ? (
+            <RoadmapBox
+              text={rm.text}
+              done={rm.done}
+              meta={`${when(rm.createdAt)} ${rm.source === "visit" ? "진료 후 갱신" : "외래 전 정리"}`}
+              toggle={toggleTodo.bind(null, rm.id)}
+            />
+          ) : (
+            <p className={box}>{row.roadmap}</p>
+          )}
         </details>
       )}
     </div>
@@ -146,6 +161,7 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
       })
     : [];
   const byChart = new Map(known.map((p) => [p.chartNo, p]));
+  const roadmaps = await latestRoadmaps(userId, [...new Set([...chartNos, ...history.map((h) => h.row.chartNo)])]);
   const jobByKey = new Map(jobs.map((j) => [j.job, j]));
 
   return (
@@ -299,7 +315,7 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
                   </Link>{" "}
                   {h.row.time} {h.row.name} {h.row.chartNo} ({h.row.visit}) {h.row.diagnosis}
                 </p>
-                {h.row.soap || h.row.roadmap ? <AiNotes row={h.row} /> : <p className="text-slate-400">SOAP 없음</p>}
+                {h.row.soap || h.row.roadmap || roadmaps.has(h.row.chartNo) ? <AiNotes row={h.row} rm={roadmaps.get(h.row.chartNo)} /> : <p className="text-slate-400">SOAP 없음</p>}
               </div>
             ))}
           </div>
@@ -338,7 +354,7 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
                         const plan = patient?.opPlans[0];
                         return (
                           <Fragment key={i}>
-                          <tr className={p.soap || p.roadmap ? "" : "border-b border-slate-100"}>
+                          <tr className={p.soap || p.roadmap || roadmaps.has(p.chartNo) ? "" : "border-b border-slate-100"}>
                             <td className="py-2 pr-3 whitespace-nowrap">{p.time}</td>
                             <td className="py-2 pr-3 whitespace-nowrap">{p.name}</td>
                             <td className="py-2 pr-3">{p.chartNo}</td>
@@ -361,10 +377,10 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
                               )}
                             </td>
                           </tr>
-                          {(p.soap || p.roadmap) && (
+                          {(p.soap || p.roadmap || roadmaps.has(p.chartNo)) && (
                             <tr className="border-b border-slate-100">
                               <td colSpan={6} className="pb-2">
-                                <AiNotes row={p} />
+                                <AiNotes row={p} rm={roadmaps.get(p.chartNo)} />
                               </td>
                             </tr>
                           )}

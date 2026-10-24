@@ -8,6 +8,7 @@ import {
   type PcJobKey,
   type TsaRunBody,
 } from "@/lib/hospital-link";
+import { addRoadmapVersion } from "@/lib/roadmap-store";
 
 // 병원 PC가 10분마다 확인하는 "TSA 기간 확인" 요청(없으면 null)
 export async function getTsaScanRequest(userId: string) {
@@ -80,5 +81,8 @@ export async function saveOutpatientSoap(userId: string, body: { date: string; i
   if (!list) return null;
   const { rows, matched } = mergeOutpatientSoap(list.rows as OutpatientRow[], body.items);
   await prisma.outpatientList.update({ where: { id: list.id }, data: { rows } });
+  // 외래 전날 만든 로드맵도 환자별 로드맵 이력에 쌓는다(명단에 있는 환자만)
+  const inList = new Set(rows.map((r) => r.chartNo));
+  for (const i of body.items) if (i.roadmap && inList.has(i.chartNo)) await addRoadmapVersion(userId, i.chartNo, i.roadmap, "soap");
   return { ok: true, matched };
 }

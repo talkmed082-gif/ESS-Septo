@@ -1,6 +1,9 @@
 import { verifySession } from "@/lib/dal";
 import { getEmrSetOrders, getOutpatientTemplates } from "@/lib/outpatient-templates-store";
-import { TEMPLATE_KINDS, type TemplateKind } from "@/lib/outpatient-templates";
+import { AUDIENCES, TEMPLATE_KINDS, type Audience, type TemplateKind } from "@/lib/outpatient-templates";
+import { prisma } from "@/lib/prisma";
+import { endAllDeviceSessions } from "@/app/actions/device";
+import { OtpCard } from "./otp-card";
 import {
   createDefaultTemplates,
   createOutpatientTemplate,
@@ -13,7 +16,11 @@ import { TemplateForm, type SetOrderOption } from "./template-form";
 // 외래 템플릿 — 진료실 PC 프로그램이 받아 EMR 기록지 칸을 채우고 연결한 약속처방을 오더창에 넣는다.
 export default async function TemplatesPage() {
   const { userId } = await verifySession();
-  const [templates, sets] = await Promise.all([getOutpatientTemplates(userId), getEmrSetOrders(userId)]);
+  const [templates, sets, activeDevices] = await Promise.all([
+    getOutpatientTemplates(userId),
+    getEmrSetOrders(userId),
+    prisma.deviceSession.count({ where: { createdById: userId, expiresAt: { gt: new Date() } } }),
+  ]);
 
   // 고를 수 있는 건 세트만(폴더 = 바로 다음 줄이 더 깊은 같은 사람 노드)
   const options: SetOrderOption[] = sets.flatMap((s, i) => {
@@ -55,47 +62,64 @@ export default async function TemplatesPage() {
             Windows가 &quot;PC 보호&quot; 창을 띄우면 &quot;추가 정보 → 실행&quot;(서명하지 않은 프로그램이라 처음 한 번 뜰 수
             있음).
           </li>
-          <li>처음 실행 때 토큰을 물으면 설정 → EMR 수술 일정 연동의 토큰을 붙여넣습니다.</li>
+          <li>켤 때마다 아래 [연결 코드 받기]의 6자리를 넣습니다. 프로그램을 끄면 연결이 끊깁니다.</li>
           <li>
-            YES에서 기록지(외래초진/경과)나 오더창을 연 상태로 템플릿을 고르고 [기록지 채우기]·[비인강경]·[약속처방
-            넣기]를 누릅니다. 이미 쓴 칸은 건드리지 않습니다.
+            YES에서 기록지(외래초진/경과)를 열면 통증 &quot;없음&quot;이 자동 체크됩니다. Ctrl+Shift+번호 = 그 번호 템플릿 +
+            비인강경, Ctrl+Shift+Q = 템플릿 없이 비인강경, Ctrl+Shift+A/P = 성인/소아 전환(맥: Control+Shift+…). 이미 쓴 칸은
+            지우지 않고 뒤에 덧붙입니다.
           </li>
         </ol>
       </div>
 
-      {templates.length === 0 && (
-        <form action={createDefaultTemplates} className="rounded-md border border-slate-200 bg-white p-3 text-sm">
-          <p className="mb-2 text-slate-600">
-            템플릿이 없습니다. 증상 7개(코골이/수면무호흡, 콧물, 코막힘, 두통/안면통, 재채기/알레르기, 인후두 이물감,
-            무후각증), 진단 2개(부비동염, 종물), 검사 1개(비인강경 — 프로그램의 [비인강경] 버튼이 씀) 초안을 만들어 고쳐 쓸 수 있습니다.
-          </p>
-          <button type="submit" className={buttonStyles.primarySmall}>
-            기본 템플릿 초안 만들기
-          </button>
-        </form>
-      )}
+      <OtpCard activeCount={activeDevices} endAll={endAllDeviceSessions} />
 
-      {templates.map((t) => (
-        <details key={t.id} className="rounded-md border border-slate-200 bg-white p-3">
-          <summary className="cursor-pointer text-sm font-medium text-slate-800">
-            {t.title}
-            <span className="ml-2 text-xs font-normal text-slate-400">
-              {TEMPLATE_KINDS[t.kind as TemplateKind] ?? t.kind}
-              {t.setOrders.length > 0 && ` · 약속처방 ${t.setOrders.length}개`}
-            </span>
-          </summary>
-          <div className="mt-3">
-            <TemplateForm
-              template={t}
-              options={options}
-              myEmpNo={myEmpNo}
-              action={updateOutpatientTemplate.bind(null, t.id)}
-              deleteAction={deleteOutpatientTemplate.bind(null, t.id)}
-            />
-          </div>
-        </details>
-      ))}
-
+      {(Object.keys(AUDIENCES) as Audience[]).map((aud) => {
+        const list = templates.filter((t) => (t.audience ?? "adult") === aud);
+        const numbered = list.filter((t) => t.kind !== "exam");
+        const explicit = numbered.some((t) => t.shortcut != null);
+        const num = (t: (typeof list)[number]) =>
+          t.kind === "exam" ? null : explicit ? t.shortcut : numbered.indexOf(t) + 1;
+        return (
+          <section key={aud} className="space-y-2">
+            <h2 className="text-sm font-semibold text-slate-700">
+              {AUDIENCES[aud]} 템플릿 <span className="font-normal text-slate-400">(Ctrl+Shift+{aud === "adult" ? "A" : "P"})</span>
+            </h2>
+            {list.length === 0 && (
+              <form action={createDefaultTemplates.bind(null, aud)} className="rounded-md border border-slate-200 bg-white p-3 text-sm">
+                <p className="mb-2 text-slate-600">
+                  {aud === "adult"
+                    ? "성인 템플릿이 없습니다. 증상 7개, 진단 2개(부비동염, 종물), 검사 1개(비인강경) 초안을 만들어 고쳐 쓸 수 있습니다."
+                    : "소아 템플릿이 없습니다. 코골이·입벌림, 콧물·코막힘, 중이염·귀 통증, 청력·검진 이상, 재채기/알레르기, 코피 초안을 만들어 고쳐 쓸 수 있습니다."}
+                </p>
+                <button type="submit" className={buttonStyles.primarySmall}>
+                  {AUDIENCES[aud]} 기본 초안 만들기
+                </button>
+              </form>
+            )}
+            {list.map((t) => (
+              <details key={t.id} className="rounded-md border border-slate-200 bg-white p-3">
+                <summary className="cursor-pointer text-sm font-medium text-slate-800">
+                  {num(t) != null && <span className="mr-2 rounded bg-slate-100 px-1.5 font-mono text-xs text-slate-600">{num(t)}</span>}
+                  {t.title}
+                  <span className="ml-2 text-xs font-normal text-slate-400">
+                    {TEMPLATE_KINDS[t.kind as TemplateKind] ?? t.kind}
+                    {t.setOrders.length > 0 && ` · 약속처방 ${t.setOrders.length}개`}
+                  </span>
+                </summary>
+                <div className="mt-3">
+                  <TemplateForm
+                    template={t}
+                    options={options}
+                    myEmpNo={myEmpNo}
+                    action={updateOutpatientTemplate.bind(null, t.id)}
+                    deleteAction={deleteOutpatientTemplate.bind(null, t.id)}
+                  />
+                </div>
+              </details>
+            ))}
+          </section>
+        );
+      })}
       <details className="rounded-md border border-dashed border-slate-300 bg-white p-3">
         <summary className="cursor-pointer text-sm font-medium text-slate-700">새 템플릿</summary>
         <div className="mt-3">

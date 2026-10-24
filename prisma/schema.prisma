@@ -53,6 +53,10 @@ model User {
   textTemplates   TextTemplate[]
   outpatientTemplates OutpatientTemplate[]
   emrSetOrders    EmrSetOrder[]
+  deviceOtps      DeviceOtp[]
+  deviceSessions  DeviceSession[]
+  roadmapVersions RoadmapVersion[]
+  visitNotes      VisitNote[]
   automationPauses AutomationPause[]
   pcJobs          PcJobStatus[]
 }
@@ -214,7 +218,9 @@ model TextTemplate {
 model OutpatientTemplate {
   id               String   @id @default(cuid())
   title            String
-  kind             String   @default("symptom") // symptom(증상) | diagnosis(진단 받고 옴)
+  kind             String   @default("symptom") // symptom(증상) | diagnosis(진단 받고 옴) | exam(검사, 비인강경)
+  audience         String   @default("adult") // adult(성인) | child(소아) — 프로그램에서 Ctrl+Shift+A로 전환
+  shortcut         Int? // 단축 번호 1~9 — 프로그램 Ctrl+Shift+번호(대상별로 따로)
   sortOrder        Int      @default(0)
   firstCc          String   @default("")
   firstPi          String   @default("")
@@ -253,6 +259,68 @@ model EmrSetOrder {
   syncedAt    DateTime @default(now())
 
   @@unique([createdById, ownerEmpNo, key])
+}
+
+// 진료실 PC 프로그램 연결용 1회 코드(6자리, 5분, 한 번만). 코드는 해시만 저장
+model DeviceOtp {
+  id          String    @id @default(cuid())
+  codeHash    String
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdById String
+  createdBy   User      @relation(fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+
+  @@index([codeHash])
+}
+
+// 1회 코드로 연 진료실 PC 프로그램 세션 — 프로그램을 끄면 끊는다(최대 16시간). 토큰은 해시만 저장
+model DeviceSession {
+  id          String   @id @default(cuid())
+  tokenHash   String   @unique
+  expiresAt   DateTime
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+// 1회 코드가 틀린 시도 — 짧은 시간에 몰리면 연결을 잠시 막는다(서버리스라 DB에 남김)
+model DeviceOtpFailure {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+// 환자별 로드맵(경과·현재·할 일·확인) 이력 — 최신 것이 지금 로드맵. source: soap(외래 전날 자동) | visit(진료 후 갱신)
+// done = 체크한 할 일 줄(글 그대로)
+model RoadmapVersion {
+  id          String   @id @default(cuid())
+  chartNo     String
+  text        String
+  source      String
+  done        Json     @default("[]")
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@index([createdById, chartNo, createdAt])
+}
+
+// 진료실 프로그램 [로드맵 저장]으로 올린 그날 기록지 글 — 저녁에 노트북이 모아 로드맵을 갱신하고 processedAt을 찍는다
+model VisitNote {
+  id          String    @id @default(cuid())
+  chartNo     String
+  visitDate   String // yyyy-MM-dd(서울)
+  kind        String // first | follow
+  text        String
+  processedAt DateTime?
+  createdById String
+  createdBy   User      @relation(fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([createdById, chartNo, visitDate])
 }
 
 // 병원 PC 작업(수술 일정·리마인더·외래 명단·TSA)의 마지막 실행 — "병원 연동" 화면 상태판.

@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_TEMPLATES, parseSetOrderRefs, type EmrSetOrderBody } from "@/lib/outpatient-templates";
+import { DEFAULT_CHILD_TEMPLATES, DEFAULT_TEMPLATES, parseSetOrderRefs, type Audience, type EmrSetOrderBody } from "@/lib/outpatient-templates";
 
 // 내 외래 템플릿(정한 순서 → 만든 순서). setOrders는 형식을 확인해 돌려준다
 export async function getOutpatientTemplates(userId: string) {
@@ -11,12 +11,13 @@ export async function getOutpatientTemplates(userId: string) {
   return rows.map(({ createdById: _c, createdAt: _a, ...t }) => ({ ...t, setOrders: parseSetOrderRefs(t.setOrders) }));
 }
 
-// 템플릿이 하나도 없을 때만 기본 초안을 만든다(두 번 눌러도 겹치지 않게)
-export async function createDefaultOutpatientTemplates(userId: string) {
-  const count = await prisma.outpatientTemplate.count({ where: { createdById: userId } });
+// 그 대상(성인/소아) 템플릿이 하나도 없을 때만 기본 초안을 만든다(두 번 눌러도 겹치지 않게)
+export async function createDefaultOutpatientTemplates(userId: string, audience: Audience = "adult") {
+  const count = await prisma.outpatientTemplate.count({ where: { createdById: userId, audience } });
   if (count > 0) return 0;
+  const drafts = audience === "child" ? DEFAULT_CHILD_TEMPLATES : DEFAULT_TEMPLATES;
   const r = await prisma.outpatientTemplate.createMany({
-    data: DEFAULT_TEMPLATES.map((t) => ({ ...t, setOrders: [], createdById: userId })),
+    data: drafts.map((t) => ({ ...t, setOrders: [], createdById: userId })),
   });
   return r.count;
 }

@@ -20,6 +20,8 @@ function parse(formData: FormData) {
   return TemplateInputSchema.safeParse({
     title: formData.get("title"),
     kind: formData.get("kind"),
+    audience: formData.get("audience") ?? "adult",
+    shortcut: formData.get("shortcut"),
     sortOrder: formData.get("sortOrder") || 0,
     ...fields,
     setOrders,
@@ -52,8 +54,8 @@ export async function deleteOutpatientTemplate(id: string): Promise<void> {
   refresh();
 }
 
-export async function createDefaultTemplates(): Promise<void> {
+export async function createDefaultTemplates(audience: "adult" | "child"): Promise<void> {
   const session = await verifySession();
-  await createDefaultOutpatientTemplates(session.userId);
+  await createDefaultOutpatientTemplates(session.userId, audience);
   refresh();
 }

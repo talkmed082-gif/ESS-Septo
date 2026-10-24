@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  DEFAULT_CHILD_TEMPLATES,
   DEFAULT_TEMPLATES,
   EmrSetOrderBodySchema,
   FIRST_FIELDS,
@@ -18,6 +19,22 @@ describe("외래 템플릿 형식", () => {
     for (const t of DEFAULT_TEMPLATES) {
       expect(TemplateInputSchema.safeParse({ ...t, setOrders: [] }).success).toBe(true);
     }
+  });
+
+  it("성인 초안은 번호 1~9(비인강경은 번호 없음), 소아 초안 6개는 1~6이고 모두 형식 통과", () => {
+    expect(DEFAULT_TEMPLATES.filter((t) => t.kind !== "exam").map((t) => t.shortcut)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(DEFAULT_TEMPLATES.find((t) => t.kind === "exam")?.shortcut).toBeNull();
+    expect(DEFAULT_CHILD_TEMPLATES.map((t) => [t.audience, t.shortcut])).toEqual([1, 2, 3, 4, 5, 6].map((n) => ["child", n]));
+    for (const t of DEFAULT_CHILD_TEMPLATES) expect(TemplateInputSchema.safeParse({ ...t, setOrders: [] }).success).toBe(true);
+    // 재진은 S·P가 비면 오더를 못 낸다 → 비인강경은 재진 S·P, 초진 Plan을 갖는다
+    expect(DEFAULT_TEMPLATES.find((t) => t.title === "비인강경")).toMatchObject({ followSubjective: "f/u", followPlan: "비인강경검사", firstPlan: "비인강경검사" });
+  });
+
+  it("단축 번호는 비워도 되고(빈칸 → null), 1~9 밖은 거절", () => {
+    const base = { ...DEFAULT_TEMPLATES[0], setOrders: [] };
+    expect(TemplateInputSchema.parse({ ...base, shortcut: "" }).shortcut).toBeNull();
+    expect(TemplateInputSchema.parse({ ...base, shortcut: "3" }).shortcut).toBe(3);
+    expect(TemplateInputSchema.safeParse({ ...base, shortcut: "10" }).success).toBe(false);
   });
 
   it("모든 칸이 빠짐없이 있어야 한다(칸이 빠지면 화면에서 그 칸이 지워진다)", () => {

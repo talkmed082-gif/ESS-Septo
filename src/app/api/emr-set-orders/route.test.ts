@@ -6,6 +6,11 @@ const { findUniqueUser, replace, getTemplates } = vi.hoisted(() => ({
   getTemplates: vi.fn(),
 }));
 vi.mock("@/lib/prisma", () => ({ prisma: { user: { findUnique: findUniqueUser } } }));
+// 1회 코드 세션 대신 자동화 토큰 경로로(세션 쪽은 device-auth.test에서)
+vi.mock("@/lib/device-auth", async () => {
+  const { findUserByImportToken } = await import("@/lib/import-auth");
+  return { findUserForProgram: findUserByImportToken };
+});
 vi.mock("@/lib/outpatient-templates-store", () => ({
   replaceEmrSetOrders: replace,
   getOutpatientTemplates: getTemplates,
