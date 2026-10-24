@@ -51,6 +51,8 @@ model User {
   tsaRuns         TsaRun[]
   outpatientLists OutpatientList[]
   textTemplates   TextTemplate[]
+  outpatientTemplates OutpatientTemplate[]
+  emrSetOrders    EmrSetOrder[]
   automationPauses AutomationPause[]
   pcJobs          PcJobStatus[]
 }
@@ -204,6 +206,53 @@ model TextTemplate {
   updatedAt   DateTime @updatedAt
 
   @@index([createdById])
+}
+
+// 외래 템플릿(증상·진단별) — 진료실 PC 프로그램이 받아 EMR 외래초진/경과 기록지 칸을 채우고,
+// 연결한 약속처방을 오더창에 넣는다(저장·전송은 사용자가 직접). 칸 이름은 EMR 기록지 탭과 같다.
+// setOrders = [{ ownerEmpNo, key, name }] — EMR 약속처방 트리 노드 키(EmrSetOrder와 같은 키)
+model OutpatientTemplate {
+  id               String   @id @default(cuid())
+  title            String
+  kind             String   @default("symptom") // symptom(증상) | diagnosis(진단 받고 옴)
+  sortOrder        Int      @default(0)
+  firstCc          String   @default("")
+  firstPi          String   @default("")
+  firstRos         String   @default("")
+  firstPe          String   @default("")
+  firstAssessment  String   @default("")
+  firstPlan        String   @default("")
+  followSubjective String   @default("")
+  followObjective  String   @default("")
+  followAssessment String   @default("")
+  followPlan       String   @default("")
+  setOrders        Json     @default("[]")
+  createdById      String
+  createdBy        User     @relation(fields: [createdById], references: [id])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([createdById])
+}
+
+// 진료실 PC 프로그램이 올린 EMR 약속처방 목록. ownerEmpNo = 그때 YES에 로그인한 사람의 사번
+// (다른 사람이 자기 아이디로 로그인한 PC에서 올리면 그 사람 세트가 따로 쌓인다). 올릴 때마다 그 사번 목록을 통째로 바꾼다.
+// lines = 세트 안 처방 줄(가져온 다른 사람 세트처럼 내 트리에 없는 세트를 넣을 때 쓴다). 폴더는 lines 없음
+model EmrSetOrder {
+  id          String   @id @default(cuid())
+  ownerEmpNo  String
+  ownerName   String   @default("")
+  key         String
+  path        String   @default("")
+  name        String
+  level       Int      @default(0)
+  seq         Int      @default(0) // EMR 트리 순서
+  lines       Json?
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  syncedAt    DateTime @default(now())
+
+  @@unique([createdById, ownerEmpNo, key])
 }
 
 // 병원 PC 작업(수술 일정·리마인더·외래 명단·TSA)의 마지막 실행 — "병원 연동" 화면 상태판.

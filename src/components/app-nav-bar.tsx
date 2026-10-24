@@ -23,6 +23,9 @@ export async function AppNavBar() {
           <Link href="/hospital" className="text-sm text-slate-600 hover:text-slate-900">
             병원 연동
           </Link>
+          <Link href="/templates" className="text-sm text-slate-600 hover:text-slate-900">
+            외래 템플릿
+          </Link>
           <Link href="/settings" className="text-sm text-slate-600 hover:text-slate-900">
             설정
           </Link>
