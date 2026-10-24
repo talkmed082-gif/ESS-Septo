@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { parsePathwayLines } from "@/lib/pathways";
 
 // "병원 연동" 화면과 병원 PC API가 같이 쓰는 순수 로직(날짜 계산·형식 검사).
 
@@ -137,7 +138,8 @@ export function mergeOutpatientSoap(rows: OutpatientRow[], items: OutpatientSoap
     const item = byChart.get(r.chartNo);
     if (!item) return r;
     matched++;
-    return { ...r, soap: item.soap, ...(item.roadmap !== undefined ? { roadmap: item.roadmap } : {}) };
+    // 명단 행에는 [경로]·[외래] 줄을 뺀 로드맵 글만(그 줄은 진료 경로로 따로 저장)
+    return { ...r, soap: item.soap, ...(item.roadmap !== undefined ? { roadmap: parsePathwayLines(item.roadmap).rest } : {}) };
   });
   return { rows: merged, matched };
 }

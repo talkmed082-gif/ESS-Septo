@@ -41,11 +41,11 @@ export function nextClinicDate(from: string, days: number, schedule: ClinicSessi
   return null;
 }
 
-export const PLAN_TYPES = { surgery: "수술", medication: "약물치료", observation: "경과관찰" } as const;
+export const PLAN_TYPES = { surgery: "수술", medication: "약물치료", observation: "경과관찰", return: "회송" } as const;
 
 export const PatientCareBodySchema = z.object({
   chartNo: z.string().trim().regex(/^\d{4,12}$/),
-  planType: z.enum(["surgery", "medication", "observation"]).nullable().optional(),
+  planType: z.enum(["surgery", "medication", "observation", "return"]).nullable().optional(),
   nextVisit: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
   nextVisitLabel: z.string().max(20).nullable().optional(),
 });

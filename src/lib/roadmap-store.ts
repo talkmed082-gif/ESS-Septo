@@ -2,6 +2,8 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { kstDate } from "@/lib/hospital-link";
 import { carryDone, parseDone } from "@/lib/roadmap";
+import { parsePathwayLines } from "@/lib/pathways";
+import { applyPathwayLines, patientRoadmaps } from "@/lib/pathway-store";
 
 // 등록번호별 최신 로드맵
 export async function latestRoadmaps(userId: string, chartNos: string[]) {
@@ -16,8 +18,12 @@ export async function latestRoadmaps(userId: string, chartNos: string[]) {
   return map;
 }
 
-// 새 판을 쌓는다. 최신 판과 글이 같으면 쌓지 않음. 체크한 할 일은 같은 글이면 이어 간다
-export async function addRoadmapVersion(userId: string, chartNo: string, text: string, source: "soap" | "visit") {
+// 새 판을 쌓는다. 최신 판과 글이 같으면 쌓지 않음. 체크한 할 일은 같은 글이면 이어 간다.
+// AI 글의 [경로]·[외래] 줄은 떼어 진료 경로·외래 요약으로 저장한다
+export async function addRoadmapVersion(userId: string, chartNo: string, raw: string, source: "soap" | "visit") {
+  const { rest: text, pathways, visits } = parsePathwayLines(raw);
+  if (pathways.length || visits.length) await applyPathwayLines(userId, chartNo, pathways, visits);
+  if (!text) return false;
   const latest = (await latestRoadmaps(userId, [chartNo])).get(chartNo);
   if (latest && latest.text === text) return false;
   await prisma.roadmapVersion.create({
@@ -46,14 +52,17 @@ export async function pendingVisitNotes(userId: string) {
     take: 200,
   });
   const charts = [...new Set(notes.map((n) => n.chartNo))];
-  const [latest, cares] = await Promise.all([
+  const [latest, cares, pws] = await Promise.all([
     latestRoadmaps(userId, charts),
     prisma.patientCare.findMany({ where: { createdById: userId, chartNo: { in: charts } }, select: { chartNo: true, planType: true, nextVisit: true } }),
+    patientRoadmaps(userId, charts),
   ]);
   const care = new Map(cares.map((c) => [c.chartNo, c]));
   return notes.map((n) => ({
     ...n,
     roadmap: latest.get(n.chartNo)?.text ?? null,
+    // 지금 진료 경로(의사가 확정했으면 "확정") — 저녁 갱신이 단계를 이어서 고르게
+    pathway: (pws.get(n.chartNo)?.pathways ?? []).map((p) => `${p.pathwayId} = ${p.stageId}${p.confirmed ? " (의사 확정)" : ""}`).join("\n") || null,
     done: latest.get(n.chartNo)?.done ?? [],
     planType: care.get(n.chartNo)?.planType ?? null,
     nextVisit: care.get(n.chartNo)?.nextVisit ?? null,

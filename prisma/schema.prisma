@@ -58,6 +58,8 @@ model User {
   roadmapVersions RoadmapVersion[]
   visitNotes      VisitNote[]
   patientCares    PatientCare[]
+  patientPathways PatientPathway[]
+  visitSummaries  VisitSummary[]
   rxBundles       RxBundle[]
   // 내 외래 스케줄 — [{ weekday: 0(일)~6(토), session: "AM" | "PM" }]. 다음 외래 날짜 계산에 쓴다(휴진은 AutomationPause)
   clinicSchedule  Json            @default("[]")
@@ -339,6 +341,40 @@ model PatientCare {
   updatedAt      DateTime @updatedAt
 
   @@unique([createdById, chartNo])
+}
+
+// 환자별 진료 경로(src/lib/pathways.ts)와 지금 단계 — AI가 제안(confirmed=false면 바로 바꿈), 의사가 확정하면 AI는 제안만 남긴다.
+// history = [{ stageId, date, by: ai|doctor }]. 한 환자 경로 최대 2개
+model PatientPathway {
+  id              String   @id @default(cuid())
+  chartNo         String
+  pathwayId       String
+  stageId         String
+  confirmed       Boolean  @default(false)
+  proposedStageId String?
+  proposedReason  String?
+  startedAt       String // yyyy-MM-dd(서울)
+  history         Json     @default("[]")
+  createdById     String
+  createdBy       User     @relation(fields: [createdById], references: [id])
+  updatedAt       DateTime @updatedAt
+
+  @@unique([createdById, chartNo, pathwayId])
+}
+
+// 외래별 요약(로드맵의 외래 버튼) — AI가 기록으로 만든다. 그 외래 때 단계(pathwayId·stageId)를 같이 남긴다
+model VisitSummary {
+  id          String   @id @default(cuid())
+  chartNo     String
+  visitDate   String // yyyy-MM-dd
+  summary     String
+  pathwayId   String?
+  stageId     String?
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  updatedAt   DateTime @updatedAt
+
+  @@unique([createdById, chartNo, visitDate])
 }
 
 // 진료실 프로그램 [로드맵 저장]으로 올린 그날 기록지 글 — 저녁에 노트북이 모아 로드맵을 갱신하고 processedAt을 찍는다
