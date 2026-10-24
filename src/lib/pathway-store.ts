@@ -1,7 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { kstDate } from "@/lib/hospital-link";
-import { applyProposal, parseHistory, pushHistory, type PathwayProposal, type StageEvent, type VisitLine } from "@/lib/pathways";
+import { applyProposal, parseHistory, planOfStage, pushHistory, type PathwayProposal, type StageEvent, type VisitLine } from "@/lib/pathways";
 
 export type PatientPathwayView = {
   pathwayId: string;
@@ -53,8 +53,20 @@ export async function patientRoadmaps(userId: string, chartNos: string[]) {
   return map;
 }
 
-// 의사가 단계를 정함(확정). 경로가 없으면 새로 시작(2개까지)
+// 의사가 단계를 정함(확정). 경로가 없으면 새로 시작(2개까지). 그 단계에 맞는 Plan도 같이 저장
 export async function setPatientStage(userId: string, chartNo: string, pathwayId: string, stageId: string) {
+  const r = await setStageOnly(userId, chartNo, pathwayId, stageId);
+  const plan = planOfStage(stageId);
+  if (r && plan)
+    await prisma.patientCare.upsert({
+      where: { createdById_chartNo: { createdById: userId, chartNo } },
+      create: { chartNo, planType: plan, createdById: userId },
+      update: { planType: plan },
+    });
+  return r;
+}
+
+async function setStageOnly(userId: string, chartNo: string, pathwayId: string, stageId: string) {
   const today = kstDate(new Date());
   const cur = await prisma.patientPathway.findUnique({ where: { createdById_chartNo_pathwayId: { createdById: userId, chartNo, pathwayId } } });
   const ev: StageEvent = { stageId, date: today, by: "doctor" };

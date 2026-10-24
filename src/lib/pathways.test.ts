@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PATHWAYS, applyProposal, parsePathwayLines, pushHistory, SetStageSchema } from "./pathways";
+import { PATHWAYS, applyProposal, parsePathwayLines, planOfStage, pushHistory, SetStageSchema, summaryLine } from "./pathways";
 
 describe("경로 정의", () => {
   it("경로·단계 id는 겹치지 않고, 갈림길이 가리키는 단계는 같은 경로 안에 있다", () => {
@@ -48,6 +48,24 @@ describe("AI 제안 반영", () => {
   });
   it("같은 단계는 이력에 다시 쌓지 않는다", () => {
     expect(pushHistory([{ stageId: "a", date: "1", by: "ai" }], { stageId: "a", date: "2", by: "doctor" })).toHaveLength(1);
+  });
+});
+
+describe("Plan·요약", () => {
+  it("수술 단계는 수술, 약물 단계는 약물치료, 술후 추적은 경과관찰, 평가·결정은 Plan 안 바꿈", () => {
+    expect(planOfStage("surgery")).toBe("surgery");
+    expect(planOfStage("mmt")).toBe("medication");
+    expect(planOfStage("surv_2y")).toBe("observation");
+    expect(planOfStage("decide")).toBeNull();
+    expect(planOfStage("eval")).toBeNull();
+  });
+  it("모든 경로의 단계 id는 Plan 표에 있거나 일부러 뺀 평가·결정 단계", () => {
+    const none = new Set(["eval", "decide", "reassess", "workup", "biopsy", "malignant"]);
+    for (const p of PATHWAYS) for (const s of p.stages) if (!none.has(s.id)) expect(planOfStage(s.id), `${p.id}.${s.id}`).not.toBeNull();
+  });
+  it("로드맵 글의 요약 줄", () => {
+    expect(summaryLine("요약: CRSwNP, 10/16 ESS 후 술후 관리 중\n경과: …")).toBe("CRSwNP, 10/16 ESS 후 술후 관리 중");
+    expect(summaryLine("경과: …")).toBeNull();
   });
 });
 

@@ -6,7 +6,7 @@ import { RoadmapUpdateBodySchema } from "@/lib/roadmap";
 import { applyVisitRoadmaps, latestRoadmaps } from "@/lib/roadmap-store";
 import { prisma } from "@/lib/prisma";
 import { patientRoadmaps } from "@/lib/pathway-store";
-import { pathwayById, pathwayText, stageOf } from "@/lib/pathways";
+import { PATHWAYS, pathwayById, pathwayText, stageOf, summaryLine } from "@/lib/pathways";
 
 // GET ?chartNo= : 진료실 프로그램이 지금 연 환자의 최신 로드맵을 보여 준다
 export async function GET(request: Request) {
@@ -29,6 +29,13 @@ export async function GET(request: Request) {
     care,
     pathwayText: pathwayTextAll || null,
     visits: pw?.visits ?? [],
+    // 작성 탭 한 줄: AI 요약 + 지금 단계, 다음 외래 권장(첫 경로) — 도우미가 그 간격 버튼을 강조
+    summary: summaryLine(r?.text),
+    stageNow: (pw?.pathways ?? [])
+      .map((p) => { const d = pathwayById(p.pathwayId); const s = d && stageOf(d, p.stageId); return d && s ? `${d.name.replace(/\s*\(.*\)$/, "")} ● ${s.name}${p.confirmed ? "" : "(AI)"}` : ""; })
+      .filter(Boolean).join(" / ") || null,
+    nextLabel: (() => { const p = pw?.pathways[0]; const d = p && pathwayById(p.pathwayId); return (d && stageOf(d, p!.stageId)?.next) || null; })(),
+    pathwayChoices: (pw?.pathways.length ?? 0) >= 2 ? [] : PATHWAYS.filter((d) => !pw?.pathways.some((p) => p.pathwayId === d.id)).map((d) => ({ id: d.id, name: d.name, first: d.stages[0].id })),
     // 갈림길 버튼: 지금 단계의 선택지(to가 있는 것만) + 확정 전이면 "이 단계 확정"
     decisions: (pw?.pathways ?? []).flatMap((p) => {
       const def = pathwayById(p.pathwayId);

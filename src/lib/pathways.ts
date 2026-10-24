@@ -190,6 +190,23 @@ export const PATHWAYS: Pathway[] = [
 export const pathwayById = (id: string) => PATHWAYS.find((p) => p.id === id);
 export const stageOf = (p: Pathway, id: string | null | undefined) => p.stages.find((s) => s.id === id);
 
+// 갈림길·단계 확정이 Plan(외래 명단·도우미의 수술/약물치료/경과관찰)도 같이 정한다. 평가·결정 단계는 Plan을 건드리지 않음
+const PLAN_BY_STAGE: Record<string, "surgery" | "medication" | "observation"> = {
+  surgery: "surgery",
+  med: "medication", mmt: "medication", maintain: "medication", training: "medication", long: "medication",
+  biologic: "medication", immuno: "medication", step_up: "medication", cpap: "medication", treat: "medication",
+  po1: "observation", po2: "observation", po3: "observation", po: "observation", po_early: "observation", po_1_6m: "observation",
+  po_1y: "observation", po_follow: "observation", surv_2y: "observation", surv_annual: "observation", annual: "observation",
+  prn: "observation", check: "observation", end: "observation",
+};
+export const planOfStage = (stageId: string) => PLAN_BY_STAGE[stageId] ?? null;
+
+// 로드맵 글의 "요약:" 한 줄(AI) — 진료실 프로그램 작성 탭 맨 위에 보인다
+export function summaryLine(roadmapText: string | null | undefined): string | null {
+  const m = /^\s*요약\s*:\s*(.+)$/m.exec(roadmapText ?? "");
+  return m ? m[1].trim() : null;
+}
+
 // AI 출력의 경로 줄 — 로드맵 글에서 떼어 구조로 저장한다(나머지 글은 그대로 로드맵)
 //  [경로] crs_t2 = mmt | 근거
 //  [외래] 2026-08-14 | crs_t2:eval | 그 외래 요약
