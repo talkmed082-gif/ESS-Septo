@@ -130,7 +130,7 @@ export const DEFAULT_CHILD_RX: RxBundleInput[] = [
     BIOFLOR,
   ] },
   { title: "소아 부비동염(세프디니르)", audience: "child", sortOrder: 40, items: [
-    item({ code: "CFDN_GR", name: "OMNICEF 과립 100mg/g", days: "7", note: "KIMS 9~18mg/kg/일, 단위 확인 필요", ped: { type: "kg", mgPerKgDay: 14, timesPerDay: 3, freq: "P123", mgPerUnit: 1, maxMgDay: null, maxKg: null } }),
+    item({ code: "CFDN_GR", name: "OMNICEF 과립 100mg/g", days: "7", note: "KIMS 9~18mg/kg/일, EMR 처방 단위 mg", ped: { type: "kg", mgPerKgDay: 14, timesPerDay: 3, freq: "P123", mgPerUnit: 1, maxMgDay: null, maxKg: null } }),
     BIOFLOR,
   ] },
   { title: "소아 마크롤라이드(클래리트로마이신)", audience: "child", sortOrder: 50, items: [
