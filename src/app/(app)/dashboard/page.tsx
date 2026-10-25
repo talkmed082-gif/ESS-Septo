@@ -112,7 +112,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
               </Link>
             )}
           </h2>
-          {nearest ? <OutpatientTable rows={nearestRows} /> : <p className="text-sm text-slate-400">올라온 외래 명단이 없습니다.</p>}
+          {nearest ? <OutpatientTable rows={nearestRows} date={nearest.date} /> : <p className="text-sm text-slate-400">올라온 외래 명단이 없습니다.</p>}
         </section>
 
         <section className={box}>

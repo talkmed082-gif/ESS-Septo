@@ -84,7 +84,8 @@ export async function loadSchedule(userId: string, nameStyle: NameStyle, from: s
   };
 }
 
-export function OutpatientTable({ rows }: { rows: OutpatientRow[] }) {
+// date를 주면 환자 이름을 누를 때 진료 화면(/clinic — 로드맵·SOAP·오더)으로(사용자 2026-10-25)
+export function OutpatientTable({ rows, date }: { rows: OutpatientRow[]; date?: string }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">
@@ -92,7 +93,15 @@ export function OutpatientTable({ rows }: { rows: OutpatientRow[] }) {
           {rows.map((r, i) => (
             <tr key={i} className="border-b border-slate-100 last:border-0">
               <td className="py-1.5 pr-3 whitespace-nowrap text-slate-500">{r.time}</td>
-              <td className="py-1.5 pr-3 whitespace-nowrap">{r.name}</td>
+              <td className="py-1.5 pr-3 whitespace-nowrap">
+                {date && r.chartNo ? (
+                  <Link href={`/clinic?date=${date}&chart=${r.chartNo}`} className="text-emerald-700 underline">
+                    {r.name}
+                  </Link>
+                ) : (
+                  r.name
+                )}
+              </td>
               <td className="py-1.5 pr-3 text-slate-500">{r.chartNo}</td>
               <td className="py-1.5 pr-3 whitespace-nowrap text-slate-500">{r.visit}</td>
               <td className="py-1.5">{r.diagnosis}</td>
@@ -187,7 +196,7 @@ export function ScheduleCalendar({
                 </Link>
               )}
             </p>
-            {dayRows.length ? <OutpatientTable rows={dayRows} /> : <p className="text-sm text-slate-400">없음</p>}
+            {dayRows.length ? <OutpatientTable rows={dayRows} date={selected} /> : <p className="text-sm text-slate-400">없음</p>}
           </div>
           <div>
             <p className="mb-1 text-xs font-medium text-slate-500">수술 {dayPlans.length}건</p>
