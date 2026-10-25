@@ -10,4 +10,5 @@ export async function toggleTodo(versionId: string, item: string): Promise<void>
   await toggleRoadmapTodo(session.userId, versionId, item);
   revalidatePath("/outpatient");
   revalidatePath("/dashboard");
+  revalidatePath("/clinic");
 }

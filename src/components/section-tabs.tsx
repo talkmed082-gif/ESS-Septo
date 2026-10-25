@@ -2,6 +2,7 @@ import Link from "next/link";
 
 // 한 메뉴 안의 화면 탭 — 외래(명단·템플릿), 설정(일반·병원 연동·엑셀 가져오기)
 export const OUTPATIENT_TABS = [
+  { href: "/clinic", label: "진료" },
   { href: "/outpatient", label: "외래 명단" },
   { href: "/templates", label: "외래 템플릿" },
 ];

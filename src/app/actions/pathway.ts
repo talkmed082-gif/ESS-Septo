@@ -12,6 +12,7 @@ export async function setStage(chartNo: string, pathwayId: string, stageId: stri
   if (!parsed.success) return;
   await setPatientStage(session.userId, parsed.data.chartNo, parsed.data.pathwayId, parsed.data.stageId);
   revalidatePath("/outpatient");
+  revalidatePath("/clinic");
 }
 
 export async function removePathway(chartNo: string, pathwayId: string): Promise<void> {
@@ -19,4 +20,5 @@ export async function removePathway(chartNo: string, pathwayId: string): Promise
   if (!/^\d{4,12}$/.test(chartNo)) return;
   await removePatientPathway(session.userId, chartNo, pathwayId);
   revalidatePath("/outpatient");
+  revalidatePath("/clinic");
 }
