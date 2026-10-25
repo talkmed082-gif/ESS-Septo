@@ -5,6 +5,7 @@ import { parseFieldValues } from "@/lib/field-types";
 import { procedureNameFor, type NameStyle } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
 import { parseProfSurgeries, PROFESSORS, type ProfSurgery } from "@/lib/prof-schedule";
+import { profSurgeryTags } from "@/lib/my-week";
 
 // 내 일정 달력(외래 인원·수술) — 대시보드 2주 달력과 캘린더 메뉴(한 달)가 같이 쓴다(사용자 2026-10-25).
 // 날짜를 누르면 그날 외래·수술 환자 목록이 아래에 뜬다. 교수님 4분 외래 인원·수술도 같이(병원 PC가 2주치를 올림).
@@ -151,7 +152,8 @@ export function ScheduleCalendar({
         {dates.map((date) => {
           const n = data.lists.get(date)?.rows.length ?? 0;
           const s = data.plans.get(date)?.length ?? 0;
-          const ps = (data.profs.get(date) ?? []).reduce((t, p) => t + p.surgeries.length, 0);
+          // 교수님별 수술 수 "박 1 · 문 1"(사용자 2026-10-25, 예전 "교수 3" 합계 대신)
+          const ps = profSurgeryTags(data.profs.get(date) ?? []);
           const tone =
             date === selected
               ? "border-slate-900 bg-slate-900 text-white"
@@ -168,7 +170,7 @@ export function ScheduleCalendar({
               <span className={date === today ? "font-semibold underline" : ""}>{Number(date.slice(8))}</span>
               {n > 0 && <span className="text-[10px]">외래 {n}</span>}
               {s > 0 && <span className="text-[10px]">수술 {s}</span>}
-              {ps > 0 && <span className={`text-[10px] ${date === selected ? "text-slate-300" : "text-slate-400"}`}>교수 {ps}</span>}
+              {ps && <span title="교수님 수술" className={`text-[10px] leading-tight ${date === selected ? "text-slate-300" : "text-slate-500"}`}>{ps}</span>}
             </Link>
           );
         })}

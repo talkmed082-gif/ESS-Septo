@@ -68,7 +68,7 @@ export default async function TemplatesPage() {
           </li>
           <li>
             켤 때마다 맨 위에 보이는{" "}
-            <Link href="/dashboard#otp" className="underline">
+            <Link href="/settings#otp" className="underline">
               오늘의 번호
             </Link>
             (6자리, 서울 자정에 바뀜)를 넣습니다. 프로그램을 끄면 연결이 끊깁니다.

@@ -16,5 +16,5 @@ export async function rotateOtp(): Promise<void> {
 export async function endAllDeviceSessions(): Promise<void> {
   const session = await verifySession();
   await prisma.deviceSession.deleteMany({ where: { createdById: session.userId } });
-  revalidatePath("/dashboard");
+  revalidatePath("/settings");   // 버튼은 설정 화면 오늘의 번호 칸에 있음(2026-10-25 대시보드에서 옮김)
 }

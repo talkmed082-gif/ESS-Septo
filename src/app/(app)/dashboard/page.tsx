@@ -1,18 +1,18 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
-import { getDailyOtp } from "@/lib/device-auth";
-import { rotateOtp, endAllDeviceSessions } from "@/app/actions/device";
-import { kstDate, type OutpatientRow } from "@/lib/hospital-link";
+import { findPause, kstDate, type OutpatientRow } from "@/lib/hospital-link";
 import { latestRoadmaps } from "@/lib/roadmap-store";
 import { type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
-import { buttonStyles } from "@/lib/ui";
 import { TodoList } from "./todo-list";
 import { loadSchedule, md, OutpatientTable, PlanList, ScheduleCalendar, toPlanItem } from "@/components/schedule-calendar";
+import { myDay, scheduleDay } from "@/lib/my-week";
+import { TodaySchedule } from "./today-schedule";
 
-// 첫 화면(대시보드, 사용자 2026-10-25) — 오늘의 번호, 가장 가까운 외래 환자, 2주 안 수술, 할 일(로드맵·일정 알림·기록지 미작성),
-// 2주 달력(날짜를 누르면 그날 외래·수술 환자). 외래 명단은 병원 PC가 평일 아침 14일치를 올린다(outpatient_refresh.ps1).
+// 첫 화면(대시보드, 사용자 2026-10-25) — 맨 위 오늘 내 일정(주간 일정표 + 그날 교수님 수술·외래, 내 외래·수술), 2주 달력,
+// 가장 가까운 외래 환자, 2주 안 수술, 할 일(로드맵·일정 알림·기록지 미작성). 오늘의 번호는 위쪽 메뉴에 있어 여기선 뺌(사용자).
+// 외래 명단은 병원 PC가 평일 아침 14일치를 올린다(outpatient_refresh.ps1).
 const DAYS = 14;
 const box = "rounded-lg border border-slate-200 bg-white p-4";
 const h2 = "mb-2 text-sm font-semibold text-slate-700";
@@ -37,9 +37,9 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   const { day: dayParam } = await searchParams;
   const day = typeof dayParam === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dayParam) && dayParam >= today && dayParam <= end ? dayParam : undefined;
 
-  const [otp, activeDevices, lists, schedule, overduePlans, reminders] = await Promise.all([
-    getDailyOtp(user.id, now),
-    prisma.deviceSession.count({ where: { createdById: user.id, expiresAt: { gt: now } } }),
+  const sday = scheduleDay(today);
+  const [pauses, lists, schedule, overduePlans, reminders] = await Promise.all([
+    prisma.automationPause.findMany({ where: { createdById: user.id, from: { lte: sday }, to: { gte: sday } }, select: { from: true, to: true, note: true } }),
     prisma.outpatientList.findMany({
       where: { createdById: user.id, date: { gte: today } },
       orderBy: { date: "asc" },
@@ -79,29 +79,27 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   });
 
   const dates = Array.from({ length: DAYS }, (_, i) => kstDate(now, i));
+  const sList = schedule.lists.get(sday);
+  const pause = findPause(pauses, sday);
+  const slots = myDay(sday, {
+    profs: schedule.profs.get(sday) ?? [],
+    myOpd: { count: sList?.rows.length ?? 0, clinic: sList?.clinic ?? null },
+    myPlans: (schedule.plans.get(sday) ?? []).map((p) => ({ id: p.id, name: p.name, procedure: p.procedure })),
+    pause: pause ? { note: pause.note } : null,
+  });
 
   return (
     <div className="space-y-4">
-      <section id="otp" className={`${box} flex flex-wrap items-center justify-between gap-3`}>
-        <div>
-          <p className="text-xs text-slate-500">오늘의 번호 · 진료실 PC 프로그램 연결</p>
-          <p className="font-mono text-3xl font-semibold tracking-[0.25em] text-slate-900">{otp.code}</p>
-          <p className="text-xs text-slate-400">오늘 자정까지 여러 번 쓸 수 있음{activeDevices > 0 && ` · 연결된 프로그램 ${activeDevices}개`}</p>
-        </div>
-        <div className="flex gap-2">
-          <form action={rotateOtp}>
-            <button type="submit" className={buttonStyles.smallOutline}>
-              새 번호
-            </button>
-          </form>
-          {activeDevices > 0 && (
-            <form action={endAllDeviceSessions}>
-              <button type="submit" className={buttonStyles.smallOutline}>
-                연결 모두 끊기
-              </button>
-            </form>
-          )}
-        </div>
+      <TodaySchedule date={sday} today={today} slots={slots} />
+
+      <section className={box}>
+        <h2 className={h2}>
+          2주 일정
+          <Link href="/calendar" className="ml-2 font-normal text-emerald-700 underline">
+            캘린더에서 한 달 보기
+          </Link>
+        </h2>
+        <ScheduleCalendar dates={dates} today={today} selected={day} data={schedule} dayHref={(d) => `/dashboard?day=${d}#day`} />
       </section>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -168,16 +166,6 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
             {overdueItems.length ? <PlanList plans={overdueItems} /> : <p className="text-slate-400">없음</p>}
           </div>
         </div>
-      </section>
-
-      <section className={box}>
-        <h2 className={h2}>
-          2주 일정
-          <Link href="/calendar" className="ml-2 font-normal text-emerald-700 underline">
-            캘린더에서 한 달 보기
-          </Link>
-        </h2>
-        <ScheduleCalendar dates={dates} today={today} selected={day} data={schedule} dayHref={(d) => `/dashboard?day=${d}#day`} />
       </section>
     </div>
   );

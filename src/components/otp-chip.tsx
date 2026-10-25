@@ -8,7 +8,7 @@ export async function OtpChip() {
   const { code } = await getDailyOtp(userId);
   return (
     <Link
-      href="/dashboard#otp"
+      href="/settings#otp"
       title="오늘의 번호(진료실 PC 프로그램 연결, 서울 자정에 바뀜)"
       className="shrink-0 rounded-md bg-emerald-50 px-2 py-1 font-mono text-sm font-semibold tracking-widest whitespace-nowrap text-emerald-800"
     >

@@ -15,6 +15,7 @@ import { kstDate } from "@/lib/hospital-link";
 import { ClinicScheduleCard } from "./clinic-schedule-card";
 import { parseSchedule } from "@/lib/clinic-schedule";
 import { SETTINGS_TABS, SectionTabs } from "@/components/section-tabs";
+import { OtpCard } from "./otp-card";
 
 export default async function SettingsPage() {
   const user = await getCurrentUser();
@@ -61,6 +62,11 @@ export default async function SettingsPage() {
       </div>
 
       <div className="max-w-lg space-y-8">
+      <div id="otp" className="scroll-mt-24">
+        <h2 className="mb-1 text-sm font-semibold text-slate-700">오늘의 번호 (진료실 PC 프로그램 연결)</h2>
+        <OtpCard userId={user.id} />
+      </div>
+
       <div>
         <h2 className="mb-1 text-sm font-semibold text-slate-700">수술명 표기</h2>
         <p className="mb-3 text-sm text-slate-500">
