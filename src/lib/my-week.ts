@@ -35,16 +35,30 @@ export type SlotLine =
 export type Slot = { session: "오전" | "오후"; title: string; lines: SlotLine[] };
 
 const profOf = (f: DayFacts, name: string) => f.profs.find((p) => p.doctor === name);
+// 그날 교수님 자료가 하나라도 올라왔는가 — 병원 PC는 외래·수술이 있는 교수님 줄만 올리므로, 자료가 있는 날 그 교수님 줄이 없으면 외래·수술 0
+const loaded = (f: DayFacts) => f.profs.length > 0;
+// 교수님 쉬는 날(사용자 2026-10-25 "교수님 근무 상황도 반영"): YES 교수 근무 변동은 아직 못 읽어서, 그날 외래·수술이 모두 0이면 휴진일 수 있다고만 표시
+const offLine = (prof: string): SlotLine => ({ type: "text", text: `${prof} 교수님 그날 외래·수술 0 — 휴진일 수 있음(확인 필요)` });
+const othersOps = (f: DayFacts, except: string): SlotLine[] => f.profs.filter((p) => p.doctor !== except && p.surgeries.length).map((p) => ({ type: "surgeries" as const, prof: p.doctor, items: p.surgeries }));
 
 function slotFor(duty: Duty, f: DayFacts, date: string): { title: string; lines: SlotLine[] } {
   switch (duty.kind) {
     case "op-assist": {
-      const ops = profOf(f, duty.prof)?.surgeries ?? [];
-      return { title: `${duty.prof} 교수님 수술 어시스트`, lines: ops.length ? [{ type: "surgeries", prof: duty.prof, items: ops }] : [{ type: "text", text: "올라온 수술 없음(병원 PC가 평일 아침 2주치를 올림)", muted: true }] };
+      const p = profOf(f, duty.prof);
+      const ops = p?.surgeries ?? [];
+      if (ops.length) return { title: `${duty.prof} 교수님 수술 어시스트`, lines: [{ type: "surgeries", prof: duty.prof, items: ops }] };
+      if (!loaded(f)) return { title: `${duty.prof} 교수님 수술 어시스트`, lines: [{ type: "text", text: "올라온 자료 없음(병원 PC가 평일 아침 2주치를 올림)", muted: true }] };
+      const others = othersOps(f, duty.prof);
+      return {
+        title: `${duty.prof} 교수님 수술 어시스트`,
+        lines: [p?.outpatient ? { type: "text", text: `${duty.prof} 교수님 수술 없음(외래 ${p.outpatient}명)` } : offLine(duty.prof), ...(others.length ? [{ type: "text" as const, text: "다른 교수님 수술(참관):" }, ...others] : [])],
+      };
     }
     case "opd-assist": {
-      const n = profOf(f, duty.prof)?.outpatient;
-      return { title: `${duty.prof} 교수님 외래 어시스트`, lines: [{ type: "text", text: n == null ? "외래 인원 자료 없음" : `외래 ${n}명`, muted: n == null }] };
+      const p = profOf(f, duty.prof);
+      if (!loaded(f)) return { title: `${duty.prof} 교수님 외래 어시스트`, lines: [{ type: "text", text: "외래 인원 자료 없음", muted: true }] };
+      if (!p?.outpatient) return { title: `${duty.prof} 교수님 외래 어시스트`, lines: [p?.surgeries.length ? { type: "text", text: `${duty.prof} 교수님 외래 0명(수술 ${p.surgeries.length}건)` } : offLine(duty.prof)] };
+      return { title: `${duty.prof} 교수님 외래 어시스트`, lines: [{ type: "text", text: `외래 ${p.outpatient}명` }] };
     }
     case "my-opd":
       return { title: duty.label, lines: [f.myOpd.count ? { type: "opd", text: `내 외래 ${f.myOpd.count}명${f.myOpd.clinic ? ` · ${f.myOpd.clinic}` : ""}`, date } : { type: "text", text: "외래 명단 없음", muted: true }] };
