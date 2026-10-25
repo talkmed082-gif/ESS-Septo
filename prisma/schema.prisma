@@ -457,6 +457,8 @@ model ProfSchedule {
   doctor      String
   outpatient  Int      @default(0)
   surgeries   Json     @default("[]")
+  // 그날 교수님 부재 — "휴가"·"출장"·"반일 휴가"로만(사유·종류는 안 남김, 2026-10-26). YES 개인별복무현황조회에서 병원 PC가 읽음
+  off         String?
   createdById String
   createdBy   User     @relation(fields: [createdById], references: [id])
   updatedAt   DateTime @updatedAt

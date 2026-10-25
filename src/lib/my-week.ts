@@ -18,7 +18,7 @@ export const MY_WEEK: Record<number, { AM?: Duty; PM?: Duty }> = {
   5: { AM: { kind: "varies" } },
 };
 
-export type ProfDay = { doctor: string; outpatient: number; surgeries: ProfSurgery[] };
+export type ProfDay = { doctor: string; outpatient: number; surgeries: ProfSurgery[]; off?: string | null };
 export type MyPlan = { id: string; name: string; procedure: string };
 export type DayFacts = {
   profs: ProfDay[];
@@ -37,8 +37,12 @@ export type Slot = { session: "오전" | "오후"; title: string; lines: SlotLin
 const profOf = (f: DayFacts, name: string) => f.profs.find((p) => p.doctor === name);
 // 그날 교수님 자료가 하나라도 올라왔는가 — 병원 PC는 외래·수술이 있는 교수님 줄만 올리므로, 자료가 있는 날 그 교수님 줄이 없으면 외래·수술 0
 const loaded = (f: DayFacts) => f.profs.length > 0;
-// 교수님 쉬는 날(사용자 2026-10-25 "교수님 근무 상황도 반영"): YES 교수 근무 변동은 아직 못 읽어서, 그날 외래·수술이 모두 0이면 휴진일 수 있다고만 표시
-const offLine = (prof: string): SlotLine => ({ type: "text", text: `${prof} 교수님 그날 외래·수술 0 — 휴진일 수 있음(확인 필요)` });
+// 교수님 쉬는 날(사용자 2026-10-25 "교수님 근무 상황도 반영"): YES 개인별복무현황조회의 부재(휴가·출장·반일 휴가)를 병원 PC가 올림(2026-10-26).
+// 부재 기록이 없는데 외래·수술이 모두 0이면 휴진일 수 있다고만 표시
+const offLine = (f: DayFacts, prof: string): SlotLine => {
+  const off = profOf(f, prof)?.off;
+  return off ? { type: "text", text: `${prof} 교수님 ${off}` } : { type: "text", text: `${prof} 교수님 그날 외래·수술 0 — 휴진일 수 있음(확인 필요)` };
+};
 const othersOps = (f: DayFacts, except: string): SlotLine[] => f.profs.filter((p) => p.doctor !== except && p.surgeries.length).map((p) => ({ type: "surgeries" as const, prof: p.doctor, items: p.surgeries }));
 
 function slotFor(duty: Duty, f: DayFacts, date: string): { title: string; lines: SlotLine[] } {
@@ -46,19 +50,19 @@ function slotFor(duty: Duty, f: DayFacts, date: string): { title: string; lines:
     case "op-assist": {
       const p = profOf(f, duty.prof);
       const ops = p?.surgeries ?? [];
-      if (ops.length) return { title: `${duty.prof} 교수님 수술 어시스트`, lines: [{ type: "surgeries", prof: duty.prof, items: ops }] };
+      if (ops.length) return { title: `${duty.prof} 교수님 수술 어시스트`, lines: [...(p?.off ? [offLine(f, duty.prof)] : []), { type: "surgeries", prof: duty.prof, items: ops }] };
       if (!loaded(f)) return { title: `${duty.prof} 교수님 수술 어시스트`, lines: [{ type: "text", text: "올라온 자료 없음(병원 PC가 평일 아침 2주치를 올림)", muted: true }] };
       const others = othersOps(f, duty.prof);
       return {
         title: `${duty.prof} 교수님 수술 어시스트`,
-        lines: [p?.outpatient ? { type: "text", text: `${duty.prof} 교수님 수술 없음(외래 ${p.outpatient}명)` } : offLine(duty.prof), ...(others.length ? [{ type: "text" as const, text: "다른 교수님 수술(참관):" }, ...others] : [])],
+        lines: [p?.off || !p?.outpatient ? offLine(f, duty.prof) : { type: "text", text: `${duty.prof} 교수님 수술 없음(외래 ${p.outpatient}명)` }, ...(others.length ? [{ type: "text" as const, text: "다른 교수님 수술(참관):" }, ...others] : [])],
       };
     }
     case "opd-assist": {
       const p = profOf(f, duty.prof);
       if (!loaded(f)) return { title: `${duty.prof} 교수님 외래 어시스트`, lines: [{ type: "text", text: "외래 인원 자료 없음", muted: true }] };
-      if (!p?.outpatient) return { title: `${duty.prof} 교수님 외래 어시스트`, lines: [p?.surgeries.length ? { type: "text", text: `${duty.prof} 교수님 외래 0명(수술 ${p.surgeries.length}건)` } : offLine(duty.prof)] };
-      return { title: `${duty.prof} 교수님 외래 어시스트`, lines: [{ type: "text", text: `외래 ${p.outpatient}명` }] };
+      if (!p?.outpatient) return { title: `${duty.prof} 교수님 외래 어시스트`, lines: [p?.off || !p?.surgeries.length ? offLine(f, duty.prof) : { type: "text", text: `${duty.prof} 교수님 외래 0명(수술 ${p.surgeries.length}건)` }] };
+      return { title: `${duty.prof} 교수님 외래 어시스트`, lines: [...(p.off ? [offLine(f, duty.prof)] : []), { type: "text", text: `외래 ${p.outpatient}명` }] };
     }
     case "my-opd":
       return { title: duty.label, lines: [f.myOpd.count ? { type: "opd", text: `내 외래 ${f.myOpd.count}명${f.myOpd.clinic ? ` · ${f.myOpd.clinic}` : ""}`, date } : { type: "text", text: "외래 명단 없음", muted: true }] };
@@ -73,7 +77,8 @@ function slotFor(duty: Duty, f: DayFacts, date: string): { title: string; lines:
       if (f.myOpd.count) lines.push({ type: "opd", text: `내 외래 ${f.myOpd.count}명${f.myOpd.clinic ? ` · ${f.myOpd.clinic}` : ""}`, date });
       if (f.myPlans.length) lines.push({ type: "myPlans", items: f.myPlans });
       const moon = profOf(f, "문수진")?.outpatient ?? 0;
-      if (moon) lines.push({ type: "text", text: `문수진 교수님 외래 ${moon}명 — 어시스트 확인` });
+      if (profOf(f, "문수진")?.off) lines.push(offLine(f, "문수진"));
+      else if (moon) lines.push({ type: "text", text: `문수진 교수님 외래 ${moon}명 — 어시스트 확인` });
       if (!lines.length) lines.push({ type: "text", text: "내 외래·수술·문수진 교수님 외래 모두 없음", muted: true });
       return { title: "내 외래 / 수술 / 문수진 교수님 외래 어시스트", lines };
     }
@@ -97,10 +102,11 @@ export function scheduleDay(today: string): string {
   return new Date(Date.parse(`${today}T00:00:00Z`) + add * 86_400_000).toISOString().slice(0, 10);
 }
 
-// 달력 칸의 교수님별 수술 수 "박 1 · 문 1"(성 한 글자)
+// 달력 칸의 교수님별 수술 수 "박 1 · 문 1"(성 한 글자), 부재면 "문 휴"·"박 출"·"최 반"
 export function profSurgeryTags(profs: ProfDay[]): string {
+  const OFF: Record<string, string> = { 휴가: "휴", 출장: "출", "반일 휴가": "반" };
   return profs
-    .filter((p) => p.surgeries.length)
-    .map((p) => `${p.doctor.slice(0, 1)} ${p.surgeries.length}`)
+    .filter((p) => p.surgeries.length || p.off)
+    .map((p) => `${p.doctor.slice(0, 1)} ${p.off && !p.surgeries.length ? (OFF[p.off] ?? "휴") : p.surgeries.length}`)
     .join(" · ");
 }

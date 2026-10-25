@@ -18,7 +18,7 @@ export type PlanItem = { id: string; date: string; name: string; procedure: stri
 export type ScheduleData = {
   lists: Map<string, { clinic: string; rows: OutpatientRow[] }>;
   plans: Map<string, PlanItem[]>;
-  profs: Map<string, { doctor: string; outpatient: number; surgeries: ProfSurgery[] }[]>;
+  profs: Map<string, { doctor: string; outpatient: number; surgeries: ProfSurgery[]; off: string | null }[]>;
 };
 
 const planSelect = {
@@ -64,13 +64,13 @@ export async function loadSchedule(userId: string, nameStyle: NameStyle, from: s
     }),
     prisma.profSchedule.findMany({
       where: { createdById: userId, date: { gte: from, lte: to } },
-      select: { date: true, doctor: true, outpatient: true, surgeries: true },
+      select: { date: true, doctor: true, outpatient: true, surgeries: true, off: true },
     }),
   ]);
   const order = (d: string) => PROFESSORS.indexOf(d as (typeof PROFESSORS)[number]);
-  const profs = new Map<string, { doctor: string; outpatient: number; surgeries: ProfSurgery[] }[]>();
+  const profs = new Map<string, { doctor: string; outpatient: number; surgeries: ProfSurgery[]; off: string | null }[]>();
   for (const r of [...profRows].sort((a, b) => order(a.doctor) - order(b.doctor))) {
-    profs.set(r.date, [...(profs.get(r.date) ?? []), { doctor: r.doctor, outpatient: r.outpatient, surgeries: parseProfSurgeries(r.surgeries) }]);
+    profs.set(r.date, [...(profs.get(r.date) ?? []), { doctor: r.doctor, outpatient: r.outpatient, surgeries: parseProfSurgeries(r.surgeries), off: r.off }]);
   }
   const byDate = new Map<string, PlanItem[]>();
   for (const p of plans) {
@@ -210,6 +210,7 @@ export function ScheduleCalendar({
                   <li key={p.doctor}>
                     <p>
                       <span className="font-medium">{p.doctor}</span>
+                      {p.off && <span className="ml-2 rounded bg-amber-100 px-1.5 text-xs text-amber-800">{p.off}</span>}
                       <span className="ml-2 text-slate-500">
                         외래 {p.outpatient}명 · 수술 {p.surgeries.length}건
                       </span>

@@ -43,6 +43,16 @@ describe("내 주간 일정", () => {
     expect(myDay("2026-10-26", facts({ profs: [{ doctor: "박지환", outpatient: 7, surgeries: [] }] }))[0].lines[0]).toMatchObject({ text: "박지환 교수님 수술 없음(외래 7명)" });
   });
 
+  it("교수님 부재(YES 복무현황): 휴가면 휴진 추정 대신 휴가로, 수술이 있어도 표시", () => {
+    const off = myDay("2026-10-26", facts({ profs: [{ doctor: "문수진", outpatient: 1, surgeries: [], off: "휴가" }, { doctor: "박지환", outpatient: 0, surgeries: [op("ESS")] }] }));
+    expect(off[1].lines[0]).toMatchObject({ text: "문수진 교수님 휴가" });
+    expect(off[0].lines[0]).toMatchObject({ type: "surgeries" });
+    const opWithHalf = myDay("2026-10-26", facts({ profs: [{ doctor: "박지환", outpatient: 0, surgeries: [op("ESS")], off: "반일 휴가" }] }));
+    expect(opWithHalf[0].lines.map((l) => l.type)).toEqual(["text", "surgeries"]);
+    expect(myDay("2026-10-30", facts({ profs: [{ doctor: "문수진", outpatient: 0, surgeries: [], off: "출장" }] }))[0].lines[0]).toMatchObject({ text: "문수진 교수님 출장" });
+    expect(profSurgeryTags([{ doctor: "문수진", outpatient: 0, surgeries: [], off: "휴가" }, { doctor: "박지환", outpatient: 3, surgeries: [op("a")], off: null }])).toBe("문 휴 · 박 1");
+  });
+
   it("달력 칸: 교수님별 수술 수", () => {
     expect(profSurgeryTags([{ doctor: "박지환", outpatient: 9, surgeries: [op("a")] }, { doctor: "문수진", outpatient: 3, surgeries: [op("b")] }, { doctor: "최성욱", outpatient: 1, surgeries: [] }])).toBe("박 1 · 문 1");
   });

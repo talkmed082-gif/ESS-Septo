@@ -26,6 +26,8 @@ export const ProfScheduleBodySchema = z
           doctor: z.enum(PROFESSORS),
           outpatient: z.number().int().min(0).max(1000),
           surgeries: z.array(ProfSurgerySchema).max(50),
+          // 그날 부재(휴가·출장·반일 휴가) — 사유·종류는 안 받음(2026-10-26)
+          off: z.enum(["휴가", "출장", "반일 휴가"]).nullable().optional().default(null),
         }),
       )
       .max(500),
