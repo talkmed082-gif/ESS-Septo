@@ -66,6 +66,7 @@ model User {
   clinicSchedule  Json            @default("[]")
   automationPauses AutomationPause[]
   pcJobs          PcJobStatus[]
+  profSchedules   ProfSchedule[]
 }
 
 // 수술 종류 (ESS, 비중격교정술, 기타 이비인후과 수술 등). fields 는 이 수술에 특화된
@@ -446,4 +447,19 @@ model AutomationPause {
   createdAt   DateTime @default(now())
 
   @@index([createdById])
+}
+
+// 교수님별 외래 인원·수술(캘린더, 사용자 2026-10-25) — 병원 PC가 평일 아침 앞으로 2주치를 올린다(prof_schedule.ps1).
+// surgeries: [{ name(가운데 가림), age, sex, chartNo, op }] — 텔레그램 수술 알림과 같은 수준. 기간을 올리면 그 기간은 통째로 바꾼다
+model ProfSchedule {
+  id          String   @id @default(cuid())
+  date        String
+  doctor      String
+  outpatient  Int      @default(0)
+  surgeries   Json     @default("[]")
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  updatedAt   DateTime @updatedAt
+
+  @@unique([createdById, date, doctor])
 }

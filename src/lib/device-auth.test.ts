@@ -2,11 +2,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createHash } from "node:crypto";
 
 const db = vi.hoisted(() => ({
-  otps: [] as { id: string; codeHash: string; expiresAt: Date; usedAt: Date | null; createdById: string }[],
+  otps: [] as { id: string; codeHash: string; expiresAt: Date; usedAt: Date | null; createdById: string; createdAt: number }[],
   sessions: [] as { tokenHash: string; expiresAt: Date; createdById: string }[],
   failures: 0,
 }));
 vi.mock("server-only", () => ({}));
+process.env.SESSION_SECRET ??= "test-secret-test-secret-test-secret";
 vi.mock("@/lib/import-auth", () => ({ findUserByImportToken: async () => null }));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -15,16 +16,19 @@ vi.mock("@/lib/prisma", () => ({
       deleteMany: async ({ where }: { where: { createdById: string } }) => {
         db.otps = db.otps.filter((o) => o.createdById !== where.createdById || o.usedAt);
       },
-      create: async ({ data }: { data: { codeHash: string; expiresAt: Date; createdById: string } }) => {
-        db.otps.push({ id: `o${db.otps.length}`, usedAt: null, ...data });
+      create: async ({ data }: { data: { id: string; codeHash: string; expiresAt: Date; createdById: string } }) => {
+        db.otps.push({ usedAt: null, createdAt: db.otps.length, ...data });
       },
-      findFirst: async ({ where }: { where: { codeHash: string; expiresAt: { gt: Date } } }) =>
-        db.otps.find((o) => o.codeHash === where.codeHash && !o.usedAt && o.expiresAt > where.expiresAt.gt) ?? null,
-      updateMany: async ({ where, data }: { where: { id: string }; data: { usedAt: Date } }) => {
-        const o = db.otps.find((x) => x.id === where.id && !x.usedAt);
-        if (o) o.usedAt = data.usedAt;
-        return { count: o ? 1 : 0 };
-      },
+      findFirst: async ({ where }: { where: { codeHash?: string; createdById?: string; expiresAt: { gt: Date } } }) =>
+        [...db.otps]
+          .reverse()
+          .find(
+            (o) =>
+              (where.codeHash === undefined || o.codeHash === where.codeHash) &&
+              (where.createdById === undefined || o.createdById === where.createdById) &&
+              !o.usedAt &&
+              o.expiresAt > where.expiresAt.gt,
+          ) ?? null,
     },
     deviceOtpFailure: {
       count: async () => db.failures,
@@ -49,7 +53,7 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-import { endDeviceSession, findUserForProgram, issueDeviceOtp, MAX_FAILURES, pairDevice } from "./device-auth";
+import { endDeviceSession, findUserForProgram, getDailyOtp, issueDeviceOtp, MAX_FAILURES, nextSeoulMidnight, pairDevice } from "./device-auth";
 
 const req = (token: string) => new Request("http://x", { headers: { authorization: `Bearer ${token}` } });
 
@@ -59,33 +63,35 @@ beforeEach(() => {
   db.failures = 0;
 });
 
-describe("진료실 프로그램 1회 코드 연결", () => {
-  it("6자리 코드는 해시로만 저장되고, 한 번 쓰면 세션 토큰이 나오며 두 번째는 실패", async () => {
-    const { code } = await issueDeviceOtp("u1");
+describe("진료실 프로그램 오늘의 번호 연결", () => {
+  it("6자리 번호는 해시로만 저장되고, 그날은 여러 번 연결되며 세션은 프로그램을 끄면 끊긴다", async () => {
+    const { code } = await getDailyOtp("u1");
     expect(code).toMatch(/^\d{6}$/);
     expect(db.otps[0].codeHash).toBe(createHash("sha256").update(code).digest("hex"));
+    expect((await getDailyOtp("u1")).code).toBe(code); // 다시 열어도 같은 번호
     const r = await pairDevice(code);
     expect(r.ok).toBe(true);
     if (r.ok) {
       expect(db.sessions[0].tokenHash).not.toBe(r.token);
       expect(await findUserForProgram(req(r.token))).toEqual({ id: "u1", name: "정일구" });
-      // 프로그램을 끄면 세션이 끊긴다
       expect(await endDeviceSession(req(r.token))).toBe(1);
       expect(await findUserForProgram(req(r.token))).toBeNull();
     }
-    expect(await pairDevice(code)).toEqual({ ok: false, reason: "invalid" });
+    expect((await pairDevice(code)).ok).toBe(true); // 같은 날 다시 켜도 같은 번호
   });
 
-  it("5분이 지난 코드·새로 받기 전 코드는 안 됨", async () => {
-    const t0 = new Date("2026-10-24T08:00:00Z");
-    const { code: old } = await issueDeviceOtp("u1", t0);
+  it("서울 자정에 만료되고, 새 번호를 받으면 전 번호는 바로 무효", async () => {
+    const t0 = new Date("2026-10-24T14:30:00Z"); // 서울 23:30
+    expect(nextSeoulMidnight(t0).toISOString()).toBe("2026-10-24T15:00:00.000Z");
+    const { code: old } = await getDailyOtp("u1", t0);
+    expect((await pairDevice(old, new Date("2026-10-24T15:01:00Z"))).ok).toBe(false);
     const { code } = await issueDeviceOtp("u1", t0);
     if (old !== code) expect((await pairDevice(old, t0)).ok).toBe(false);
-    expect((await pairDevice(code, new Date(t0.getTime() + 6 * 60000))).ok).toBe(false);
+    expect((await pairDevice(code, t0)).ok).toBe(true);
   });
 
   it(`틀린 시도가 ${MAX_FAILURES}번 몰리면 맞는 코드도 잠시 막힘`, async () => {
-    const { code } = await issueDeviceOtp("u1");
+    const { code } = await getDailyOtp("u1");
     db.failures = MAX_FAILURES;
     expect(await pairDevice(code)).toEqual({ ok: false, reason: "locked" });
   });

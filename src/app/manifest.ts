@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "진료 어시스트",
     short_name: "진료 어시스트",
     description: "외래·수술·환자 관리",
-    start_url: "/otp",
+    start_url: "/dashboard",
     scope: "/",
     display: "standalone",
     background_color: "#f8fafc",

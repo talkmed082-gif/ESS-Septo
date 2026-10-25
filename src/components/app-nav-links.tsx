@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
-// 상단 메뉴 — 외래·수술·환자·일정 알림·OTP·설정(사용자 2026-10-24 개편).
+// 상단 메뉴 — 외래·수술·캘린더·환자·일정 알림·설정(사용자 2026-10-24 개편). OTP는 메뉴 대신 오늘의 번호를 바로 보여 준다(2026-10-25).
 // match: 이 메뉴에 속하는 화면 주소(하위 화면에서도 지금 어느 메뉴인지 보이게)
 const ITEMS = [
   { href: "/outpatient", label: "외래", match: ["/outpatient", "/templates"] },
   { href: "/surgery", label: "수술", match: ["/surgery", "/plans", "/records"] },
+  { href: "/calendar", label: "캘린더", match: ["/calendar"] },
   { href: "/patients", label: "환자", match: ["/patients"] },
   { href: "/reminders", label: "일정 알림", match: ["/reminders"] },
-  { href: "/otp", label: "OTP 받기", match: ["/otp"] },
   { href: "/settings", label: "설정", match: ["/settings", "/hospital", "/import"] },
 ];
 

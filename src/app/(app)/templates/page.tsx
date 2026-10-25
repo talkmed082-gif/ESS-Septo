@@ -67,11 +67,11 @@ export default async function TemplatesPage() {
             있음).
           </li>
           <li>
-            켤 때마다 상단 메뉴{" "}
-            <Link href="/otp" className="underline">
-              OTP 받기
+            켤 때마다 맨 위에 보이는{" "}
+            <Link href="/dashboard#otp" className="underline">
+              오늘의 번호
             </Link>
-            의 6자리를 넣습니다. 프로그램을 끄면 연결이 끊깁니다.
+            (6자리, 서울 자정에 바뀜)를 넣습니다. 프로그램을 끄면 연결이 끊깁니다.
           </li>
           <li>
             YES에서 기록지(외래초진/경과)를 열면 통증 &quot;없음&quot;이 자동 체크되고, 환자 나이로 성인/소아 템플릿이 정해집니다(15세

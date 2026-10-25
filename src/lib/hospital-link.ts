@@ -60,7 +60,8 @@ export const PC_JOBS = [
   { key: "REMINDER_POLL", label: "요청 확인(평일 8:00~20:00, 10분마다)", maxAgeHours: 80 },
   { key: "OUTPATIENT", label: "외래 명단(월·목 17:20)", maxAgeHours: 4 * 24 + 6 },
   { key: "OUTPATIENT_SOAP", label: "외래 SOAP(외래 명단 뒤)", maxAgeHours: 4 * 24 + 6 },
-  { key: "OUTPATIENT_REFRESH", label: "외래 명단 새로 고침(평일 8:00, 7일)", maxAgeHours: 80 },
+  { key: "OUTPATIENT_REFRESH", label: "외래 명단 새로 고침(평일 8:00, 2주)", maxAgeHours: 80 },
+  { key: "PROF_SCHEDULE", label: "교수님 외래·수술(새로 고침 뒤, 2주)", maxAgeHours: 80 },
   { key: "TSA_RANGE", label: "TSA 기간 확인(요청 시)", maxAgeHours: null },
   { key: "CRED_CHECK", label: "설정 파일 점검", maxAgeHours: null },
 ] as const;

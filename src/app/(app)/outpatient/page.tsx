@@ -157,7 +157,7 @@ export default async function OutpatientPage({ searchParams }: PageProps<"/outpa
                 지우기
               </Link>
             </p>
-            {chartQuery.replace(/D/g, "").length < 4 && <p className="text-amber-700">숫자 4자리 이상 넣어 주세요.</p>}
+            {chartQuery.replace(/\D/g, "").length < 4 && <p className="text-amber-700">숫자 4자리 이상 넣어 주세요.</p>}
             {history.map((h, i) => (
               <div key={i} className="border-t border-slate-100 pt-2">
                 <p>
