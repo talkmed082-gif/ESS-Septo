@@ -68,3 +68,25 @@ describe("진료 화면", () => {
     expect(first).toContain("주진단 경증");
   });
 });
+
+describe("하루치 보내기", () => {
+  it("이미 보낸 환자는 빠진 채로, 초진은 템플릿 칸, 고른 수를 버튼에", async () => {
+    vi.doMock("@/app/actions/clinic", () => ({ sendToClinic: vi.fn(), cancelClinicJob: vi.fn(), sendBatchToLaptop: vi.fn() }));
+    const { BatchPanel } = await import("./batch-panel");
+    const t = text(
+      renderToString(
+        <BatchPanel
+          date="2026-10-27"
+          templates={[{ id: "t1", title: "코막힘", audience: "adult" }]}
+          rows={[
+            { time: "09:00", name: "김○○", chartNo: "1", visit: "초진", diagnosis: "", sent: false },
+            { time: "09:10", name: "홍○○", chartNo: "2", visit: "재진", diagnosis: "deviated nasal septum", sent: true },
+          ]}
+        />,
+      ),
+    );
+    expect(t).toContain("템플릿 없음(통증 “없음”만, 진단 확인 안 함)");
+    expect(t).toContain("1명 노트북으로 보내기");
+    expect(t).toContain("보냄");
+  });
+});

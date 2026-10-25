@@ -10,6 +10,7 @@ import { summaryLine } from "@/lib/pathways";
 import { inferStage, parseRoadmap, parseSoap, type SurgeryFact } from "@/lib/clinic-view";
 import { jobWhere } from "@/lib/opd-jobs";
 import { ClinicDetail, VISIT_CLS } from "./clinic-detail";
+import { BatchPanel } from "./batch-panel";
 
 // 진료 화면 — 왼쪽 외래 명단, 오른쪽 고른 환자의 로드맵(도형·지금 단계 판정)·SOAP·오늘 오더(진료실 PC로 보내기).
 // EMR에 이미 있는 것(이전 기록 전문)은 두지 않고, EMR에 없는 것만 모은다(사용자 2026-10-25). 본인 데이터만
@@ -112,6 +113,17 @@ export default async function ClinicPage({ searchParams }: PageProps<"/clinic">)
             {date}
             {date === today ? " (오늘)" : ""} {list?.clinic ?? ""} · {rows.length}명
           </p>
+          {date >= today && rows.length > 0 && (
+            <BatchPanel
+              key={date}
+              date={date}
+              templates={templates}
+              rows={rows.map((r) => {
+                const j = jobByChart.get(r.chartNo);
+                return { time: r.time, name: r.name, chartNo: r.chartNo, visit: r.visit, diagnosis: r.diagnosis, sent: !!j && j.status !== "cancelled" };
+              })}
+            />
+          )}
           <ul className="max-h-72 divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200 bg-white lg:max-h-[calc(100vh-12rem)]">
             {rows.map((r) => {
               const jb = jobByChart.get(r.chartNo);

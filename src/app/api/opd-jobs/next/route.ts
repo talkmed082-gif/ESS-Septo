@@ -27,5 +27,5 @@ export async function POST(request: Request) {
   // 같은 일감을 두 번 가져가지 않게 — 상태가 그대로일 때만 바꾼다
   const r = await prisma.opdJob.updateMany({ where: { id: job.id, status: job.status, updatedAt: job.updatedAt }, data: { status: "running", tries: { increment: 1 } } });
   if (r.count === 0) return pcJson({ job: null });
-  return pcJson({ job: { id: job.id, chartNo: job.chartNo, visit: job.visit, templateId: job.templateId, tasks: job.tasks, practice: job.practice, tries: job.tries + 1 } });
+  return pcJson({ job: { id: job.id, chartNo: job.chartNo, name: job.name, visit: job.visit, templateId: job.templateId, tasks: job.tasks, practice: job.practice, tries: job.tries + 1 } });
 }

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { verifySession } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
-import { ClinicJobSchema } from "@/lib/opd-jobs";
+import { ClinicJobSchema, OpdJobSubmitSchema } from "@/lib/opd-jobs";
 import { kstDate } from "@/lib/hospital-link";
 
 // 웹 진료 화면 [보내기] — 노트북(환자 선택·새 기록지부터 혼자 처리) 또는 진료실 PC(그 환자 기록지가 EMR에 열려 있을 때 처리).
@@ -37,6 +37,29 @@ export async function sendToClinic(input: unknown): Promise<{ ok: boolean; error
   });
   revalidatePath("/clinic");
   return { ok: true };
+}
+
+// 하루치를 노트북으로 한 번에 — 고른 환자만, 보낼 곳은 노트북으로 고정. 같은 날 같은 환자는 덮어써 다시 대기
+export async function sendBatchToLaptop(input: unknown): Promise<{ ok: boolean; count?: number; error?: string }> {
+  const { userId } = await verifySession();
+  const parsed = OpdJobSubmitSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "형식이 올바르지 않습니다." };
+  const { visitDate, practice, items } = parsed.data;
+  if (visitDate < kstDate(new Date())) return { ok: false, error: "지난 외래는 보낼 수 없습니다." };
+  const ids = [...new Set(items.map((i) => i.templateId).filter((x): x is string => !!x))];
+  if (ids.length && (await prisma.outpatientTemplate.count({ where: { id: { in: ids }, createdById: userId } })) !== ids.length) return { ok: false, error: "템플릿을 찾지 못했습니다." };
+  await prisma.$transaction(
+    items.map((it) => {
+      const data = { name: it.name, visit: it.visit, templateId: it.templateId, tasks: { ...it.tasks, where: "laptop" }, practice, status: "pending", result: null, tries: 0 };
+      return prisma.opdJob.upsert({
+        where: { createdById_visitDate_chartNo: { createdById: userId, visitDate, chartNo: it.chartNo } },
+        create: { ...data, visitDate, chartNo: it.chartNo, createdById: userId },
+        update: data,
+      });
+    }),
+  );
+  revalidatePath("/clinic");
+  return { ok: true, count: items.length };
 }
 
 // 아직 처리 전(대기·나중에 다시)인 것만 취소
