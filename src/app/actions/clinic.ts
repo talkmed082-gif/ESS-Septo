@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { verifySession } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { ClinicJobSchema } from "@/lib/opd-jobs";
+import { kstDate } from "@/lib/hospital-link";
 
 // 웹 진료 화면 [보내기] — 노트북(환자 선택·새 기록지부터 혼자 처리) 또는 진료실 PC(그 환자 기록지가 EMR에 열려 있을 때 처리).
 // 같은 날 같은 환자는 새로 덮어써 다시 대기(보낼 곳도 바뀜). 본인 것만
@@ -13,6 +14,8 @@ export async function sendToClinic(input: unknown): Promise<{ ok: boolean; error
   if (!parsed.success) return { ok: false, error: "형식이 올바르지 않습니다." };
   const d = parsed.data;
   if (!d.note && !d.dx && !d.scope) return { ok: false, error: "할 일을 하나 이상 고르세요." };
+  // 오늘과 앞날만(전날 밤에 다음 날 하루치를 보내 두면 노트북이 07:30부터 처리)
+  if (d.visitDate < kstDate(new Date())) return { ok: false, error: "지난 외래는 보낼 수 없습니다." };
   if (d.templateId) {
     const t = await prisma.outpatientTemplate.findFirst({ where: { id: d.templateId, createdById: userId }, select: { id: true } });
     if (!t) return { ok: false, error: "템플릿을 찾지 못했습니다." };

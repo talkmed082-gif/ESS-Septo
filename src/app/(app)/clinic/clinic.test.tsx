@@ -45,7 +45,7 @@ describe("진료 화면", () => {
   });
 
   it("오더 패널: 재진은 이전 기록, 초진은 템플릿 안내, 보낸 일감 상태와 결과", () => {
-    const follow = text(renderToString(<OrderPanel chartNo="1" name="홍○○" visit="재진" visitDate="2026-10-27" isToday templates={[]} job={null} />));
+    const follow = text(renderToString(<OrderPanel chartNo="1" name="홍○○" visit="재진" visitDate="2026-10-27" canSend templates={[]} job={null} />));
     expect(follow).toContain("이전 이비인후과 외래기록으로 S·O·A·P");
     expect(follow).toContain("노트북으로 보내기");
     expect(follow).toContain("기록지 열면 바로");
@@ -56,14 +56,14 @@ describe("진료 화면", () => {
           name="홍○○"
           visit="초진"
           visitDate="2026-10-27"
-          isToday={false}
+          canSend={false}
           templates={[{ id: "t1", title: "코막힘", audience: "adult" }]}
           job={{ id: "j", status: "failed", result: "진단: 주진단 경증 — 멈춤", where: "clinic", practice: false, updatedAt: "" }}
         />,
       ),
     );
     expect(first).toContain("초진·재초는 템플릿을 고르세요");
-    expect(first).toContain("오늘 외래만 보낼 수 있습니다");
+    expect(first).toContain("지난 외래는 보낼 수 없습니다");
     expect(first).toContain("진료실 PC · 멈춤 — 확인 필요");
     expect(first).toContain("주진단 경증");
   });

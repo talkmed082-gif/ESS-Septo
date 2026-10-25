@@ -17,7 +17,7 @@ const STATUS: Record<string, { label: string; cls: string }> = {
   cancelled: { label: "취소함", cls: "bg-slate-50 text-slate-500 border-slate-200" },
 };
 
-// 오늘 할 일을 골라 보낸다. 노트북(기본): 노트북 작업자가 환자 선택·새 기록지부터 혼자 처리(외래 요일 화·금 08:20~17:00 켜짐).
+// 오늘 할 일을 골라 보낸다. 노트북(기본): 노트북 작업자가 환자 선택·새 기록지부터 혼자 처리(평일 07:30~17:00 켜짐 — 전날 밤에 다음 날 하루치를 보내 둘 수 있음).
 // 진료실 PC: 진료 어시스트가 3초마다 "지금 EMR에 열린 환자" 번호로만 묻고 처리(다른 환자에 안 들어감).
 // 재진은 이전 이비인후과 외래기록으로 기록지, 초진·재초는 템플릿. 진단 → 비인강경 오더 → 기록지 저장 + 처방 서명
 export function OrderPanel({
@@ -25,7 +25,7 @@ export function OrderPanel({
   name,
   visit,
   visitDate,
-  isToday,
+  canSend,
   templates,
   job,
 }: {
@@ -33,7 +33,7 @@ export function OrderPanel({
   name: string;
   visit: string;
   visitDate: string;
-  isToday: boolean;
+  canSend: boolean;
   templates: Tpl[];
   job: ClinicJobView | null;
 }) {
@@ -111,7 +111,7 @@ export function OrderPanel({
         연습(EMR에 쓰지 않고 할 일만 확인)
       </label>
       <div className="flex flex-wrap items-center gap-2">
-        <button type="button" className={buttonStyles.accent} disabled={pending || !isToday || (!note && !dx && !scope)} onClick={send}>
+        <button type="button" className={buttonStyles.accent} disabled={pending || !canSend || (!note && !dx && !scope)} onClick={send}>
           {live ? "다시 보내기" : where === "laptop" ? "노트북으로 보내기" : "진료실 PC로 보내기"}
         </button>
         {job && (job.status === "pending" || job.status === "waiting") && (
@@ -119,7 +119,7 @@ export function OrderPanel({
             취소
           </button>
         )}
-        {!isToday && <span className="text-xs text-slate-400">오늘 외래만 보낼 수 있습니다</span>}
+        {!canSend && <span className="text-xs text-slate-400">지난 외래는 보낼 수 없습니다</span>}
       </div>
       {msg && <p className="text-red-700">{msg}</p>}
       {job && st && (
@@ -130,7 +130,7 @@ export function OrderPanel({
             {job.practice ? " (연습)" : ""}
           </p>
           {job.status === "pending" && (
-            <p className="mt-1 text-xs">{job.where === "laptop" ? "노트북이 환자를 골라 처리합니다(화·금 08:20~17:00 켜짐)" : "진료실 PC EMR에서 이 환자 기록지를 열면 바로 넣습니다"}</p>
+            <p className="mt-1 text-xs">{job.where === "laptop" ? "노트북이 그날 07:30부터 환자를 골라 처리합니다(평일 07:30~17:00, 접수 전이면 3분마다 다시)" : "진료실 PC EMR에서 이 환자 기록지를 열면 바로 넣습니다"}</p>
           )}
           {job.result && <p className="mt-1 whitespace-pre-wrap break-words text-xs">{job.result}</p>}
         </div>

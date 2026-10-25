@@ -81,7 +81,7 @@ export default async function ClinicPage({ searchParams }: PageProps<"/clinic">)
         templates={templates}
         job={j ? { id: j.id, status: j.status, result: j.result, where: jobWhere(j.tasks), practice: j.practice, updatedAt: j.updatedAt.toISOString() } : null}
         date={date}
-        isToday={date === today}
+        canSend={date >= today}
       />
     );
   }

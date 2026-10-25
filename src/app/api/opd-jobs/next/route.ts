@@ -2,9 +2,8 @@ import { NextResponse } from "next/server";
 import { pcJson } from "@/lib/pc-api";
 import { findUserForProgram } from "@/lib/device-auth";
 import { prisma } from "@/lib/prisma";
-import { kstDate, type OutpatientRow } from "@/lib/hospital-link";
-import { seoulNow } from "@/lib/date-format";
-import { dueByTime, isClaimable, jobWhere } from "@/lib/opd-jobs";
+import { kstDate } from "@/lib/hospital-link";
+import { isClaimable, jobWhere } from "@/lib/opd-jobs";
 
 // POST: 오늘 일감 하나를 가져간다(처리 중으로 바꿈). 없으면 { job: null }
 //  - 노트북 작업자: 쿼리 없음 → 노트북 일감만
@@ -17,19 +16,12 @@ export async function POST(request: Request) {
   const chart = (sp.get("chart") ?? "").trim().replace(/^0+/, "");
   if (where === "clinic" && !/^\d{3,12}$/.test(chart)) return pcJson({ job: null });
   const now = new Date();
-  // 노트북: 예약 시간 30분 전이 된 환자만(명단의 시간)
-  const times = new Map<string, string>();
-  if (where === "laptop") {
-    const list = await prisma.outpatientList.findUnique({ where: { createdById_date: { createdById: user.id, date: kstDate(now) } }, select: { rows: true } });
-    for (const r of (list?.rows ?? []) as OutpatientRow[]) times.set(r.chartNo, r.time);
-  }
-  const hhmm = seoulNow(now).time;
   const jobs = (
     await prisma.opdJob.findMany({
       where: { createdById: user.id, visitDate: kstDate(now), status: { in: ["pending", "waiting", "running"] } },
       orderBy: { createdAt: "asc" },
     })
-  ).filter((j) => jobWhere(j.tasks) === where && (where === "laptop" ? dueByTime(times.get(j.chartNo), hhmm) : j.chartNo.replace(/^0+/, "") === chart));
+  ).filter((j) => jobWhere(j.tasks) === where && (where === "laptop" || j.chartNo.replace(/^0+/, "") === chart));
   const job = jobs.find((j) => j.status === "pending") ?? jobs.find((j) => isClaimable(j, now, where));
   if (!job || !isClaimable(job, now, where)) return pcJson({ job: null });
   // 같은 일감을 두 번 가져가지 않게 — 상태가 그대로일 때만 바꾼다

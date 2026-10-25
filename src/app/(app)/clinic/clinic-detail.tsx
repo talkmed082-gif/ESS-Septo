@@ -27,7 +27,7 @@ export function ClinicDetail(p: {
   templates: { id: string; title: string; audience: string }[];
   job: ClinicJobView | null;
   date: string;
-  isToday: boolean;
+  canSend: boolean;
 }) {
   const { row, soap, roadmap: rp, roadmapVersion: rm } = p;
   return (
@@ -112,7 +112,7 @@ export function ClinicDetail(p: {
         <aside className="order-first xl:sticky xl:top-4 xl:order-none xl:self-start">
           <section className={card}>
             <h2 className="mb-3 text-sm font-semibold text-slate-500">오늘 오더</h2>
-            <OrderPanel key={row.chartNo} chartNo={row.chartNo} name={row.name} visit={row.visit} visitDate={p.date} isToday={p.isToday} templates={p.templates} job={p.job} />
+            <OrderPanel key={row.chartNo} chartNo={row.chartNo} name={row.name} visit={row.visit} visitDate={p.date} canSend={p.canSend} templates={p.templates} job={p.job} />
           </section>
         </aside>
       </div>
