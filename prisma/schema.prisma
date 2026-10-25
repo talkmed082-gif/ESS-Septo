@@ -60,6 +60,7 @@ model User {
   patientCares    PatientCare[]
   patientPathways PatientPathway[]
   visitSummaries  VisitSummary[]
+  opdJobs         OpdJob[]
   rxBundles       RxBundle[]
   // 내 외래 스케줄 — [{ weekday: 0(일)~6(토), session: "AM" | "PM" }]. 다음 외래 날짜 계산에 쓴다(휴진은 AutomationPause)
   clinicSchedule  Json            @default("[]")
@@ -361,6 +362,28 @@ model PatientPathway {
   updatedAt       DateTime @updatedAt
 
   @@unique([createdById, chartNo, pathwayId])
+}
+
+// 노트북에 맡긴 외래 일감(진료 어시스트 [오늘 외래] → 노트북 작업자). tasks = { note, dx, scope }, templateId = 쓸 템플릿.
+// status: pending(대기) → running(처리 중) → done / failed / waiting(접수 전 등, 나중에 다시). practice면 EMR에 쓰지 않고 할 일만 보고
+model OpdJob {
+  id          String   @id @default(cuid())
+  visitDate   String // yyyy-MM-dd(서울)
+  chartNo     String
+  name        String   @default("") // 가린 이름(명단과 같음)
+  visit       String   @default("") // 초진/재진/재초
+  templateId  String?
+  tasks       Json     @default("{}")
+  practice    Boolean  @default(false)
+  status      String   @default("pending")
+  result      String?
+  tries       Int      @default(0)
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([createdById, visitDate, chartNo])
 }
 
 // 외래별 요약(로드맵의 외래 버튼) — AI가 기록으로 만든다. 그 외래 때 단계(pathwayId·stageId)를 같이 남긴다
