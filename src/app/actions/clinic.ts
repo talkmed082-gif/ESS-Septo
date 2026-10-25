@@ -5,8 +5,8 @@ import { verifySession } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { ClinicJobSchema } from "@/lib/opd-jobs";
 
-// 웹 진료 화면 [진료실 PC로 보내기] — 진료실 PC 진료 어시스트가 그 환자 기록지가 EMR에 열려 있을 때 처리한다.
-// 같은 날 같은 환자는 새로 덮어써 다시 대기(노트북 일감이었어도 진료실로 바뀜). 본인 것만
+// 웹 진료 화면 [보내기] — 노트북(환자 선택·새 기록지부터 혼자 처리) 또는 진료실 PC(그 환자 기록지가 EMR에 열려 있을 때 처리).
+// 같은 날 같은 환자는 새로 덮어써 다시 대기(보낼 곳도 바뀜). 본인 것만
 export async function sendToClinic(input: unknown): Promise<{ ok: boolean; error?: string }> {
   const { userId } = await verifySession();
   const parsed = ClinicJobSchema.safeParse(input);
@@ -21,7 +21,7 @@ export async function sendToClinic(input: unknown): Promise<{ ok: boolean; error
     name: d.name,
     visit: d.visit,
     templateId: d.templateId,
-    tasks: { note: d.note, dx: d.dx, scope: d.scope, where: "clinic" },
+    tasks: { note: d.note, dx: d.dx, scope: d.scope, where: d.where },
     practice: d.practice,
     status: "pending",
     result: null,

@@ -23,8 +23,9 @@ export const OpdJobSubmitSchema = z.object({
     .max(80),
 });
 
-// 웹 진료 화면 [진료실 PC로 보내기] — 한 환자
+// 웹 진료 화면 [보내기] — 한 환자. 보낼 곳 기본은 노트북(환자 선택부터 혼자 함, 사용자 2026-10-25 "자동화는 노트북이 나아")
 export const ClinicJobSchema = z.object({
+  where: z.enum(["laptop", "clinic"]).default("laptop"),
   visitDate: date,
   chartNo,
   name: z.string().max(40).default(""),

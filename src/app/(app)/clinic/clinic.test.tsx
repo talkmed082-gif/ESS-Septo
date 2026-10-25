@@ -47,7 +47,8 @@ describe("진료 화면", () => {
   it("오더 패널: 재진은 이전 기록, 초진은 템플릿 안내, 보낸 일감 상태와 결과", () => {
     const follow = text(renderToString(<OrderPanel chartNo="1" name="홍○○" visit="재진" visitDate="2026-10-27" isToday templates={[]} job={null} />));
     expect(follow).toContain("이전 이비인후과 외래기록으로 S·O·A·P");
-    expect(follow).toContain("진료실 PC로 보내기");
+    expect(follow).toContain("노트북으로 보내기");
+    expect(follow).toContain("기록지 열면 바로");
     const first = text(
       renderToString(
         <OrderPanel

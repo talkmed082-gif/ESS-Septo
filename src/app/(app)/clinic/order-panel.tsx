@@ -9,7 +9,7 @@ export type ClinicJobView = { id: string; status: string; result: string | null;
 type Tpl = { id: string; title: string; audience: string };
 
 const STATUS: Record<string, { label: string; cls: string }> = {
-  pending: { label: "보냄 — EMR에서 이 환자 기록지를 열면 바로 넣습니다", cls: "bg-sky-50 text-sky-800 border-sky-200" },
+  pending: { label: "보냄 — 차례를 기다리는 중", cls: "bg-sky-50 text-sky-800 border-sky-200" },
   running: { label: "넣는 중…", cls: "bg-sky-50 text-sky-800 border-sky-200" },
   waiting: { label: "대기", cls: "bg-amber-50 text-amber-800 border-amber-200" },
   done: { label: "완료", cls: "bg-emerald-50 text-emerald-800 border-emerald-200" },
@@ -17,7 +17,8 @@ const STATUS: Record<string, { label: string; cls: string }> = {
   cancelled: { label: "취소함", cls: "bg-slate-50 text-slate-500 border-slate-200" },
 };
 
-// 오늘 할 일을 골라 진료실 PC로 — 진료실 PC 진료 어시스트가 3초마다 "지금 EMR에 열린 환자" 번호로만 묻고 처리한다(다른 환자에 안 들어감).
+// 오늘 할 일을 골라 보낸다. 노트북(기본): 노트북 작업자가 환자 선택·새 기록지부터 혼자 처리(외래 요일 화·금 08:20~17:00 켜짐).
+// 진료실 PC: 진료 어시스트가 3초마다 "지금 EMR에 열린 환자" 번호로만 묻고 처리(다른 환자에 안 들어감).
 // 재진은 이전 이비인후과 외래기록으로 기록지, 초진·재초는 템플릿. 진단 → 비인강경 오더 → 기록지 저장 + 처방 서명
 export function OrderPanel({
   chartNo,
@@ -43,6 +44,7 @@ export function OrderPanel({
   const [dx, setDx] = useState(true);
   const [scope, setScope] = useState(true);
   const [practice, setPractice] = useState(false);
+  const [where, setWhere] = useState<"laptop" | "clinic">("laptop");
   const [msg, setMsg] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const live = job && ["pending", "running", "waiting"].includes(job.status);
@@ -58,7 +60,7 @@ export function OrderPanel({
   const send = () =>
     start(async () => {
       setMsg(null);
-      const r = await sendToClinic({ visitDate, chartNo, name, visit, templateId: templateId || null, practice, note, dx, scope });
+      const r = await sendToClinic({ where, visitDate, chartNo, name, visit, templateId: templateId || null, practice, note, dx, scope });
       if (!r.ok) setMsg(r.error ?? "보내지 못했습니다.");
       router.refresh();
     });
@@ -66,6 +68,19 @@ export function OrderPanel({
   const st = job ? (STATUS[job.status] ?? { label: job.status, cls: "bg-slate-50 border-slate-200" }) : null;
   return (
     <div className="space-y-3 text-sm">
+      <div className="grid grid-cols-2 gap-1 rounded-md bg-slate-100 p-1" role="radiogroup" aria-label="보낼 곳">
+        {(
+          [
+            ["laptop", "노트북", "환자 선택부터 자동"],
+            ["clinic", "진료실 PC", "기록지 열면 바로"],
+          ] as const
+        ).map(([v, label, sub]) => (
+          <button key={v} type="button" role="radio" aria-checked={where === v} onClick={() => setWhere(v)} className={`rounded px-2 py-1.5 text-left ${where === v ? "bg-white shadow-sm" : "text-slate-500"}`}>
+            <span className="block font-medium">{label}</span>
+            <span className="block text-[11px] text-slate-500">{sub}</span>
+          </button>
+        ))}
+      </div>
       <label className="flex items-start gap-2">
         <input type="checkbox" checked={note} onChange={(e) => setNote(e.target.checked)} className="mt-1" />
         <span>
@@ -97,7 +112,7 @@ export function OrderPanel({
       </label>
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" className={buttonStyles.accent} disabled={pending || !isToday || (!note && !dx && !scope)} onClick={send}>
-          {job && job.where === "clinic" && live ? "다시 보내기" : "진료실 PC로 보내기"}
+          {live ? "다시 보내기" : where === "laptop" ? "노트북으로 보내기" : "진료실 PC로 보내기"}
         </button>
         {job && (job.status === "pending" || job.status === "waiting") && (
           <button type="button" className={buttonStyles.secondarySmall} onClick={() => start(async () => { await cancelClinicJob(job.id); router.refresh(); })}>
@@ -114,6 +129,9 @@ export function OrderPanel({
             {st.label}
             {job.practice ? " (연습)" : ""}
           </p>
+          {job.status === "pending" && (
+            <p className="mt-1 text-xs">{job.where === "laptop" ? "노트북이 환자를 골라 처리합니다(화·금 08:20~17:00 켜짐)" : "진료실 PC EMR에서 이 환자 기록지를 열면 바로 넣습니다"}</p>
+          )}
           {job.result && <p className="mt-1 whitespace-pre-wrap break-words text-xs">{job.result}</p>}
         </div>
       )}

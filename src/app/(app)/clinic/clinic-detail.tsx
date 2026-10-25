@@ -108,7 +108,8 @@ export function ClinicDetail(p: {
           </section>
         </div>
 
-        <aside className="xl:sticky xl:top-4 xl:self-start">
+        {/* 폰·좁은 화면에서는 오더를 맨 위로(스크롤 없이 보내기) */}
+        <aside className="order-first xl:sticky xl:top-4 xl:order-none xl:self-start">
           <section className={card}>
             <h2 className="mb-3 text-sm font-semibold text-slate-500">오늘 오더</h2>
             <OrderPanel key={row.chartNo} chartNo={row.chartNo} name={row.name} visit={row.visit} visitDate={p.date} isToday={p.isToday} templates={p.templates} job={p.job} />
