@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ClinicJobSchema, OpdJobResultSchema, OpdJobSubmitSchema, isClaimable, jobWhere } from "./opd-jobs";
+import { ClinicJobSchema, OpdJobResultSchema, OpdJobSubmitSchema, dueByTime, isClaimable, jobWhere } from "./opd-jobs";
 
 describe("노트북 외래 일감", () => {
   it("맡기기 형식: 할 일 기본은 모두 켜짐, 등록번호·날짜 확인", () => {
@@ -10,16 +10,25 @@ describe("노트북 외래 일감", () => {
     expect(OpdJobResultSchema.safeParse({ id: "x", status: "running" }).success).toBe(false);
   });
 
-  it("가져갈 일감: 대기는 바로, 나중에 다시는 2분 뒤 10번까지, 멈춘 처리 중은 10분 뒤", () => {
+  it("가져갈 일감: 대기는 바로, 나중에 다시는 3분 뒤(그날 계속), 멈춘 처리 중은 10분 뒤", () => {
     const now = new Date("2026-10-27T01:00:00Z");
     const ago = (m: number) => new Date(now.getTime() - m * 60_000);
     expect(isClaimable({ status: "pending", updatedAt: now, tries: 0 }, now)).toBe(true);
-    expect(isClaimable({ status: "waiting", updatedAt: ago(1), tries: 1 }, now)).toBe(false);
+    expect(isClaimable({ status: "waiting", updatedAt: ago(2), tries: 1 }, now)).toBe(false);
     expect(isClaimable({ status: "waiting", updatedAt: ago(3), tries: 1 }, now)).toBe(true);
-    expect(isClaimable({ status: "waiting", updatedAt: ago(3), tries: 10 }, now)).toBe(false);
+    expect(isClaimable({ status: "waiting", updatedAt: ago(3), tries: 40 }, now)).toBe(true);
+    expect(isClaimable({ status: "running", updatedAt: ago(11), tries: 10 }, now)).toBe(false);
     expect(isClaimable({ status: "running", updatedAt: ago(5), tries: 1 }, now)).toBe(false);
     expect(isClaimable({ status: "running", updatedAt: ago(11), tries: 1 }, now)).toBe(true);
     expect(isClaimable({ status: "done", updatedAt: ago(60), tries: 1 }, now)).toBe(false);
+  });
+
+  it("노트북 일감은 예약 시간 30분 전부터, 시간 모르면 바로", () => {
+    expect(dueByTime("10:30", "09:59")).toBe(false);
+    expect(dueByTime("10:30", "10:00")).toBe(true);
+    expect(dueByTime("09:00", "08:20")).toBe(false);
+    expect(dueByTime("", "08:20")).toBe(true);
+    expect(dueByTime(undefined, "08:20")).toBe(true);
   });
 
   it("진료실 PC 일감: 노트북과 따로, 기다림 15초·멈춘 처리 2분, 횟수 제한 없음", () => {

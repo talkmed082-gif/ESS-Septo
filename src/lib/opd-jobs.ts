@@ -48,8 +48,9 @@ export type JobLite = { status: string; updatedAt: Date; tries: number };
 export const jobWhere = (tasks: unknown): "laptop" | "clinic" =>
   tasks && typeof tasks === "object" && (tasks as { where?: unknown }).where === "clinic" ? "clinic" : "laptop";
 
-// 다음에 처리할 일감: 대기(pending) 먼저, 그다음 "나중에 다시"(waiting — 접수 전 등)는 2분 지난 것만, 10번까지.
-// 처리 중(running)이 10분 넘게 끝나지 않으면(노트북이 멈춘 경우) 다시 가져간다.
+// 다음에 처리할 일감: 대기(pending) 먼저, 그다음 "나중에 다시"(waiting — 접수 전 등)는 3분 지난 것만.
+// 아침에 하루치를 한꺼번에 보내도 늦은 환자까지 처리되게 그날 안에는 계속(예전 2분·10번이면 20분 뒤 멈췄음, 2026-10-25 시뮬레이션).
+// 처리 중(running)이 10분 넘게 끝나지 않으면(노트북이 멈춘 경우) 다시 가져간다(10번까지).
 // 진료실 PC 일감은 의사가 그 환자를 열면 곧바로 해야 해서 waiting 15초, 멈춘 running 2분, 횟수 제한 없음(오늘 것만)
 export function isClaimable(j: JobLite, now: Date, where: "laptop" | "clinic" = "laptop"): boolean {
   const age = now.getTime() - j.updatedAt.getTime();
@@ -59,7 +60,15 @@ export function isClaimable(j: JobLite, now: Date, where: "laptop" | "clinic" = 
     if (j.status === "running") return age >= 2 * 60_000;
     return false;
   }
-  if (j.status === "waiting") return age >= 2 * 60_000 && j.tries < 10;
+  if (j.status === "waiting") return age >= 3 * 60_000 && j.tries < 200;
   if (j.status === "running") return age >= 10 * 60_000 && j.tries < 10;
   return false;
+}
+
+// 노트북 일감은 예약 시간 30분 전부터 — 미리 보낸 환자의 차트를 접수 전에 반복해 열지 않게. 시간을 모르면 바로
+export function dueByTime(time: string | null | undefined, nowHHmm: string, leadMin = 30): boolean {
+  const m = /^(\d{1,2}):(\d{2})/.exec(time ?? "");
+  const n = /^(\d{1,2}):(\d{2})/.exec(nowHHmm);
+  if (!m || !n) return true;
+  return Number(n[1]) * 60 + Number(n[2]) >= Number(m[1]) * 60 + Number(m[2]) - leadMin;
 }
