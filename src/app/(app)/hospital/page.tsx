@@ -6,6 +6,7 @@ import { SETTINGS_TABS, SectionTabs } from "@/components/section-tabs";
 import { AutomationPauseCard } from "../settings/automation-pause-card";
 import { ImportTokenCard } from "../settings/import-token-card";
 import { ConsultTriggerCard } from "../settings/consult-trigger-card";
+import { OpdHelperCard } from "../settings/opd-helper-card";
 
 // 설정 > 병원 연동 — 병원 PC 작업 상태판, 자동화 쉬는 날, EMR 수술 일정 연동 토큰.
 // 외래 명단은 외래, TSA 시트는 수술 메뉴로 옮겼다(사용자 2026-10-24). 본인 계정 데이터만(createdById).
@@ -95,6 +96,11 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
           </table>
         </div>
       </section>
+
+      <div className="max-w-3xl">
+        <h2 className="mb-1 text-sm font-semibold text-slate-700">진료실 PC 프로그램</h2>
+        <OpdHelperCard />
+      </div>
 
       <div className="max-w-lg">
         <h2 className="mb-1 text-sm font-semibold text-slate-700">병원 PC 자동화 쉬는 날</h2>

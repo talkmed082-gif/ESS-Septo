@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calcPedItem, DEFAULT_ADULT_RX, DEFAULT_CHILD_RX, RxBundleInputSchema } from "./rx-bundles";
+import { calcPedItem, daysUntilVisit, DEFAULT_ADULT_RX, DEFAULT_CHILD_RX, RxBundleInputSchema, withVisitDays, type CalcResult } from "./rx-bundles";
 
 const child = (title: string) => DEFAULT_CHILD_RX.find((b) => b.title === title)!;
 
@@ -39,5 +39,27 @@ describe("소아 계산(KIMS 허가 용법·용량)", () => {
     expect(calcPedItem(erd, 48, 17)).toMatchObject({ dose: "5", freq: "P13" });
     expect(calcPedItem(erd, 84, 25)).toMatchObject({ dose: "5", freq: "P123" });
     expect(calcPedItem(erd, 30, 12).use).toBe(false);
+  });
+});
+
+describe("외래까지 늘리기(기간과 따로)", () => {
+  const item = (o: Partial<CalcResult>): CalcResult => ({ code: "X", name: "x", dose: "1", freq: "P1", days: "14", untilVisit: false, use: true, why: "", ...o });
+  it("다음 외래까지 일수(오늘 10/27 → 11/13 = 17일), 지났거나 없으면 null", () => {
+    expect(daysUntilVisit("2026-10-27", "2026-11-13")).toBe(17);
+    expect(daysUntilVisit("2026-10-27", "2026-10-27")).toBeNull();
+    expect(daysUntilVisit("2026-10-27", null)).toBeNull();
+    expect(daysUntilVisit("2026-10-27", "11/13")).toBeNull();
+  });
+  it("외래까지 켠 약만 늘리고, 항생제처럼 끈 약·안 쓰는 약은 정해진 기간 그대로", () => {
+    const out = withVisitDays([item({ code: "A", untilVisit: true }), item({ code: "B", days: "7" }), item({ code: "C", untilVisit: true, use: false })], "2026-10-27", "2026-11-13");
+    expect(out.map((i) => `${i.code}:${i.days}`)).toEqual(["A:17", "B:7", "C:14"]);
+    expect(out[0].why).toMatch(/다음 외래\(2026-11-13\)까지 17일/);
+  });
+  it("다음 외래를 안 골랐으면 아무것도 안 바꿈", () => {
+    expect(withVisitDays([item({ untilVisit: true })], "2026-10-27", undefined)[0].days).toBe("14");
+  });
+  it("예전에 저장된 약(untilVisit 없음)은 꺼진 것으로", () => {
+    const p = RxBundleInputSchema.safeParse({ title: "t", audience: "adult", sortOrder: 1, items: [{ code: "A", name: "a", days: "14" }] });
+    expect(p.success && p.data.items[0].untilVisit).toBe(false);
   });
 });

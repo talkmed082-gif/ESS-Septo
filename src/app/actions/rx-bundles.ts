@@ -14,6 +14,10 @@ function parse(formData: FormData) {
   } catch {
     items = null;
   }
+  // 목록 옆 "외래까지" 체크칸(uv-번호) — JSON 칸에서 약 수를 바꾸지 않았을 때만 번호대로 덮어쓴다(바꿨으면 JSON의 untilVisit 그대로)
+  if (Array.isArray(items) && items.length === Number(formData.get("uvCount") ?? -1)) {
+    items = items.map((it, k) => (it && typeof it === "object" ? { ...it, untilVisit: formData.has(`uv-${k}`) } : it));
+  }
   return RxBundleInputSchema.safeParse({
     title: formData.get("title"),
     audience: formData.get("audience") ?? "adult",

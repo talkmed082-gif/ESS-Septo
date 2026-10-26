@@ -10,8 +10,7 @@ const inputClass = "rounded-md border border-slate-300 px-2 py-1 text-sm focus:b
 function ruleText(i: RxItem) {
   const r = i.ped;
   const min = i.minMonths != null ? `${i.minMonths}개월 이상 · ` : "";
-  if (!r) return `${i.dose || "기본"} ${i.freq || ""} ${i.days ? `${i.days}일` : ""}`.trim();
-  if (r.type === "fixed") return `${min}EMR 기본 용법`;
+  if (!r) return `${i.dose || "기본"} ${i.freq || ""} ${i.days ? `${i.days}일` : ""}`.trim();  if (r.type === "fixed") return `${min}EMR 기본 용법`;
   if (r.type === "kg") return `${min}${r.mgPerKgDay}mg/kg/일 ÷ ${r.timesPerDay}회 (${r.freq})${r.maxMgDay ? ` · 최대 ${r.maxMgDay}mg/일` : ""}${r.maxKg ? ` · ${r.maxKg}kg 미만` : ""} · ${i.days}일`;
   const bands = r.type === "age"
     ? r.bands.map((b) => `${b.fromMonths}~${b.toMonths ?? ""}개월 ${b.dose} ${b.freq}`)
@@ -34,14 +33,20 @@ export function RxBundleForm({
     <form action={formAction} className="space-y-2 text-sm">
       <ul className="space-y-1">
         {bundle.items.map((i, k) => (
-          <li key={k} className="flex flex-wrap gap-x-2">
+          <li key={k} className="flex flex-wrap items-center gap-x-2">
             <span className="font-medium text-slate-800">{i.name}</span>
             <span className="text-slate-400">{i.code}</span>
             <span className="text-slate-600">{ruleText(i)}</span>
             {i.note && <span className="text-amber-700">{i.note}</span>}
+            {/* 기간(위 days)과 따로: 켜면 진료실 프로그램이 고른 다음 외래까지 일수로 처방(항생제처럼 기간이 정해진 약은 끄기) */}
+            <label className="flex items-center gap-1 text-xs text-slate-500">
+              <input type="checkbox" name={`uv-${k}`} defaultChecked={i.untilVisit} />
+              외래까지
+            </label>
           </li>
         ))}
       </ul>
+      <input type="hidden" name="uvCount" value={bundle.items.length} />
       <div className="flex flex-wrap gap-2">
         <input name="title" required maxLength={60} defaultValue={bundle.title} aria-label="묶음 이름" className={`${inputClass} flex-1`} />
         <input type="hidden" name="audience" value={bundle.audience} />

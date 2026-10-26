@@ -28,6 +28,9 @@ export const RxItemSchema = z.object({
   dose: z.string().max(20).default(""),
   freq: z.string().max(20).default(""),
   days: z.string().max(5).default(""),
+  // 다음 외래까지 늘리기(사용자 2026-10-26 "기간 따로, 외래까지 늘리는 거 따로") — 켜면 진료실 프로그램이 고른 다음 외래까지 일수로 처방.
+  // 끄면 days 그대로(항생제처럼 기간이 정해진 약)
+  untilVisit: z.boolean().default(false),
   minMonths: z.number().min(0).nullable().default(null), // 이 나이 미만은 쓰지 않음
   note: z.string().max(200).default(""),
   ped: PedRuleSchema.nullable().default(null),
@@ -52,11 +55,25 @@ export function parseRxItems(value: unknown): RxItem[] {
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
-export type CalcResult = { code: string; name: string; dose: string; freq: string; days: string; use: boolean; why: string };
+export type CalcResult = { code: string; name: string; dose: string; freq: string; days: string; untilVisit: boolean; use: boolean; why: string };
+
+// 다음 외래까지 일수(오늘 → 다음 외래 전날까지 먹고 그날 오게: 날짜 차이). 날짜가 없거나 지났으면 null
+export function daysUntilVisit(today: string, nextVisit: string | null | undefined): number | null {
+  if (!nextVisit || !/^\d{4}-\d{2}-\d{2}$/.test(nextVisit)) return null;
+  const d = Math.round((Date.parse(`${nextVisit}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000);
+  return d > 0 ? d : null;
+}
+
+// "외래까지 늘리기" 약만 다음 외래까지 일수로(날짜가 없거나 지났으면 정해진 기간 그대로). why 앞에 표시
+export function withVisitDays(items: CalcResult[], today: string, nextVisit: string | null | undefined): CalcResult[] {
+  const d = daysUntilVisit(today, nextVisit);
+  if (d == null) return items;
+  return items.map((i) => (i.untilVisit && i.use ? { ...i, days: String(d), why: [`다음 외래(${nextVisit})까지 ${d}일`, i.why].filter(Boolean).join(" · ") } : i));
+}
 
 // 소아 계산: 나이(개월)·몸무게(kg) → 1회량·용법. 범위 밖이면 use=false와 이유
 export function calcPedItem(item: RxItem, ageMonths: number, weightKg: number | null): CalcResult {
-  const base = { code: item.code, name: item.name, days: item.days };
+  const base = { code: item.code, name: item.name, days: item.days, untilVisit: item.untilVisit };
   if (item.minMonths != null && ageMonths < item.minMonths) return { ...base, dose: "", freq: "", use: false, why: `${item.minMonths}개월 미만은 사용 안 함` };
   const r = item.ped;
   if (!r || r.type === "fixed") return { ...base, dose: item.dose, freq: item.freq, use: true, why: item.note };
