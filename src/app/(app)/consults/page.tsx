@@ -39,8 +39,9 @@ export default async function ConsultsPage() {
 
       <section className="space-y-2">
         <p className="text-sm text-slate-500">
-          EMR에서 본인에게 온 타과의뢰(최근 30일)를 평일 8시~20시 사이 10분마다 자동으로 가져오고, 이 화면은 1분마다 새로
-          고칩니다. 바로 보려면 [EMR에서 가져오기]. 회신을 쓰면 병원 PC가 EMR 회신 기록지에 저장하고 일괄서명까지 합니다.
+          EMR에서 본인에게 온 타과의뢰(최근 30일)를 평일 8시~20시 사이 30분마다 자동으로 가져옵니다. 이 화면은 다른 탭에
+          갔다 돌아오면 새로 고칩니다. 바로 보려면 [EMR에서 가져오기](10분 안에). 회신을 쓰면 병원 PC가 EMR 회신 기록지에
+          저장하고 일괄서명까지 합니다.
         </p>
         {user?.consultCheckRequestedAt ? (
           <div className="flex flex-wrap items-center gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm">
