@@ -14,6 +14,7 @@ import { TextTemplatesCard } from "./text-templates-card";
 import { kstDate } from "@/lib/hospital-link";
 import { ClinicScheduleCard } from "./clinic-schedule-card";
 import { parseSchedule } from "@/lib/clinic-schedule";
+import { effectiveSchedule } from "@/lib/clinic-schedule-store";
 import { SETTINGS_TABS, SectionTabs } from "@/components/section-tabs";
 import { OtpCard } from "./otp-card";
 
@@ -47,6 +48,14 @@ export default async function SettingsPage() {
   const dayCount = new Map<number, number>();
   for (const l of recentLists) if (Array.isArray(l.rows) && l.rows.length) { const wd = new Date(`${l.date}T00:00:00Z`).getUTCDay(); dayCount.set(wd, (dayCount.get(wd) ?? 0) + 1); }
   const historyDays = [...dayCount.entries()].sort((a, b) => a[0] - b[0]).map(([wd, n]) => `${"일월화수목금토"[wd]}(${n})`).join(" ");
+  // 다음 외래 계산에 실제로 쓰는 스케줄(손으로 저장한 것, 없으면 예약 명단으로 자동 판단)
+  const eff = await effectiveSchedule(user.id);
+  const inUse = {
+    source: eff.source,
+    text: eff.schedule
+      .map((s) => `${"일월화수목금토"[s.weekday]} ${s.session === "AM" ? "오전" : "오후"} ${s.everyOtherFrom ? `격주(${s.everyOtherFrom.slice(5).replace("-", "/")} 기준)` : "매주"}`)
+      .join(" · "),
+  };
 
   const templates = await prisma.textTemplate.findMany({
     where: { createdById: user.id },
@@ -127,7 +136,7 @@ export default async function SettingsPage() {
 
       <div>
         <h2 className="mb-1 text-sm font-semibold text-slate-700">내 외래 스케줄</h2>
-        <ClinicScheduleCard schedule={parseSchedule(me?.clinicSchedule)} historyDays={historyDays} />
+        <ClinicScheduleCard schedule={parseSchedule(me?.clinicSchedule)} historyDays={historyDays} inUse={inUse} />
       </div>
 
       <div>

@@ -6,12 +6,33 @@ const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
 // 내 외래 스케줄 — 진료실 프로그램의 다음 외래 버튼(2주~6개월)이 이 요일 중 가장 가까운 날을 고른다. 휴진은 "자동화 쉬는 날".
 // 격주(금 오전 등)는 칸 아래 "격주"를 켜고 기준일(외래가 있는 날 하나)을 넣는다
-export function ClinicScheduleCard({ schedule, historyDays }: { schedule: ClinicSession[]; historyDays: string }) {
+export function ClinicScheduleCard({
+  schedule,
+  historyDays,
+  inUse,
+}: {
+  schedule: ClinicSession[];
+  historyDays: string;
+  inUse: { source: "manual" | "auto" | "none"; text: string };
+}) {
   const on = (wd: number, s: "AM" | "PM") => schedule.some((x) => x.weekday === wd && x.session === s);
   const biweekly = (wd: number, s: "AM" | "PM") => schedule.some((x) => x.weekday === wd && x.session === s && x.everyOtherFrom);
   const anchor = schedule.find((x) => x.everyOtherFrom)?.everyOtherFrom ?? "";
   return (
     <form action={saveClinicSchedule} className="space-y-2 rounded-md border border-slate-200 bg-white p-3 text-sm">
+      <p className="text-sm text-slate-700">
+        다음 외래 계산에 쓰는 스케줄:{" "}
+        {inUse.source === "none" ? (
+          <span className="text-slate-400">아직 없음(외래 명단·예약이 올라오면 자동으로 잡힘)</span>
+        ) : (
+          <>
+            <span className="font-medium">{inUse.text}</span>{" "}
+            <span className="text-xs text-slate-400">
+              {inUse.source === "auto" ? "— 외래 예약 명단으로 자동(아래를 저장하면 저장한 것을 씀)" : "— 아래에 저장한 것(모두 끄고 저장하면 자동으로)"}
+            </span>
+          </>
+        )}
+      </p>
       <table className="text-center">
         <thead>
           <tr>

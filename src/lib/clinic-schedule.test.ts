@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { nextClinicDate, nextClinicDatesByWeekday, parseSchedule, PatientCareBodySchema, sessionsOn } from "./clinic-schedule";
+import { ClinicCalendarBodySchema, inferSchedule, nextClinicDate, nextClinicDatesByWeekday, parseSchedule, PatientCareBodySchema, sessionsOn } from "./clinic-schedule";
 
 // 2026-10-24는 토요일
 describe("다음 외래 날짜", () => {
@@ -36,6 +36,26 @@ describe("다음 외래 날짜", () => {
   it("격주 기준일이 없으면 매주(예전 저장값 그대로 동작)", () => {
     expect(sessionsOn("2026-11-13", [{ weekday: 5, session: "AM" }])).toHaveLength(1);
     expect(sessionsOn("2026-11-13", mine)).toHaveLength(0);
+  });
+  it("예약 명단으로 자동 판단: 화 매주(지난 명단) + 금 격주(YES 캘린더 11/6·11/20·12/4·12/18)", () => {
+    const dates = ["2026-10-06", "2026-10-13", "2026-10-20", "2026-10-27", "2026-11-03", "2026-11-10", "2026-11-06", "2026-11-20", "2026-12-04", "2026-12-18", "2026-12-29"];
+    expect(inferSchedule(dates, new Map([[2, "13:30"], [5, "09:00"]]))).toEqual([
+      { weekday: 2, session: "PM" },
+      { weekday: 5, session: "AM", everyOtherFrom: "2026-11-06" },
+    ]);
+  });
+  it("자동 판단: 공휴일로 한 주 빠져도 매주(7일 간격이 있으면 매주), 날짜 하나뿐이면 매주, 시각 모르면 오전", () => {
+    expect(inferSchedule(["2026-10-06", "2026-10-20", "2026-10-27"])).toEqual([{ weekday: 2, session: "AM" }]);
+    expect(inferSchedule(["2026-11-06"])).toEqual([{ weekday: 5, session: "AM" }]);
+    expect(inferSchedule([])).toEqual([]);
+  });
+  it("자동 판단한 스케줄로 다음 외래: 금 진료 뒤 2주 → 11/20(금)·11/24(화)", () => {
+    const s = inferSchedule(["2026-10-27", "2026-11-03", "2026-11-06", "2026-11-20"], new Map([[2, "13:30"]]));
+    expect(nextClinicDatesByWeekday("2026-11-06", 14, s, []).map((d) => `${d.date}(${d.weekday})`)).toEqual(["2026-11-20(금)", "2026-11-24(화)"]);
+  });
+  it("YES 캘린더 업로드 형식", () => {
+    expect(ClinicCalendarBodySchema.safeParse({ from: "2026-10-27", to: "2027-04-27", days: [{ date: "2026-11-06", count: 10 }] }).success).toBe(true);
+    expect(ClinicCalendarBodySchema.safeParse({ from: "2026-10-27", to: "2027-04-27", days: [{ date: "11/6", count: 10 }] }).success).toBe(false);
   });
   it("형식이 깨진 스케줄은 빈 것으로, Plan 입력 형식", () => {
     expect(parseSchedule([{ weekday: 9 }])).toEqual([]);

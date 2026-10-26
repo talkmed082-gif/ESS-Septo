@@ -84,7 +84,34 @@ export function nextClinicDatesByWeekday(from: string, days: number, schedule: C
   return out;
 }
 
-export const PLAN_TYPES = { surgery: "수술", medication: "약물치료", observation: "경과관찰", return: "회송" } as const;
+// 외래 스케줄 자동 판단(사용자 2026-10-26 "외래 예약 명단 보고 잡으면 되잖아"):
+// 외래가 있던·있을 날짜(지난 외래 명단 + YES 첫 화면 캘린더 예약)를 요일별로 모아, 날짜 간격이 모두 14일의 배수면 격주(기준일 = 가장 이른 날),
+// 7일 간격이 하나라도 있으면 매주. 날짜가 1개뿐인 요일은 매주로 본다(판단할 근거 없음). 오전·오후는 그 요일 명단 첫 진료 시각(12시 전 = 오전)
+export function inferSchedule(dates: string[], firstTimeByWeekday: Map<number, string> = new Map()): ClinicSession[] {
+  const byWd = new Map<number, string[]>();
+  for (const d of [...new Set(dates)].sort()) {
+    const wd = new Date(`${d}T00:00:00Z`).getUTCDay();
+    byWd.set(wd, [...(byWd.get(wd) ?? []), d]);
+  }
+  return [...byWd.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([weekday, ds]) => {
+      const gaps = ds.slice(1).map((d, i) => Math.round((Date.parse(`${d}T00:00:00Z`) - Date.parse(`${ds[i]}T00:00:00Z`)) / 86_400_000));
+      const biweekly = gaps.length > 0 && gaps.every((g) => g % 14 === 0);
+      const t = firstTimeByWeekday.get(weekday);
+      const session: "AM" | "PM" = t && /^\d{1,2}:\d{2}/.test(t) && Number(t.split(":")[0]) >= 12 ? "PM" : "AM";
+      return { weekday, session, ...(biweekly ? { everyOtherFrom: ds[0] } : {}) };
+    });
+}
+
+// YES 첫 화면 캘린더(내 외래일별 예약 인원) — 병원 PC가 매일 아침 올린다
+export const ClinicCalendarBodySchema = z.object({
+  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  days: z.array(z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), count: z.number().int().min(0).max(999) })).max(400),
+});
+
+export const PLAN_TYPES ={ surgery: "수술", medication: "약물치료", observation: "경과관찰", return: "회송" } as const;
 
 export const PatientCareBodySchema = z.object({
   chartNo: z.string().trim().regex(/^\d{4,12}$/),

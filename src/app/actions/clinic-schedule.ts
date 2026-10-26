@@ -20,6 +20,7 @@ export async function saveClinicSchedule(formData: FormData): Promise<void> {
     }));
   const parsed = ClinicScheduleSchema.safeParse(sessions);
   if (!parsed.success) return;
+  // 모두 끄고 저장 = 자동 판단으로 돌아감(빈 배열 저장 → effectiveSchedule가 예약 명단으로)
   await prisma.user.update({ where: { id: session.userId }, data: { clinicSchedule: parsed.data } });
   revalidatePath("/settings");
 }
