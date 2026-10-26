@@ -31,8 +31,8 @@ export const roomLabel = (room: string | null | undefined) => {
   const n = roomNumber(room);
   return n === null ? "" : `${n}번방`;
 };
-// 엑셀·병원 PC로 가져온 수술 계획 메모의 "Room23 #1 · assist …" 줄(buildImportPlanNote)에서 방
-export const planNoteRoom = (note: string | null | undefined) => /^(Room\s*\d+)\s+#/m.exec(note ?? "")?.[1] ?? null;
+// 엑셀·병원 PC로 가져온 수술 계획 메모의 "Room23 #1 · assist …" 줄(buildImportPlanNote)에서 방 — YES 수술실 칸은 "05"처럼 번호만일 수도
+export const planNoteRoom = (note: string | null | undefined) => /^((?:Room\s*)?\d+(?:번방)?)\s+#/m.exec(note ?? "")?.[1] ?? null;
 
 export function splitCancelled(surgeries: ProfSurgery[]) {
   return {
