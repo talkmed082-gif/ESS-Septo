@@ -1,6 +1,7 @@
 import { verifySession } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { buttonStyles } from "@/lib/ui";
+import { wardPhone } from "@/lib/hospital-link";
 import { OUTPATIENT_TABS, SectionTabs } from "@/components/section-tabs";
 import { cancelConsultCheck, cancelConsultReply, requestConsultCheck } from "@/app/actions/hospital-link";
 import { ConsultReplyForm } from "./consult-reply-form";
@@ -90,6 +91,7 @@ export default async function ConsultsPage() {
 }
 
 function ConsultCard({ c }: { c: ConsultRow }) {
+  const ward = wardPhone(c.contact);
   return (
     <article className="rounded-lg border border-slate-200 bg-white p-4 text-sm">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -105,6 +107,15 @@ function ConsultCard({ c }: { c: ConsultRow }) {
         {c.patientName} {c.chartNo} {c.sexAge} {c.location && <span className="text-slate-500">· {c.location}</span>}
         {c.contact && <span className="text-slate-500"> · 연락처 {c.contact}</span>}
       </p>
+      {ward && (
+        <a
+          href={`tel:${ward.tel.replace(/-/g, "")}`}
+          className={`mt-2 inline-block ${buttonStyles.smallOutlineAccent}`}
+        >
+          병동 전화 {ward.tel}
+          {ward.team && ` (${ward.team}팀)`}
+        </a>
+      )}
       {c.diagnosis && <p className="mt-2 text-slate-600">진단: {c.diagnosis}</p>}
       {c.content && <p className="mt-2 whitespace-pre-wrap text-slate-900">{c.content}</p>}
       <ReplyPart c={c} />

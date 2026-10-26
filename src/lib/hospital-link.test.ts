@@ -1,5 +1,5 @@
 ﻿import { describe, expect, it } from "vitest";
-import { AutomationPauseSchema, carryOverSoap, checkConsultReply, ConsultBodySchema, consultKey, consultNoteId, ConsultReplyResultSchema, consultReplyUpdate, findPause, kstDate, mergeOutpatientSoap, searchOutpatientHistory, OutpatientListBodySchema, OutpatientSoapBodySchema, PcJobBodySchema, pcJobState, TsaRunBodySchema, validateTsaScanRange } from "@/lib/hospital-link";
+import { AutomationPauseSchema, carryOverSoap, checkConsultReply, ConsultBodySchema, consultKey, consultNoteId, ConsultReplyResultSchema, consultReplyUpdate, findPause, wardPhone, kstDate, mergeOutpatientSoap, searchOutpatientHistory, OutpatientListBodySchema, OutpatientSoapBodySchema, PcJobBodySchema, pcJobState, TsaRunBodySchema, validateTsaScanRange } from "@/lib/hospital-link";
 
 // 2026-10-14 16:00 UTC = 10/15 01:00 KST
 const NOW = new Date("2026-10-14T16:00:00Z");
@@ -42,6 +42,17 @@ describe("ConsultBodySchema", () => {
   it("키에서 의뢰 번호를 되찾는다(등록번호가 다르면 빈 값)", () => {
     expect(consultNoteId({ chartNo: "00123456", emrKey: "00123456-12345678" })).toBe("12345678");
     expect(consultNoteId({ chartNo: "999", emrKey: "00123456-12345678" })).toBe("");
+  });
+});
+
+describe("wardPhone", () => {
+  it("병동 내선을 055-360-과 합친다(팀 있으면 같이)", () => {
+    expect(wardPhone("병동 2064(B팀) · 전화 1234")).toEqual({ tel: "055-360-2064", team: "B" });
+    expect(wardPhone("병동 2064")).toEqual({ tel: "055-360-2064", team: "" });
+  });
+  it("병동 내선이 없으면 null", () => {
+    expect(wardPhone("전화 1234")).toBeNull();
+    expect(wardPhone(null)).toBeNull();
   });
 });
 

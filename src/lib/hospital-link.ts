@@ -186,6 +186,13 @@ export function consultNoteId(c: { chartNo: string; emrKey: string }) {
 
 export const CONSULT_REPLY_MAX = 4000;
 
+// 병동 전화 — 병원 PC가 EMR에서 찾은 병동 내선(연락처 맨 앞 "병동 2064(B팀)")을 병원 대표 앞자리와 합친다(사용자 2026-10-26 "055-360-@@@@")
+const HOSPITAL_TEL_PREFIX = "055-360-";
+export function wardPhone(contact: string | null | undefined): { tel: string; team: string } | null {
+  const m = /병동 (\d{4})(?:\((\w+)팀\))?/.exec(contact ?? "");
+  return m ? { tel: `${HOSPITAL_TEL_PREFIX}${m[1]}`, team: m[2] ?? "" } : null;
+}
+
 // 회신 글 검사(앞뒤 공백 정리, 줄바꿈은 그대로). 문제가 있으면 오류 문구
 export function checkConsultReply(text: string): { text: string } | { error: string } {
   const t = text.replace(/\r\n/g, "\n").trim();
