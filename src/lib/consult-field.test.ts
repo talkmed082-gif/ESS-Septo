@@ -18,6 +18,18 @@ describe("ruleField", () => {
   it("귀가·코로나 같은 말은 걸리지 않는다", () => {
     expect(ruleField("귀가 예정 환자, 코로나 음성")).toBeNull();
   });
+  it("혀 병변은 두경부(한글 낱말 경계)", () => {
+    expect(ruleField("혀 궤양 평가 부탁드립니다")?.field).toBe("headneck");
+  });
+  it("이상한 입력에도 죽지 않는다(빈 글·이모지·스크립트·아주 긴 글)", () => {
+    expect(ruleField("")).toBeNull();
+    expect(ruleField("🙏🙏 </script><script>alert(1)</script>")).toBeNull();
+    expect(ruleField("어지럼 ".repeat(5000))?.field).toBe("ear");
+  });
+  it("영어 대소문자 섞여도 걸린다", () => {
+    expect(ruleField("EPISTAXIS, recurrent")?.field).toBe("nose");
+    expect(ruleField("Vertigo with Nystagmus")?.field).toBe("ear");
+  });
   it("분야가 섞여 비슷하면 규칙으로 정하지 않는다", () => {
     expect(ruleField("비염 있고 이명도 있음")).toBeNull();
   });

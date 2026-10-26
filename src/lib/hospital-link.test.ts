@@ -54,6 +54,11 @@ describe("wardPhone", () => {
     expect(wardPhone("전화 1234")).toBeNull();
     expect(wardPhone(null)).toBeNull();
   });
+  it("4자리가 아닌 내선은 번호를 만들지 않는다(앞 4자리로 엉뚱한 번호 방지)", () => {
+    expect(wardPhone("병동 20645(B팀)")).toBeNull();
+    expect(wardPhone("병동 206")).toBeNull();
+    expect(wardPhone("병동 abcd")).toBeNull();
+  });
 });
 
 describe("checkConsultReply", () => {
@@ -63,6 +68,11 @@ describe("checkConsultReply", () => {
   it("빈 글과 너무 긴 글은 막는다", () => {
     expect(checkConsultReply("   ")).toHaveProperty("error");
     expect(checkConsultReply("가".repeat(4001))).toHaveProperty("error");
+  });
+  it("경계값·특수 문자: 4000자는 되고, 따옴표·스크립트·이모지는 글 그대로", () => {
+    expect(checkConsultReply("가".repeat(4000))).toEqual({ text: "가".repeat(4000) });
+    expect(checkConsultReply(`"큰따옴표" 'VB' </script> 🙏`)).toEqual({ text: `"큰따옴표" 'VB' </script> 🙏` });
+    expect(checkConsultReply("\r\n\r\n")).toHaveProperty("error");
   });
 });
 

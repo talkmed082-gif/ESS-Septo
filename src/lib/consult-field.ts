@@ -15,7 +15,8 @@ const RULES: Record<Exclude<ConsultField, "unknown">, RegExp[]> = {
   headneck: [
     /갑상선|thyroid/i, /경부\s*(종물|종괴|림프)|neck\s*mass|목\s*(종물|혹|멍울)|림프절|lymph/i, /후두|laryn/i, /성대|vocal|쉰\s*목소리|애성|hoarse/i,
     /연하|삼킴|dysphag/i, /침샘|이하선|악하선|parotid|submandib|salivary/i, /편도|tonsil/i, /인두|pharyn/i, /기관\s*절개|tracheost|기도\s*(확보|폐쇄)|airway/i,
-    /구강|oral\s*cavity|혀\b|tongue/i,
+    // 한글에는 \b가 듣지 않아(혀\b는 영영 안 걸렸음) 뒤에 오는 말로 묶는다
+    /구강|oral\s*cavity|혀\s*(종물|병변|궤양|암|통증)|tongue/i,
   ],
   nose: [
     /비강|nasal|비내/i, /부비동|sinus|축농증|crs\b/i, /비출혈|코피|epistaxis/i, /비중격|septum|septal/i, /비염|rhinit/i, /비용종|polyp/i,
