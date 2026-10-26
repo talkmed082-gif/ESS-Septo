@@ -27,11 +27,14 @@ export async function POST(request: Request) {
       update: { openedAt: now },
     });
   }
-  const ask =where === "laptop" && sp.get("noAsks") !== "1" ? await claimClinicAsk(user.id, now) : null;
+  const ask = where === "laptop" && sp.get("noAsks") !== "1" ? await claimClinicAsk(user.id, now) : null;
   if (sp.get("asksOnly") === "1") return pcJson({ job: null, ask });
+  // ?date= : 진료 어시스트 [이 PC에서 바로 하기] — 고른 날짜 일감(다른 날도 EMR 기록지가 열림, 사용자 2026-10-26). 없으면 오늘
+  const qd = sp.get("date") ?? "";
+  const day = where === "laptop" && /^\d{4}-\d{2}-\d{2}$/.test(qd) ? qd : kstDate(now);
   const jobs = (
     await prisma.opdJob.findMany({
-      where: { createdById: user.id, visitDate: kstDate(now), status: { in: ["pending", "waiting", "running"] } },
+      where: { createdById: user.id, visitDate: day, status: { in: ["pending", "waiting", "running"] } },
       orderBy: { createdAt: "asc" },
     })
   ).filter((j) => jobWhere(j.tasks) === where && (where === "laptop" || j.chartNo.replace(/^0+/, "") === chart));
@@ -43,5 +46,5 @@ export async function POST(request: Request) {
   // 재진 SOAP 요약(tasks.soap)용 — 그날 외래 명단의 그 환자 SOAP 글(없으면 빈 값 → 작업자가 이전 기록으로)
   const list = await prisma.outpatientList.findUnique({ where: { createdById_date: { createdById: user.id, date: job.visitDate } }, select: { rows: true } });
   const soap = ((list?.rows ?? []) as OutpatientRow[]).find((x) => x.chartNo.replace(/^0+/, "") === job.chartNo.replace(/^0+/, ""))?.soap ?? "";
-  return pcJson({ job: { id: job.id, chartNo: job.chartNo, name: job.name, visit: job.visit, templateId: job.templateId, tasks: job.tasks, practice: job.practice, tries: job.tries + 1, soap }, ask });
+  return pcJson({ job: { id: job.id, chartNo: job.chartNo, name: job.name, visit: job.visit, templateId: job.templateId, tasks: job.tasks, practice: job.practice, tries: job.tries + 1, soap, visitDate: job.visitDate }, ask });
 }
