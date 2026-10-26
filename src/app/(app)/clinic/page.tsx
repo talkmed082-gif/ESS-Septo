@@ -94,14 +94,15 @@ export default async function ClinicPage({ searchParams }: PageProps<"/clinic">)
         <h1 className="mb-4 text-xl font-semibold">진료</h1>
         <SectionTabs tabs={OUTPATIENT_TABS} current="/clinic" />
       </div>
-      <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="space-y-2">
+      {/* 폰(한 칸)에서도 칸 폭을 화면에 묶는다 — 기본 grid 칸은 내용 폭(413px)만큼 넓어져 오른쪽이 잘렸다 */}
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+        <aside className="min-w-0 space-y-2">
           <div className="flex items-center gap-1">
             <Link href={`/clinic?date=${addDays(date, -1)}`} className="rounded border border-slate-300 px-2 py-1 text-sm" aria-label="전날">
               ‹
             </Link>
-            <form className="flex flex-1 gap-1">
-              <input type="date" name="date" defaultValue={date} className="w-full rounded border border-slate-300 px-2 py-1 text-sm" />
+            <form className="flex min-w-0 flex-1 gap-1">
+              <input type="date" name="date" defaultValue={date} className="w-full min-w-0 rounded border border-slate-300 px-2 py-1 text-sm" />
               <button type="submit" className="shrink-0 whitespace-nowrap rounded border border-slate-300 px-2 text-sm">
                 보기
               </button>
