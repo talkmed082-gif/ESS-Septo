@@ -1,8 +1,9 @@
 import Link from "next/link";
 
-// 한 메뉴 안의 화면 탭 — 외래(명단·템플릿), 설정(일반·병원 연동·엑셀 가져오기)
+// 한 메뉴 안의 화면 탭 — 진료(외래 진료·명단·템플릿·입원 타과의뢰), 설정(일반·병원 연동·엑셀 가져오기).
+// 상단 메뉴 "외래" → "진료"(타과의뢰는 입원 환자라 — 사용자 2026-10-26), 그래서 이 탭은 "외래 진료"
 export const OUTPATIENT_TABS = [
-  { href: "/clinic", label: "진료" },
+  { href: "/clinic", label: "외래 진료" },
   { href: "/outpatient", label: "외래 명단" },
   { href: "/templates", label: "외래 템플릿" },
   { href: "/consults", label: "타과의뢰" },

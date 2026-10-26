@@ -13,7 +13,7 @@ import { latestRoadmaps } from "@/lib/roadmap-store";
 import { patientRoadmaps, type PatientPathwayView, type VisitSummaryView } from "@/lib/pathway-store";
 import { PathwayView } from "./pathway-view";
 
-// 외래 명단 — 병원 PC가 올린 날짜별 명단(달력), 등록번호로 외래 이력 찾기, SOAP·로드맵(AI 정리).
+// 진료 > 외래 명단 — 병원 PC가 올린 날짜별 명단(달력), 등록번호로 외래 이력 찾기, SOAP·로드맵(AI 정리).
 // 예전 "병원 연동" 화면에 있던 것을 외래 메뉴로 옮겼다(사용자 2026-10-24). 본인 계정 데이터만(createdById).
 const fmtTime = new Intl.DateTimeFormat("ko-KR", {
   timeZone: "Asia/Seoul",
@@ -132,7 +132,7 @@ export default async function OutpatientPage({ searchParams }: PageProps<"/outpa
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold">외래</h1>
+      <h1 className="text-xl font-semibold">진료</h1>
       <SectionTabs tabs={OUTPATIENT_TABS} current="/outpatient" />
 
       <section className="space-y-3">
@@ -191,12 +191,12 @@ export default async function OutpatientPage({ searchParams }: PageProps<"/outpa
                   <table className="w-full text-left text-sm">
                     <thead className="border-b border-slate-200 text-slate-500">
                       <tr>
-                        <th className="py-2 pr-3 font-normal">시간</th>
-                        <th className="py-2 pr-3 font-normal">이름</th>
-                        <th className="py-2 pr-3 font-normal">등록번호</th>
-                        <th className="py-2 pr-3 font-normal">초재진</th>
-                        <th className="py-2 pr-3 font-normal">주진단</th>
-                        <th className="py-2 font-normal">이 사이트</th>
+                        <th className="py-2 pr-3 font-normal whitespace-nowrap">시간</th>
+                        <th className="py-2 pr-3 font-normal whitespace-nowrap">이름</th>
+                        <th className="py-2 pr-3 font-normal whitespace-nowrap">등록번호</th>
+                        <th className="py-2 pr-3 font-normal whitespace-nowrap">초재진</th>
+                        <th className="py-2 pr-3 font-normal whitespace-nowrap">주진단</th>
+                        <th className="py-2 font-normal whitespace-nowrap">이 사이트</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -209,7 +209,7 @@ export default async function OutpatientPage({ searchParams }: PageProps<"/outpa
                             <td className="py-2 pr-3 whitespace-nowrap">{p.time}</td>
                             <td className="py-2 pr-3 whitespace-nowrap">{p.name}</td>
                             <td className="py-2 pr-3">{p.chartNo}</td>
-                            <td className="py-2 pr-3">{p.visit}</td>
+                            <td className="py-2 pr-3 whitespace-nowrap">{p.visit}</td>
                             <td className="py-2 pr-3">{p.diagnosis}</td>
                             <td className="py-2 whitespace-nowrap">
                               {patient ? (

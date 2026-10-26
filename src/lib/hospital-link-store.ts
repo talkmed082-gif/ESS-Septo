@@ -167,10 +167,10 @@ export async function saveConsults(
       });
     }),
   ]);
-  // 아직 판정 안 한 미회신 의뢰만 내 분야인지 판정(한 의뢰에 한 번 — 규칙으로 안 되면 Jev 1번)
+  // 아직 판정 안 한 의뢰만 내 분야인지 판정(한 의뢰에 한 번 — 규칙으로 안 되면 Jev 1번). 회신 끝난 지난 의뢰도(사용자 2026-10-26 "이전 것도")
   if (!body.error) {
     const todo = await prisma.consult.findMany({
-      where: { createdById: userId, replied: false, field: null, emrKey: { in: keys } },
+      where: { createdById: userId, field: null, emrKey: { in: keys } },
       select: { id: true, content: true, diagnosis: true },
     });
     for (const c of todo) {

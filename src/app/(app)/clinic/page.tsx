@@ -88,9 +88,10 @@ export default async function ClinicPage({ searchParams }: PageProps<"/clinic">)
   }
 
   return (
-    <div className="relative left-1/2 w-[min(1600px,calc(100vw-2rem))] -translate-x-1/2 space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-xl font-semibold">진료</h1>
+    // 넓은 화면(lg)에서만 본문 폭을 넘어 넓게 쓴다 — 폰에서는 100vw 계산이 화면 밖으로 밀려 오른쪽이 잘렸다(사용자 2026-10-26 캡처)
+    <div className="space-y-4 lg:relative lg:left-1/2 lg:w-[min(1600px,calc(100vw-2rem))] lg:-translate-x-1/2">
+      <div>
+        <h1 className="mb-4 text-xl font-semibold">진료</h1>
         <SectionTabs tabs={OUTPATIENT_TABS} current="/clinic" />
       </div>
       <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
@@ -101,7 +102,7 @@ export default async function ClinicPage({ searchParams }: PageProps<"/clinic">)
             </Link>
             <form className="flex flex-1 gap-1">
               <input type="date" name="date" defaultValue={date} className="w-full rounded border border-slate-300 px-2 py-1 text-sm" />
-              <button type="submit" className="rounded border border-slate-300 px-2 text-sm">
+              <button type="submit" className="shrink-0 whitespace-nowrap rounded border border-slate-300 px-2 text-sm">
                 보기
               </button>
             </form>

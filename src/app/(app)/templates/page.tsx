@@ -37,7 +37,7 @@ export default async function TemplatesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="mb-4 text-xl font-semibold">외래</h1>
+        <h1 className="mb-4 text-xl font-semibold">진료</h1>
         <SectionTabs tabs={OUTPATIENT_TABS} current="/templates" />
         <p className="text-sm text-slate-500">
           진료실 PC 프로그램에서 템플릿을 고르면 EMR 외래초진·경과 기록지 칸이 채워지고 통증평가는 &quot;없음&quot;으로

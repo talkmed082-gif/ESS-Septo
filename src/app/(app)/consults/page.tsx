@@ -36,7 +36,10 @@ export default async function ConsultsPage() {
 
   return (
     <div className="space-y-6">
-      <SectionTabs tabs={OUTPATIENT_TABS} current="/consults" />
+      <div>
+        <h1 className="mb-4 text-xl font-semibold">진료</h1>
+        <SectionTabs tabs={OUTPATIENT_TABS} current="/consults" />
+      </div>
       <AutoRefresh />
 
       <section className="space-y-2">
@@ -97,7 +100,7 @@ function ConsultCard({ c }: { c: ConsultRow }) {
     <article className="rounded-lg border border-slate-200 bg-white p-4 text-sm">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
         {c.emergency && <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs text-red-700">응급</span>}
-        {!c.replied && c.field && c.field !== "unknown" && (
+        {c.field && c.field !== "unknown" && (
           <span
             className={`rounded-full px-2 py-0.5 text-xs ${c.field === "nose" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-800"}`}
             title={c.fieldReason ?? undefined}
