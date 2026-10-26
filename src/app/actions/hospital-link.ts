@@ -43,8 +43,9 @@ export interface ConsultReplyFormState {
   message?: string;
 }
 
-// 타과의뢰 회신 — 병원 PC가 10분 확인 때 EMR 회신 기록지에 넣고 [저장]까지 한다(서명은 사용자가 EMR 일괄서명).
-// EMR에서 아직 회신 안 된(목록 9열 ≠ Y) 의뢰만. 다시 보내면 글·요청 시각만 바뀐다
+// 타과의뢰 회신 — 병원 PC가 10분 확인 때 EMR 회신 기록지에 넣고 [저장] → 일괄서명까지 한다.
+// EMR에서 아직 회신 안 된(목록 9열 ≠ Y) 의뢰, 아직 EMR에 저장 안 된 회신만(저장된 뒤엔 EMR 칸에 글이 있어 다시 넣지 않음).
+// 다시 보내면 글·요청 시각만 바뀐다
 export async function requestConsultReply(
   _prev: ConsultReplyFormState | undefined,
   formData: FormData,
@@ -54,10 +55,15 @@ export async function requestConsultReply(
   const checked = checkConsultReply(String(formData.get("text") ?? ""));
   if ("error" in checked) return { message: checked.error };
   const r = await prisma.consult.updateMany({
-    where: { id, createdById: session.userId, replied: false },
+    where: {
+      id,
+      createdById: session.userId,
+      replied: false,
+      OR: [{ replyStatus: null }, { replyStatus: { in: ["PENDING", "FAILED"] } }],
+    },
     data: { replyText: checked.text, replyRequestedAt: new Date(), replyStatus: "PENDING", replyMessage: null },
   });
-  if (r.count === 0) return { message: "이미 EMR에서 회신된 의뢰입니다." };
+  if (r.count === 0) return { message: "이미 EMR에 회신이 저장된 의뢰입니다. 고치려면 EMR에서 직접 하세요." };
   revalidatePath("/consults");
   return {};
 }

@@ -64,7 +64,7 @@ export const PC_JOBS = [
   { key: "PROF_SCHEDULE", label: "교수님 외래·수술(새로 고침 뒤, 2주)", maxAgeHours: 80 },
   { key: "TSA_RANGE", label: "TSA 기간 확인(요청 시)", maxAgeHours: null },
   { key: "CONSULT", label: "타과의뢰 가져오기(요청 시)", maxAgeHours: null },
-  { key: "CONSULT_REPLY", label: "타과의뢰 회신 EMR 저장(요청 시)", maxAgeHours: null },
+  { key: "CONSULT_REPLY", label: "타과의뢰 회신 EMR 저장·서명(요청 시)", maxAgeHours: null },
   { key: "CRED_CHECK", label: "설정 파일 점검", maxAgeHours: null },
 ] as const;
 export type PcJobKey = (typeof PC_JOBS)[number]["key"];
@@ -193,13 +193,29 @@ export function checkConsultReply(text: string): { text: string } | { error: str
   return { text: t };
 }
 
-// 병원 PC가 회신을 EMR에 넣고 저장한 결과. requestedAt: 처리한 요청 시각(그 사이 다시 요청했으면 무시)
+// 병원 PC가 회신을 EMR에 넣고 저장·서명한 결과. requestedAt: 처리한 요청 시각(그 사이 다시 요청했으면 무시).
+// ok = 저장됨, doctorNoteId = 저장된 회신 기록지 번호, signed = 일괄서명까지 됨(ok인데 signed가 아니면 서명 못 함 — message에 이유)
 export const ConsultReplyResultSchema = z.object({
   id: z.string().min(1).max(40),
   requestedAt: z.iso.datetime(),
   ok: z.boolean(),
+  doctorNoteId: z.string().regex(/^\d{1,20}$/).optional(),
+  signed: z.boolean().optional(),
   message: z.string().max(500).optional(),
 });
+
+export type ConsultReplyResult = z.infer<typeof ConsultReplyResultSchema>;
+
+// 결과 → 저장할 값. 서명만 다시 한 결과(이미 SAVED)도 같은 모양으로 온다
+export function consultReplyUpdate(body: ConsultReplyResult, now: Date) {
+  if (!body.ok) return { replyStatus: "FAILED", replyMessage: body.message ?? null };
+  return {
+    replyStatus: body.signed ? "SIGNED" : "SAVED",
+    replyMessage: body.message ?? null,
+    ...(body.doctorNoteId ? { replyDoctorNoteId: body.doctorNoteId } : {}),
+    ...(body.signed ? { replySignedAt: now } : {}),
+  };
+}
 
 // 자동화 쉬는 날(출장 등) — 설정 화면에서 기간을 넣는다. 하루짜리는 from=to. 너무 긴 기간은 실수로 보고 막는다(최대 92일).
 export const AutomationPauseSchema = z

@@ -5,7 +5,7 @@ import { requestConsultReply } from "@/app/actions/hospital-link";
 import { CONSULT_REPLY_MAX } from "@/lib/hospital-link";
 import { buttonStyles } from "@/lib/ui";
 
-// 미회신 타과의뢰의 회신 쓰기 — [EMR에 회신 저장]을 누르면 병원 PC가 10분 안에 EMR 회신 기록지에 넣고 저장한다
+// 미회신 타과의뢰의 회신 쓰기 — [EMR에 회신 저장]을 누르면 병원 PC가 10분 안에 EMR 회신 기록지에 넣고 저장·일괄서명한다
 export function ConsultReplyForm({ id, defaultText }: { id: string; defaultText: string }) {
   const [state, formAction, pending] = useActionState(requestConsultReply, undefined);
   return (
@@ -23,7 +23,7 @@ export function ConsultReplyForm({ id, defaultText }: { id: string; defaultText:
         <button type="submit" disabled={pending} className={buttonStyles.primarySmall}>
           {pending ? "요청 중..." : "EMR에 회신 저장"}
         </button>
-        <span className="text-xs text-slate-400">저장까지만 합니다. 서명은 EMR 타과의뢰 [일괄서명]에서 직접 하세요.</span>
+        <span className="text-xs text-slate-400">병원 PC가 10분 안에 EMR에 저장하고 일괄서명까지 합니다.</span>
       </div>
       {state?.message && <p className="text-sm text-red-600">{state.message}</p>}
     </form>

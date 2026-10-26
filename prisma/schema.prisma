@@ -229,13 +229,16 @@ model Consult {
   // EMR 목록 9열 "회신" = Y
   replied      Boolean  @default(false)
   repliedAt    String?
-  // 여기서 쓴 회신 — 병원 PC가 EMR 회신 기록지에 넣고 [저장]까지 한다(서명은 사용자가 EMR 일괄서명).
-  // replyStatus: PENDING(요청) → SAVED(EMR 저장됨) / FAILED. replyRequestedAt이 같을 때만 결과를 받는다
-  replyText        String?
-  replyRequestedAt DateTime?
-  replyStatus      String?
-  replyMessage     String?
-  replySavedAt     DateTime?
+  // 여기서 쓴 회신 — 병원 PC가 EMR 회신 기록지에 넣고 [저장] → EMR 타과의뢰 일괄서명으로 서명까지(사용자 2026-10-26, 병원 허락).
+  // replyStatus: PENDING(요청) → SAVED(EMR 저장됨, 서명 전·서명 실패) → SIGNED / FAILED(저장 실패). replyRequestedAt이 같을 때만 결과를 받는다.
+  // replyDoctorNoteId: 저장한 회신 기록지 번호 — 일괄서명 목록에서 이 기록지만 골라 서명한다
+  replyText         String?
+  replyRequestedAt  DateTime?
+  replyStatus       String?
+  replyMessage      String?
+  replySavedAt      DateTime?
+  replyDoctorNoteId String?
+  replySignedAt     DateTime?
   createdById  String
   createdBy    User     @relation(fields: [createdById], references: [id])
   createdAt    DateTime @default(now())

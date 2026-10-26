@@ -5,7 +5,7 @@ import { OUTPATIENT_TABS, SectionTabs } from "@/components/section-tabs";
 import { cancelConsultCheck, cancelConsultReply, requestConsultCheck } from "@/app/actions/hospital-link";
 import { ConsultReplyForm } from "./consult-reply-form";
 
-// 외래 > 타과의뢰 — 병원 PC가 올린 EMR 타과의뢰(본인에게 온 것, 최근 30일). 회신을 쓰면 병원 PC가 EMR에 저장까지(서명은 EMR 일괄서명).
+// 외래 > 타과의뢰 — 병원 PC가 올린 EMR 타과의뢰(본인에게 온 것, 최근 30일). 회신을 쓰면 병원 PC가 EMR에 저장·일괄서명까지.
 const fmtTime = new Intl.DateTimeFormat("ko-KR", {
   timeZone: "Asia/Seoul",
   month: "numeric",
@@ -37,8 +37,8 @@ export default async function ConsultsPage() {
 
       <section className="space-y-2">
         <p className="text-sm text-slate-500">
-          EMR에서 본인에게 온 타과의뢰(최근 30일)를 가져옵니다. 회신을 쓰면 EMR 회신 기록지에 저장까지 합니다. 병원
-          PC가 평일 8시~20시 사이 10분마다 확인해 처리합니다. 서명은 EMR에서 직접 하세요.
+          EMR에서 본인에게 온 타과의뢰(최근 30일)를 가져옵니다. 회신을 쓰면 EMR 회신 기록지에 저장하고 일괄서명까지
+          합니다. 병원 PC가 평일 8시~20시 사이 10분마다 확인해 처리합니다.
         </p>
         {user?.consultCheckRequestedAt ? (
           <div className="flex flex-wrap items-center gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm">
@@ -108,7 +108,7 @@ function ConsultCard({ c }: { c: ConsultRow }) {
   );
 }
 
-// 회신: 대기 중·저장됨이면 글과 상태만, 아니면(처음·실패) 쓰기 칸. EMR에서 회신된 의뢰는 여기서 보낸 글만 보인다
+// 회신: 대기 중·저장됨·서명됨이면 글과 상태만, 아니면(처음·저장 실패) 쓰기 칸. EMR에서 회신된 의뢰는 여기서 보낸 글만 보인다
 function ReplyPart({ c }: { c: ConsultRow }) {
   const sent = c.replyText && (
     <p className="mt-1 rounded-md bg-slate-50 p-2 whitespace-pre-wrap text-slate-700">{c.replyText}</p>
@@ -131,13 +131,25 @@ function ReplyPart({ c }: { c: ConsultRow }) {
       </div>
     );
   }
+  if (c.replyStatus === "SIGNED") {
+    return (
+      <div className="mt-3 border-t border-slate-100 pt-2">
+        <p className="text-sm">
+          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700">EMR 저장·서명됨</span>
+          {c.replySignedAt && <span className="ml-2 text-xs text-slate-500">{fmtTime.format(c.replySignedAt)}</span>}
+        </p>
+        {sent}
+      </div>
+    );
+  }
   if (c.replyStatus === "SAVED") {
     return (
       <div className="mt-3 border-t border-slate-100 pt-2">
         <p className="text-sm">
-          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700">EMR에 저장됨</span>
+          <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-700">EMR에 저장됨 · 서명 전</span>
           <span className="ml-2 text-xs text-slate-500">
-            {c.replySavedAt && `${fmtTime.format(c.replySavedAt)} · `}서명 전 — EMR 타과의뢰 [일괄서명]에서 서명하세요
+            {c.replySavedAt && `${fmtTime.format(c.replySavedAt)} · `}
+            {c.replyMessage ? `서명 못 함: ${c.replyMessage}` : "병원 PC가 서명합니다"}
           </span>
         </p>
         {sent}

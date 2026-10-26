@@ -1,5 +1,5 @@
 ﻿import { describe, expect, it } from "vitest";
-import { AutomationPauseSchema, carryOverSoap, checkConsultReply, ConsultBodySchema, consultKey, consultNoteId, ConsultReplyResultSchema, findPause, kstDate, mergeOutpatientSoap, searchOutpatientHistory, OutpatientListBodySchema, OutpatientSoapBodySchema, PcJobBodySchema, pcJobState, TsaRunBodySchema, validateTsaScanRange } from "@/lib/hospital-link";
+import { AutomationPauseSchema, carryOverSoap, checkConsultReply, ConsultBodySchema, consultKey, consultNoteId, ConsultReplyResultSchema, consultReplyUpdate, findPause, kstDate, mergeOutpatientSoap, searchOutpatientHistory, OutpatientListBodySchema, OutpatientSoapBodySchema, PcJobBodySchema, pcJobState, TsaRunBodySchema, validateTsaScanRange } from "@/lib/hospital-link";
 
 // 2026-10-14 16:00 UTC = 10/15 01:00 KST
 const NOW = new Date("2026-10-14T16:00:00Z");
@@ -55,7 +55,33 @@ describe("checkConsultReply", () => {
   });
 });
 
+describe("consultReplyUpdate", () => {
+  const base = { id: "c1", requestedAt: "2026-10-26T03:00:00.000Z" };
+  const now = new Date("2026-10-26T04:00:00Z");
+  it("저장·서명 → SIGNED, 기록지 번호와 서명 시각", () => {
+    expect(consultReplyUpdate({ ...base, ok: true, signed: true, doctorNoteId: "123" }, now)).toEqual({
+      replyStatus: "SIGNED",
+      replyMessage: null,
+      replyDoctorNoteId: "123",
+      replySignedAt: now,
+    });
+  });
+  it("저장만 됨(서명 못 함) → SAVED, 이유 남김", () => {
+    expect(consultReplyUpdate({ ...base, ok: true, signed: false, doctorNoteId: "123", message: "비밀번호 필요" }, now)).toEqual({
+      replyStatus: "SAVED",
+      replyMessage: "비밀번호 필요",
+      replyDoctorNoteId: "123",
+    });
+  });
+  it("저장 실패 → FAILED", () => {
+    expect(consultReplyUpdate({ ...base, ok: false, message: "칸에 글 있음" }, now)).toEqual({ replyStatus: "FAILED", replyMessage: "칸에 글 있음" });
+  });
+});
+
 describe("ConsultReplyResultSchema", () => {
+  it("기록지 번호는 숫자만", () => {
+    expect(ConsultReplyResultSchema.safeParse({ id: "c1", requestedAt: "2026-10-26T03:00:00.000Z", ok: true, doctorNoteId: "12a" }).success).toBe(false);
+  });
   it("병원 PC 결과(성공·실패)를 받는다", () => {
     expect(ConsultReplyResultSchema.safeParse({ id: "c1", requestedAt: "2026-10-26T03:00:00.000Z", ok: true }).success).toBe(true);
     expect(ConsultReplyResultSchema.safeParse({ id: "c1", requestedAt: "2026-10-26T03:00:00.000Z", ok: false, message: "칸에 이미 글 있음" }).success).toBe(true);
