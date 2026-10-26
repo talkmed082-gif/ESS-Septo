@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ClinicCalendarBodySchema, inferSchedule, nextClinicDate, nextClinicDatesByWeekday, parseSchedule, PatientCareBodySchema, sessionsOn } from "./clinic-schedule";
+import { ClinicCalendarBodySchema, inferSchedule, NEXT_VISIT_OPTIONS, nextClinicDate, nextClinicDatesByWeekday, parseSchedule, PatientCareBodySchema, sessionsOn } from "./clinic-schedule";
 
 // 2026-10-24는 토요일
 describe("다음 외래 날짜", () => {
@@ -52,6 +52,12 @@ describe("다음 외래 날짜", () => {
   it("자동 판단한 스케줄로 다음 외래: 금 진료 뒤 2주 → 11/20(금)·11/24(화)", () => {
     const s = inferSchedule(["2026-10-27", "2026-11-03", "2026-11-06", "2026-11-20"], new Map([[2, "13:30"]]));
     expect(nextClinicDatesByWeekday("2026-11-06", 14, s, []).map((d) => `${d.date}(${d.weekday})`)).toEqual(["2026-11-20(금)", "2026-11-24(화)"]);
+  });
+  it("다음·1주 간격도: 10/27(화) 진료 뒤 '다음' = 11/3(화 — 10/30 금은 격주 쉬는 주), 다음의 요일별 = 11/3(화)·11/6(금)", () => {
+    expect(NEXT_VISIT_OPTIONS.map((o) => o.label).slice(0, 3)).toEqual(["다음 외래", "1주", "2주"]);
+    expect(nextClinicDate("2026-10-27", 1, mine, [])).toMatchObject({ date: "2026-11-03", weekday: "화" });
+    expect(nextClinicDatesByWeekday("2026-10-27", 1, mine, []).map((d) => d.date)).toEqual(["2026-11-03", "2026-11-06"]);
+    expect(nextClinicDatesByWeekday("2026-10-27", 7, mine, []).map((d) => d.date)).toEqual(["2026-11-03", "2026-11-06"]);
   });
   it("YES 캘린더 업로드 형식", () => {
     expect(ClinicCalendarBodySchema.safeParse({ from: "2026-10-27", to: "2027-04-27", days: [{ date: "2026-11-06", count: 10 }] }).success).toBe(true);

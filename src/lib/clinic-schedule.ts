@@ -11,7 +11,10 @@ export const ClinicSessionSchema = z.object({
 export const ClinicScheduleSchema = z.array(ClinicSessionSchema).max(14);
 export type ClinicSession = z.infer<typeof ClinicSessionSchema>;
 
+// "다음"은 내일 이후 가장 가까운 외래일, 1주도(사용자 2026-10-26 "2주 전에도 올 수 있는 건데")
 export const NEXT_VISIT_OPTIONS = [
+  { label: "다음 외래", days: 1 },
+  { label: "1주", days: 7 },
   { label: "2주", days: 14 },
   { label: "4주", days: 28 },
   { label: "2개월", days: 56 },
