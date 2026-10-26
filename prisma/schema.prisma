@@ -68,6 +68,7 @@ model User {
   patientPathways PatientPathway[]
   visitSummaries  VisitSummary[]
   opdJobs         OpdJob[]
+  clinicAsks      ClinicAsk[]
   rxBundles       RxBundle[]
   // 내 외래 스케줄 — [{ weekday: 0(일)~6(토), session: "AM" | "PM" }]. 다음 외래 날짜 계산에 쓴다(휴진은 AutomationPause)
   clinicSchedule  Json            @default("[]")
@@ -435,6 +436,23 @@ model OpdJob {
   updatedAt   DateTime @updatedAt
 
   @@unique([createdById, visitDate, chartNo])
+}
+
+// 폰 진료 화면 [Claude에게 묻기](2026-10-26) — 사이트에 질문을 남기면 노트북 진료 어시스트(--worker)가
+// 그 PC에만 있는 6개월 기록(이름·번호 뺀 것)으로 claude CLI에 묻고 답을 올린다. 환자 이름은 저장하지 않는다
+model ClinicAsk {
+  id          String    @id @default(cuid())
+  visitDate   String // yyyy-MM-dd(서울)
+  chartNo     String
+  question    String
+  status      String    @default("pending") // pending | running | done | failed
+  answer      String?
+  createdById String
+  createdBy   User      @relation(fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+  answeredAt  DateTime?
+
+  @@index([createdById, status])
 }
 
 // 외래별 요약(로드맵의 외래 버튼) — AI가 기록으로 만든다. 그 외래 때 단계(pathwayId·stageId)를 같이 남긴다
