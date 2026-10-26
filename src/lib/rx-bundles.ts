@@ -55,7 +55,8 @@ export function parseRxItems(value: unknown): RxItem[] {
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
-export type CalcResult = { code: string; name: string; dose: string; freq: string; days: string; untilVisit: boolean; use: boolean; why: string };
+// count: 스프레이 개수(외래까지 늘리기로 정해졌을 때만 있음 — 없으면 진료실 프로그램이 예전처럼 넣음)
+export type CalcResult = { code: string; name: string; dose: string; freq: string; days: string; untilVisit: boolean; use: boolean; why: string; count?: string };
 
 // 다음 외래까지 일수(오늘 → 다음 외래 전날까지 먹고 그날 오게: 날짜 차이). 날짜가 없거나 지났으면 null
 export function daysUntilVisit(today: string, nextVisit: string | null | undefined): number | null {
@@ -64,16 +65,23 @@ export function daysUntilVisit(today: string, nextVisit: string | null | undefin
   return d > 0 ? d : null;
 }
 
-// 비강 스프레이는 1개(약 1달)씩 개수로 처방 — 외래까지 늘리기를 켜도 늘리지 않는다(사용자 2026-10-26 "개수 1로 해야돼")
+// 비강 스프레이는 일수가 아니라 개수(1개 = 약 1달)로 처방(사용자 2026-10-26). 외래까지 늘리기를 켜면 다음 외래까지 일수 ÷ 30 올림만큼(17일 1개, 38일 2개, 84일 3개).
+// 처음엔 "늘 1개"로 잘못 고쳤음(사용자 "외래가 언제까지인지에 따라 2나 3이 될 수도 있는데")
 export const isNasalSpray = (i: { code: string; name: string }) => /_NSP$/i.test(i.code) || /스프레이|spray/i.test(i.name);
+export const sprayCount = (days: number) => Math.max(1, Math.ceil(days / 30));
 
-// "외래까지 늘리기" 약만 다음 외래까지 일수로(날짜가 없거나 지났으면 정해진 기간 그대로). why 앞에 표시
+// "외래까지 늘리기" 약만 다음 외래까지 일수로, 스프레이는 그 일수에 맞는 개수(count)로(날짜가 없거나 지났으면 정해진 대로). why 앞에 표시
 export function withVisitDays(items: CalcResult[], today: string, nextVisit: string | null | undefined): CalcResult[] {
   const d = daysUntilVisit(today, nextVisit);
   if (d == null) return items;
-  return items.map((i) =>
-    i.untilVisit && i.use && !isNasalSpray(i) ? { ...i, days: String(d), why: [`다음 외래(${nextVisit})까지 ${d}일`, i.why].filter(Boolean).join(" · ") } : i,
-  );
+  return items.map((i) => {
+    if (!i.untilVisit || !i.use) return i;
+    if (isNasalSpray(i)) {
+      const n = sprayCount(d);
+      return { ...i, count: String(n), why: [`다음 외래(${nextVisit})까지 ${d}일 → ${n}개`, i.why].filter(Boolean).join(" · ") };
+    }
+    return { ...i, days: String(d), why: [`다음 외래(${nextVisit})까지 ${d}일`, i.why].filter(Boolean).join(" · ") };
+  });
 }
 
 // 소아 계산: 나이(개월)·몸무게(kg) → 1회량·용법. 범위 밖이면 use=false와 이유
