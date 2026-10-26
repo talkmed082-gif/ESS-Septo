@@ -14,6 +14,7 @@ import {
   type TsaRunBody,
 } from "@/lib/hospital-link";
 import { addRoadmapVersion } from "@/lib/roadmap-store";
+import { classifyConsultField } from "@/lib/consult-field";
 
 // 병원 PC가 10분마다 확인하는 "TSA 기간 확인" 요청(없으면 null)
 export async function getTsaScanRequest(userId: string) {
@@ -166,6 +167,17 @@ export async function saveConsults(
       });
     }),
   ]);
+  // 아직 판정 안 한 미회신 의뢰만 내 분야인지 판정(한 의뢰에 한 번 — 규칙으로 안 되면 Jev 1번)
+  if (!body.error) {
+    const todo = await prisma.consult.findMany({
+      where: { createdById: userId, replied: false, field: null, emrKey: { in: keys } },
+      select: { id: true, content: true, diagnosis: true },
+    });
+    for (const c of todo) {
+      const r = await classifyConsultField(c);
+      await prisma.consult.update({ where: { id: c.id }, data: { field: r.field, fieldReason: r.reason } });
+    }
+  }
   if (body.requestedAt) {
     await prisma.user.updateMany({
       where: { id: userId, consultCheckRequestedAt: new Date(body.requestedAt) },

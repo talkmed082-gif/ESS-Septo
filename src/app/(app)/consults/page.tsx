@@ -2,6 +2,7 @@ import { verifySession } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { buttonStyles } from "@/lib/ui";
 import { wardPhone } from "@/lib/hospital-link";
+import { FIELD_LABEL, type ConsultField } from "@/lib/consult-field";
 import { OUTPATIENT_TABS, SectionTabs } from "@/components/section-tabs";
 import { cancelConsultCheck, cancelConsultReply, requestConsultCheck } from "@/app/actions/hospital-link";
 import { ConsultReplyForm } from "./consult-reply-form";
@@ -96,6 +97,15 @@ function ConsultCard({ c }: { c: ConsultRow }) {
     <article className="rounded-lg border border-slate-200 bg-white p-4 text-sm">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
         {c.emergency && <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs text-red-700">응급</span>}
+        {!c.replied && c.field && c.field !== "unknown" && (
+          <span
+            className={`rounded-full px-2 py-0.5 text-xs ${c.field === "nose" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-800"}`}
+            title={c.fieldReason ?? undefined}
+          >
+            {c.field === "nose" ? "코" : `내 분야 아님 가능성: ${FIELD_LABEL[c.field as ConsultField] ?? c.field}`}
+            {c.fieldReason && <span className="ml-1 opacity-70">({c.fieldReason})</span>}
+          </span>
+        )}
         <span className="font-medium text-slate-900">{c.requestedAt}</span>
         <span className="text-slate-400">·</span>
         <span>
