@@ -2,7 +2,9 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import {
   carryOverSoap,
+  consultKey,
   mergeOutpatientSoap,
+  type ConsultItem,
   type OutpatientRow,
   type OutpatientSoapItem,
   type PcJobKey,
@@ -73,6 +75,42 @@ export async function saveOutpatientList(
     update: { clinic: body.clinic, rows },
   });
   return { ok: true, count: body.rows.length };
+}
+
+// 병원 PC가 10분마다 확인하는 "타과의뢰 가져오기" 요청 시각(없으면 null)
+export async function getConsultRequest(userId: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { consultCheckRequestedAt: true } });
+  return user?.consultCheckRequestedAt?.toISOString() ?? null;
+}
+
+// EMR 타과의뢰 목록을 반영한다. 올린 기간(의뢰일 from~to) 안인데 이번 목록에 없는 것은 EMR에서 취소된 것으로 보고 지운다.
+// 처리한 요청이 그대로면(처리 중에 다시 누르지 않았으면) 요청을 비운다. error가 있으면 목록은 그대로 두고 요청만 비운다.
+export async function saveConsults(
+  userId: string,
+  body: { from: string; to: string; items: ConsultItem[]; requestedAt?: string; error?: string },
+) {
+  const keys = body.items.map(consultKey);
+  if (!body.error) await prisma.$transaction([
+    prisma.consult.deleteMany({
+      where: { createdById: userId, requestedAt: { gte: body.from, lte: `${body.to} 99` }, emrKey: { notIn: keys } },
+    }),
+    ...body.items.map((i) => {
+      const { noteId, ...data } = i;
+      const emrKey = consultKey({ chartNo: i.chartNo, noteId });
+      return prisma.consult.upsert({
+        where: { createdById_emrKey: { createdById: userId, emrKey } },
+        create: { ...data, emrKey, createdById: userId },
+        update: data,
+      });
+    }),
+  ]);
+  if (body.requestedAt) {
+    await prisma.user.updateMany({
+      where: { id: userId, consultCheckRequestedAt: new Date(body.requestedAt) },
+      data: { consultCheckRequestedAt: null },
+    });
+  }
+  return { ok: true, count: body.items.length };
 }
 
 // 명단(saveOutpatientList)이 먼저 올라와 있어야 한다(없으면 null).

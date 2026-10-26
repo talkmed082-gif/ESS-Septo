@@ -7,7 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 // match: 이 메뉴에 속하는 화면 주소(하위 화면에서도 지금 어느 메뉴인지 보이게)
 const ITEMS = [
   { href: "/dashboard", label: "메인", match: ["/dashboard"] },
-  { href: "/outpatient", label: "외래", match: ["/outpatient", "/templates"] },
+  { href: "/outpatient", label: "외래", match: ["/outpatient", "/templates", "/consults"] },
   { href: "/surgery", label: "수술", match: ["/surgery", "/plans", "/records"] },
   { href: "/calendar", label: "캘린더", match: ["/calendar"] },
   { href: "/patients", label: "환자", match: ["/patients"] },

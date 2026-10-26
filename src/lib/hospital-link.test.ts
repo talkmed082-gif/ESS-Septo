@@ -1,5 +1,5 @@
 ﻿import { describe, expect, it } from "vitest";
-import { AutomationPauseSchema, carryOverSoap, findPause, kstDate, mergeOutpatientSoap, searchOutpatientHistory, OutpatientListBodySchema, OutpatientSoapBodySchema, PcJobBodySchema, pcJobState, TsaRunBodySchema, validateTsaScanRange } from "@/lib/hospital-link";
+import { AutomationPauseSchema, carryOverSoap, ConsultBodySchema, consultKey, findPause, kstDate, mergeOutpatientSoap, searchOutpatientHistory, OutpatientListBodySchema, OutpatientSoapBodySchema, PcJobBodySchema, pcJobState, TsaRunBodySchema, validateTsaScanRange } from "@/lib/hospital-link";
 
 // 2026-10-14 16:00 UTC = 10/15 01:00 KST
 const NOW = new Date("2026-10-14T16:00:00Z");
@@ -9,6 +9,35 @@ describe("kstDate", () => {
     expect(kstDate(NOW)).toBe("2026-10-15");
     expect(kstDate(NOW, 1)).toBe("2026-10-16");
     expect(kstDate(new Date("2026-10-14T14:59:00Z"))).toBe("2026-10-14");
+  });
+});
+
+describe("ConsultBodySchema", () => {
+  const item = {
+    noteId: "12345678",
+    chartNo: "00123456",
+    patientName: "홍*동",
+    sexAge: "M/45",
+    location: "71병동",
+    requestedAt: "2026-10-26 11:31",
+    fromDept: "내과",
+    fromDoctor: "김의사",
+    emergency: false,
+    content: "의뢰 내용\n두 번째 줄",
+    diagnosis: "진단",
+    replied: false,
+    repliedAt: "",
+  };
+  it("병원 PC가 올리는 목록(0건 포함)을 받는다", () => {
+    expect(ConsultBodySchema.safeParse({ from: "2026-09-26", to: "2026-10-26", items: [item] }).success).toBe(true);
+    expect(ConsultBodySchema.safeParse({ from: "2026-09-26", to: "2026-10-26", items: [] }).success).toBe(true);
+  });
+  it("의뢰 번호가 없거나 날짜 형식이 틀리면 막는다", () => {
+    expect(ConsultBodySchema.safeParse({ from: "2026-09-26", to: "2026-10-26", items: [{ ...item, noteId: "" }] }).success).toBe(false);
+    expect(ConsultBodySchema.safeParse({ from: "9/26", to: "2026-10-26", items: [] }).success).toBe(false);
+  });
+  it("키는 등록번호-의뢰 번호", () => {
+    expect(consultKey(item)).toBe("00123456-12345678");
   });
 });
 

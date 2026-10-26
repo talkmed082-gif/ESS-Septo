@@ -63,6 +63,7 @@ export const PC_JOBS = [
   { key: "OUTPATIENT_REFRESH", label: "외래 명단 새로 고침(평일 8:00, 2주)", maxAgeHours: 80 },
   { key: "PROF_SCHEDULE", label: "교수님 외래·수술(새로 고침 뒤, 2주)", maxAgeHours: 80 },
   { key: "TSA_RANGE", label: "TSA 기간 확인(요청 시)", maxAgeHours: null },
+  { key: "CONSULT", label: "타과의뢰 가져오기(요청 시)", maxAgeHours: null },
   { key: "CRED_CHECK", label: "설정 파일 점검", maxAgeHours: null },
 ] as const;
 export type PcJobKey = (typeof PC_JOBS)[number]["key"];
@@ -143,6 +144,37 @@ export function mergeOutpatientSoap(rows: OutpatientRow[], items: OutpatientSoap
     return { ...r, soap: item.soap, ...(item.roadmap !== undefined ? { roadmap: parsePathwayLines(item.roadmap).rest } : {}) };
   });
   return { rows: merged, matched };
+}
+
+// 병원 PC가 올리는 EMR 타과의뢰 목록(본인에게 온 것, from~to 의뢰일 전체). requestedAt: 처리한 "가져오기" 요청 시각
+export const ConsultItemSchema = z.object({
+  noteId: z.string().min(1).max(30),
+  chartNo: z.string().min(1).max(20),
+  patientName: z.string().max(50),
+  sexAge: z.string().max(30),
+  location: z.string().max(50),
+  requestedAt: z.string().max(20), // "yyyy-MM-dd HH:mm"
+  fromDept: z.string().max(50),
+  fromDoctor: z.string().max(50),
+  emergency: z.boolean(),
+  content: z.string().max(8000),
+  diagnosis: z.string().max(1000),
+  replied: z.boolean(),
+  repliedAt: z.string().max(20),
+});
+export type ConsultItem = z.infer<typeof ConsultItemSchema>;
+
+export const ConsultBodySchema = z.object({
+  from: z.string().regex(DATE),
+  to: z.string().regex(DATE),
+  items: z.array(ConsultItemSchema).max(300),
+  requestedAt: z.iso.datetime().optional(),
+  // 병원 PC가 EMR 조회에 실패했을 때 — 목록은 건드리지 않고 요청만 비운다(10분마다 되풀이하지 않게)
+  error: z.string().max(500).optional(),
+});
+
+export function consultKey(item: { chartNo: string; noteId: string }) {
+  return `${item.chartNo}-${item.noteId}`;
 }
 
 // 자동화 쉬는 날(출장 등) — 설정 화면에서 기간을 넣는다. 하루짜리는 from=to. 너무 긴 기간은 실수로 보고 막는다(최대 92일).

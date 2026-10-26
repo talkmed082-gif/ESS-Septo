@@ -5,6 +5,7 @@ export const OUTPATIENT_TABS = [
   { href: "/clinic", label: "진료" },
   { href: "/outpatient", label: "외래 명단" },
   { href: "/templates", label: "외래 템플릿" },
+  { href: "/consults", label: "타과의뢰" },
 ];
 export const SETTINGS_TABS = [
   { href: "/settings", label: "일반" },

@@ -26,6 +26,19 @@ export async function requestTsaScan(_prev: TsaScanFormState | undefined, formDa
   return { ok: true };
 }
 
+// "타과의뢰 가져오기" 요청 — 병원 PC가 10분마다 확인해서 EMR 타과의뢰 목록을 올리고 요청을 비운다.
+export async function requestConsultCheck(): Promise<void> {
+  const session = await verifySession();
+  await prisma.user.update({ where: { id: session.userId }, data: { consultCheckRequestedAt: new Date() } });
+  revalidatePath("/consults");
+}
+
+export async function cancelConsultCheck(): Promise<void> {
+  const session = await verifySession();
+  await prisma.user.update({ where: { id: session.userId }, data: { consultCheckRequestedAt: null } });
+  revalidatePath("/consults");
+}
+
 export async function cancelTsaScan(): Promise<void> {
   const session = await verifySession();
   await prisma.user.update({
