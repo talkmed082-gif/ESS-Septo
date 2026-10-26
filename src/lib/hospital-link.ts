@@ -47,6 +47,8 @@ export const OutpatientRowSchema = z.object({
   chartNo: z.string().max(20),
   visit: z.string().max(20),
   diagnosis: z.string().max(200),
+  sex: z.string().max(10).optional(), // 진료 브리핑 성별·나이(사용자 2026-10-26) — 예전 명단엔 없음
+  age: z.string().max(20).optional(),
   soap: z.string().max(6000).optional(), // 병원 PC가 명단 뒤에 따로 올리는 AI SOAP(참고용)
   roadmap: z.string().max(4000).optional(), // 같은 AI 호출의 로드맵(경과·현재·할 일·확인) — SOAP는 오늘 진료, 로드맵은 긴 흐름
 });

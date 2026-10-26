@@ -15,6 +15,8 @@ export type MPatient = {
   chartNo: string;
   visit: string;
   diagnosis: string;
+  sex: string;
+  age: string;
   summary: string;
   core: string;
   now: string;
@@ -80,17 +82,20 @@ export function PhoneClinic({ date, today, clinic, patients }: { date: string; t
   const [local, setLocal] = useState<Record<string, VisitStatus>>({});
   const st = (x: MPatient) => local[x.chartNo] ?? x.status;
   const p = patients.find((x) => x.no === no) ?? null;
+  // 할 일 체크는 이 화면에 바로 기억(사용자 2026-10-26 "왔다갔다 하면 체크가 씹힌다" — 화면 데이터는 처음 한 번만 읽어서 예전 체크로 돌아갔음)
+  const [doneBy, setDoneBy] = useState<Record<string, string[]>>({});
+  const cardRef = useRef<HTMLDivElement>(null);
+  // 명단에서 고르면 보기를 바꾸지 않고 환자 카드로만 부드럽게 내려간다(예전엔 번호 보기로 바뀌며 화면이 튀었음)
   const pick = (n: number) => {
     setNo(n);
     setCopied(false);
-    setView("grid");
-    window.scrollTo({ top: 0 });
+    if (view === "list") requestAnimationFrame(() => cardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   };
   const counts = { wait: 0, now: 0, done: 0 };
   for (const x of patients) counts[st(x)]++;
 
   return (
-    <div className="mx-auto min-h-screen max-w-xl space-y-3 bg-slate-50 px-4 pb-10 pt-3 text-slate-900">
+    <div className="mx-auto min-h-screen max-w-xl space-y-3 overflow-x-hidden bg-slate-50 px-4 pb-10 pt-3 text-slate-900">
       <PullToRefresh />
       <div className="flex items-baseline justify-between">
         <h1 className="text-base font-semibold">
@@ -155,7 +160,10 @@ export function PhoneClinic({ date, today, clinic, patients }: { date: string; t
                     <span className="w-10 shrink-0 text-xs text-slate-500">{x.time}</span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate">
-                        <span className={st(x) === "done" ? "text-slate-400" : "font-medium"}>{x.name}</span> <span className="text-xs text-slate-500">{x.chartNo}</span>
+                        <span className={st(x) === "done" ? "text-slate-400" : "font-medium"}>{x.name}</span>{" "}
+                        <span className="text-xs text-slate-500">
+                          {[x.sex, x.age].filter(Boolean).join("/")} {x.chartNo}
+                        </span>
                       </span>
                       <span className="block truncate text-xs text-slate-500">{x.diagnosis}</span>
                     </span>
@@ -170,10 +178,11 @@ export function PhoneClinic({ date, today, clinic, patients }: { date: string; t
 
       {p && (
         <>
-          <div className={`${card} space-y-1`}>
+          <div ref={cardRef} className={`${card} scroll-mt-2 space-y-1`}>
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
               <span className="text-2xl font-bold text-emerald-700">{p.no}번</span>
               <span className="text-lg font-semibold">{p.name}</span>
+              {(p.sex || p.age) && <span className="text-sm text-slate-700">{[p.sex, p.age].filter(Boolean).join(" / ")}</span>}
               <span className="text-sm text-slate-500">{p.chartNo}</span>
               <span className="text-xs text-slate-500">{p.time}</span>
               <span className={`rounded px-1.5 py-0.5 text-xs ${VISIT_CLS[p.visit] ?? "bg-slate-100"}`}>{p.visit}</span>
@@ -200,7 +209,18 @@ export function PhoneClinic({ date, today, clinic, patients }: { date: string; t
           {p.todo && (
             <div className="text-sm">
               {p.roadmap ? (
-                <RoadmapBox key={p.chartNo} text={p.todo} done={p.roadmap.done} meta="할 일 — 눌러서 체크" toggle={toggleTodo.bind(null, p.roadmap.id)} />
+                <RoadmapBox
+                  key={p.chartNo}
+                  text={p.todo}
+                  done={doneBy[p.roadmap.id] ?? p.roadmap.done}
+                  meta="할 일 — 눌러서 체크"
+                  toggle={async (item) => {
+                    const id = p.roadmap!.id;
+                    const cur = doneBy[id] ?? p.roadmap!.done;
+                    setDoneBy((m) => ({ ...m, [id]: cur.includes(item) ? cur.filter((d) => d !== item) : [...cur, item] }));
+                    await toggleTodo(id, item);
+                  }}
+                />
               ) : (
                 <p className="whitespace-pre-wrap rounded-md border-l-4 border-amber-500 bg-amber-50 p-3">{p.todo}</p>
               )}

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToString } from "react-dom/server";
+import { postOpBxTodo } from "@/lib/clinic-view";
 
 vi.mock("@/app/actions/pathway", () => ({ setStage: vi.fn(), removePathway: vi.fn() }));
 vi.mock("@/app/actions/clinic", () => ({ sendToClinic: vi.fn(), cancelClinicJob: vi.fn() }));
@@ -88,5 +89,17 @@ describe("하루치 보내기", () => {
     expect(t).toContain("템플릿 없음(통증 “없음”만, 진단 확인 안 함)");
     expect(t).toContain("1명 노트북으로 보내기");
     expect(t).toContain("보냄");
+  });
+});
+
+describe("postOpBxTodo(수술 후 첫 외래)", () => {
+  const op = (date: string, done = true) => ({ date, name: "ESS", done });
+  it("수술 뒤 외래 요약이 없으면 Bx. 확인", () => {
+    expect(postOpBxTodo([op("2026-10-16")], ["2026-09-01"], "2026-10-27")).toBe("Bx. 확인(수술 10/16)");
+  });
+  it("수술 뒤 외래가 이미 있으면 없음, 수술 안 했거나 오래되면 없음", () => {
+    expect(postOpBxTodo([op("2026-10-16")], ["2026-10-20"], "2026-10-27")).toBeNull();
+    expect(postOpBxTodo([op("2026-10-16", false)], [], "2026-10-27")).toBeNull();
+    expect(postOpBxTodo([op("2026-05-01")], [], "2026-10-27")).toBeNull();
   });
 });

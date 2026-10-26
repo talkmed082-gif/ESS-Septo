@@ -6,7 +6,7 @@ import { safeDateStr } from "@/lib/date-format";
 import { latestRoadmaps } from "@/lib/roadmap-store";
 import { patientRoadmaps } from "@/lib/pathway-store";
 import { pathwayById, summaryLine } from "@/lib/pathways";
-import { parseRoadmap, parseSoap } from "@/lib/clinic-view";
+import { parseRoadmap, parseSoap, postOpBxTodo } from "@/lib/clinic-view";
 import { clinicOrder, normChart, visitStatuses } from "@/lib/clinic-ask";
 import { PhoneClinic, type MPatient } from "./phone-clinic";
 
@@ -49,6 +49,15 @@ export default async function PhoneClinicPage({ searchParams }: PageProps<"/m">)
     const soap = parseSoap(r.soap);
     const pw = pathwayData.get(r.chartNo) ?? { pathways: [], visits: [] };
     const care = careBy.get(r.chartNo);
+    const surgeries = plans
+      .filter((p) => p.patient.chartNo === r.chartNo)
+      .flatMap((p) => {
+        const d = safeDateStr(p.opRecord?.operationDate ?? p.plannedDate);
+        return d ? [{ date: d, name: p.surgeryType.name, done: !!p.opRecord || p.status === "DONE" }] : [];
+      })
+      .sort((a, b) => b.date.localeCompare(a.date));
+    // 수술 후 첫 외래면 "Bx. 확인"을 할 일 맨 앞에(사용자 2026-10-26)
+    const bx = postOpBxTodo(surgeries, pw.visits.map((v) => v.visitDate), date);
     return {
       no: i + 1,
       time: r.time,
@@ -56,11 +65,13 @@ export default async function PhoneClinicPage({ searchParams }: PageProps<"/m">)
       chartNo: r.chartNo,
       visit: r.visit,
       diagnosis: r.diagnosis,
+      sex: r.sex ?? "",
+      age: r.age ?? "",
       summary: summaryLine(text) ?? rp.summary,
       core: soap.core,
       now: rp.now,
       check: rp.check,
-      todo: rp.todo,
+      todo: bx ? `□${bx}${rp.todo ? `\n${rp.todo}` : ""}` : rp.todo,
       roadmap: rm ? { id: rm.id, done: rm.done } : null,
       soap: { S: soap.S, O: soap.O, A: soap.A, P: soap.P },
       course: rp.course,
@@ -69,13 +80,7 @@ export default async function PhoneClinicPage({ searchParams }: PageProps<"/m">)
         return `${def?.name ?? p.pathwayId} · ${def?.stages.find((s) => s.id === p.stageId)?.name ?? p.stageId}`;
       }),
       visits: [...pw.visits].reverse().slice(0, 6).map((v) => ({ date: v.visitDate, summary: v.summary })),
-      surgeries: plans
-        .filter((p) => p.patient.chartNo === r.chartNo)
-        .flatMap((p) => {
-          const d = safeDateStr(p.opRecord?.operationDate ?? p.plannedDate);
-          return d ? [{ date: d, name: p.surgeryType.name, done: !!p.opRecord || p.status === "DONE" }] : [];
-        })
-        .sort((a, b) => b.date.localeCompare(a.date)),
+      surgeries,
       nextVisit: care?.nextVisit ?? null,
       status: status.get(normChart(r.chartNo)) ?? "wait",
       manual: marks.find((m) => normChart(m.chartNo) === normChart(r.chartNo))?.done ?? null,

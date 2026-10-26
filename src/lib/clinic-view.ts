@@ -102,3 +102,13 @@ export function inferStage(
   if (pp.confirmed) return { stageId: pp.stageId, reason: "의사 확정", source: "doctor" };
   return { stageId: pp.stageId, reason: pp.proposedReason ? `AI: ${pp.proposedReason}` : "AI 제안(기록 기준)", source: "ai" };
 }
+
+// 수술 후 첫 외래면 "Bx. 확인"(사용자 2026-10-26) — 마지막 수술(한 것) 뒤로 이 사이트에 외래 요약이 없고, 수술이 120일 안이면.
+// 같은 □ 할 일로 다뤄 체크할 수 있게 글을 돌려준다(없으면 null)
+export function postOpBxTodo(surgeries: SurgeryFact[], visitDates: string[], today: string): string | null {
+  const last = surgeries.filter((s) => s.done && s.date <= today).sort((a, b) => b.date.localeCompare(a.date))[0];
+  if (!last) return null;
+  if ((Date.parse(today) - Date.parse(last.date)) / 86_400_000 > 120) return null;
+  if (visitDates.some((d) => d > last.date && d < today)) return null;
+  return `Bx. 확인(수술 ${Number(last.date.slice(5, 7))}/${Number(last.date.slice(8, 10))})`;
+}
