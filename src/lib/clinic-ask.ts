@@ -36,3 +36,29 @@ export function askState(a: { status: string; createdAt: Date; answeredAt: Date 
   if (a.status === "running") return age > ASK_ANSWER_MS ? "timeout" : "running";
   return a.status === "done" ? "done" : "failed";
 }
+
+// 진료 상태(진료 브리핑 색): wait 진료 전(초록), now 진료 중, done 완료(회색).
+// 진료실 PC 도우미가 기록지를 연 때(openedAt)로 자동 판정 — 마지막으로 연 환자 = 진료 중, 그 전에 연 환자 = 완료. done이 있으면 직접 정한 것
+export type VisitStatus = "wait" | "now" | "done";
+export const normChart = (c: string) => c.trim().replace(/^0+/, "");
+export function visitStatuses(marks: { chartNo: string; openedAt: Date | null; done: boolean | null }[]): Map<string, VisitStatus> {
+  const out = new Map<string, VisitStatus>();
+  const opened = marks.filter((m) => m.openedAt && m.done !== true).sort((a, b) => b.openedAt!.getTime() - a.openedAt!.getTime());
+  const latest = opened[0]?.chartNo;
+  for (const m of marks) {
+    const k = normChart(m.chartNo);
+    if (m.done === true) out.set(k, "done");
+    else if (m.chartNo === latest) out.set(k, "now");
+    else if (m.done === false || !m.openedAt) out.set(k, "wait");
+    else out.set(k, "done");
+  }
+  return out;
+}
+
+// 노트북 작업자 작업 시간(진료 어시스트 [설정], 2026-10-26). 노트북 예약 작업은 06:00에 켜서 시작 시각까지 기다린다 → 시작은 06:00 이후
+export const WORKER_DEFAULT = { from: "07:30", until: "19:00" };
+const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "시각은 07:30처럼 적어 주세요.");
+export const WorkerHoursSchema = z
+  .object({ from: hhmm, until: hhmm })
+  .refine((h) => h.from >= "06:00", { message: "시작은 06:00 이후로 해 주세요." })
+  .refine((h) => h.from < h.until, { message: "끝 시각이 시작보다 늦어야 합니다." });

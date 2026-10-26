@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ClinicAskSchema, askState, clinicOrder } from "./clinic-ask";
+import { ClinicAskSchema, WorkerHoursSchema, askState, clinicOrder, visitStatuses } from "./clinic-ask";
 
 describe("clinicOrder(폰·진료 어시스트 번호)", () => {
   it("시간 순, 같은 시간은 명단 순서 그대로", () => {
@@ -37,5 +37,38 @@ describe("ClinicAskSchema", () => {
     expect(ClinicAskSchema.safeParse({ visitDate: "2026-10-27", chartNo: "12345678", question: "x".repeat(301) }).success).toBe(false);
     expect(ClinicAskSchema.safeParse({ visitDate: "2026-10-27", chartNo: "12a45", question: "q" }).success).toBe(false);
     expect(ClinicAskSchema.safeParse({ visitDate: "2026-10-27", chartNo: "12345678", question: "오늘 확인할 것" }).success).toBe(true);
+  });
+});
+
+describe("visitStatuses(진료 상태)", () => {
+  const t = (m: number) => new Date(Date.UTC(2026, 9, 27, 5, m));
+  it("마지막으로 연 환자는 진료 중, 그 전은 완료, 안 연 환자는 진료 전", () => {
+    const s = visitStatuses([
+      { chartNo: "1001", openedAt: t(1), done: null },
+      { chartNo: "1002", openedAt: t(9), done: null },
+      { chartNo: "1003", openedAt: null, done: null },
+    ]);
+    expect([s.get("1001"), s.get("1002"), s.get("1003")]).toEqual(["done", "now", "wait"]);
+  });
+  it("직접 정한 것이 우선 — 완료로 바꾼 환자는 진료 중이 아니고, 완료 취소한 환자는 진료 전", () => {
+    const s = visitStatuses([
+      { chartNo: "1001", openedAt: t(1), done: false },
+      { chartNo: "1002", openedAt: t(9), done: true },
+      { chartNo: "1003", openedAt: null, done: true },
+    ]);
+    expect([s.get("1001"), s.get("1002"), s.get("1003")]).toEqual(["now", "done", "done"]);
+  });
+  it("앞 0은 빼고 맞춘다", () => {
+    expect(visitStatuses([{ chartNo: "0096", openedAt: t(1), done: null }]).get("96")).toBe("now");
+  });
+});
+
+describe("WorkerHoursSchema", () => {
+  it("HH:mm, 06:00 이후 시작, 끝이 더 늦어야", () => {
+    expect(WorkerHoursSchema.safeParse({ from: "07:30", until: "19:00" }).success).toBe(true);
+    expect(WorkerHoursSchema.safeParse({ from: "7:30", until: "19:00" }).success).toBe(false);
+    expect(WorkerHoursSchema.safeParse({ from: "05:30", until: "19:00" }).success).toBe(false);
+    expect(WorkerHoursSchema.safeParse({ from: "19:00", until: "07:30" }).success).toBe(false);
+    expect(WorkerHoursSchema.safeParse({ from: "07:30", until: "24:00" }).success).toBe(false);
   });
 });

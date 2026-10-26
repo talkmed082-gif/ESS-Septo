@@ -18,7 +18,16 @@ export async function POST(request: Request) {
   const chart = (sp.get("chart") ?? "").trim().replace(/^0+/, "");
   if (where === "clinic" && !/^\d{3,12}$/.test(chart)) return pcJson({ job: null });
   const now = new Date();
-  const ask = where === "laptop" && sp.get("noAsks") !== "1" ? await claimClinicAsk(user.id, now) : null;
+  // 진료실 PC가 환자 기록지를 새로 열었다(&opened=1, 환자가 바뀐 첫 묻기) → 진료 브리핑 진료 상태
+  if (where === "clinic" && sp.get("opened") === "1") {
+    const visitDate = kstDate(now);
+    await prisma.clinicMark.upsert({
+      where: { createdById_visitDate_chartNo: { createdById: user.id, visitDate, chartNo: chart } },
+      create: { createdById: user.id, visitDate, chartNo: chart, openedAt: now },
+      update: { openedAt: now },
+    });
+  }
+  const ask =where === "laptop" && sp.get("noAsks") !== "1" ? await claimClinicAsk(user.id, now) : null;
   if (sp.get("asksOnly") === "1") return pcJson({ job: null, ask });
   const jobs = (
     await prisma.opdJob.findMany({

@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { toggleTodo } from "@/app/actions/roadmap";
-import { askClinicClaude, getClinicAsk } from "@/app/actions/clinic-ask";
-import { ASK_MAX, ASK_PRESETS } from "@/lib/clinic-ask";
+import { askClinicClaude, getClinicAsk, setVisitDone } from "@/app/actions/clinic-ask";
+import { ASK_MAX, ASK_PRESETS, type VisitStatus } from "@/lib/clinic-ask";
 import Link from "next/link";
 import { PullToRefresh } from "@/components/pull-to-refresh";
 import { RoadmapBox } from "../(app)/outpatient/roadmap-box";
@@ -27,7 +27,18 @@ export type MPatient = {
   visits: { date: string; summary: string }[];
   surgeries: { date: string; name: string; done: boolean }[];
   nextVisit: string | null;
+  status: VisitStatus;
+  manual: boolean | null;
 };
+
+// 진료 전 초록, 진료 중 주황, 완료 회색(사용자 2026-10-26). 고른 환자는 검은 테두리
+const STATUS_CLS: Record<VisitStatus, string> = {
+  wait: "border border-emerald-300 bg-emerald-50 text-emerald-900",
+  now: "border border-amber-400 bg-amber-400 text-white",
+  done: "border border-slate-200 bg-slate-200 text-slate-400",
+};
+const STATUS_TEXT: Record<VisitStatus, string> = { wait: "진료 전", now: "진료 중", done: "완료" };
+const addDays = (d: string, n: number) => new Date(Date.parse(`${d}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 
 const VISIT_CLS: Record<string, string> = { 초진: "bg-sky-100 text-sky-800", 재초: "bg-violet-100 text-violet-800", 재진: "bg-slate-100 text-slate-600" };
 const card = "rounded-xl border border-slate-200 bg-white p-3";
@@ -60,10 +71,23 @@ const STATE_TEXT: Record<string, string> = {
 };
 
 export function PhoneClinic({ date, today, clinic, patients }: { date: string; today: string; clinic: string; patients: MPatient[] }) {
-  const [no, setNo] = useState<number | null>(patients.length ? 1 : null);
+  // 처음 고를 환자: 진료 중 → 첫 진료 전 → 1번
+  const [no, setNo] = useState<number | null>(() => (patients.find((x) => x.status === "now") ?? patients.find((x) => x.status === "wait") ?? patients[0])?.no ?? null);
   const [asks, setAsks] = useState<Record<string, Ask[]>>({});
   const [copied, setCopied] = useState(false);
+  const [view, setView] = useState<"grid" | "list">("grid");
+  // 폰에서 직접 바꾼 완료 표시(새로고침 전까지 화면에 바로)
+  const [local, setLocal] = useState<Record<string, VisitStatus>>({});
+  const st = (x: MPatient) => local[x.chartNo] ?? x.status;
   const p = patients.find((x) => x.no === no) ?? null;
+  const pick = (n: number) => {
+    setNo(n);
+    setCopied(false);
+    setView("grid");
+    window.scrollTo({ top: 0 });
+  };
+  const counts = { wait: 0, now: 0, done: 0 };
+  for (const x of patients) counts[st(x)]++;
 
   return (
     <div className="mx-auto min-h-screen max-w-xl space-y-3 bg-slate-50 px-4 pb-10 pt-3 text-slate-900">
@@ -73,32 +97,75 @@ export function PhoneClinic({ date, today, clinic, patients }: { date: string; t
           <Link href="/dashboard" className="mr-2 text-slate-400" aria-label="메인으로">
             ‹
           </Link>
-          폰 진료
+          진료 브리핑
         </h1>
         <p className="text-xs text-slate-500">
-          {date}
-          {date === today ? " 오늘" : ""} {clinic} · {patients.length}명
+          {clinic} · {patients.length}명
         </p>
       </div>
+      {/* 외래 날짜 고르기 — 다른 날 명단도 볼 수 있게 */}
+      <div className="flex items-center gap-1">
+        <Link href={`/m?date=${addDays(date, -1)}`} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm" aria-label="전날">
+          ‹
+        </Link>
+        <form action="/m" className="flex min-w-0 flex-1 gap-1">
+          <input type="date" name="date" defaultValue={date} className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-base" />
+          <button type="submit" className="shrink-0 rounded-lg border border-slate-300 bg-white px-3 text-sm">
+            보기
+          </button>
+        </form>
+        <Link href={`/m?date=${addDays(date, 1)}`} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm" aria-label="다음 날">
+          ›
+        </Link>
+      </div>
+      <p className="text-xs text-slate-500">
+        {date}
+        {date === today ? " (오늘)" : ""} · 진료 전 {counts.wait} · 진료 중 {counts.now} · 완료 {counts.done}
+      </p>
       {patients.length === 0 ? (
         <p className="text-sm text-slate-500">이 날짜에 외래 명단이 없습니다.</p>
       ) : (
-        <div className="grid grid-cols-8 gap-1.5">
-          {patients.map((x) => (
-            <button
-              key={x.no}
-              type="button"
-              onClick={() => {
-                setNo(x.no);
-                setCopied(false);
-                window.scrollTo({ top: 0 });
-              }}
-              className={`h-10 rounded-lg text-sm font-semibold ${x.no === no ? "bg-emerald-600 text-white" : x.visit === "재진" ? "border border-slate-200 bg-white" : "border border-sky-300 bg-sky-50 text-sky-900"}`}
-            >
-              {x.no}
-            </button>
-          ))}
-        </div>
+        <>
+          <div className="flex gap-1 rounded-lg bg-slate-200 p-1 text-sm">
+            {(["grid", "list"] as const).map((v) => (
+              <button key={v} type="button" onClick={() => setView(v)} className={`flex-1 rounded-md py-1.5 ${view === v ? "bg-white font-medium shadow-sm" : "text-slate-600"}`}>
+                {v === "grid" ? "번호" : "명단"}
+              </button>
+            ))}
+          </div>
+          {view === "grid" ? (
+            <div className="grid grid-cols-8 gap-1.5">
+              {patients.map((x) => (
+                <button
+                  key={x.no}
+                  type="button"
+                  onClick={() => pick(x.no)}
+                  className={`h-10 rounded-lg text-sm font-semibold ${STATUS_CLS[st(x)]} ${x.no === no ? "ring-2 ring-slate-900 ring-offset-1" : ""}`}
+                >
+                  {x.no}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+              {patients.map((x) => (
+                <li key={x.no}>
+                  <button type="button" onClick={() => pick(x.no)} className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm ${x.no === no ? "bg-slate-100" : ""}`}>
+                    <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-xs font-semibold ${STATUS_CLS[st(x)]}`}>{x.no}</span>
+                    <span className="w-10 shrink-0 text-xs text-slate-500">{x.time}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate">
+                        <span className={st(x) === "done" ? "text-slate-400" : "font-medium"}>{x.name}</span> <span className="text-xs text-slate-500">{x.chartNo}</span>
+                      </span>
+                      <span className="block truncate text-xs text-slate-500">{x.diagnosis}</span>
+                    </span>
+                    <span className={`shrink-0 rounded px-1 text-[11px] ${VISIT_CLS[x.visit] ?? "bg-slate-100"}`}>{x.visit}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
       )}
 
       {p && (
@@ -107,8 +174,21 @@ export function PhoneClinic({ date, today, clinic, patients }: { date: string; t
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
               <span className="text-2xl font-bold text-emerald-700">{p.no}번</span>
               <span className="text-lg font-semibold">{p.name}</span>
+              <span className="text-sm text-slate-500">{p.chartNo}</span>
               <span className="text-xs text-slate-500">{p.time}</span>
               <span className={`rounded px-1.5 py-0.5 text-xs ${VISIT_CLS[p.visit] ?? "bg-slate-100"}`}>{p.visit}</span>
+              <button
+                type="button"
+                className={`ml-auto rounded-full px-3 py-1 text-xs font-medium ${STATUS_CLS[st(p)]}`}
+                onClick={() => {
+                  const before = st(p);
+                  const done = before !== "done";
+                  setLocal((cur) => ({ ...cur, [p.chartNo]: done ? "done" : "wait" }));
+                  setVisitDone(date, p.chartNo, done).catch(() => setLocal((cur) => ({ ...cur, [p.chartNo]: before })));
+                }}
+              >
+                {STATUS_TEXT[st(p)]} {st(p) === "done" ? "↺" : "→ 완료"}
+              </button>
             </div>
             <p className="text-sm text-slate-700">{p.diagnosis}</p>
             {p.stages.length > 0 && <p className="text-xs text-slate-500">{p.stages.join(" / ")}</p>}

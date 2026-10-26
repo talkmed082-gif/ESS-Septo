@@ -7,10 +7,10 @@ import { latestRoadmaps } from "@/lib/roadmap-store";
 import { patientRoadmaps } from "@/lib/pathway-store";
 import { pathwayById, summaryLine } from "@/lib/pathways";
 import { parseRoadmap, parseSoap } from "@/lib/clinic-view";
-import { clinicOrder } from "@/lib/clinic-ask";
+import { clinicOrder, normChart, visitStatuses } from "@/lib/clinic-ask";
 import { PhoneClinic, type MPatient } from "./phone-clinic";
 
-export const metadata: Metadata = { title: "폰 진료" };
+export const metadata: Metadata = { title: "진료 브리핑" };
 
 // 폰 진료 화면(사용자 2026-10-26) — 외래 중 폰에 띄워 둔다. 번호 = 그날 명단 시간 순서(진료 어시스트가 "지금 N번"을 띄움).
 // 그날 환자 전부를 한 번에 읽어 두고 번호로 바꿔 본다(환자마다 사이트를 다시 묻지 않음). 본인 데이터만
@@ -29,7 +29,7 @@ export default async function PhoneClinicPage({ searchParams }: PageProps<"/m">)
   const rows = clinicOrder((list?.rows ?? []) as OutpatientRow[]);
   const charts = rows.map((r) => r.chartNo);
 
-  const [roadmaps, pathwayData, cares, plans] = await Promise.all([
+  const [roadmaps, pathwayData, cares, plans, marks] = await Promise.all([
     latestRoadmaps(userId, charts),
     patientRoadmaps(userId, charts),
     prisma.patientCare.findMany({ where: { createdById: userId, chartNo: { in: charts } }, select: { chartNo: true, planType: true, nextVisit: true } }),
@@ -37,7 +37,9 @@ export default async function PhoneClinicPage({ searchParams }: PageProps<"/m">)
       where: { createdById: userId, patient: { chartNo: { in: charts } } },
       select: { plannedDate: true, status: true, patient: { select: { chartNo: true } }, surgeryType: { select: { name: true } }, opRecord: { select: { operationDate: true } } },
     }),
+    prisma.clinicMark.findMany({ where: { createdById: userId, visitDate: date }, select: { chartNo: true, openedAt: true, done: true } }),
   ]);
+  const status = visitStatuses(marks);
   const careBy = new Map(cares.map((c) => [c.chartNo, c]));
 
   const patients: MPatient[] = rows.map((r, i) => {
@@ -75,6 +77,8 @@ export default async function PhoneClinicPage({ searchParams }: PageProps<"/m">)
         })
         .sort((a, b) => b.date.localeCompare(a.date)),
       nextVisit: care?.nextVisit ?? null,
+      status: status.get(normChart(r.chartNo)) ?? "wait",
+      manual: marks.find((m) => normChart(m.chartNo) === normChart(r.chartNo))?.done ?? null,
     };
   });
 
