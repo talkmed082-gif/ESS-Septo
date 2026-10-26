@@ -298,3 +298,29 @@ export function pathwayText(pp: { pathwayId: string; stageId: string; confirmed:
 export function pathwayPromptList(): string {
   return PATHWAYS.map((p) => `${p.id} (${p.name}): ${p.stages.map((s) => `${s.id}=${s.name}`).join(", ")}`).join("\n");
 }
+
+// 진료 어시스트 로드맵 카드(2026-10-26 "글로만 돼 있어 알아보기 어려워") — 경로마다 접고 펴는 카드: 단계 칩(지난 ✓ / 지금 ● / 앞으로), 지금·다음 외래, 할 일
+export type PathwayCard = {
+  name: string;
+  confirmed: boolean;
+  stages: { name: string; state: "done" | "now" | "next" }[];
+  now: string;
+  next: string;
+  todo: string[];
+  proposed: string | null;
+};
+export function pathwayCard(pp: { pathwayId: string; stageId: string; confirmed: boolean; proposedStageId: string | null; history: { stageId: string }[] }): PathwayCard | null {
+  const def = pathwayById(pp.pathwayId);
+  if (!def) return null;
+  const passed = new Set(pp.history.map((h) => h.stageId).filter((s) => s !== pp.stageId));
+  const cur = stageOf(def, pp.stageId);
+  return {
+    name: def.name,
+    confirmed: pp.confirmed,
+    stages: def.stages.map((s) => ({ name: s.name, state: s.id === pp.stageId ? "now" : passed.has(s.id) ? "done" : "next" })),
+    now: cur ? `${cur.name}${cur.when ? ` (${cur.when})` : ""}` : "",
+    next: cur?.next ?? "",
+    todo: cur?.todo ?? [],
+    proposed: stageOf(def, pp.proposedStageId)?.name ?? null,
+  };
+}

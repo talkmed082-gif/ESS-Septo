@@ -7,7 +7,7 @@ import { applyVisitRoadmaps, latestRoadmaps } from "@/lib/roadmap-store";
 import { prisma } from "@/lib/prisma";
 import { patientRoadmaps } from "@/lib/pathway-store";
 import { kstDate, type OutpatientRow } from "@/lib/hospital-link";
-import { PATHWAYS, pathwayById, pathwayText, stageOf, summaryLine } from "@/lib/pathways";
+import { PATHWAYS, pathwayById, pathwayCard, pathwayText, stageOf, summaryLine } from "@/lib/pathways";
 
 // GET ?chartNo= : 진료실 프로그램이 지금 연 환자의 최신 로드맵을 보여 준다
 export async function GET(request: Request) {
@@ -33,6 +33,7 @@ export async function GET(request: Request) {
     ...(r ? { text: r.text, done: r.done, source: r.source, createdAt: r.createdAt.toISOString() } : { text: null }),
     care,
     pathwayText: pathwayTextAll || null,
+    cards: (pw?.pathways ?? []).map(pathwayCard).filter(Boolean),
     visits: pw?.visits ?? [],
     // 작성 탭 한 줄: AI 요약 + 지금 단계, 다음 외래 권장(첫 경로) — 도우미가 그 간격 버튼을 강조
     summary: summaryLine(r?.text),
