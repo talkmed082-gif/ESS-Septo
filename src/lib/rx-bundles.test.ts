@@ -55,6 +55,10 @@ describe("외래까지 늘리기(기간과 따로)", () => {
     expect(out.map((i) => `${i.code}:${i.days}`)).toEqual(["A:17", "B:7", "C:14"]);
     expect(out[0].why).toMatch(/다음 외래\(2026-11-13\)까지 17일/);
   });
+  it("비강 스프레이는 외래까지를 켜도 늘리지 않음(개수 1)", () => {
+    const out = withVisitDays([item({ code: "FTC_NSP", name: "AVAMYS 비강 스프레이", days: "", untilVisit: true })], "2026-10-27", "2026-12-04");
+    expect(out[0].days).toBe("");
+  });
   it("다음 외래를 안 골랐으면 아무것도 안 바꿈", () => {
     expect(withVisitDays([item({ untilVisit: true })], "2026-10-27", undefined)[0].days).toBe("14");
   });

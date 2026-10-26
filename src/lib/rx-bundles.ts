@@ -64,11 +64,16 @@ export function daysUntilVisit(today: string, nextVisit: string | null | undefin
   return d > 0 ? d : null;
 }
 
+// 비강 스프레이는 1개(약 1달)씩 개수로 처방 — 외래까지 늘리기를 켜도 늘리지 않는다(사용자 2026-10-26 "개수 1로 해야돼")
+export const isNasalSpray = (i: { code: string; name: string }) => /_NSP$/i.test(i.code) || /스프레이|spray/i.test(i.name);
+
 // "외래까지 늘리기" 약만 다음 외래까지 일수로(날짜가 없거나 지났으면 정해진 기간 그대로). why 앞에 표시
 export function withVisitDays(items: CalcResult[], today: string, nextVisit: string | null | undefined): CalcResult[] {
   const d = daysUntilVisit(today, nextVisit);
   if (d == null) return items;
-  return items.map((i) => (i.untilVisit && i.use ? { ...i, days: String(d), why: [`다음 외래(${nextVisit})까지 ${d}일`, i.why].filter(Boolean).join(" · ") } : i));
+  return items.map((i) =>
+    i.untilVisit && i.use && !isNasalSpray(i) ? { ...i, days: String(d), why: [`다음 외래(${nextVisit})까지 ${d}일`, i.why].filter(Boolean).join(" · ") } : i,
+  );
 }
 
 // 소아 계산: 나이(개월)·몸무게(kg) → 1회량·용법. 범위 밖이면 use=false와 이유
