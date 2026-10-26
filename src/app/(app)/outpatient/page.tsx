@@ -184,9 +184,16 @@ export default async function OutpatientPage({ searchParams }: PageProps<"/outpa
             {!selected && <p className="text-sm text-slate-400">이 날짜에는 명단이 없습니다.</p>}
             {selected && (
               <div className="space-y-2">
-                <p className="text-sm text-slate-500">
-                  {selected.date} {selected.clinic} · {rows.length}명 · {fmtTime.format(selected.updatedAt)} 갱신
-                </p>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm text-slate-500">
+                    {selected.date} {selected.clinic} · {rows.length}명 · {fmtTime.format(selected.updatedAt)} 갱신
+                  </p>
+                  {rows.length > 0 && (
+                    <Link href={`/print/outpatient?date=${selected.date}`} className={buttonStyles.secondarySmall}>
+                      명단 인쇄
+                    </Link>
+                  )}
+                </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm">
                     <thead className="border-b border-slate-200 text-slate-500">
