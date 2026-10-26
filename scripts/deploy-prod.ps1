@@ -2,7 +2,8 @@
 # 병원 PC 이름이 한글이라 Vercel CLI가 깨지므로 os.hostname을 바꿔 끼운다(메모리 hospital-pc-dev-limits).
 # 집 PC 허브 재시작이 막혀 있어 이 방식을 쓴다. 먼저 git push가 끝나 있어야 한다(origin/main을 배포)
 # 사용: powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\PNUYH\ESS-Septo\scripts\deploy-prod.ps1
-$ErrorActionPreference = 'Stop'
+# Stop으로 두면 PS 5.1이 git의 안내 글(stderr)을 오류로 보고 멈춘다(2026-10-26) → 종료코드로 확인
+$ErrorActionPreference = 'Continue'
 $repo = Split-Path $PSScriptRoot -Parent
 $tmp = Join-Path $env:TEMP "ess-deploy-$(Get-Random)"
 $hostFix = Join-Path $env:TEMP 'ess-hostname.js'
@@ -11,7 +12,8 @@ Push-Location $repo
 try {
   git fetch origin 2>&1 | Out-Null
   git worktree add --detach $tmp origin/main 2>&1 | Out-Null
-  Copy-Item -Recurse (Join-Path $repo '.vercel') (Join-Path $tmp '.vercel')
+  if ($LASTEXITCODE -ne 0 -or -not (Test-Path $tmp)) { "작업 폴더를 만들지 못함"; exit 1 }
+  Copy-Item -Recurse (Join-Path $repo '.vercel') (Join-Path $tmp '.vercel') -ErrorAction Stop
   Push-Location $tmp
   try {
     "배포할 커밋: $(git log --oneline -1)"
