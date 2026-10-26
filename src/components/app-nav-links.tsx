@@ -9,6 +9,8 @@ const ITEMS = [
   { href: "/dashboard", label: "메인", match: ["/dashboard"] },
   // "외래" → "진료"(입원 타과의뢰도 들어 있음 — 사용자 2026-10-26). /clinic도 이 메뉴(예전엔 빠져서 진료 화면에서 메뉴 표시가 안 됐음)
   { href: "/outpatient", label: "진료", match: ["/clinic", "/outpatient", "/templates", "/consults"] },
+  // 폰 진료 화면(외래 중 폰에 띄워 두는 것, 2026-10-26) — 메뉴 없는 따로 화면이라 여기서 들어간다
+  { href: "/m", label: "폰 진료", match: ["/m"] },
   { href: "/surgery", label: "수술", match: ["/surgery", "/plans", "/records"] },
   { href: "/calendar", label: "캘린더", match: ["/calendar"] },
   { href: "/patients", label: "환자", match: ["/patients"] },

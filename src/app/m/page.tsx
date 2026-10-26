@@ -10,7 +10,7 @@ import { parseRoadmap, parseSoap } from "@/lib/clinic-view";
 import { clinicOrder } from "@/lib/clinic-ask";
 import { PhoneClinic, type MPatient } from "./phone-clinic";
 
-export const metadata: Metadata = { title: "진료 폰" };
+export const metadata: Metadata = { title: "폰 진료" };
 
 // 폰 진료 화면(사용자 2026-10-26) — 외래 중 폰에 띄워 둔다. 번호 = 그날 명단 시간 순서(진료 어시스트가 "지금 N번"을 띄움).
 // 그날 환자 전부를 한 번에 읽어 두고 번호로 바꿔 본다(환자마다 사이트를 다시 묻지 않음). 본인 데이터만

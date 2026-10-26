@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { toggleTodo } from "@/app/actions/roadmap";
 import { askClinicClaude, getClinicAsk } from "@/app/actions/clinic-ask";
 import { ASK_MAX, ASK_PRESETS } from "@/lib/clinic-ask";
+import Link from "next/link";
+import { PullToRefresh } from "@/components/pull-to-refresh";
 import { RoadmapBox } from "../(app)/outpatient/roadmap-box";
 
 export type MPatient = {
@@ -65,8 +67,14 @@ export function PhoneClinic({ date, today, clinic, patients }: { date: string; t
 
   return (
     <div className="mx-auto min-h-screen max-w-xl space-y-3 bg-slate-50 px-4 pb-10 pt-3 text-slate-900">
+      <PullToRefresh />
       <div className="flex items-baseline justify-between">
-        <h1 className="text-base font-semibold">진료 폰</h1>
+        <h1 className="text-base font-semibold">
+          <Link href="/dashboard" className="mr-2 text-slate-400" aria-label="메인으로">
+            ‹
+          </Link>
+          폰 진료
+        </h1>
         <p className="text-xs text-slate-500">
           {date}
           {date === today ? " 오늘" : ""} {clinic} · {patients.length}명
