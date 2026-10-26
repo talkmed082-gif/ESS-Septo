@@ -3,10 +3,16 @@ import * as z from "zod";
 // 외래 일감 — 할 일(기록지 템플릿·진단 확인·비인강경 오더)과 처리할 곳.
 // laptop: 진료 어시스트 [오늘 외래]에서 노트북에 맡긴 것(노트북이 환자를 골라 처리)
 // clinic: 웹 진료 화면에서 진료실 PC로 보낸 것(진료실 PC 진료 어시스트가 그 환자 기록지가 열려 있을 때 바로 처리, 2026-10-25)
+// soap: 재진은 이전 기록 대신 사이트 SOAP 요약(외래 전날 AI)으로 S·O·A·P(사용자 2026-10-26)
+// dot: 초진은 템플릿이 없으면 모든 칸에 "."
+// saveOnly: 오더(비인강경·처방 서명) 없이 기록지 저장까지만
 export const OpdJobTasksSchema = z.object({
   note: z.boolean().default(true),
   dx: z.boolean().default(true),
   scope: z.boolean().default(true),
+  soap: z.boolean().default(false),
+  dot: z.boolean().default(false),
+  saveOnly: z.boolean().default(false),
   where: z.enum(["laptop", "clinic"]).default("laptop"),
 });
 export type OpdJobTasks = z.infer<typeof OpdJobTasksSchema>;

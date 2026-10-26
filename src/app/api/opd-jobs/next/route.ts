@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { pcJson } from "@/lib/pc-api";
 import { findUserForProgram } from "@/lib/device-auth";
 import { prisma } from "@/lib/prisma";
-import { kstDate } from "@/lib/hospital-link";
+import { kstDate, type OutpatientRow } from "@/lib/hospital-link";
 import { isClaimable, jobWhere } from "@/lib/opd-jobs";
 
 // POST: 오늘 일감 하나를 가져간다(처리 중으로 바꿈). 없으면 { job: null }
@@ -27,5 +27,8 @@ export async function POST(request: Request) {
   // 같은 일감을 두 번 가져가지 않게 — 상태가 그대로일 때만 바꾼다
   const r = await prisma.opdJob.updateMany({ where: { id: job.id, status: job.status, updatedAt: job.updatedAt }, data: { status: "running", tries: { increment: 1 } } });
   if (r.count === 0) return pcJson({ job: null });
-  return pcJson({ job: { id: job.id, chartNo: job.chartNo, name: job.name, visit: job.visit, templateId: job.templateId, tasks: job.tasks, practice: job.practice, tries: job.tries + 1 } });
+  // 재진 SOAP 요약(tasks.soap)용 — 그날 외래 명단의 그 환자 SOAP 글(없으면 빈 값 → 작업자가 이전 기록으로)
+  const list = await prisma.outpatientList.findUnique({ where: { createdById_date: { createdById: user.id, date: job.visitDate } }, select: { rows: true } });
+  const soap = ((list?.rows ?? []) as OutpatientRow[]).find((x) => x.chartNo.replace(/^0+/, "") === job.chartNo.replace(/^0+/, ""))?.soap ?? "";
+  return pcJson({ job: { id: job.id, chartNo: job.chartNo, name: job.name, visit: job.visit, templateId: job.templateId, tasks: job.tasks, practice: job.practice, tries: job.tries + 1, soap } });
 }
