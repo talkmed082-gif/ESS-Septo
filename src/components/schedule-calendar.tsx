@@ -4,7 +4,7 @@ import { type OutpatientRow } from "@/lib/hospital-link";
 import { parseFieldValues } from "@/lib/field-types";
 import { procedureNameFor, type NameStyle } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
-import { parseProfSurgeries, PROFESSORS, type ProfSurgery } from "@/lib/prof-schedule";
+import { isCancelledRoom, parseProfSurgeries, planNoteRoom, PROFESSORS, roomLabel, splitCancelled, type ProfSurgery } from "@/lib/prof-schedule";
 import { profSurgeryTags } from "@/lib/my-week";
 
 // 내 일정 달력(외래 인원·수술) — 대시보드 2주 달력과 캘린더 메뉴(한 달)가 같이 쓴다(사용자 2026-10-25).
@@ -13,18 +13,20 @@ const WEEKDAY = "일월화수목금토";
 export const md = (date: string) =>
   `${Number(date.slice(5, 7))}/${Number(date.slice(8))}(${WEEKDAY[new Date(`${date}T00:00:00Z`).getUTCDay()]})`;
 
-// done: 수술 계획에서 "완료"로 표시한 것
-export type PlanItem = { id: string; date: string; name: string; procedure: string; done: boolean };
+// done: 수술 계획에서 "완료"로 표시한 것. room·cancelled: 가져온 계획 메모의 YES 수술방(66·77·88·99 = 취소)
+export type PlanItem = { id: string; date: string; name: string; procedure: string; done: boolean; room: string; cancelled: boolean };
 export type ScheduleData = {
   lists: Map<string, { clinic: string; rows: OutpatientRow[] }>;
   plans: Map<string, PlanItem[]>;
-  profs: Map<string, { doctor: string; outpatient: number; surgeries: ProfSurgery[]; off: string | null }[]>;
+  // surgeries = 취소 뺀 것(건수·내 주간 일정은 이것만), cancelled = 취소된 수술(화면에만 "취소"로)
+  profs: Map<string, { doctor: string; outpatient: number; surgeries: ProfSurgery[]; cancelled: ProfSurgery[]; off: string | null }[]>;
 };
 
 const planSelect = {
   id: true,
   plannedDate: true,
   planData: true,
+  planNote: true,
   status: true,
   patient: { select: { name: true } },
   surgeryType: { select: { code: true, name: true } },
@@ -35,6 +37,7 @@ export function toPlanItem(
     id: string;
     plannedDate: Date | null;
     planData: unknown;
+    planNote?: string | null;
     status?: string;
     patient: { name: string };
     surgeryType: { code: string; name: string };
@@ -47,6 +50,8 @@ export function toPlanItem(
     name: p.patient.name,
     procedure: procedureNameFor(p.surgeryType, parseFieldValues(p.planData), nameStyle),
     done: p.status === "DONE",
+    room: roomLabel(planNoteRoom(p.planNote)),
+    cancelled: isCancelledRoom(planNoteRoom(p.planNote)),
   };
 }
 
@@ -68,9 +73,10 @@ export async function loadSchedule(userId: string, nameStyle: NameStyle, from: s
     }),
   ]);
   const order = (d: string) => PROFESSORS.indexOf(d as (typeof PROFESSORS)[number]);
-  const profs = new Map<string, { doctor: string; outpatient: number; surgeries: ProfSurgery[]; off: string | null }[]>();
+  const profs = new Map<string, { doctor: string; outpatient: number; surgeries: ProfSurgery[]; cancelled: ProfSurgery[]; off: string | null }[]>();
   for (const r of [...profRows].sort((a, b) => order(a.doctor) - order(b.doctor))) {
-    profs.set(r.date, [...(profs.get(r.date) ?? []), { doctor: r.doctor, outpatient: r.outpatient, surgeries: parseProfSurgeries(r.surgeries), off: r.off }]);
+    const { active, cancelled } = splitCancelled(parseProfSurgeries(r.surgeries));
+    profs.set(r.date, [...(profs.get(r.date) ?? []), { doctor: r.doctor, outpatient: r.outpatient, surgeries: active, cancelled, off: r.off }]);
   }
   const byDate = new Map<string, PlanItem[]>();
   for (const p of plans) {
@@ -113,6 +119,11 @@ export function OutpatientTable({ rows, date }: { rows: OutpatientRow[]; date?: 
   );
 }
 
+// YES 수술방 66·77·88·99 = 취소된 수술(사용자 2026-10-26)
+function CancelBadge() {
+  return <span className="ml-1.5 rounded bg-slate-200 px-1.5 text-xs text-slate-600 no-underline">취소</span>;
+}
+
 export function PlanList({ plans, showDate = true }: { plans: PlanItem[]; showDate?: boolean }) {
   return (
     <ul className="space-y-1 text-sm">
@@ -120,8 +131,10 @@ export function PlanList({ plans, showDate = true }: { plans: PlanItem[]; showDa
         <li key={p.id}>
           <Link href={`/plans/${p.id}`} className="hover:underline">
             {showDate && <span className="mr-2 font-medium">{md(p.date)}</span>}
-            <span>{p.name}</span>
-            <span className="ml-2 text-slate-500">{p.procedure}</span>
+            <span className={p.cancelled ? "text-slate-400 line-through" : ""}>{p.name}</span>
+            <span className={`ml-2 ${p.cancelled ? "text-slate-400 line-through" : "text-slate-500"}`}>{p.procedure}</span>
+            {p.room && <span className="ml-2 text-xs text-slate-400">{p.room}</span>}
+            {p.cancelled && <CancelBadge />}
           </Link>
         </li>
       ))}
@@ -146,6 +159,7 @@ export function ScheduleCalendar({
   const dayList = selected ? data.lists.get(selected) : undefined;
   const dayRows = dayList?.rows ?? [];
   const dayPlans = selected ? (data.plans.get(selected) ?? []) : [];
+  const dayPlanCount = dayPlans.filter((p) => !p.cancelled).length;
   const dayProfs = selected ? (data.profs.get(selected) ?? []) : [];
   return (
     <div>
@@ -160,7 +174,7 @@ export function ScheduleCalendar({
         ))}
         {dates.map((date) => {
           const n = data.lists.get(date)?.rows.length ?? 0;
-          const s = data.plans.get(date)?.length ?? 0;
+          const s = data.plans.get(date)?.filter((p) => !p.cancelled).length ?? 0;
           // 교수님별 수술 수 "박 1 · 문 1"(사용자 2026-10-25, 예전 "교수 3" 합계 대신)
           const ps = profSurgeryTags(data.profs.get(date) ?? []);
           const tone =
@@ -199,7 +213,9 @@ export function ScheduleCalendar({
             {dayRows.length ? <OutpatientTable rows={dayRows} date={selected} /> : <p className="text-sm text-slate-400">없음</p>}
           </div>
           <div>
-            <p className="mb-1 text-xs font-medium text-slate-500">수술 {dayPlans.length}건</p>
+            <p className="mb-1 text-xs font-medium text-slate-500">
+              수술 {dayPlanCount}건{dayPlans.length > dayPlanCount && ` · 취소 ${dayPlans.length - dayPlanCount}`}
+            </p>
             {dayPlans.length ? <PlanList plans={dayPlans} showDate={false} /> : <p className="text-sm text-slate-400">없음</p>}
           </div>
           <div>
@@ -212,14 +228,24 @@ export function ScheduleCalendar({
                       <span className="font-medium">{p.doctor}</span>
                       {p.off && <span className="ml-2 rounded bg-amber-100 px-1.5 text-xs text-amber-800">{p.off}</span>}
                       <span className="ml-2 text-slate-500">
-                        외래 {p.outpatient}명 · 수술 {p.surgeries.length}건
+                        외래 {p.outpatient}명 · 수술 {p.surgeries.length}건{p.cancelled.length > 0 && ` · 취소 ${p.cancelled.length}`}
                       </span>
                     </p>
-                    {p.surgeries.length > 0 && (
+                    {p.surgeries.length + p.cancelled.length > 0 && (
                       <ul className="mt-0.5 space-y-0.5 pl-3 text-slate-600">
                         {p.surgeries.map((op, i) => (
                           <li key={i}>
                             {op.name} {op.age}/{op.sex} {op.chartNo} · {op.op}
+                            {op.room && <span className="ml-1.5 text-xs text-slate-400">{roomLabel(op.room)}</span>}
+                          </li>
+                        ))}
+                        {p.cancelled.map((op, i) => (
+                          <li key={`c${i}`} className="text-slate-400">
+                            <span className="line-through">
+                              {op.name} {op.age}/{op.sex} {op.chartNo} · {op.op}
+                            </span>
+                            <span className="ml-1.5 text-xs">{roomLabel(op.room)}</span>
+                            <CancelBadge />
                           </li>
                         ))}
                       </ul>

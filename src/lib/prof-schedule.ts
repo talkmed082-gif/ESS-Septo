@@ -12,8 +12,34 @@ export const ProfSurgerySchema = z.object({
   sex: z.string().max(4).optional().default(""),
   chartNo: z.string().max(20),
   op: z.string().max(300),
+  // YES 수술방 번호(사용자 2026-10-26) — 예전 병원 PC 스크립트는 안 보내서 없을 수 있다
+  room: z.string().max(20).optional(),
 });
 export type ProfSurgery = z.infer<typeof ProfSurgerySchema>;
+
+// 66·77·88·99번 방은 YES에서 취소된 수술(사용자 2026-10-26) — 보이되 "취소"로, 건수에서는 뺀다
+const CANCELLED_ROOMS = new Set([66, 77, 88, 99]);
+const roomNumber = (room: string | null | undefined) => {
+  const m = /\d+/.exec(room ?? "");
+  return m ? Number(m[0]) : null;
+};
+export const isCancelledRoom = (room: string | null | undefined) => {
+  const n = roomNumber(room);
+  return n !== null && CANCELLED_ROOMS.has(n);
+};
+export const roomLabel = (room: string | null | undefined) => {
+  const n = roomNumber(room);
+  return n === null ? "" : `${n}번방`;
+};
+// 엑셀·병원 PC로 가져온 수술 계획 메모의 "Room23 #1 · assist …" 줄(buildImportPlanNote)에서 방
+export const planNoteRoom = (note: string | null | undefined) => /^(Room\s*\d+)\s+#/m.exec(note ?? "")?.[1] ?? null;
+
+export function splitCancelled(surgeries: ProfSurgery[]) {
+  return {
+    active: surgeries.filter((s) => !isCancelledRoom(s.room)),
+    cancelled: surgeries.filter((s) => isCancelledRoom(s.room)),
+  };
+}
 
 export const ProfScheduleBodySchema = z
   .object({

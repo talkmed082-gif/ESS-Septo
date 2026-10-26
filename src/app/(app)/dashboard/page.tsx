@@ -84,7 +84,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   const slots = myDay(sday, {
     profs: schedule.profs.get(sday) ?? [],
     myOpd: { count: sList?.rows.length ?? 0, clinic: sList?.clinic ?? null },
-    myPlans: (schedule.plans.get(sday) ?? []).map((p) => ({ id: p.id, name: p.name, procedure: p.procedure })),
+    myPlans: (schedule.plans.get(sday) ?? []).filter((p) => !p.cancelled).map((p) => ({ id: p.id, name: p.name, procedure: p.procedure })),
     pause: pause ? { note: pause.note } : null,
   });
 
