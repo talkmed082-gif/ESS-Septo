@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ClinicCalendarBodySchema, inferSchedule, NEXT_VISIT_OPTIONS, nextClinicDate, nextClinicDatesByWeekday, parseSchedule, PatientCareBodySchema, sessionsOn } from "./clinic-schedule";
+import { ClinicCalendarBodySchema, clinicDays, inferSchedule, NEXT_VISIT_OPTIONS, nextClinicDate, nextClinicDatesByWeekday, parseSchedule, PatientCareBodySchema, sessionsOn } from "./clinic-schedule";
 
 // 2026-10-24는 토요일
 describe("다음 외래 날짜", () => {
@@ -67,5 +67,13 @@ describe("다음 외래 날짜", () => {
     expect(parseSchedule([{ weekday: 9 }])).toEqual([]);
     expect(PatientCareBodySchema.safeParse({ chartNo: "12345678", planType: "medication" }).success).toBe(true);
     expect(PatientCareBodySchema.safeParse({ chartNo: "12345678", planType: "other" }).success).toBe(false);
+  });
+});
+
+describe("clinicDays(다음 외래 달력)", () => {
+  it("내일부터 스케줄 요일만, 휴진은 paused", () => {
+    const sched = [{ weekday: 2, session: "PM" as const }, { weekday: 5, session: "AM" as const }];
+    const r = clinicDays("2026-10-26", 12, sched, [{ from: "2026-10-30", to: "2026-10-30" }]);
+    expect(r.map((x) => `${x.date}${x.weekday}${x.paused ? "휴" : ""}`)).toEqual(["2026-10-27화", "2026-10-30금휴", "2026-11-03화", "2026-11-06금"]);
   });
 });

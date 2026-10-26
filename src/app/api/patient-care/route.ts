@@ -3,7 +3,7 @@ import { pcJson } from "@/lib/pc-api";
 import { findUserForProgram } from "@/lib/device-auth";
 import { prisma } from "@/lib/prisma";
 import { kstDate } from "@/lib/hospital-link";
-import { NEXT_VISIT_OPTIONS, nextClinicDate, nextClinicDatesByWeekday, PatientCareBodySchema } from "@/lib/clinic-schedule";
+import { NEXT_VISIT_OPTIONS, clinicDays, nextClinicDate, nextClinicDatesByWeekday, PatientCareBodySchema } from "@/lib/clinic-schedule";
 import { effectiveSchedule } from "@/lib/clinic-schedule-store";
 
 // GET: 진료실 프로그램의 다음 외래 버튼(2주~6개월) 날짜 — 내 외래 스케줄과 휴진 기간(자동화 쉬는 날)으로 계산
@@ -20,6 +20,8 @@ export async function GET(request: Request) {
     hasSchedule: schedule.length > 0,
     scheduleSource: source,
     // next = 가장 이른 외래일(예전 진료실 프로그램도 이것만 씀), byWeekday = 요일마다 가장 가까운 외래일(화·금 둘 다 고르기)
+    // days = 앞으로 200일 외래일(휴진 표시) — 진료 어시스트 다음 외래 달력
+    days: clinicDays(today, 200, schedule, pauses),
     options: NEXT_VISIT_OPTIONS.map((o) => ({
       ...o,
       next: nextClinicDate(today, o.days, schedule, pauses),

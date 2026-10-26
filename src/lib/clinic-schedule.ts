@@ -122,3 +122,16 @@ export const PatientCareBodySchema = z.object({
   nextVisit: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
   nextVisitLabel: z.string().max(20).nullable().optional(),
 });
+
+// 다음 외래 달력(진료 어시스트, 2026-10-26 "달력 모양으로 직관적으로") — 내일부터 n일 안의 외래일(스케줄 요일)과 휴진 여부
+export function clinicDays(from: string, n: number, schedule: ClinicSession[], pauses: { from: string; to: string }[]): (NextDate & { paused: boolean })[] {
+  const out: (NextDate & { paused: boolean })[] = [];
+  if (!schedule.length) return out;
+  for (let i = 1; i <= n; i++) {
+    const d = addDays(from, i);
+    const on = sessionsOn(d, schedule);
+    if (!on.length) continue;
+    out.push({ date: d, weekday: WEEKDAY[new Date(`${d}T00:00:00Z`).getUTCDay()], sessions: label(on), paused: isPaused(d, pauses) });
+  }
+  return out;
+}
