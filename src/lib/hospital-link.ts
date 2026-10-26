@@ -160,7 +160,8 @@ export const ConsultItemSchema = z.object({
   emergency: z.boolean(),
   content: z.string().max(8000),
   diagnosis: z.string().max(1000),
-  replied: z.boolean(),
+  contact: z.string().max(200).optional(),
+  replied: z.boolean(), // 서명까지 된 회신이 있음
   repliedAt: z.string().max(20),
 });
 export type ConsultItem = z.infer<typeof ConsultItemSchema>;

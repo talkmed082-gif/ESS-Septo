@@ -226,7 +226,9 @@ model Consult {
   emergency    Boolean  @default(false)
   content      String?
   diagnosis    String?
-  // EMR 목록 9열 "회신" = Y
+  // 의뢰한 쪽 연락처 한 줄("전화 … · 핸드폰 … · 호출기 …", EMR 목록 30~32열)
+  contact      String?
+  // EMR에서 서명까지 된 회신이 있음(목록 최초서명시간). 9열 "회신" Y는 회신 기록지가 저장만 돼도 Y라 쓰지 않는다
   replied      Boolean  @default(false)
   repliedAt    String?
   // 여기서 쓴 회신 — 병원 PC가 EMR 회신 기록지에 넣고 [저장] → EMR 타과의뢰 일괄서명으로 서명까지(사용자 2026-10-26, 병원 허락).

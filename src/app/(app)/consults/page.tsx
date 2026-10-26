@@ -4,6 +4,7 @@ import { buttonStyles } from "@/lib/ui";
 import { OUTPATIENT_TABS, SectionTabs } from "@/components/section-tabs";
 import { cancelConsultCheck, cancelConsultReply, requestConsultCheck } from "@/app/actions/hospital-link";
 import { ConsultReplyForm } from "./consult-reply-form";
+import { AutoRefresh } from "./auto-refresh";
 
 // 외래 > 타과의뢰 — 병원 PC가 올린 EMR 타과의뢰(본인에게 온 것, 최근 30일). 회신을 쓰면 병원 PC가 EMR에 저장·일괄서명까지.
 const fmtTime = new Intl.DateTimeFormat("ko-KR", {
@@ -34,11 +35,12 @@ export default async function ConsultsPage() {
   return (
     <div className="space-y-6">
       <SectionTabs tabs={OUTPATIENT_TABS} current="/consults" />
+      <AutoRefresh />
 
       <section className="space-y-2">
         <p className="text-sm text-slate-500">
-          EMR에서 본인에게 온 타과의뢰(최근 30일)를 가져옵니다. 회신을 쓰면 EMR 회신 기록지에 저장하고 일괄서명까지
-          합니다. 병원 PC가 평일 8시~20시 사이 10분마다 확인해 처리합니다.
+          EMR에서 본인에게 온 타과의뢰(최근 30일)를 평일 8시~20시 사이 10분마다 자동으로 가져오고, 이 화면은 1분마다 새로
+          고칩니다. 바로 보려면 [EMR에서 가져오기]. 회신을 쓰면 병원 PC가 EMR 회신 기록지에 저장하고 일괄서명까지 합니다.
         </p>
         {user?.consultCheckRequestedAt ? (
           <div className="flex flex-wrap items-center gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm">
@@ -100,6 +102,7 @@ function ConsultCard({ c }: { c: ConsultRow }) {
       </div>
       <p className="mt-1 text-slate-700">
         {c.patientName} {c.chartNo} {c.sexAge} {c.location && <span className="text-slate-500">· {c.location}</span>}
+        {c.contact && <span className="text-slate-500"> · 연락처 {c.contact}</span>}
       </p>
       {c.diagnosis && <p className="mt-2 text-slate-600">진단: {c.diagnosis}</p>}
       {c.content && <p className="mt-2 whitespace-pre-wrap text-slate-900">{c.content}</p>}
