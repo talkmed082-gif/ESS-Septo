@@ -31,6 +31,8 @@ describe("YES 수술방 번호", () => {
 
   it("가져온 수술 계획 메모에서 방을 읽는다", () => {
     expect(planNoteRoom("진단: CRS\n스케줄: ESS\nRoom66 #2 · assist R2\n마취 GA")).toBe("Room66");
+    // YES 수술실 칸이 번호만("05")이어도
+    expect(planNoteRoom("스케줄: ESS\n05 #1 · assist R2")).toBe("05");
     expect(planNoteRoom("그냥 메모")).toBeNull();
     expect(planNoteRoom(null)).toBeNull();
   });
