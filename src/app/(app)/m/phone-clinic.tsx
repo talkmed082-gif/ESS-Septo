@@ -5,8 +5,7 @@ import { toggleTodo } from "@/app/actions/roadmap";
 import { askClinicClaude, getClinicAsk, setVisitDone } from "@/app/actions/clinic-ask";
 import { ASK_MAX, ASK_PRESETS, type VisitStatus } from "@/lib/clinic-ask";
 import Link from "next/link";
-import { PullToRefresh } from "@/components/pull-to-refresh";
-import { RoadmapBox } from "../(app)/outpatient/roadmap-box";
+import { RoadmapBox } from "../outpatient/roadmap-box";
 
 export type MPatient = {
   no: number;
@@ -95,15 +94,10 @@ export function PhoneClinic({ date, today, clinic, patients }: { date: string; t
   for (const x of patients) counts[st(x)]++;
 
   return (
-    <div className="mx-auto min-h-screen max-w-xl space-y-3 overflow-x-hidden bg-slate-50 px-4 pb-10 pt-3 text-slate-900">
-      <PullToRefresh />
+    // 메뉴(app 레이아웃) 안 화면 — 위 메뉴·당겨서 새로고침·좌우 여백은 레이아웃이 준다(사용자 2026-10-26)
+    <div className="mx-auto max-w-xl space-y-3 overflow-x-hidden text-slate-900">
       <div className="flex items-baseline justify-between">
-        <h1 className="text-base font-semibold">
-          <Link href="/dashboard" className="mr-2 text-slate-400" aria-label="메인으로">
-            ‹
-          </Link>
-          진료 브리핑
-        </h1>
+        <h1 className="text-base font-semibold">진료 브리핑</h1>
         <p className="text-xs text-slate-500">
           {clinic} · {patients.length}명
         </p>
@@ -114,7 +108,8 @@ export function PhoneClinic({ date, today, clinic, patients }: { date: string; t
           ‹
         </Link>
         <form action="/m" className="flex min-w-0 flex-1 gap-1">
-          <input type="date" name="date" defaultValue={date} className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-base" />
+          {/* key: ‹ › 로 날짜를 옮기면 칸도 새 날짜로(같은 화면이라 defaultValue가 그대로 남았음) */}
+          <input key={date} type="date" name="date" defaultValue={date} className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-base" />
           <button type="submit" className="shrink-0 rounded-lg border border-slate-300 bg-white px-3 text-sm">
             보기
           </button>

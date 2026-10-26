@@ -1,9 +1,11 @@
 import { regenerateConsultTriggerToken } from "@/app/actions/import-token";
 import { CopyButton } from "@/components/copy-button";
 import { buttonStyles } from "@/lib/ui";
+import { appBaseUrl } from "@/lib/password-reset";
 
 // 아이폰 단축어로 타과의뢰 문자가 오면 [EMR에서 가져오기]를 대신 누른다. 이 토큰으로는 가져오기 요청만 된다
-const URL = "https://ess-septo.vercel.app/api/consults/trigger";
+// 주소는 지금 운영 주소를 따른다(ess-septo → ent-manager 이름 바꿈, 2026-10-26)
+const URL = `${appBaseUrl(process.env, null) ?? "https://ent-manager.vercel.app"}/api/consults/trigger`;
 
 export function ConsultTriggerCard({ token }: { token: string | null }) {
   return (

@@ -30,7 +30,7 @@ export function buildIcsContent({
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//ESS-Septo//Op Plan//KO",
+    "PRODID:-//ENT-Manager//Op Plan//KO",
     "CALSCALE:GREGORIAN",
     "BEGIN:VEVENT",
     `UID:${uid}`,
@@ -92,7 +92,7 @@ export function buildIcsFeed({
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//ESS-Septo//Op Plan//KO",
+    "PRODID:-//ENT-Manager//Op Plan//KO",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     `X-WR-CALNAME:${escapeIcsText(calendarName)}`,
