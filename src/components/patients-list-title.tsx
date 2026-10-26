@@ -19,7 +19,7 @@ export function PatientsListTitle() {
         }}
         className="hover:underline"
       >
-        환자 목록
+        수술환자 관리
       </Link>
     </h1>
   );

@@ -7,6 +7,7 @@ import { kstDate } from "@/lib/hospital-link";
 import { cancelTsaScan, requestTsaScan } from "@/app/actions/hospital-link";
 import { safeDateStr, seoulTodayAsStoredDate } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
+import { SETTINGS_TABS, SectionTabs } from "@/components/section-tabs";
 import { TsaScanForm } from "./tsa-scan-form";
 
 // 수술 — 다가오는 수술(예전 환자 목록 위), 빈 체크리스트 인쇄, TSA 구글 시트(예전 병원 연동).
@@ -83,8 +84,13 @@ export default async function SurgeryPage() {
 
   return (
     <div className="space-y-8">
+      {/* 설정의 한 탭(사용자 2026-10-26 — 상단 메뉴 "수술"을 설정으로) */}
+      <div>
+        <h1 className="mb-4 text-xl font-semibold">설정</h1>
+        <SectionTabs tabs={SETTINGS_TABS} current="/surgery" />
+      </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">수술</h1>
+        <h2 className="text-lg font-semibold">수술</h2>
         {/* "선택한 환자 Op Plan 인쇄"(환자 목록에서 체크한 환자로 채워서 인쇄)와 헷갈리지 않도록 "빈"을 명시한다. */}
         <Link href="/print/fess-checklist" className={buttonStyles.secondarySmall}>
           빈 체크리스트 양식 인쇄
