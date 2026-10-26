@@ -64,6 +64,7 @@ export const PC_JOBS = [
   { key: "PROF_SCHEDULE", label: "교수님 외래·수술(새로 고침 뒤, 2주)", maxAgeHours: 80 },
   { key: "TSA_RANGE", label: "TSA 기간 확인(요청 시)", maxAgeHours: null },
   { key: "CONSULT", label: "타과의뢰 가져오기(요청 시)", maxAgeHours: null },
+  { key: "CONSULT_REPLY", label: "타과의뢰 회신 EMR 저장(요청 시)", maxAgeHours: null },
   { key: "CRED_CHECK", label: "설정 파일 점검", maxAgeHours: null },
 ] as const;
 export type PcJobKey = (typeof PC_JOBS)[number]["key"];
@@ -176,6 +177,29 @@ export const ConsultBodySchema = z.object({
 export function consultKey(item: { chartNo: string; noteId: string }) {
   return `${item.chartNo}-${item.noteId}`;
 }
+
+// consultKey의 반대 — 병원 PC는 의뢰 번호로 EMR 목록에서 그 줄을 찾는다
+export function consultNoteId(c: { chartNo: string; emrKey: string }) {
+  return c.emrKey.startsWith(`${c.chartNo}-`) ? c.emrKey.slice(c.chartNo.length + 1) : "";
+}
+
+export const CONSULT_REPLY_MAX = 4000;
+
+// 회신 글 검사(앞뒤 공백 정리, 줄바꿈은 그대로). 문제가 있으면 오류 문구
+export function checkConsultReply(text: string): { text: string } | { error: string } {
+  const t = text.replace(/\r\n/g, "\n").trim();
+  if (!t) return { error: "회신 내용을 써 주세요." };
+  if (t.length > CONSULT_REPLY_MAX) return { error: `회신은 ${CONSULT_REPLY_MAX}자까지입니다.` };
+  return { text: t };
+}
+
+// 병원 PC가 회신을 EMR에 넣고 저장한 결과. requestedAt: 처리한 요청 시각(그 사이 다시 요청했으면 무시)
+export const ConsultReplyResultSchema = z.object({
+  id: z.string().min(1).max(40),
+  requestedAt: z.iso.datetime(),
+  ok: z.boolean(),
+  message: z.string().max(500).optional(),
+});
 
 // 자동화 쉬는 날(출장 등) — 설정 화면에서 기간을 넣는다. 하루짜리는 from=to. 너무 긴 기간은 실수로 보고 막는다(최대 92일).
 export const AutomationPauseSchema = z

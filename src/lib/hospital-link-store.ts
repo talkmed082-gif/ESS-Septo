@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import {
   carryOverSoap,
   consultKey,
+  consultNoteId,
   mergeOutpatientSoap,
   type ConsultItem,
   type OutpatientRow,
@@ -77,10 +78,44 @@ export async function saveOutpatientList(
   return { ok: true, count: body.rows.length };
 }
 
-// 병원 PC가 10분마다 확인하는 "타과의뢰 가져오기" 요청 시각(없으면 null)
+// 병원 PC가 10분마다 확인하는 "타과의뢰 가져오기" 요청 시각(없으면 null)과 EMR에 저장할 회신(요청 순)
 export async function getConsultRequest(userId: string) {
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { consultCheckRequestedAt: true } });
-  return user?.consultCheckRequestedAt?.toISOString() ?? null;
+  const [user, pending] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId }, select: { consultCheckRequestedAt: true } }),
+    prisma.consult.findMany({
+      where: { createdById: userId, replyStatus: "PENDING", replied: false },
+      orderBy: { replyRequestedAt: "asc" },
+      select: { id: true, chartNo: true, emrKey: true, replyText: true, replyRequestedAt: true },
+    }),
+  ]);
+  return {
+    requestedAt: user?.consultCheckRequestedAt?.toISOString() ?? null,
+    replies: pending
+      .filter((c) => c.replyText && c.replyRequestedAt)
+      .map((c) => ({
+        id: c.id,
+        chartNo: c.chartNo,
+        noteId: consultNoteId(c),
+        text: c.replyText!,
+        requestedAt: c.replyRequestedAt!.toISOString(),
+      })),
+  };
+}
+
+// 회신 저장 결과 — 처리한 요청이 그대로일 때만 반영(그 사이 다시 요청·취소했으면 무시)
+export async function recordConsultReply(
+  userId: string,
+  body: { id: string; requestedAt: string; ok: boolean; message?: string },
+) {
+  const r = await prisma.consult.updateMany({
+    where: { id: body.id, createdById: userId, replyStatus: "PENDING", replyRequestedAt: new Date(body.requestedAt) },
+    data: {
+      replyStatus: body.ok ? "SAVED" : "FAILED",
+      replyMessage: body.message ?? null,
+      ...(body.ok ? { replySavedAt: new Date() } : {}),
+    },
+  });
+  return { ok: true, updated: r.count };
 }
 
 // EMR 타과의뢰 목록을 반영한다. 올린 기간(의뢰일 from~to) 안인데 이번 목록에 없는 것은 EMR에서 취소된 것으로 보고 지운다.

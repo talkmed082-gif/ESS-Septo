@@ -211,7 +211,7 @@ model OutpatientList {
 }
 
 // 내 앞(수신의)으로 온 EMR 타과의뢰(컨설트) — 읽기 전용. 병원 PC가 "타과의뢰 가져오기" 요청 때
-// EMR 타과의뢰 목록(본인에게 온 것, 최근 30일)을 통째로 올린다. 회신은 EMR에서 직접 한다.
+// EMR 타과의뢰 목록(본인에게 온 것, 최근 30일)을 통째로 올린다. 회신은 여기서 써서 EMR 저장까지 맡길 수 있다(서명은 EMR).
 // emrKey = 등록번호-EMR 의뢰 NoteID(목록 20번 숨은 열). patientName은 가린 이름.
 model Consult {
   id           String   @id @default(cuid())
@@ -229,6 +229,13 @@ model Consult {
   // EMR 목록 9열 "회신" = Y
   replied      Boolean  @default(false)
   repliedAt    String?
+  // 여기서 쓴 회신 — 병원 PC가 EMR 회신 기록지에 넣고 [저장]까지 한다(서명은 사용자가 EMR 일괄서명).
+  // replyStatus: PENDING(요청) → SAVED(EMR 저장됨) / FAILED. replyRequestedAt이 같을 때만 결과를 받는다
+  replyText        String?
+  replyRequestedAt DateTime?
+  replyStatus      String?
+  replyMessage     String?
+  replySavedAt     DateTime?
   createdById  String
   createdBy    User     @relation(fields: [createdById], references: [id])
   createdAt    DateTime @default(now())

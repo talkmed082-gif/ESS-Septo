@@ -1,5 +1,5 @@
 ﻿import { describe, expect, it } from "vitest";
-import { AutomationPauseSchema, carryOverSoap, ConsultBodySchema, consultKey, findPause, kstDate, mergeOutpatientSoap, searchOutpatientHistory, OutpatientListBodySchema, OutpatientSoapBodySchema, PcJobBodySchema, pcJobState, TsaRunBodySchema, validateTsaScanRange } from "@/lib/hospital-link";
+import { AutomationPauseSchema, carryOverSoap, checkConsultReply, ConsultBodySchema, consultKey, consultNoteId, ConsultReplyResultSchema, findPause, kstDate, mergeOutpatientSoap, searchOutpatientHistory, OutpatientListBodySchema, OutpatientSoapBodySchema, PcJobBodySchema, pcJobState, TsaRunBodySchema, validateTsaScanRange } from "@/lib/hospital-link";
 
 // 2026-10-14 16:00 UTC = 10/15 01:00 KST
 const NOW = new Date("2026-10-14T16:00:00Z");
@@ -38,6 +38,28 @@ describe("ConsultBodySchema", () => {
   });
   it("키는 등록번호-의뢰 번호", () => {
     expect(consultKey(item)).toBe("00123456-12345678");
+  });
+  it("키에서 의뢰 번호를 되찾는다(등록번호가 다르면 빈 값)", () => {
+    expect(consultNoteId({ chartNo: "00123456", emrKey: "00123456-12345678" })).toBe("12345678");
+    expect(consultNoteId({ chartNo: "999", emrKey: "00123456-12345678" })).toBe("");
+  });
+});
+
+describe("checkConsultReply", () => {
+  it("앞뒤 공백을 정리하고 줄바꿈은 둔다", () => {
+    expect(checkConsultReply("  가\r\n나  ")).toEqual({ text: "가\n나" });
+  });
+  it("빈 글과 너무 긴 글은 막는다", () => {
+    expect(checkConsultReply("   ")).toHaveProperty("error");
+    expect(checkConsultReply("가".repeat(4001))).toHaveProperty("error");
+  });
+});
+
+describe("ConsultReplyResultSchema", () => {
+  it("병원 PC 결과(성공·실패)를 받는다", () => {
+    expect(ConsultReplyResultSchema.safeParse({ id: "c1", requestedAt: "2026-10-26T03:00:00.000Z", ok: true }).success).toBe(true);
+    expect(ConsultReplyResultSchema.safeParse({ id: "c1", requestedAt: "2026-10-26T03:00:00.000Z", ok: false, message: "칸에 이미 글 있음" }).success).toBe(true);
+    expect(ConsultReplyResultSchema.safeParse({ id: "c1", ok: true }).success).toBe(false);
   });
 });
 
