@@ -5,6 +5,7 @@ import { kstDate, PC_JOBS, pcJobState } from "@/lib/hospital-link";
 import { SETTINGS_TABS, SectionTabs } from "@/components/section-tabs";
 import { AutomationPauseCard } from "../settings/automation-pause-card";
 import { ImportTokenCard } from "../settings/import-token-card";
+import { ConsultTriggerCard } from "../settings/consult-trigger-card";
 
 // 설정 > 병원 연동 — 병원 PC 작업 상태판, 자동화 쉬는 날, EMR 수술 일정 연동 토큰.
 // 외래 명단은 외래, TSA 시트는 수술 메뉴로 옮겼다(사용자 2026-10-24). 본인 계정 데이터만(createdById).
@@ -45,7 +46,7 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
       orderBy: { from: "asc" },
       select: { id: true, from: true, to: true, note: true },
     }),
-    prisma.user.findUnique({ where: { id: userId }, select: { importToken: true } }),
+    prisma.user.findUnique({ where: { id: userId }, select: { importToken: true, consultTriggerToken: true } }),
   ]);
   const jobByKey = new Map(jobs.map((j) => [j.job, j]));
 
@@ -103,6 +104,11 @@ export default async function HospitalPage({ searchParams }: PageProps<"/hospita
       <div className="max-w-lg">
         <h2 className="mb-1 text-sm font-semibold text-slate-700">EMR 수술 일정 연동</h2>
         <ImportTokenCard token={user?.importToken ?? null} />
+      </div>
+
+      <div className="max-w-lg">
+        <h2 className="mb-1 text-sm font-semibold text-slate-700">타과의뢰 문자 자동 가져오기</h2>
+        <ConsultTriggerCard token={user?.consultTriggerToken ?? null} />
       </div>
     </div>
   );

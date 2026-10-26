@@ -36,6 +36,8 @@ model User {
   tsaScanRequestedAt DateTime?
   // "타과의뢰 가져오기" 버튼을 누른 시각 — 병원 PC가 평일 근무 시간 10분마다 확인해 EMR 타과의뢰를 가져오고 비운다.
   consultCheckRequestedAt DateTime?
+  // 아이폰 단축어(타과의뢰 문자 수신 자동화)가 "가져오기" 요청만 보낼 수 있는 토큰 — 병원 PC 토큰(importToken)과 따로
+  consultTriggerToken     String?   @unique
   // 로그인 실패 횟수와 잠금 시각 — 비밀번호를 계속 대입해 보는 것을 막는다.
   failedLoginCount     Int             @default(0)
   lockedUntil          DateTime?

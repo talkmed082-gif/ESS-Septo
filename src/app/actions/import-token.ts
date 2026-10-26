@@ -15,3 +15,13 @@ export async function regenerateImportToken(): Promise<void> {
   });
   revalidatePath("/hospital");
 }
+
+// 아이폰 단축어용 타과의뢰 "가져오기" 토큰 — 이것으로는 가져오기 요청만 할 수 있다. 다시 만들면 이전 토큰은 바로 막힌다
+export async function regenerateConsultTriggerToken(): Promise<void> {
+  const session = await verifySession();
+  await prisma.user.update({
+    where: { id: session.userId },
+    data: { consultTriggerToken: generateCalendarToken() },
+  });
+  revalidatePath("/hospital");
+}
