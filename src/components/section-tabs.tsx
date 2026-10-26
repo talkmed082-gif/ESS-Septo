@@ -10,6 +10,7 @@ export const OUTPATIENT_TABS = [
 ];
 export const SETTINGS_TABS = [
   { href: "/settings", label: "일반" },
+  { href: "/surgery", label: "수술" },
   { href: "/hospital", label: "병원 연동" },
   { href: "/import", label: "엑셀 가져오기" },
 ];
