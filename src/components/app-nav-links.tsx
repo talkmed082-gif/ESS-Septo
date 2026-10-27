@@ -9,11 +9,12 @@ import { usePathname, useRouter } from "next/navigation";
 // match: 이 메뉴에 속하는 화면 주소(하위 화면에서도 지금 어느 메뉴인지 보이게)
 const ITEMS = [
   { href: "/dashboard", label: "메인", match: ["/dashboard"] },
+  // 순서(사용자 2026-10-27): 메인 · 외래 진료 관리 · 수술환자 관리 · 타과의뢰 · 캘린더 · 설정
   { href: "/clinic", label: "외래 진료 관리", match: ["/clinic", "/outpatient", "/cpap", "/m"] },
-  { href: "/consults", label: "타과의뢰", match: ["/consults"] },
-  { href: "/calendar", label: "캘린더", match: ["/calendar", "/reminders"] },
   // "환자" → "수술환자 관리"(사용자 2026-10-26). 수술 계획·기록 화면도 이 메뉴
   { href: "/patients", label: "수술환자 관리", match: ["/patients", "/plans", "/records"] },
+  { href: "/consults", label: "타과의뢰", match: ["/consults"] },
+  { href: "/calendar", label: "캘린더", match: ["/calendar", "/reminders"] },
   // 외래 템플릿·수술 관련 설정은 설정의 외래·수술 탭(2026-10-27)
   { href: "/settings", label: "설정", match: ["/settings", "/surgery", "/hospital", "/import", "/templates", "/surgery-types"] },
 ];
