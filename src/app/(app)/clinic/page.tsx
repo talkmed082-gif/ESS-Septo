@@ -3,7 +3,7 @@ import { verifySession } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { kstDate, type OutpatientRow } from "@/lib/hospital-link";
 import { safeDateStr } from "@/lib/date-format";
-import { OUTPATIENT_TABS, SectionTabs } from "@/components/section-tabs";
+import { clinicTabs, SectionTabs } from "@/components/section-tabs";
 import { latestRoadmaps } from "@/lib/roadmap-store";
 import { patientRoadmaps } from "@/lib/pathway-store";
 import { summaryLine } from "@/lib/pathways";
@@ -118,8 +118,14 @@ export default async function ClinicPage({ searchParams }: PageProps<"/clinic">)
     // 넓은 화면(lg)에서만 본문 폭을 넘어 넓게 쓴다 — 폰에서는 100vw 계산이 화면 밖으로 밀려 오른쪽이 잘렸다(사용자 2026-10-26 캡처)
     <div className="space-y-4 lg:relative lg:left-1/2 lg:w-[min(1600px,calc(100vw-2rem))] lg:-translate-x-1/2">
       <div>
-        <h1 className="mb-4 text-xl font-semibold">진료</h1>
-        <SectionTabs tabs={OUTPATIENT_TABS} current="/clinic" />
+        <h1 className="mb-4 text-xl font-semibold">외래 진료 관리</h1>
+        <SectionTabs tabs={clinicTabs(date)} current="/clinic" />
+        {/* 외래 진행 중 = 진료 화면 + 진료 브리핑(폰에 띄워 두는 화면, 사용자 2026-10-27 "진료 브리핑과 통합") */}
+        <p className="-mt-4 mb-2 text-sm">
+          <Link href={`/m?date=${date}`} className="text-emerald-700 underline">
+            진료 브리핑(폰 화면) 열기
+          </Link>
+        </p>
       </div>
       {/* 폰(한 칸)에서도 칸 폭을 화면에 묶는다 — 기본 grid 칸은 내용 폭(413px)만큼 넓어져 오른쪽이 잘렸다 */}
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">

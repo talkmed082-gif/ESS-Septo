@@ -134,6 +134,8 @@ model Reminder {
   source      String    @default("ESS")
   emrRegDate  String?
   emrRegSeq   String?
+  // 완료(일정 알림에서 체크, 사용자 2026-10-27) — 사이트에서만. EMR 동기화가 지우지 않음
+  doneAt      DateTime?
   createdById String
   createdBy   User      @relation(fields: [createdById], references: [id])
   createdAt   DateTime  @default(now())

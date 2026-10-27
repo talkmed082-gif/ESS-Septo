@@ -9,6 +9,7 @@ import { safeDateStr, seoulTodayAsStoredDate } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
 import { SETTINGS_TABS, SectionTabs } from "@/components/section-tabs";
 import { TsaScanForm } from "./tsa-scan-form";
+import { SurgerySettings } from "./surgery-settings";
 
 // 수술 — 다가오는 수술(예전 환자 목록 위), 빈 체크리스트 인쇄, TSA 구글 시트(예전 병원 연동).
 // 사용자 2026-10-24 메뉴 개편으로 한곳에 모았다. 본인 계정 데이터만(createdById).
@@ -208,6 +209,9 @@ export default async function SurgeryPage() {
           </table>
         </div>
       </section>
+
+      {/* 예전 설정 > 일반에 있던 수술 관련 설정(2026-10-27) */}
+      <SurgerySettings />
     </div>
   );
 }

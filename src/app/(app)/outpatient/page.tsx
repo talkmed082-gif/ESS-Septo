@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { kstDate, searchOutpatientHistory, type OutpatientRow } from "@/lib/hospital-link";
 import { safeDateStr, seoulTodayAsStoredDate } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
-import { OUTPATIENT_TABS, SectionTabs } from "@/components/section-tabs";
+import { clinicTabs, SectionTabs } from "@/components/section-tabs";
 import { OutpatientCalendar } from "./outpatient-calendar";
 import { RoadmapBox } from "./roadmap-box";
 import { toggleTodo } from "@/app/actions/roadmap";
@@ -132,8 +132,8 @@ export default async function OutpatientPage({ searchParams }: PageProps<"/outpa
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold">진료</h1>
-      <SectionTabs tabs={OUTPATIENT_TABS} current="/outpatient" />
+      <h1 className="text-xl font-semibold">외래 진료 관리</h1>
+      <SectionTabs tabs={clinicTabs(selected?.date ?? dateStr)} current="/outpatient" />
 
       <section className="space-y-3">
         <form className="flex max-w-sm gap-2">

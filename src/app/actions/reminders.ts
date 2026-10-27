@@ -66,6 +66,24 @@ export async function cancelReminderSync(patientId: string): Promise<void> {
   revalidatePath(`/patients/${patientId}`);
 }
 
+// 일정 알림 목록에서 체크 → 완료(다시 누르면 되돌림). EMR에서 온 알림도 사이트에서만 완료로 둔다(사용자 2026-10-27)
+export async function setReminderDone(reminderId: string, done: boolean): Promise<void> {
+  const session = await verifySession();
+  if (typeof reminderId !== "string" || reminderId.length > 40) return;
+  await prisma.reminder.updateMany({ where: { id: reminderId, createdById: session.userId }, data: { doneAt: done ? new Date() : null } });
+  revalidatePath("/calendar");
+  revalidatePath("/reminders");
+}
+
+// 일정 알림 목록에서 삭제 — 이 사이트에서 만든 것만(EMR에서 온 것은 다음 동기화 때 다시 생기므로 완료로)
+export async function deleteReminderFromList(reminderId: string): Promise<void> {
+  const session = await verifySession();
+  if (typeof reminderId !== "string" || reminderId.length > 40) return;
+  await prisma.reminder.deleteMany({ where: { id: reminderId, createdById: session.userId, source: "ESS", emrRegSeq: null } });
+  revalidatePath("/calendar");
+  revalidatePath("/reminders");
+}
+
 // 아직 EMR에 안 올라간(이 사이트에서 만든) 리마인더만 지울 수 있다 — EMR에 있는 것은
 // EMR에서 지우면 다음 동기화 때 여기서도 사라진다.
 export async function deleteReminder(reminderId: string, patientId: string): Promise<void> {

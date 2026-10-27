@@ -104,7 +104,7 @@ export function scheduleDay(today: string): string {
 
 // 달력 칸의 교수님별 수술 수 "박 1 · 문 1"(성 한 글자), 부재면 "문 휴"·"박 출"·"최 반"
 export function profSurgeryTags(profs: ProfDay[]): string {
-  const OFF: Record<string, string> = { 휴가: "휴", 출장: "출", "반일 휴가": "반" };
+  const OFF: Record<string, string> = { 휴가: "휴", 출장: "출", 연차: "연", 반차: "반", "반일 휴가": "반", "오전 반차": "오전반", "오후 반차": "오후반" };
   return profs
     .filter((p) => p.surgeries.length || p.off)
     .map((p) => `${p.doctor.slice(0, 1)} ${p.off && !p.surgeries.length ? (OFF[p.off] ?? "휴") : p.surgeries.length}`)

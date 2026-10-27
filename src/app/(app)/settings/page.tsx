@@ -1,14 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { headers } from "next/headers";
 import { getCurrentUser } from "@/lib/dal";
-import { parseFieldValues } from "@/lib/field-types";
-import { procedureNameFor, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
-import { buildGoogleCalendarUrl } from "@/lib/calendar";
-import { safeDateStr, seoulTodayAsStoredDate } from "@/lib/date-format";
-import { buttonStyles } from "@/lib/ui";
-import { SettingsForm } from "./settings-form";
-import { SurgeryTypesManager } from "../surgery-types/surgery-types-manager";
-import { CalendarSubscribeCard } from "./calendar-subscribe-card";
 import { AccountCard } from "./account-card";
 import { TextTemplatesCard } from "./text-templates-card";
 import { kstDate } from "@/lib/hospital-link";
@@ -19,27 +10,9 @@ import { SETTINGS_TABS, SectionTabs } from "@/components/section-tabs";
 import { OtpCard } from "./otp-card";
 import { OsaSheetCard } from "./osa-sheet-card";
 
+// 설정 > 일반 — 오늘의 번호, OSA 시트, 내 외래 스케줄, 문구 템플릿, 계정, 폰 앱. 수술 관련(수술명 표기·수술 캘린더·수술 종류)은 설정 > 수술 탭으로(사용자 2026-10-27)
 export default async function SettingsPage() {
   const user = await getCurrentUser();
-  const nameStyle: NameStyle = {
-    sideNotation: user.sideNotation as SideNotation,
-    abbreviateRegions: user.abbreviateRegions,
-  };
-
-  // 구독 주소는 지금 접속한 주소(운영/미리보기)를 기준으로 만든다.
-  const requestHeaders = await headers();
-  const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
-  const proto = requestHeaders.get("x-forwarded-proto") ?? "https";
-  const feedUrl = user.calendarToken && host ? `${proto}://${host}/api/calendar/${user.calendarToken}` : null;
-
-  // 한국 시간 기준 오늘 — UTC로 자르면 오전 9시 전까지 어제 수술도 "다가오는 수술"에 남았다.
-  const todayUtc = seoulTodayAsStoredDate();
-  const upcomingPlans = await prisma.opPlan.findMany({
-    // "완료"로 표시해둔 계획은 더 이상 캘린더에 새로 추가할 필요가 없으니 제외한다.
-    where: { createdById: user.id, plannedDate: { gte: todayUtc }, status: { not: "DONE" } },
-    orderBy: { plannedDate: "asc" },
-    include: { surgeryType: { select: { code: true, name: true } } },
-  });
 
   // 내 외래 스케줄 + 최근 90일 외래 명단이 있던 요일(참고)
   const [me, recentLists] = await Promise.all([
@@ -83,64 +56,6 @@ export default async function SettingsPage() {
       </div>
 
       <div>
-        <h2 className="mb-1 text-sm font-semibold text-slate-700">수술명 표기</h2>
-        <p className="mb-3 text-sm text-slate-500">
-          자동 생성되는 수술명의 방향/부위 표기 방식을 정할 수 있습니다.
-        </p>
-        <SettingsForm
-          initialSideNotation={user.sideNotation as SideNotation}
-          initialAbbreviate={user.abbreviateRegions}
-        />
-      </div>
-
-      <div>
-        <h2 className="mb-1 text-sm font-semibold text-slate-700">캘린더 연동</h2>
-        <p className="mb-3 text-sm text-slate-500">
-          다가오는 수술을 캘린더에 추가할 수 있습니다. (개인정보 보호를 위해 환자 이름은 표시되지 않습니다)
-        </p>
-        <div className="mb-4">
-          <CalendarSubscribeCard feedUrl={feedUrl} />
-        </div>
-        <p className="mb-2 text-xs font-medium text-slate-500">수술별로 하나씩 추가</p>
-        {upcomingPlans.length === 0 ? (
-          <p className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-400">
-            예정된 수술이 없습니다.
-          </p>
-        ) : (
-          <ul className="space-y-2">
-            {upcomingPlans.map((plan) => {
-              const values = parseFieldValues(plan.planData);
-              const procedureName = procedureNameFor(plan.surgeryType, values, nameStyle);
-              return (
-                <li
-                  key={plan.id}
-                  className="flex flex-wrap items-center gap-2 rounded-md border border-slate-200 bg-white p-3 text-sm"
-                >
-                  <span className="font-medium text-slate-900">{safeDateStr(plan.plannedDate)}</span>
-                  <span className="text-slate-400">·</span>
-                  <span className="text-slate-600">{procedureName}</span>
-                  <a
-                    href={buildGoogleCalendarUrl({
-                      title: `[수술] ${procedureName}`,
-                      date: plan.plannedDate!,
-                    })}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`ml-auto ${buttonStyles.smallOutline}`}
-                  >
-                    Google 캘린더
-                  </a>
-                  <a href={`/plans/${plan.id}/ics`} className={buttonStyles.smallOutline}>
-                    .ics 다운로드
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
-
-      <div>
         <h2 className="mb-1 text-sm font-semibold text-slate-700">내 외래 스케줄</h2>
         <ClinicScheduleCard schedule={parseSchedule(me?.clinicSchedule)} historyDays={historyDays} inUse={inUse} />
       </div>
@@ -171,15 +86,6 @@ export default async function SettingsPage() {
             홈 화면 앱은 브라우저와 로그인 정보가 따로라서, 설치 후 처음 한 번 다시 로그인해야 합니다.
           </p>
         </div>
-      </div>
-
-      <div>
-        <h2 className="mb-1 text-sm font-semibold text-slate-700">수술 종류 관리</h2>
-        <p className="mb-3 text-sm text-slate-500">
-          기본 제공되는 ESS/비중격교정술 외에, 다루는 이비인후과 수술을 자유롭게 추가하거나 입력 항목을
-          확인할 수 있습니다.
-        </p>
-        <SurgeryTypesManager />
       </div>
       </div>
     </div>

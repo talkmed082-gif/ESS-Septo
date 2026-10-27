@@ -5,6 +5,7 @@ import { type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { buttonStyles } from "@/lib/ui";
 import { loadSchedule, ScheduleCalendar } from "@/components/schedule-calendar";
 import { shiftMonth } from "../outpatient/outpatient-calendar";
+import { RemindersSection } from "../reminders/reminders-section";
 
 // 캘린더 — 내 외래 인원·수술 한 달 보기(사용자 2026-10-25). 날짜를 누르면 그날 외래·수술 환자.
 // 외래 명단은 병원 PC가 올린 날짜만 있다(평일 아침 앞으로 14일치).
@@ -51,6 +52,10 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
           data={schedule}
           dayHref={(d) => `/calendar?month=${month}&day=${d}#day`}
         />
+      </div>
+      {/* 일정 알림은 캘린더 아래(사용자 2026-10-27 "캘린더는 일정 알림이랑 합쳐서") */}
+      <div id="reminders" className="scroll-mt-24">
+        <RemindersSection />
       </div>
     </div>
   );

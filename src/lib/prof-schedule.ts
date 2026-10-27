@@ -41,6 +41,7 @@ export function splitCancelled(surgeries: ProfSurgery[]) {
   };
 }
 
+export const PROF_OFF_KINDS = ["오전 반차", "오후 반차", "반차", "연차", "출장", "휴가", "반일 휴가"] as const;
 export const ProfScheduleBodySchema = z
   .object({
     from: ymd,
@@ -52,8 +53,8 @@ export const ProfScheduleBodySchema = z
           doctor: z.enum(PROFESSORS),
           outpatient: z.number().int().min(0).max(1000),
           surgeries: z.array(ProfSurgerySchema).max(50),
-          // 그날 부재(휴가·출장·반일 휴가) — 사유·종류는 안 받음(2026-10-26)
-          off: z.enum(["휴가", "출장", "반일 휴가"]).nullable().optional().default(null),
+          // 그날 부재 — 오전 반차·오후 반차·반차·연차·출장·휴가(사용자 2026-10-27 종류 구분, 사유는 안 받음). "반일 휴가"는 예전 값
+          off: z.enum(PROF_OFF_KINDS).nullable().optional().default(null),
         }),
       )
       .max(500),

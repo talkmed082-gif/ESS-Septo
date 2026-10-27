@@ -2,31 +2,19 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
 import { findPause, kstDate, type OutpatientRow } from "@/lib/hospital-link";
-import { latestRoadmaps } from "@/lib/roadmap-store";
 import { type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
-import { TodoList } from "./todo-list";
+import { ProfTable } from "@/components/prof-table";
 import { loadSchedule, md, OutpatientTable, PlanList, ScheduleCalendar, toPlanItem } from "@/components/schedule-calendar";
 import { myDay, scheduleDay } from "@/lib/my-week";
 import { TodaySchedule } from "./today-schedule";
 
 // 첫 화면(대시보드, 사용자 2026-10-25) — 맨 위 오늘 내 일정(주간 일정표 + 그날 교수님 수술·외래, 내 외래·수술), 2주 달력,
-// 가장 가까운 외래 환자, 2주 안 수술, 할 일(로드맵·일정 알림·기록지 미작성). 오늘의 번호는 위쪽 메뉴에 있어 여기선 뺌(사용자).
+// 교수님 2주 외래·수술·휴가 표, 가장 가까운 외래 환자, 2주 안 수술, 할 일(일정 알림·기록지 미작성). 오늘의 번호는 위쪽 메뉴에 있어 여기선 뺌(사용자).
 // 외래 명단은 병원 PC가 평일 아침 14일치를 올린다(outpatient_refresh.ps1).
 const DAYS = 14;
 const box = "rounded-lg border border-slate-200 bg-white p-4";
 const h2 = "mb-2 text-sm font-semibold text-slate-700";
-
-// 로드맵 글에서 □ 할 일만(외래 명단 RoadmapBox와 같은 규칙)
-function todoItems(text: string) {
-  return text.split("\n").flatMap((line) =>
-    line
-      .split(/(□[^□]+)/)
-      .filter((p) => p.startsWith("□"))
-      .map((p) => p.slice(1).trim())
-      .filter(Boolean),
-  );
-}
 
 export default async function DashboardPage({ searchParams }: PageProps<"/dashboard">) {
   const user = await getCurrentUser();
@@ -56,7 +44,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
     }),
     // 기한 지남 + 2주 안 기한
     prisma.reminder.findMany({
-      where: { createdById: user.id, dueDate: { lte: new Date(end) } },
+      where: { createdById: user.id, dueDate: { lte: new Date(end) }, doneAt: null },
       orderBy: { dueDate: "asc" },
       take: 30,
       select: { id: true, title: true, dueDate: true, patient: { select: { id: true, name: true } } },
@@ -71,12 +59,6 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   const nearest = lists.find((l) => rowsOf(l).length > 0);
   const nearestRows = nearest ? rowsOf(nearest) : [];
 
-  const roadmaps = await latestRoadmaps(user.id, nearestRows.map((r) => r.chartNo).filter(Boolean));
-  const todoGroups = nearestRows.flatMap((r) => {
-    const rm = roadmaps.get(r.chartNo);
-    const items = rm ? todoItems(rm.text) : [];
-    return items.length ? [{ chartNo: r.chartNo, name: r.name, items: items.map((item) => ({ versionId: rm!.id, item, done: rm!.done.includes(item) })) }] : [];
-  });
 
   const dates = Array.from({ length: DAYS }, (_, i) => kstDate(now, i));
   const sList = schedule.lists.get(sday);
@@ -102,6 +84,11 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
         <ScheduleCalendar dates={dates} today={today} selected={day} data={schedule} dayHref={(d) => `/dashboard?day=${d}#day`} />
       </section>
 
+      <section className={box}>
+        <h2 className={h2}>교수님 2주 외래·수술·휴가</h2>
+        <ProfTable dates={dates} today={today} profs={schedule.profs} />
+      </section>
+
       <div className="grid gap-4 md:grid-cols-2">
         <section className={box}>
           <h2 className={h2}>
@@ -125,22 +112,8 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
 
       <section className={box}>
         <h2 className={h2}>할 일</h2>
-        <div className="grid gap-4 text-sm md:grid-cols-3">
-          <div>
-            <p className="mb-1 text-xs font-medium text-slate-500">로드맵 할 일{nearest && ` (${md(nearest.date)} 외래 환자)`}</p>
-            {todoGroups.length ? (
-              <div className="space-y-2">
-                {todoGroups.map((g) => (
-                  <div key={g.chartNo}>
-                    <p className="font-medium">{g.name}</p>
-                    <TodoList items={g.items} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-slate-400">없음</p>
-            )}
-          </div>
+        {/* 외래 환자 로드맵 할 일 목록은 뺐다(사용자 2026-10-27 "외래에서 할일 다 줄줄 늘어놓는거 빼") — 외래 진료 화면에 환자별로 있음 */}
+        <div className="grid gap-4 text-sm md:grid-cols-2">
           <div>
             <p className="mb-1 text-xs font-medium text-slate-500">일정 알림 (기한 지남·2주 안)</p>
             {reminders.length ? (

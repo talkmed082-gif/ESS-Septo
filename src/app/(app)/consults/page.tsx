@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { buttonStyles } from "@/lib/ui";
 import { wardPhone } from "@/lib/hospital-link";
 import { FIELD_LABEL, type ConsultField } from "@/lib/consult-field";
-import { OUTPATIENT_TABS, SectionTabs } from "@/components/section-tabs";
 import { cancelConsultCheck, cancelConsultReply, requestConsultCheck } from "@/app/actions/hospital-link";
 import { ConsultReplyForm } from "./consult-reply-form";
 import { AutoRefresh } from "./auto-refresh";
@@ -37,8 +36,7 @@ export default async function ConsultsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="mb-4 text-xl font-semibold">진료</h1>
-        <SectionTabs tabs={OUTPATIENT_TABS} current="/consults" />
+        <h1 className="mb-4 text-xl font-semibold">타과의뢰</h1>
       </div>
       <AutoRefresh />
 
