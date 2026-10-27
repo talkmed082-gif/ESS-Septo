@@ -41,7 +41,18 @@ export const CpapSchema = z.object({
   realName: z.string().max(30).nullable().default(null),
   // 결과 메일 확인(OSA 시트 웹앱 → Gmail) — [메일 확인] 때 사이트가 채움
   mail: z.object({ checkedAt: z.string(), hits: z.array(z.object({ date: z.string(), subject: z.string() })).max(5) }).nullable().default(null),
+  // PSG AHI — 노트북이 예전 기록의 "@ PSG … (AHI 45.0/hr)"에서 찾음. CPAP data 줄의 "AHI 45.0 (PSG) -> 잔여"에 씀
+  psgAhi: z.string().max(10).nullable().default(null),
+  // 회사가 보낸 결과(데이터 PDF → "@ CPAP data" 글, 보고서 hwp → 처방만료일) — 이 PC가 J:\내 드라이브\CPAP에서 읽어 올림(2026-10-27)
+  report: z.object({ text: z.string().max(1500), expiry: z.string().max(20).nullable(), kind: z.string().max(40).nullable(), at: z.string() }).nullable().default(null),
 });
+
+// 노트북이 Objective에 넣을 글 — PSG AHI를 알면 "AHI 4.8" 줄을 "AHI 45.0 (PSG) -> 4.8"로
+export function cpapObjectiveText(c: Pick<Cpap, "report" | "psgAhi">): string | null {
+  if (!c.report?.text) return null;
+  const t = c.psgAhi ? c.report.text.replace(/^AHI ([\d.]+)$/m, `AHI ${c.psgAhi} (PSG) -> $1`) : c.report.text;
+  return c.report.expiry ? `${t}\n처방만료일 ${c.report.expiry}` : t;
+}
 export type Cpap = z.infer<typeof CpapSchema>;
 
 export const CpapUploadSchema = z.object({

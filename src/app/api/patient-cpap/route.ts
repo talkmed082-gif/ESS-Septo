@@ -14,7 +14,9 @@ export async function POST(request: Request) {
     // 메일 확인 결과(mail)는 사이트가 채운 것 — 노트북이 다시 올려도 지우지 않는다
     const old = await prisma.patientCare.findUnique({ where: { createdById_chartNo: { createdById: user.id, chartNo: it.chartNo } }, select: { cpap: true } });
     const prev = CpapSchema.safeParse(old?.cpap ?? null);
-    const cpap = { ...it.cpap, mail: it.cpap.mail ?? (prev.success ? prev.data.mail : null) };
+    const p = prev.success ? prev.data : null;
+    // 사이트·이 PC가 채운 것(메일 확인·회사 결과)과 실명·PSG AHI는 노트북이 비워 보내도 지우지 않는다
+    const cpap = { ...it.cpap, mail: it.cpap.mail ?? p?.mail ?? null, report: it.cpap.report ?? p?.report ?? null, realName: it.cpap.realName ?? p?.realName ?? null, psgAhi: it.cpap.psgAhi ?? p?.psgAhi ?? null };
     await prisma.patientCare.upsert({
       where: { createdById_chartNo: { createdById: user.id, chartNo: it.chartNo } },
       create: { createdById: user.id, chartNo: it.chartNo, cpap },

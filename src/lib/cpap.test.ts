@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CpapUploadSchema, cpapDue, cpapMailQuery, cpapResultText, cpapRxText, isCpapFollowUp, smsHref } from "./cpap";
+import { CpapUploadSchema, cpapDue, cpapMailQuery, cpapObjectiveText, cpapResultText, cpapRxText, isCpapFollowUp, smsHref } from "./cpap";
 
 describe("CPAP F/U", () => {
   it("처방일 + 개월 = 기간 끝", () => {
@@ -39,5 +39,15 @@ describe("양압기 회사 문자·메일", () => {
     expect(cpapMailQuery({ vendor: "FP", realName: "홍길동", rxDate: "2026-04-27" }, "2026-10-27")).toBe('from:busan@slmedicare.co.kr after:2026/04/27 "홍길동"');
     expect(cpapMailQuery({ vendor: "BG", realName: "홍길동", rxDate: null }, "2026-10-27")).toBe('(양압기 OR CPAP) after:2026/08/28 "홍길동"');
     expect(cpapMailQuery({ vendor: "FP", realName: null, rxDate: "2026-04-27" }, "2026-10-27")).toBeNull();
+  });
+});
+describe("CPAP 결과 → Objective 글", () => {
+  const report = { text: "@ CPAP data (26.04.26~26.10.25):\n사용 98.9%\nAHI 4.8", expiry: "2026. 10. 25", kind: "순응기간 후 처방중", at: "" };
+  it("PSG AHI를 알면 'AHI PSG -> 잔여', 처방만료일 줄", () => {
+    expect(cpapObjectiveText({ report, psgAhi: "45.0" })).toBe("@ CPAP data (26.04.26~26.10.25):\n사용 98.9%\nAHI 45.0 (PSG) -> 4.8\n처방만료일 2026. 10. 25");
+  });
+  it("PSG AHI 모르면 그대로, 결과 없으면 null", () => {
+    expect(cpapObjectiveText({ report, psgAhi: null })).toContain("\nAHI 4.8\n");
+    expect(cpapObjectiveText({ report: null, psgAhi: "45.0" })).toBeNull();
   });
 });

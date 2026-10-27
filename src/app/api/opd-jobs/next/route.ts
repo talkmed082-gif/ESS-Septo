@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { kstDate, type OutpatientRow } from "@/lib/hospital-link";
 import { isClaimable, jobWhere } from "@/lib/opd-jobs";
 import { claimClinicAsk } from "@/lib/clinic-ask-store";
+import { CpapSchema, cpapObjectiveText } from "@/lib/cpap";
 
 // POST: 오늘 일감 하나를 가져간다(처리 중으로 바꿈). 없으면 { job: null }
 //  - 노트북 작업자: 쿼리 없음 → 노트북 일감만
@@ -54,5 +55,9 @@ export async function POST(request: Request) {
   // 재진 SOAP 요약(tasks.soap)용 — 그날 외래 명단의 그 환자 SOAP 글(없으면 빈 값 → 작업자가 이전 기록으로)
   const list = await prisma.outpatientList.findUnique({ where: { createdById_date: { createdById: user.id, date: job.visitDate } }, select: { rows: true } });
   const soap = ((list?.rows ?? []) as OutpatientRow[]).find((x) => x.chartNo.replace(/^0+/, "") === job.chartNo.replace(/^0+/, ""))?.soap ?? "";
-  return pcJson({ job: { id: job.id, chartNo: job.chartNo, name: job.name, visit: job.visit, templateId: job.templateId, tasks: job.tasks, practice: job.practice, tries: job.tries + 1, soap, visitDate: job.visitDate }, ask });
+  // CPAP 결과(회사 데이터 → "@ CPAP data") — 있으면 노트북이 경과 기록지 Objective에 넣는다(2026-10-27)
+  const care = await prisma.patientCare.findUnique({ where: { createdById_chartNo: { createdById: user.id, chartNo: job.chartNo } }, select: { cpap: true } });
+  const cp = CpapSchema.safeParse(care?.cpap ?? null);
+  const cpapText = cp.success && care?.cpap ? cpapObjectiveText(cp.data) : null;
+  return pcJson({ job: { id: job.id, chartNo: job.chartNo, name: job.name, visit: job.visit, templateId: job.templateId, tasks: job.tasks, practice: job.practice, tries: job.tries + 1, soap, visitDate: job.visitDate, cpapText: cpapText ?? "" }, ask });
 }

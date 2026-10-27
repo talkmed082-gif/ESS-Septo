@@ -69,7 +69,12 @@ export default async function CpapPage() {
                     </td>
                     <td className="py-2 pr-3 text-xs">{cpap.setting ?? ""}</td>
                     <td className="py-2 pr-3 text-xs">
-                      {got ? (
+                      {cpap.report ? (
+                        <span className="text-emerald-700">
+                          ✓ 결과 받음{cpap.report.expiry ? ` · 처방만료 ${cpap.report.expiry}` : ""}
+                          <span className="block whitespace-pre-wrap text-slate-600">{cpap.report.text}</span>
+                        </span>
+                      ) : got ? (
                         <span className="text-emerald-700">✓ {cpap.mail!.hits.map((h) => `${md(h.date.slice(0, 10))} ${h.subject}`).join(" / ")}</span>
                       ) : (
                         <span className="space-y-1">
