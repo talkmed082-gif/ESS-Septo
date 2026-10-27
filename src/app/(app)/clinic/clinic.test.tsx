@@ -74,39 +74,43 @@ describe("진료 화면", () => {
   });
 });
 
-describe("하루치 보내기", () => {
-  it("이미 보낸 환자는 빠진 채로, 초진은 템플릿 칸, 고른 수를 버튼에", async () => {
+describe("명단에서 바로 보내기 — 설정 따로, 보내기 따로", () => {
+  const defaults = { where: "laptop" as const, note: true, dx: true, scope: false };
+  it("명단 줄마다 체크(처음엔 꺼짐), 고르기 전엔 보내기 버튼 없음, 보낸 상태 점", async () => {
     vi.doMock("@/app/actions/clinic", () => ({ sendToClinic: vi.fn(), cancelClinicJob: vi.fn(), sendBatchToLaptop: vi.fn(), saveClinicDefaults: vi.fn() }));
-    const { BatchPanel } = await import("./batch-panel");
-    const t = text(
-      renderToString(
-        <BatchPanel
-          date="2026-10-27"
-          templates={[{ id: "t1", title: "코막힘", audience: "adult" }]}
-          rows={[
-            { time: "09:00", name: "김○○", chartNo: "1", visit: "초진", diagnosis: "", sent: false },
-            { time: "09:10", name: "홍○○", chartNo: "2", visit: "재진", diagnosis: "deviated nasal septum", sent: true },
-          ]}
-        />,
-      ),
+    const { ClinicList } = await import("./clinic-list");
+    const html = renderToString(
+      <ClinicList
+        date="2026-10-27"
+        chart="1"
+        canSend
+        defaults={defaults}
+        templates={[{ id: "t1", title: "코막힘", audience: "adult" }]}
+        rows={[
+          { time: "09:00", name: "김○○", chartNo: "1", visit: "초진", diagnosis: "", job: null },
+          { time: "09:10", name: "홍○○", chartNo: "2", visit: "재진", diagnosis: "deviated nasal septum", job: "done" },
+        ]}
+      />,
     );
-    expect(t).toContain("템플릿 없음(모든 칸 “.”, CC 코막힘, 진단 확인 안 함)");
-    expect(t).toContain("① 할 일(모든 환자 공통)");
-    expect(t).toContain("③ 1명 보내기…"); // 한 번 더 [보내기 확인]을 눌러야 보냄
-    expect(t).not.toContain("보내기 확인");
-    expect(t).toContain("이 설정 저장");
-    expect(t).toContain("보냄");
+    const t = text(html);
+    expect(html.match(/type="checkbox"/g)?.length).toBe(2);
+    expect(html).not.toContain('checked=""');
+    expect(t).toContain("안 보낸 환자 모두");
+    expect(t).not.toContain("노트북으로 보내기");
+    expect(html).toContain('title="완료"');
   });
-  it("비인강경은 기본 끔(환자별 칸도 없음), 저장한 기본값으로 켜면 환자별 칸", async () => {
-    const { BatchPanel } = await import("./batch-panel");
-    const rows = [{ time: "09:00", name: "김○○", chartNo: "1", visit: "재진", diagnosis: "", sent: false }];
-    const off = renderToString(<BatchPanel date="2026-10-27" templates={[]} rows={rows} />);
-    expect(off.match(/type="checkbox"/g)?.length).toBe(5); // 기록지·진단·비인강경·연습 + 환자 1
-    const on = renderToString(<BatchPanel date="2026-10-27" templates={[]} rows={rows} defaults={{ where: "laptop", note: true, dx: true, scope: true }} />);
-    expect(on.match(/type="checkbox"/g)?.length).toBe(6);
+  it("지난 외래는 체크 없이 명단만", async () => {
+    const { ClinicList } = await import("./clinic-list");
+    const html = renderToString(<ClinicList date="2026-10-20" chart={undefined} canSend={false} defaults={defaults} templates={[]} rows={[{ time: "09:00", name: "김○○", chartNo: "1", visit: "재진", diagnosis: "", job: null }]} />);
+    expect(html).not.toContain('type="checkbox"');
+  });
+  it("보내기 설정은 지금 값을 한 줄로, 비인강경 끄면 기록지 저장(서명 전)", async () => {
+    const { SendSettings } = await import("./clinic-list");
+    const t = text(renderToString(<SendSettings defaults={defaults} />));
+    expect(t).toContain("기록지 · 진단 확인 · 기록지 저장(서명 전)");
+    expect(t).toContain("바꾸기");
   });
 });
-
 describe("postOpBxTodo(수술 후 첫 외래)", () => {
   const op = (date: string, done = true) => ({ date, name: "ESS", done });
   it("수술 뒤 외래 요약이 없으면 Bx. 확인", () => {

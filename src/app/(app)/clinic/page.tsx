@@ -9,14 +9,13 @@ import { patientRoadmaps } from "@/lib/pathway-store";
 import { summaryLine } from "@/lib/pathways";
 import { inferStage, parseRoadmap, parseSoap, type SurgeryFact } from "@/lib/clinic-view";
 import { clinicDefaults, jobWhere } from "@/lib/opd-jobs";
-import { ClinicDetail, VISIT_CLS } from "./clinic-detail";
-import { BatchPanel } from "./batch-panel";
+import { ClinicDetail } from "./clinic-detail";
+import { ClinicList, SendSettings } from "./clinic-list";
 import { LaptopNow, type LaptopNowView } from "./laptop-now";
 import { ListRefresh } from "./list-refresh";
 
 // 진료 화면 — 왼쪽 외래 명단, 오른쪽 고른 환자의 로드맵(도형·지금 단계 판정)·SOAP·오늘 오더(진료실 PC로 보내기).
 // EMR에 이미 있는 것(이전 기록 전문)은 두지 않고, EMR에 없는 것만 모은다(사용자 2026-10-25). 본인 데이터만
-const JOB_DOT: Record<string, string> = { pending: "bg-sky-500", running: "bg-sky-500", waiting: "bg-amber-500", done: "bg-emerald-500", failed: "bg-red-500" };
 const addDays = (d: string, n: number) => new Date(Date.parse(`${d}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 
 export default async function ClinicPage({ searchParams }: PageProps<"/clinic">) {
@@ -150,36 +149,16 @@ export default async function ClinicPage({ searchParams }: PageProps<"/clinic">)
             updatedAt={list && "updatedAt" in list && list.date === date ? list.updatedAt.toISOString() : null}
             requested={!!me?.outpatientRefreshAt && me.outpatientRefreshDate === date}
           />
-          {date >= today && rows.length > 0 && (
-            <BatchPanel
-              key={date}
-              date={date}
-              templates={templates}
-              defaults={defaults}
-              rows={rows.map((r) => {
-                const j = jobByChart.get(r.chartNo);
-                return { time: r.time, name: r.name, chartNo: r.chartNo, visit: r.visit, diagnosis: r.diagnosis, sent: !!j && j.status !== "cancelled" };
-              })}
-            />
-          )}
-          <ul className="max-h-72 divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200 bg-white lg:max-h-[calc(100vh-12rem)]">
-            {rows.map((r) => {
-              const jb = jobByChart.get(r.chartNo);
-              return (
-                <li key={r.chartNo}>
-                  <Link href={`/clinic?date=${date}&chart=${r.chartNo}`} className={`flex items-center gap-2 px-3 py-2 text-sm ${r.chartNo === chart ? "bg-emerald-50" : "hover:bg-slate-50"}`}>
-                    <span className="w-11 shrink-0 text-xs text-slate-500">{r.time}</span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-medium">{r.name}</span>
-                      <span className="block truncate text-xs text-slate-500">{r.diagnosis}</span>
-                    </span>
-                    <span className={`shrink-0 rounded px-1 text-[11px] ${VISIT_CLS[r.visit] ?? "bg-slate-100"}`}>{r.visit}</span>
-                    {jb && <span title={jb.status} className={`h-2 w-2 shrink-0 rounded-full ${JOB_DOT[jb.status] ?? "bg-slate-300"}`} />}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          {date >= today && rows.length > 0 && <SendSettings key={JSON.stringify(defaults)} defaults={defaults} />}
+          <ClinicList
+            key={date}
+            date={date}
+            chart={chart}
+            templates={templates}
+            defaults={defaults}
+            canSend={date >= today}
+            rows={rows.map((r) => ({ time: r.time, name: r.name, chartNo: r.chartNo, visit: r.visit, diagnosis: r.diagnosis, job: jobByChart.get(r.chartNo)?.status ?? null }))}
+          />
         </aside>
         <div className="min-w-0">{detail}</div>
       </div>
