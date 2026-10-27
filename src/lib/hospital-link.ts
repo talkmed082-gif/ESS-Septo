@@ -67,6 +67,7 @@ export const PC_JOBS = [
   { key: "TSA_RANGE", label: "TSA 기간 확인(요청 시)", maxAgeHours: null },
   { key: "CONSULT", label: "타과의뢰 가져오기(요청 시)", maxAgeHours: null },
   { key: "CONSULT_REPLY", label: "타과의뢰 회신 EMR 저장·서명(요청 시)", maxAgeHours: null },
+  { key: "NOTE_CLEANUP", label: "외래 후 서명 전 기록지 확인·삭제(요청 시)", maxAgeHours: null },
   { key: "CRED_CHECK", label: "설정 파일 점검", maxAgeHours: null },
 ] as const;
 export type PcJobKey = (typeof PC_JOBS)[number]["key"];

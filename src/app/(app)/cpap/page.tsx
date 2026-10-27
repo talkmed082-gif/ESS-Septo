@@ -8,9 +8,10 @@ import { CPAP_VENDORS, CpapSchema, cpapDue } from "@/lib/cpap";
 import { sendToSurgery } from "@/app/actions/clinic-surgery";
 import { CpapNoticeSms, CpapRxForm } from "./cpap-actions";
 import { UnsignedNotes } from "./unsigned-notes";
+import { isNoteDone, parseNoteState } from "@/lib/note-cleanup";
 
 // 외래 진료 관리 > 외래 후(사용자 2026-10-27) — 고른 날짜 외래가 끝난 뒤:
-//  ① 서명 전 기록지: 노트북이 저장한 기록지 — 서명함/EMR에서 지움 표시(지우기는 EMR에서 직접)
+//  ① 서명 전 기록지: 노트북이 저장한 기록지 — [EMR에서 확인] → 안 온 환자 후보 [삭제 승인] → 노트북이 EMR에서 지움(note-cleanup.ts), 직접 처리 표시도
 //  ② CPAP: 외래 진행 중 Plan을 CPAP으로 고른 환자 + 그날 온 CPAP F/U 환자 → [처방 안내 문자](보내면 다음 F/U를 그날 + 개월로), 새 CPAP 의뢰 문자는 접어 둠
 //  ③ 수술환자 정리: Plan 수술·수술 계획이 있는 환자
 // 본인 데이터만
@@ -66,8 +67,8 @@ export default async function AfterClinicPage({ searchParams }: { searchParams: 
       </div>
 
       <section className={box}>
-        <h2 className="font-semibold">서명 전 기록지 {unsigned.filter((u) => !u.state).length}건</h2>
-        <UnsignedNotes notes={unsigned} />
+        <h2 className="font-semibold">서명 전 기록지 {unsigned.filter((u) => !isNoteDone(parseNoteState(u.state))).length}건</h2>
+        <UnsignedNotes notes={unsigned} date={date} />
       </section>
 
       <section className={box}>

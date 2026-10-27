@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { verifySession } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { CpapSchema } from "@/lib/cpap";
+import { canRequestCheck, parseNoteState } from "@/lib/note-cleanup";
 
 // 외래 진행 중 Plan(사용자 2026-10-27) — 수술·CPAP을 고르면 외래 후에 모인다. PatientCare.planType
 const PLAN = z.enum(["surgery", "cpap", "medication", "observation", "return"]);
@@ -23,11 +24,34 @@ export async function setCarePlan(chartNo: string, plan: string | null): Promise
   revalidatePath("/cpap");
 }
 
-// 외래 후 서명 전 기록지 목록 — 직접 서명했거나 EMR에서 지운 뒤 표시(사이트는 EMR 기록지를 지우지 않는다: 되돌릴 수 없는 삭제라 사용자가 직접)
+// 외래 후 서명 전 기록지 목록 — 직접 서명했거나 EMR에서 직접 지운 뒤 표시
 export async function setNoteState(jobId: string, state: "signed" | "deleted" | null): Promise<void> {
   const { userId } = await verifySession();
   if (typeof jobId !== "string" || jobId.length > 40 || !(state === null || state === "signed" || state === "deleted")) return;
   await prisma.opdJob.updateMany({ where: { id: jobId, createdById: userId }, data: { noteState: state } });
+  revalidatePath("/cpap");
+}
+
+// [EMR에서 확인] — 그날 노트북이 저장한 서명 전 기록지를 노트북이 다시 읽어 서명됨·안 온 환자 후보·직접 확인으로 나눈다(note-cleanup.ts)
+export async function requestNoteCheck(date: string): Promise<void> {
+  const { userId } = await verifySession();
+  if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+  const jobs = await prisma.opdJob.findMany({ where: { createdById: userId, visitDate: date, status: "done", result: { contains: "기록지 저장됨" } }, select: { id: true, noteState: true } });
+  const ids = jobs.filter((j) => canRequestCheck(j.noteState)).map((j) => j.id);
+  if (ids.length) await prisma.opdJob.updateMany({ where: { id: { in: ids }, createdById: userId }, data: { noteState: "check" } });
+  revalidatePath("/cpap");
+}
+
+// [삭제 승인] — 고른 후보(noShow)만 삭제 승인으로. 노트북이 지우기 직전에 세 조건을 다시 확인한다(사유 099 기타 "미내원(내원 전 미리 작성)")
+export async function approveNoteDeletes(jobIds: string[]): Promise<void> {
+  const { userId } = await verifySession();
+  if (!Array.isArray(jobIds) || jobIds.length > 100 || jobIds.some((id) => typeof id !== "string" || id.length > 40)) return;
+  const jobs = await prisma.opdJob.findMany({ where: { id: { in: jobIds }, createdById: userId }, select: { id: true, noteState: true } });
+  for (const j of jobs) {
+    const s = parseNoteState(j.noteState);
+    if (s.kind !== "noShow") continue;
+    await prisma.opdJob.updateMany({ where: { id: j.id, createdById: userId, noteState: j.noteState }, data: { noteState: `deleteRequested:${s.noteId}` } });
+  }
   revalidatePath("/cpap");
 }
 
