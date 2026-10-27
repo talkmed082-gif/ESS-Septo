@@ -11,6 +11,7 @@ import { inferStage, parseRoadmap, parseSoap, type SurgeryFact } from "@/lib/cli
 import { clinicDefaults, jobWhere } from "@/lib/opd-jobs";
 import { ClinicDetail, VISIT_CLS } from "./clinic-detail";
 import { BatchPanel } from "./batch-panel";
+import { LaptopNow, type LaptopNowView } from "./laptop-now";
 
 // 진료 화면 — 왼쪽 외래 명단, 오른쪽 고른 환자의 로드맵(도형·지금 단계 판정)·SOAP·오늘 오더(진료실 PC로 보내기).
 // EMR에 이미 있는 것(이전 기록 전문)은 두지 않고, EMR에 없는 것만 모은다(사용자 2026-10-25). 본인 데이터만
@@ -41,6 +42,29 @@ export default async function ClinicPage({ searchParams }: PageProps<"/clinic">)
     prisma.user.findUnique({ where: { id: userId }, select: { clinicSendDefaults: true } }),
   ]);
   const defaults = clinicDefaults(me?.clinicSendDefaults);
+  // [노트북 지금] — 처리 중인 노트북 일감(어느 날짜든 오늘 이후)과 고른 날짜의 노트북 일감 건수
+  const runningJob = await prisma.opdJob.findFirst({
+    where: { createdById: userId, status: "running", visitDate: { gte: today } },
+    orderBy: { updatedAt: "desc" },
+    select: { chartNo: true, name: true, visit: true, visitDate: true, result: true, updatedAt: true, tasks: true },
+  });
+  const laptopJobs = jobs.filter((j) => jobWhere(j.tasks) === "laptop");
+  const countOf = (s: string) => laptopJobs.filter((j) => j.status === s).length;
+  const laptopNow: LaptopNowView = {
+    running:
+      runningJob && jobWhere(runningJob.tasks) === "laptop"
+        ? {
+            time: runningJob.visitDate === date ? (rows.find((r) => r.chartNo === runningJob.chartNo)?.time ?? "") : "",
+            name: runningJob.name,
+            visit: runningJob.visit,
+            visitDate: runningJob.visitDate,
+            step: runningJob.result ?? "",
+            updatedAt: runningJob.updatedAt.toISOString(),
+          }
+        : null,
+    counts: { pending: countOf("pending"), waiting: countOf("waiting"), done: countOf("done"), failed: countOf("failed") },
+    date,
+  };
   const jobByChart = new Map(jobs.map((j) => [j.chartNo, j]));
 
   let detail: React.ReactNode = <p className="text-sm text-slate-400">이 날짜에 명단이 없습니다.</p>;
@@ -100,6 +124,7 @@ export default async function ClinicPage({ searchParams }: PageProps<"/clinic">)
       {/* 폰(한 칸)에서도 칸 폭을 화면에 묶는다 — 기본 grid 칸은 내용 폭(413px)만큼 넓어져 오른쪽이 잘렸다 */}
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="min-w-0 space-y-2">
+          <LaptopNow view={laptopNow} />
           <div className="flex items-center gap-1">
             <Link href={`/clinic?date=${addDays(date, -1)}`} className="rounded border border-slate-300 px-2 py-1 text-sm" aria-label="전날">
               ‹

@@ -57,9 +57,10 @@ export const clinicDefaults = (v: unknown): ClinicDefaults => {
   return r.success ? r.data : ClinicDefaultsSchema.parse({});
 };
 
+// running = 처리 중 단계 보고(result에 "환자 선택 중" 등, 사용자 2026-10-27 "노트북이 뭘 하고 있는지") — 이미 처리 중인 일감만 바뀐다
 export const OpdJobResultSchema = z.object({
   id: z.string().min(1).max(40),
-  status: z.enum(["done", "failed", "waiting"]),
+  status: z.enum(["done", "failed", "waiting", "running"]),
   result: z.string().max(2000).default(""),
 });
 

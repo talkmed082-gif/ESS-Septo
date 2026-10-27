@@ -10,6 +10,8 @@ export async function POST(request: Request) {
   if (!user) return new NextResponse("Not found", { status: 404 });
   const parsed = OpdJobResultSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return pcJson({ error: "형식이 올바르지 않습니다." }, { status: 400 });
-  const r = await prisma.opdJob.updateMany({ where: { id: parsed.data.id, createdById: user.id }, data: { status: parsed.data.status, result: parsed.data.result } });
+  // 단계 보고(running)는 처리 중인 것에만 — 이미 끝났거나 취소된 일감을 되살리지 않게
+  const where = { id: parsed.data.id, createdById: user.id, ...(parsed.data.status === "running" ? { status: "running" } : {}) };
+  const r = await prisma.opdJob.updateMany({ where, data: { status: parsed.data.status, result: parsed.data.result } });
   return pcJson({ ok: r.count > 0 });
 }

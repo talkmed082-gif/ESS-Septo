@@ -7,7 +7,9 @@ describe("노트북 외래 일감", () => {
     expect(p.items[0].tasks).toEqual({ note: true, dx: true, scope: false, soap: false, dot: false, saveOnly: false, where: "laptop" });
     expect(p.practice).toBe(false);
     expect(OpdJobSubmitSchema.safeParse({ visitDate: "10/27", items: [{ chartNo: "1", tasks: {} }] }).success).toBe(false);
-    expect(OpdJobResultSchema.safeParse({ id: "x", status: "running" }).success).toBe(false);
+    // running = 단계 보고(2026-10-27, API가 처리 중인 일감에만 적용). 작업자가 일감을 대기로 되돌리지는 못함
+    expect(OpdJobResultSchema.safeParse({ id: "x", status: "running", result: "환자 선택" }).success).toBe(true);
+    expect(OpdJobResultSchema.safeParse({ id: "x", status: "pending" }).success).toBe(false);
   });
 
   it("가져갈 일감: 대기는 바로, 나중에 다시는 3분 뒤(그날 계속), 멈춘 처리 중은 10분 뒤", () => {

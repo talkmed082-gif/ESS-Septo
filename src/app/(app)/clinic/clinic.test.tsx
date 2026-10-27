@@ -118,3 +118,26 @@ describe("postOpBxTodo(수술 후 첫 외래)", () => {
     expect(postOpBxTodo([op("2026-05-01")], [], "2026-10-27")).toBeNull();
   });
 });
+
+describe("노트북 지금", () => {
+  it("처리 중이면 환자·단계, 아니면 쉬는 중, 날짜 건수와 멈춤", async () => {
+    const { LaptopNow } = await import("./laptop-now");
+    const busy = text(
+      renderToString(
+        <LaptopNow
+          view={{
+            running: { time: "13:30", name: "홍*동", visit: "재진", visitDate: "2026-10-27", step: "환자 선택", updatedAt: new Date().toISOString() },
+            counts: { pending: 3, waiting: 1, done: 2, failed: 1 },
+            date: "2026-10-27",
+          }}
+        />,
+      ),
+    );
+    expect(busy).toContain("13:30 홍*동 재진");
+    expect(busy).toContain("환자 선택");
+    expect(busy).toContain("대기 3 · 나중에 다시 1 · 완료 2");
+    expect(busy).toContain("멈춤 1");
+    const idle = text(renderToString(<LaptopNow view={{ running: null, counts: { pending: 0, waiting: 0, done: 0, failed: 0 }, date: "2026-10-27" }} />));
+    expect(idle).toContain("쉬는 중");
+  });
+});
