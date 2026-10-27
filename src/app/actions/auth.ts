@@ -178,6 +178,14 @@ export async function logoutOtherDevices(): Promise<AccountFormState> {
 }
 
 export async function logout() {
+  // 사이트에서 로그아웃하면 진료실 프로그램(진료 어시스트) 연결도 끊는다(사용자 2026-10-27) — 프로그램은 다음 묻기 때 "연결이 끊겼습니다".
+  // 노트북 작업자는 병원 PC 토큰(importToken)을 써서 영향 없음
+  try {
+    const { userId } = await verifySession();
+    await prisma.deviceSession.deleteMany({ where: { createdById: userId } });
+  } catch {
+    /* 이미 로그아웃된 상태 — 그대로 로그인 화면으로 */
+  }
   await deleteSession();
   redirect("/login");
 }

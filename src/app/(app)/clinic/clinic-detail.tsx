@@ -3,6 +3,7 @@ import type { OutpatientRow } from "@/lib/hospital-link";
 import type { PatientPathwayView, VisitSummaryView } from "@/lib/pathway-store";
 import type { RoadmapParts, SoapParts, StageCall } from "@/lib/clinic-view";
 import { toggleTodo } from "@/app/actions/roadmap";
+import { sendToSurgery } from "@/app/actions/clinic-surgery";
 import { RoadmapBox } from "../outpatient/roadmap-box";
 import { PathwayFlow } from "./pathway-flow";
 import { OrderPanel, type ClinicJobView } from "./order-panel";
@@ -51,6 +52,14 @@ export function ClinicDetail(p: {
             <Link href={`/plans/${p.nextPlan.id}`} className="text-sm text-emerald-700 underline">
               수술 {p.nextPlan.date}
             </Link>
+          )}
+          {/* 수술하기로 했으면 바로 수술환자 관리로(사용자 2026-10-27) — 없으면 만들고 Plan 수술 표시 */}
+          {!p.nextPlan && (
+            <form action={sendToSurgery.bind(null, p.date, row.chartNo)}>
+              <button type="submit" className="rounded border border-emerald-600 px-2 py-0.5 text-sm text-emerald-700 hover:bg-emerald-50">
+                수술환자 관리로
+              </button>
+            </form>
           )}
         </div>
         {p.summary && <p className="text-sm text-slate-700">{p.summary}</p>}
