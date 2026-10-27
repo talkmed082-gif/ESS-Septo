@@ -6,7 +6,7 @@ import { safeDateStr } from "@/lib/date-format";
 import { clinicTabs, SectionTabs } from "@/components/section-tabs";
 import { CPAP_VENDORS, CpapSchema, cpapDue, cpapResultText, isCpapFollowUp, smsHref } from "@/lib/cpap";
 import { sendToSurgery } from "@/app/actions/clinic-surgery";
-import { CpapRxForm, MailCheckButton } from "./cpap-actions";
+import { CpapNoticeSms, CpapRxForm, MailCheckButton } from "./cpap-actions";
 
 // 외래 진료 관리 > 외래 후(사용자 2026-10-27) — 고른 날짜 외래가 끝난 뒤 할 일:
 //  ① OSA·CPAP 안내: CPAP 처방 의뢰 문자·시트용 복사, 그날 CPAP F/U 환자(회사 결과·결과 요청 문자)
@@ -73,9 +73,10 @@ export default async function AfterClinicPage({ searchParams }: { searchParams: 
                     <tr key={row.chartNo} className="border-b border-slate-100 align-top">
                       <td className="py-2 pr-3 whitespace-nowrap"><Link href={`/clinic?date=${date}&chart=${row.chartNo}`} className="text-emerald-700 underline">{row.time}</Link></td>
                       <td className="py-2 pr-3 whitespace-nowrap">{name} <span className="text-xs text-slate-500">{row.chartNo}</span></td>
-                      <td className="py-2 pr-3 whitespace-nowrap">
-                        <span className="font-medium">{cpap.vendor ?? "?"}</span>{" "}
-                        {v?.tel ? <a href={`tel:${v.tel}`} className="text-emerald-700 underline">{v.tel}</a> : <span className="text-xs text-slate-400">연락처 모름</span>}
+                      <td className="py-2 pr-3">
+                        {/* 번호를 누르면 전화가 걸려서(사용자 2026-10-27) 글자로만 — 연락은 처방 안내 문자로 */}
+                        <span className="font-medium">{cpap.vendor ?? "?"}</span> <span className="text-xs text-slate-500">{v?.tel ?? "연락처 모름"}</span>
+                        {v?.tel && <div className="mt-1"><CpapNoticeSms name={name} tel={v.tel} setting={cpap.setting} /></div>}
                       </td>
                       <td className="py-2 pr-3">{cpap.rxDate && md(cpap.rxDate)} {cpap.months}개월 → {md(cpapDue(cpap) ?? "")}</td>
                       <td className="py-2 pr-3 text-xs">{cpap.setting ?? ""}</td>

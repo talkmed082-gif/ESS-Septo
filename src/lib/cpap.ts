@@ -18,6 +18,12 @@ export function cpapResultText(p: { name: string; visitDate: string; today: stri
   const when = p.visitDate === p.today ? "오늘" : `${Number(p.visitDate.slice(5, 7))}/${Number(p.visitDate.slice(8, 10))}`;
   return `안녕하세요. 양산부산대병원 비과전임의 정일구입니다. ${when} 외래 예정인 ${p.name} 환자분 양압기 결과 보내주실 수 있으실까요? 제 메일 주소는 ${DOCTOR_EMAIL} 입니다.`;
 }
+// 외래 후 처방 안내(사용자 2026-10-27 문구): "김차중님 3개월 추가 처방했습니다." / 압력을 바꾸면 "조외용님 압력 6-10으로 변경해서 3개월 추가 처방했습니다."
+export function cpapNoticeText(p: { name: string; months: number; pressure: string | null }): string {
+  return `${p.name}님 ${p.pressure ? `압력 ${p.pressure}으로 변경해서 ` : ""}${p.months}개월 추가 처방했습니다.`;
+}
+// "Pr 4-12" → "4-12"
+export const pressureOf = (setting: string | null) => setting?.match(/(\d+)\s*-\s*(\d+)/)?.slice(1, 3).join("-") ?? "";
 // iOS·안드로이드 모두 열리는 문자 주소
 export const smsHref = (tel: string, body: string) => `sms:${tel.replace(/-/g, "")}?&body=${encodeURIComponent(body)}`;
 

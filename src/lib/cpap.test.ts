@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CpapUploadSchema, cpapDue, cpapMailQuery, cpapObjectiveText, cpapResultText, cpapRxText, isCpapFollowUp, smsHref } from "./cpap";
+import { CpapUploadSchema, cpapDue, cpapMailQuery, cpapNoticeText, cpapObjectiveText, cpapResultText, cpapRxText, pressureOf, isCpapFollowUp, smsHref } from "./cpap";
 
 describe("CPAP F/U", () => {
   it("처방일 + 개월 = 기간 끝", () => {
@@ -49,5 +49,13 @@ describe("CPAP 결과 → Objective 글", () => {
   it("PSG AHI 모르면 그대로, 결과 없으면 null", () => {
     expect(cpapObjectiveText({ report, psgAhi: null })).toContain("\nAHI 4.8\n");
     expect(cpapObjectiveText({ report: null, psgAhi: "45.0" })).toBeNull();
+  });
+});
+describe("외래 후 처방 안내 문자", () => {
+  it("사용자 문구 — 압력을 바꾸면 '압력 ○으로 변경해서'", () => {
+    expect(cpapNoticeText({ name: "가나다", months: 3, pressure: null })).toBe("가나다님 3개월 추가 처방했습니다.");
+    expect(cpapNoticeText({ name: "라마바", months: 3, pressure: "6-10" })).toBe("라마바님 압력 6-10으로 변경해서 3개월 추가 처방했습니다.");
+    expect(pressureOf("Pr 4-12")).toBe("4-12");
+    expect(pressureOf(null)).toBe("");
   });
 });
