@@ -474,9 +474,27 @@ function incisionSentence(values: FieldValues): string {
 // 측 FESS 블록에서 쓴다. 단독 수술은 각자 블록에서 둘 다 쓴다.
 const ALL_TURB_TYPES: TurbType[] = ["inferior", "middle"];
 
+// 비중격 교정 정도(o_septo_code, EMR 수술 오더 코드와 같은 값) — 골이 기본 기록지,
+// 연골은 내시경적 비중격교정술, 재건은 ANS·연골 분리 후 재고정 문장을 쓴다(사용자 2026-10-27)
+type SeptoGrade = "bone" | "cartilage" | "recon";
+function septoGrade(values: FieldValues): SeptoGrade {
+  const pick = str(values, "o_septo_code", "골 (O1006)");
+  return pick.startsWith("연골") ? "cartilage" : pick.startsWith("재건") ? "recon" : "bone";
+}
+
+const SEPTO_RECON_SENTENCE =
+  "양측 flap을 거상한 후 ANS(Anterior nasal spine)에서 septal cartilage를 분리하고, 교정 후 PDS 5-0로 ANS에 다시 고정함";
+
+function septoWordFor(values: FieldValues, septoturbino: boolean): string {
+  const word = septoturbino ? "Septoturbinoplasty" : "Septoplasty";
+  return septoGrade(values) === "cartilage" ? `Endoscopic ${word}` : word;
+}
+
 function septoCore(values: FieldValues, turbs: TurbType[] = ALL_TURB_TYPES): string[] {
+  const grade = septoGrade(values);
   const caudal = bool(values, "s_caudal");
-  const ansRelease = bool(values, "s_ans_release");
+  // 재건이면 ANS 분리 문장은 재건 문장 하나로 합친다
+  const ansRelease = grade !== "recon" && bool(values, "s_ans_release");
   const spur = bool(values, "s_spur");
   const turbMiddleSide = turbs.includes("middle") && turbTypeSideLabel("middle", values);
   const turbInferiorSide = turbs.includes("inferior") && turbTypeSideLabel("inferior", values);
@@ -489,8 +507,11 @@ function septoCore(values: FieldValues, turbs: TurbType[] = ALL_TURB_TYPES): str
     incisionSentence(values),
     caudal && "Caudal septum의 편위 부위에 대해 함께 교정을 시행함",
     ansRelease && "ANS(Anterior nasal spine) 부위에서 septum을 분리한 후 절제하고 PDS 5-0로 고정함",
+    grade === "recon" && SEPTO_RECON_SENTENCE,
     spur && "골성 비중격(perpendicular plate of ethmoid, vomer)에서 bony spur를 확인하고 제거함",
-    "확인된 편위 부위의 변형된 septal cartilage 및 골성 비중격 일부를 절제 및 교정하여 straightening 후 정중앙에 위치시킴",
+    grade === "cartilage"
+      ? "내시경 하에 확인된 편위 부위의 변형된 septal cartilage를 절제 및 교정하여 straightening 후 정중앙에 위치시킴"
+      : "확인된 편위 부위의 변형된 septal cartilage 및 골성 비중격 일부를 절제 및 교정하여 straightening 후 정중앙에 위치시킴",
     turbMiddleSide && `${turbMiddleSide} ${turbinoplastyTechniqueSentence("middle")}`,
     turbInferiorSide && `${turbInferiorSide} ${turbinoplastyTechniqueSentence("inferior")}`,
     quilting && `Flap을 원위치로 정복한 후 ${quiltingSuture}를 사용하여 quilting suture 시행`,
@@ -829,10 +850,14 @@ function septoConciseItems(values: FieldValues, includePacking: boolean): string
   const incision = str(values, "s_incision", "Hemitransfixion incision");
   const incisionSide = str(values, "s_incision_side", "");
   const quiltingSuture = str(values, "s_quilting_suture", "4-0 Vicryl");
+  const grade = septoGrade(values);
   const items: (string | false)[] = [
     incisionSide ? `${incisionSide} ${incision}` : incision,
+    grade === "cartilage" && "내시경적 비중격교정술",
     bool(values, "s_caudal") && "Caudal septum 편위 교정",
-    bool(values, "s_ans_release") && "ANS 부위 비중격 분리·절제 후 PDS 5-0 고정",
+    grade === "recon"
+      ? "양측 flap 거상, ANS·연골 분리 후 PDS 5-0 재고정"
+      : bool(values, "s_ans_release") && "ANS 부위 비중격 분리·절제 후 PDS 5-0 고정",
     bool(values, "s_spur") && "Bony spur 제거",
     bool(values, "s_quilting") && `Quilting suture (${quiltingSuture})`,
   ];
@@ -990,7 +1015,7 @@ function buildFessProcedureName(
 function septoplastyProcedureName(values: FieldValues, style: NameStyle): string {
   const inferior = turbSideFlags("inferior", values);
   const bothInferior = inferior.right && inferior.left;
-  const base = bothInferior ? "Septoturbinoplasty" : "Septoplasty";
+  const base = septoWordFor(values, bothInferior);
   const revisionPrefix = revisionPrefixText(values, style);
 
   const parts: string[] = [];
@@ -1020,7 +1045,7 @@ export function buildProcedureName(
   // 양측이면 "Septoturbinoplasty"라는 한 단어에 이미 담기므로 접미사에서 뺀다.
   const inferior = turbSideFlags("inferior", values);
   const septoturbino = surgeryCode === "COMBO" && inferior.right && inferior.left;
-  const septoWord = septoturbino ? "Septoturbinoplasty" : "Septoplasty";
+  const septoWord = septoWordFor(values, septoturbino);
   const turbSuffix = turbinoplastyGlobalSuffix(
     septoturbino ? { ...values, turb_inferior_right: false, turb_inferior_left: false } : values,
     style,
@@ -1156,7 +1181,7 @@ function packingCellValue(values: FieldValues): string {
 
 // 시행 순서의 "비중격"을 실제 술식 이름으로 보여준다 — 저장 값(선택지)은 그대로 두고 표시만 바꾼다
 export function comboOrderDisplay(order: string, values: FieldValues): string {
-  const septoWord = bool(values, "turb_inferior_right") && bool(values, "turb_inferior_left") ? "Septoturbinoplasty" : "Septoplasty";
+  const septoWord = septoWordFor(values, bool(values, "turb_inferior_right") && bool(values, "turb_inferior_left"));
   return order.replace("비중격", septoWord);
 }
 

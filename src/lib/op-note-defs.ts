@@ -300,10 +300,11 @@ export const septoFields: SurgeryFieldDef[] = [
   // 구분해서 표시해야 해서, ESS 쪽 revision(f_revision_ess_right/left)과
   // 별개의 플래그로 둔다.
   { key: "f_revision_septo", label: "Septoturbinoplasty Revision case (재수술)", type: "checkbox" },
-  // EMR 수술 오더(진료 어시스트 [수술 오더 넣기])에 쓸 비중격교정술 코드 — 기본 골(사용자 2026-10-25)
+  // 비중격 교정 정도 — EMR 수술 오더 코드(진료 어시스트 [수술 오더 넣기])이자 기록지 문장을 정함
+  // (골 = 기본 기록지, 연골 = 내시경적, 재건 = ANS·연골 분리 후 PDS 5-0 재고정). 기본 골(사용자 2026-10-25)
   {
     key: "o_septo_code",
-    label: "비중격교정술 수술 오더 (EMR)",
+    label: "비중격 교정 정도 (수술 오더 코드)",
     type: "select",
     options: ["골 (O1006)", "연골 (O1005)", "재건 (O1007)"],
     default: "골 (O1006)",

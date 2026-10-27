@@ -11,6 +11,35 @@ import {
 import type { FieldValues } from "./field-types";
 import { comboOrderForDsn } from "./op-note-defs";
 
+describe("비중격 교정 정도(o_septo_code)에 따른 기록지", () => {
+  const both = { turb_inferior_right: true, turb_inferior_left: true };
+
+  it("골(기본)은 기존 기록지 그대로", () => {
+    const { procedureDetail } = generateOpNote("SEPTOPLASTY", { ...both }, "record");
+    expect(procedureDetail).toContain("septal cartilage 및 골성 비중격 일부를 절제");
+    expect(procedureDetail).not.toContain("내시경 하에");
+    expect(buildProcedureName("SEPTOPLASTY", { ...both })).toBe("Septoturbinoplasty");
+  });
+
+  it("연골은 내시경적 비중격교정술", () => {
+    const v = { ...both, o_septo_code: "연골 (O1005)" };
+    const { procedureDetail } = generateOpNote("SEPTOPLASTY", v, "record");
+    expect(procedureDetail).toContain("내시경 하에 확인된 편위 부위의 변형된 septal cartilage를 절제");
+    expect(buildProcedureName("SEPTOPLASTY", v)).toBe("Endoscopic Septoturbinoplasty");
+    expect(buildProcedureName("COMBO", { ...v, f_right_mma: true })).toContain("Endoscopic Septoturbinoplasty");
+  });
+
+  it("재건은 ANS·연골 분리 후 PDS 5-0 재고정 문장 하나만(ANS 체크와 합침)", () => {
+    const v = { ...both, o_septo_code: "재건 (O1007)", s_ans_release: true };
+    const { procedureDetail } = generateOpNote("SEPTOPLASTY", v, "record");
+    expect(procedureDetail).toContain("양측 flap을 거상한 후 ANS(Anterior nasal spine)에서 septal cartilage를 분리하고, 교정 후 PDS 5-0로 ANS에 다시 고정함");
+    expect(procedureDetail).not.toContain("septum을 분리한 후 절제하고");
+    expect(procedureDetail.match(/PDS 5-0/g)).toHaveLength(1);
+    const combo = generateOpNote("COMBO", { ...v, f_right_mma: true }, "record").procedureDetail;
+    expect(combo).toContain("PDS 5-0로 ANS에 다시 고정함");
+  });
+});
+
 const ALL_STEPS = ["mma", "ant_eth", "post_eth", "sphenoid", "frontal"] as const;
 
 // 한쪽(또는 양쪽)에 FESS 시행 단계를 체크한 values를 만든다
