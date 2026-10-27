@@ -90,7 +90,7 @@ describe("하루치 보내기", () => {
         />,
       ),
     );
-    expect(t).toContain("템플릿 없음(통증 “없음”만, 진단 확인 안 함)");
+    expect(t).toContain("템플릿 없음(모든 칸 “.”, CC 코막힘, 진단 확인 안 함)");
     expect(t).toContain("① 할 일(모든 환자 공통)");
     expect(t).toContain("③ 1명 보내기…"); // 한 번 더 [보내기 확인]을 눌러야 보냄
     expect(t).not.toContain("보내기 확인");

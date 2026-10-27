@@ -101,7 +101,7 @@ export function OrderPanel({
           </option>
         ))}
       </select>
-      {needTemplate && <p className="text-xs text-amber-700">초진·재초는 템플릿을 고르세요(안 고르면 통증 “없음”만 체크).</p>}
+      {needTemplate && <p className="text-xs text-amber-700">초진·재초는 템플릿을 고르세요(안 고르면 모든 칸 “.”, CC 코막힘으로 저장).</p>}
       <label className="flex items-center gap-2">
         <input type="checkbox" checked={dx} onChange={(e) => setDx(e.target.checked)} />
         진단 확인(경증 주진단이면 멈춤, 없으면 템플릿 코드·J34.2)

@@ -120,7 +120,7 @@ export function BatchPanel({ date, rows, templates, defaults = clinicDefaults(nu
                   </label>
                   {p.on && first && note && (
                     <select value={p.templateId} onChange={(e) => set(r.chartNo, { templateId: e.target.value })} className="ml-6 w-[calc(100%-1.5rem)] rounded border border-slate-300 bg-white px-1 py-1 text-xs" aria-label={`${r.name} 템플릿`}>
-                      <option value="">템플릿 없음(통증 “없음”만, 진단 확인 안 함)</option>
+                      <option value="">템플릿 없음(모든 칸 “.”, CC 코막힘, 진단 확인 안 함)</option>
                       {templates.map((t) => (
                         <option key={t.id} value={t.id}>
                           {t.audience === "child" ? "[소아] " : ""}
