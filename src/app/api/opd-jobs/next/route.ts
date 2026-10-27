@@ -40,7 +40,15 @@ export async function POST(request: Request) {
   }
   // ?date= : 진료 어시스트 [이 PC에서 바로 하기] — 고른 날짜 일감(다른 날도 EMR 기록지가 열림, 사용자 2026-10-26). 없으면 오늘
   const qd = sp.get("date") ?? "";
-  const day = where === "laptop" && /^\d{4}-\d{2}-\d{2}$/.test(qd) ? qd : kstDate(now);
+  let day = where === "laptop" && /^\d{4}-\d{2}-\d{2}$/.test(qd) ? qd : kstDate(now);
+  // 노트북: 오늘 처리할 일감이 없으면 앞날(3일 안) 일감도 — 외래 전날 기록지를 미리 저장(사용자 2026-10-27 "외래 전날에 저장해 두려고")
+  if (where === "laptop" && !qd) {
+    const todayLeft = await prisma.opdJob.count({ where: { createdById: user.id, visitDate: day, status: { in: ["pending", "waiting", "running"] } } });
+    if (!todayLeft) {
+      const ahead = await prisma.opdJob.findFirst({ where: { createdById: user.id, visitDate: { gt: day, lte: kstDate(now, 3) }, status: "pending" }, orderBy: { visitDate: "asc" }, select: { visitDate: true } });
+      if (ahead) day = ahead.visitDate;
+    }
+  }
   const jobs = (
     await prisma.opdJob.findMany({
       where: { createdById: user.id, visitDate: day, status: { in: ["pending", "waiting", "running"] } },

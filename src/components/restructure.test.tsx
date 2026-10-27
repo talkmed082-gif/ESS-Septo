@@ -33,7 +33,7 @@ describe("메인 교수님 2주 표", () => {
 
 describe("메뉴·탭", () => {
   it("외래 진료 관리 탭은 고른 날짜를 들고 다닌다", () => {
-    expect(clinicTabs("2026-10-28").map((t) => `${t.label}:${t.href}`)).toEqual(["외래 전 준비:/outpatient?date=2026-10-28", "외래 진행 중:/clinic?date=2026-10-28", "외래 후:/cpap?date=2026-10-28"]);
+    expect(clinicTabs("2026-10-28").map((t) => `${t.label}:${t.href}`)).toEqual(["외래 준비:/outpatient?date=2026-10-28", "외래 진행 중:/clinic?date=2026-10-28", "외래 후:/cpap?date=2026-10-28"]);
     expect(SETTINGS_TABS.map((t) => t.label)).toEqual(["일반", "외래", "수술", "병원 연동", "엑셀 가져오기"]);
   });
 });

@@ -51,6 +51,8 @@ export const CpapSchema = z.object({
   psgAhi: z.string().max(10).nullable().default(null),
   // 회사가 보낸 결과(데이터 PDF → "@ CPAP data" 글, 보고서 hwp → 처방만료일) — 이 PC가 J:\내 드라이브\CPAP에서 읽어 올림(2026-10-27)
   report: z.object({ text: z.string().max(1500), expiry: z.string().max(20).nullable(), kind: z.string().max(40).nullable(), at: z.string() }).nullable().default(null),
+  // 외래 후 처방 안내 문자를 보낸 기록(사용자 2026-10-27) — 보냈는지 다음 외래에서 보이게
+  notice: z.object({ at: z.string(), date: z.string(), text: z.string().max(300) }).nullable().default(null),
 });
 
 // 노트북이 Objective에 넣을 글 — PSG AHI를 알면 "AHI 4.8" 줄을 "AHI 45.0 (PSG) -> 4.8"로

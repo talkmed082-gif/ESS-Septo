@@ -6,7 +6,7 @@ import Link from "next/link";
 export function clinicTabs(date?: string) {
   const q = date ? `?date=${date}` : "";
   return [
-    { href: `/outpatient${q}`, label: "외래 전 준비" },
+    { href: `/outpatient${q}`, label: "외래 준비" },
     { href: `/clinic${q}`, label: "외래 진행 중" },
     { href: `/cpap${q}`, label: "외래 후" },
   ];

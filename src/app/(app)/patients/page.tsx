@@ -5,7 +5,6 @@ import { parseFieldValues } from "@/lib/field-types";
 import { procedureNameFor, type NameStyle, type SideNotation } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
 import { buttonStyles } from "@/lib/ui";
-import { PatientsListTitle } from "@/components/patients-list-title";
 import { PatientListTable } from "./patient-list-table";
 import type { PatientRow } from "./patient-row";
 
@@ -106,27 +105,24 @@ export default async function PatientsPage({
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <PatientsListTitle />
-        <div className="flex items-center gap-3">
-          <Link href="/patients/new" className={buttonStyles.primary}>
-            + 새 환자 등록
-          </Link>
-        </div>
+      {/* 제목 줄 없이 검색 + 새 환자 등록을 맨 위 한 줄로(사용자 2026-10-27 "한 줄 더 있는 게 비효율적") */}
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <form className="flex min-w-0 max-w-sm flex-1 gap-2">
+          <input
+            type="search"
+            name="q"
+            defaultValue={query}
+            placeholder="이름 또는 차트번호로 검색"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+          />
+          <button type="submit" className={buttonStyles.secondarySmall}>
+            검색
+          </button>
+        </form>
+        <Link href="/patients/new" className={buttonStyles.primary}>
+          + 새 환자 등록
+        </Link>
       </div>
-
-      <form className="mb-3 flex max-w-sm gap-2">
-        <input
-          type="search"
-          name="q"
-          defaultValue={query}
-          placeholder="이름 또는 차트번호로 검색"
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-        />
-        <button type="submit" className={buttonStyles.secondarySmall}>
-          검색
-        </button>
-      </form>
       {query && (
         <p className="mb-4 text-sm text-slate-500">
           &ldquo;{query}&rdquo; 검색 결과 {patients.length}건

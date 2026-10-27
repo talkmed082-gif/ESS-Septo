@@ -10,7 +10,7 @@ import { summaryLine } from "@/lib/pathways";
 import { inferStage, parseRoadmap, parseSoap, type SurgeryFact } from "@/lib/clinic-view";
 import { clinicDefaults, jobWhere } from "@/lib/opd-jobs";
 import { ClinicDetail } from "./clinic-detail";
-import { ClinicList, SendSettings } from "./clinic-list";
+import { ClinicList } from "./clinic-list";
 import { LaptopNow, type LaptopNowView } from "./laptop-now";
 import { ListRefresh } from "./list-refresh";
 
@@ -100,7 +100,7 @@ export default async function ClinicPage({ searchParams }: PageProps<"/clinic">)
         roadmap={rp}
         roadmapVersion={rm ? { id: rm.id, done: rm.done } : null}
         care={care}
-        patientId={plans[0]?.patientId ?? null}
+        patientId={plans[0]?.patientId ?? (await prisma.patient.findFirst({ where: { createdById: userId, chartNo: chart }, select: { id: true } }))?.id ?? null}
         nextPlan={next ? { id: next.id, date: next.date } : null}
         pathways={pw.pathways}
         visits={pw.visits}
@@ -118,7 +118,6 @@ export default async function ClinicPage({ searchParams }: PageProps<"/clinic">)
     // 넓은 화면(lg)에서만 본문 폭을 넘어 넓게 쓴다 — 폰에서는 100vw 계산이 화면 밖으로 밀려 오른쪽이 잘렸다(사용자 2026-10-26 캡처)
     <div className="space-y-4 lg:relative lg:left-1/2 lg:w-[min(1600px,calc(100vw-2rem))] lg:-translate-x-1/2">
       <div>
-        <h1 className="mb-4 text-xl font-semibold">외래 진료 관리</h1>
         <SectionTabs tabs={clinicTabs(date)} current="/clinic" />
         {/* 외래 진행 중 = 진료 화면 + 진료 브리핑(폰에 띄워 두는 화면, 사용자 2026-10-27 "진료 브리핑과 통합") */}
         <p className="-mt-4 mb-2 text-sm">
@@ -155,14 +154,14 @@ export default async function ClinicPage({ searchParams }: PageProps<"/clinic">)
             updatedAt={list && "updatedAt" in list && list.date === date ? list.updatedAt.toISOString() : null}
             requested={!!me?.outpatientRefreshAt && me.outpatientRefreshDate === date}
           />
-          {date >= today && rows.length > 0 && <SendSettings key={JSON.stringify(defaults)} defaults={defaults} />}
+          {/* 기록지 미리 저장(노트북 보내기)은 외래 전 준비로 옮겼다(사용자 2026-10-27) — 여기는 명단만 */}
           <ClinicList
             key={date}
             date={date}
             chart={chart}
             templates={templates}
             defaults={defaults}
-            canSend={date >= today}
+            canSend={false}
             rows={rows.map((r) => ({ time: r.time, name: r.name, chartNo: r.chartNo, visit: r.visit, diagnosis: r.diagnosis, job: jobByChart.get(r.chartNo)?.status ?? null }))}
           />
         </aside>

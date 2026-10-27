@@ -12,6 +12,9 @@ import { toggleTodo } from "@/app/actions/roadmap";
 import { latestRoadmaps } from "@/lib/roadmap-store";
 import { patientRoadmaps, type PatientPathwayView, type VisitSummaryView } from "@/lib/pathway-store";
 import { PathwayView } from "./pathway-view";
+import { ClinicList, SendSettings } from "../clinic/clinic-list";
+import { CpapFollowUp } from "../cpap/cpap-followup";
+import { clinicDefaults } from "@/lib/opd-jobs";
 
 // 진료 > 외래 명단 — 병원 PC가 올린 날짜별 명단(달력), 등록번호로 외래 이력 찾기, SOAP·로드맵(AI 정리).
 // 예전 "병원 연동" 화면에 있던 것을 외래 메뉴로 옮겼다(사용자 2026-10-24). 본인 계정 데이터만(createdById).
@@ -129,10 +132,16 @@ export default async function OutpatientPage({ searchParams }: PageProps<"/outpa
     patientRoadmaps(userId, careCharts),
   ]);
   const cares = new Map(careRows.map((r) => [r.chartNo, r]));
+  // 기록지 미리 저장(노트북 보내기) — 보내기 설정·템플릿·그날 일감 상태
+  const [opdTemplates, me, dayJobs] = await Promise.all([
+    prisma.outpatientTemplate.findMany({ where: { createdById: userId }, orderBy: [{ audience: "asc" }, { sortOrder: "asc" }], select: { id: true, title: true, audience: true } }),
+    prisma.user.findUnique({ where: { id: userId }, select: { clinicSendDefaults: true } }),
+    selected ? prisma.opdJob.findMany({ where: { createdById: userId, visitDate: selected.date }, select: { chartNo: true, status: true } }) : Promise.resolve([] as { chartNo: string; status: string }[]),
+  ]);
+  const sendDefaults = clinicDefaults(me?.clinicSendDefaults);
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold">외래 진료 관리</h1>
       <SectionTabs tabs={clinicTabs(selected?.date ?? dateStr)} current="/outpatient" />
 
       <section className="space-y-3">
@@ -161,7 +170,7 @@ export default async function OutpatientPage({ searchParams }: PageProps<"/outpa
             {history.map((h, i) => (
               <div key={i} className="border-t border-slate-100 pt-2">
                 <p>
-                  <Link href={`/outpatient?date=${h.date}`} className="text-emerald-700 underline">
+                  <Link href={`/clinic?date=${h.date}&chart=${h.row.chartNo}`} className="text-emerald-700 underline" title="그날 이 환자 외래 화면">
                     {h.date}
                   </Link>{" "}
                   {h.row.time} {h.row.name} {h.row.chartNo} ({h.row.visit}) {h.row.diagnosis}
@@ -194,6 +203,25 @@ export default async function OutpatientPage({ searchParams }: PageProps<"/outpa
                     </Link>
                   )}
                 </div>
+                {/* 외래 전 준비(사용자 2026-10-27): 기록지 미리 저장(노트북 — 초진 ".", 재진 SOAP·이전 기록) + CPAP F/U 결과 확인 */}
+                {rows.length > 0 && selected.date >= today && (
+                  <details className="rounded-lg border border-slate-200 bg-white" open>
+                    <summary className="cursor-pointer px-3 py-2 text-sm font-semibold">기록지 미리 저장(노트북)</summary>
+                    <div className="space-y-2 border-t border-slate-100 p-3">
+                      <SendSettings key={JSON.stringify(sendDefaults)} defaults={sendDefaults} />
+                      <ClinicList
+                        key={selected.date}
+                        date={selected.date}
+                        chart={undefined}
+                        templates={opdTemplates}
+                        defaults={sendDefaults}
+                        canSend
+                        rows={rows.map((r) => ({ time: r.time, name: r.name, chartNo: r.chartNo, visit: r.visit, diagnosis: r.diagnosis, job: dayJobs.find((j) => j.chartNo === r.chartNo)?.status ?? null }))}
+                      />
+                    </div>
+                  </details>
+                )}
+                {rows.length > 0 && <CpapFollowUp userId={userId} date={selected.date} today={today} rows={rows} />}
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm">
                     <thead className="border-b border-slate-200 text-slate-500">

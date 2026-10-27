@@ -446,6 +446,8 @@ model OpdJob {
   status      String   @default("pending")
   result      String?
   tries       Int      @default(0)
+  // 노트북이 저장(서명 전)한 기록지를 사용자가 처리한 표시(외래 후 서명 전 기록지 목록, 2026-10-27) — "signed" | "deleted"(EMR에서 직접 지움)
+  noteState   String?
   createdById String
   createdBy   User     @relation(fields: [createdById], references: [id])
   createdAt   DateTime @default(now())

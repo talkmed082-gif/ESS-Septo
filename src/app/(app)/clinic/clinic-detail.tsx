@@ -4,12 +4,13 @@ import type { PatientPathwayView, VisitSummaryView } from "@/lib/pathway-store";
 import type { RoadmapParts, SoapParts, StageCall } from "@/lib/clinic-view";
 import { toggleTodo } from "@/app/actions/roadmap";
 import { sendToSurgery } from "@/app/actions/clinic-surgery";
+import { PlanPicker } from "./plan-picker";
 import { RoadmapBox } from "../outpatient/roadmap-box";
 import { PathwayFlow } from "./pathway-flow";
 import { OrderPanel, type ClinicJobView } from "./order-panel";
 import type { ClinicDefaults } from "@/lib/opd-jobs";
 
-const PLAN_LABEL: Record<string, string> = { surgery: "수술", medication: "약물치료", observation: "경과관찰", return: "회송" };
+const PLAN_LABEL: Record<string, string> = { surgery: "수술", cpap: "CPAP", medication: "약물치료", observation: "경과관찰", return: "회송" };
 export const VISIT_CLS: Record<string, string> = { 초진: "bg-sky-100 text-sky-800", 재초: "bg-violet-100 text-violet-800", 재진: "bg-slate-100 text-slate-600" };
 const card = "rounded-lg border border-slate-200 bg-white p-4";
 
@@ -101,21 +102,10 @@ export function ClinicDetail(p: {
             )}
           </section>
 
+          {/* 외래 진행 중은 로드맵·오더·Plan만(사용자 2026-10-27). SOAP 요약은 외래 전 준비(명단)에서 */}
           <section className={card}>
-            <h2 className="mb-3 text-sm font-semibold text-slate-500">SOAP (AI 요약, 참고용)</h2>
-            {soap.S || soap.O || soap.A || soap.P ? (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {(["S", "O", "A", "P"] as const).map((k) => (
-                  <div key={k} className="flex gap-3 rounded-md border border-slate-200 p-3">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-800 text-sm font-semibold text-white">{k}</span>
-                    <p className="min-w-0 whitespace-pre-wrap break-words text-sm text-slate-700">{soap[k] || <span className="text-slate-300">-</span>}</p>
-                  </div>
-                ))}
-                {soap.other && <p className="whitespace-pre-wrap text-sm text-slate-500 sm:col-span-2">{soap.other}</p>}
-              </div>
-            ) : (
-              <p className="whitespace-pre-wrap text-sm text-slate-400">{soap.other || "SOAP 없음"}</p>
-            )}
+            <h2 className="mb-3 text-sm font-semibold text-slate-500">Plan</h2>
+            <PlanPicker chartNo={row.chartNo} current={p.care?.planType ?? null} />
           </section>
         </div>
 

@@ -50,6 +50,12 @@ export default async function PatientDetailPage({
             {patient.sex === "M" ? "남" : patient.sex === "F" ? "여" : "성별 미상"}
             {patient.age != null ? ` · 만 ${patient.age}세` : ""}
           </p>
+          {/* 외래 기록으로(사용자 2026-10-27 "수술환자 관리와 외래 기록을 서로 왔다 갔다") — 날짜별 외래 SOAP·로드맵, 날짜를 누르면 그날 외래 */}
+          {patient.chartNo && (
+            <Link href={`/outpatient?chart=${encodeURIComponent(patient.chartNo)}`} className="mt-1 inline-block text-sm text-emerald-700 underline">
+              외래 기록 보기
+            </Link>
+          )}
           {patient.memo && (
             <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600">
               {patient.memo}

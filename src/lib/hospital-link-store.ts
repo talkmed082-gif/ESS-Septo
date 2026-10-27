@@ -77,6 +77,12 @@ export async function saveOutpatientList(
   if (existing && body.merge) {
     const now = new Set(rows.map((r) => r.chartNo));
     rows = [...rows, ...(existing.rows as OutpatientRow[]).filter((r) => !now.has(r.chartNo))].sort((a, b) => a.time.localeCompare(b.time));
+  } else if (existing) {
+    // 덮어쓰기(아침 새로 고침 — 앞날 명단): 명단에서 빠진 환자(예약 취소)의 아직 처리 전 노트북 일감은 취소 — 안 온 환자 기록지가 저장되지 않게(2026-10-27)
+    const now = new Set(body.rows.map((r) => r.chartNo));
+    const gone = (existing.rows as OutpatientRow[]).map((r) => r.chartNo).filter((c) => !now.has(c));
+    if (gone.length)
+      await prisma.opdJob.updateMany({ where: { createdById: userId, visitDate: body.date, chartNo: { in: gone }, status: { in: ["pending", "waiting"] } }, data: { status: "cancelled", result: "명단에서 빠짐(예약 취소) — 기록지 안 씀" } });
   }
   await prisma.outpatientList.upsert({
     where: { createdById_date: { createdById: userId, date: body.date } },

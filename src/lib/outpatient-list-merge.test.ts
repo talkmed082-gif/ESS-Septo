@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // 가상 데이터만 쓴다(실명·실제 등록번호 금지).
-const db = vi.hoisted(() => ({ findUnique: vi.fn(), upsert: vi.fn() }));
+const db = vi.hoisted(() => ({ findUnique: vi.fn(), upsert: vi.fn(), updateManyJob: vi.fn() }));
 vi.mock("server-only", () => ({}));
-vi.mock("@/lib/prisma", () => ({ prisma: { outpatientList: { findUnique: db.findUnique, upsert: db.upsert } } }));
+vi.mock("@/lib/prisma", () => ({ prisma: { outpatientList: { findUnique: db.findUnique, upsert: db.upsert }, opdJob: { updateMany: db.updateManyJob } } }));
 
 import { saveOutpatientList } from "./hospital-link-store";
 
@@ -25,6 +25,8 @@ describe("명단 [새로고침] — merge", () => {
     db.findUnique.mockResolvedValue({ rows: [row("13:30", "1001"), row("14:00", "1002")] });
     await saveOutpatientList("u", { date: "2026-10-27", clinic: "c", rows: [row("14:00", "1002")] });
     expect((db.upsert.mock.calls[0][0].update.rows as { chartNo: string }[]).map((x) => x.chartNo)).toEqual(["1002"]);
+    // 빠진 환자(1001)의 처리 전 노트북 일감은 취소
+    expect(db.updateManyJob).toHaveBeenCalledWith({ where: { createdById: "u", visitDate: "2026-10-27", chartNo: { in: ["1001"] }, status: { in: ["pending", "waiting"] } }, data: { status: "cancelled", result: "명단에서 빠짐(예약 취소) — 기록지 안 씀" } });
   });
 
   it("빈 명단으로 merge해도 기존 환자는 지워지지 않음", async () => {

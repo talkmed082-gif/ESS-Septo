@@ -36,7 +36,6 @@ export default async function ConsultsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="mb-4 text-xl font-semibold">타과의뢰</h1>
       </div>
       <AutoRefresh />
 

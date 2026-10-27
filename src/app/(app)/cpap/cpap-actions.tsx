@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { buttonStyles } from "@/lib/ui";
 import { checkCpapMail, rememberCpapRx } from "@/app/actions/cpap";
+import { recordCpapNotice } from "@/app/actions/clinic-plan";
 import { CPAP_VENDORS, cpapNoticeText, cpapRxText, pressureOf, smsHref } from "@/lib/cpap";
 
 // [메일 확인] — 앞으로의 CPAP F/U 환자 결과 메일을 Gmail(OSA 시트 웹앱)에서 찾는다
@@ -27,7 +28,8 @@ export function MailCheckButton() {
 }
 
 // 외래 후 처방 안내 문자(사용자 2026-10-27) — 개월(기본 3)·압력(지금 설정이 기본, 바꾸면 "압력 ○으로 변경해서")을 고르고 [처방 안내 문자] → 폰 문자 창
-export function CpapNoticeSms({ name, tel, setting }: { name: string; tel: string; setting: string | null }) {
+// 누르면 보낸 기록을 남기고 다음 F/U를 그 외래 날짜 + 개월로 다시 잡는다(recordCpapNotice)
+export function CpapNoticeSms({ name, tel, setting, chartNo, date, sentAt }: { name: string; tel: string; setting: string | null; chartNo: string; date: string; sentAt: string | null }) {
   const base = pressureOf(setting);
   const [months, setMonths] = useState(3);
   const [pressure, setPressure] = useState(base);
@@ -39,7 +41,10 @@ export function CpapNoticeSms({ name, tel, setting }: { name: string; tel: strin
         {[1, 2, 3, 6, 12].map((m) => <option key={m} value={m}>{m}개월</option>)}
       </select>
       <input value={pressure} onChange={(e) => setPressure(e.target.value)} className="w-16 rounded border border-slate-300 px-1 py-0.5" aria-label="압력" placeholder="압력" />
-      <a href={smsHref(tel, text)} className="rounded bg-emerald-700 px-2 py-1 text-white" title={text}>처방 안내 문자</a>
+      <a href={smsHref(tel, text)} onClick={() => void recordCpapNotice({ chartNo, date, months, pressure: changed ? pressure.trim() : null, text })} className="rounded bg-emerald-700 px-2 py-1 text-white" title={text}>
+        처방 안내 문자
+      </a>
+      {sentAt && <span className="text-xs text-emerald-700">✓ {sentAt} 보냄</span>}
       <span className="basis-full text-[11px] text-slate-500">{text}</span>
     </span>
   );
