@@ -955,8 +955,14 @@ export function SurgeryPlanner({
                   )}
                 </CollapsibleFindingSection>
               )}
+              {/* 위 P/E 섹션에서 이미 화면에 그린 필드는 숨김 input을 또 만들지 않는다 —
+                  같은 이름 체크박스가 두 벌이면 다중 선택 값이 두 번씩 저장됨 */}
               <SurgeryFieldInputs
-                fields={nasalFields}
+                fields={nasalFields.filter(
+                  (f) =>
+                    !(showSeptum && SEPTUM_DETAIL_FIELD_KEYS.includes(f.key)) &&
+                    !(showSinus && UNCINATE_FIELD_KEYS.includes(f.key)),
+                )}
                 values={templateValues}
                 excludeKeys={[
                   ...getSeptumCoveredKeys(selected.code),

@@ -199,6 +199,16 @@ describe("상단 수술 종류 체크박스 순서", () => {
   });
 });
 
+describe("비중격 기타 특이사항 중복 저장", () => {
+  it("Septo P/E가 보이면 n_septum_note 체크박스는 옵션마다 한 벌뿐이다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={allTypes} loggedIn />);
+    const septo = Array.from(container.querySelectorAll("label")).find((l) => l.textContent?.trim() === "Septo")!;
+    fireEvent.click(septo.querySelector("input")!);
+    const caudal = fieldEls(container, "n_septum_note").filter((el) => el.value === "Caudal deviation");
+    expect(caudal).toHaveLength(1);
+  });
+});
+
 describe("ESS 해부학적 이상 소견의 DSN", () => {
   it("ESS에서 방향과 정도를 고르면 폼 값과 요약에 반영된다", () => {
     const { container } = render(<SurgeryPlanner surgeryTypes={allTypes} loggedIn />);
