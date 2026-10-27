@@ -36,8 +36,13 @@ describe("외래 후 서명 전 기록지 정리", () => {
     expect(NoteCleanupResultSchema.safeParse({ results: [{ id: "a", state: "deleteRequested", noteId: "1" }] }).success).toBe(false);
   });
 
-  it("다시 확인 요청은 처리 전·직접 확인·실패만", () => {
-    expect([null, "keep:x", "deleteFailed:y"].map(canRequestCheck)).toEqual([true, true, true]);
-    expect(["check", "noShow:1", "deleteRequested:1", "signed", "deleted"].map(canRequestCheck)).toEqual([false, false, false, false, false]);
+  it("다시 확인 요청은 처리 전·직접 확인·실패·후보만", () => {
+    expect([null, "keep:x", "deleteFailed:y", "noShow:1"].map(canRequestCheck)).toEqual([true, true, true, true]);
+    expect(["check", "deleteRequested:1", "signed", "deleted"].map(canRequestCheck)).toEqual([false, false, false, false]);
+  });
+
+  it("긴 이유는 잘라서 받음(결과 전체 거부 안 함)", () => {
+    const p = NoteCleanupResultSchema.parse({ results: [{ id: "a", state: "keep", reason: "가".repeat(200) }] });
+    expect(p.results[0].state === "keep" && p.results[0].reason.length).toBe(80);
   });
 });

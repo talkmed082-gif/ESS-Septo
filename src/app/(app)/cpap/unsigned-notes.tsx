@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { approveNoteDeletes, requestNoteCheck, setNoteState } from "@/app/actions/clinic-plan";
-import { isNoteDone, parseNoteState } from "@/lib/note-cleanup";
+import { canRequestCheck, isNoteDone, parseNoteState } from "@/lib/note-cleanup";
 
 export type UnsignedNote = { id: string; time: string; name: string; chartNo: string; savedAt: string; opened: boolean; state: string | null };
 
@@ -16,7 +16,7 @@ export function UnsignedNotes({ notes, date }: { notes: UnsignedNote[]; date: st
   const candidates = open.filter((n) => n.s.kind === "noShow");
   const [picked, setPicked] = useState<Set<string> | null>(null);
   const chosen = picked ?? new Set(candidates.map((n) => n.id));
-  const checkable = open.some((n) => n.s.kind === "none" || n.s.kind === "keep" || n.s.kind === "deleteFailed");
+  const checkable = open.some((n) => canRequestCheck(n.state));
   const waiting = open.some((n) => n.s.kind === "check" || n.s.kind === "deleteRequested");
   const btn = "rounded border px-2 py-0.5 text-xs disabled:opacity-50";
 
@@ -29,9 +29,9 @@ export function UnsignedNotes({ notes, date }: { notes: UnsignedNote[]; date: st
 
   const badge = (n: (typeof rows)[number]) => {
     switch (n.s.kind) {
-      case "check": return <span className="rounded bg-slate-100 px-1 text-xs text-slate-600">노트북 확인 대기(10분 안)</span>;
+      case "check": return <span className="rounded bg-slate-100 px-1 text-xs text-slate-600">노트북 확인 대기(평일 8~20시 10분마다)</span>;
       case "keep": return <span className="rounded bg-amber-100 px-1 text-xs text-amber-800">직접 확인 — {n.s.reason}</span>;
-      case "deleteRequested": return <span className="rounded bg-slate-100 px-1 text-xs text-slate-600">삭제 승인됨 — 노트북 대기(10분 안)</span>;
+      case "deleteRequested": return <span className="rounded bg-slate-100 px-1 text-xs text-slate-600">삭제 승인됨 — 노트북 대기(그날 외래는 18시 뒤, 평일 20시까지)</span>;
       case "deleteFailed": return <span className="rounded bg-red-100 px-1 text-xs text-red-800">지우지 못함 — {n.s.reason}</span>;
       case "noShow": return null;
       default: return !n.opened ? <span className="rounded bg-amber-100 px-1 text-xs text-amber-800">진료실에서 안 열림 — 안 온 환자일 수 있음</span> : null;

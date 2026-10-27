@@ -31,7 +31,8 @@ export function parseNoteState(s: string | null | undefined): NoteState {
 // 처리 끝(목록에서 빠짐): 서명함·지움
 export const isNoteDone = (s: NoteState) => s.kind === "signed" || s.kind === "deleted";
 
-const reason = z.string().trim().max(80);
+// 긴 이유 하나 때문에 결과 전체가 거부되지 않게 잘라서 받는다
+const reason = z.string().trim().transform((s) => s.slice(0, 80));
 export const NoteCleanupResultSchema = z.object({
   results: z
     .array(
@@ -66,5 +67,5 @@ export function nextNoteState(current: string | null, r: NoteCleanupResult): str
   return null;
 }
 
-// [EMR에서 확인]: 처리 전·직접 확인·삭제 실패인 것을 다시 확인 요청(후보·승인 대기는 그대로)
-export const canRequestCheck = (s: string | null) => ["none", "keep", "deleteFailed"].includes(parseNoteState(s).kind);
+// [EMR에서 확인]: 처리 전·직접 확인·삭제 실패·후보를 다시 확인 요청(후보도 — 늦게 와서 서명했으면 서명됨으로 바뀌게). 확인·승인 대기는 그대로
+export const canRequestCheck = (s: string | null) => ["none", "keep", "deleteFailed", "noShow"].includes(parseNoteState(s).kind);
