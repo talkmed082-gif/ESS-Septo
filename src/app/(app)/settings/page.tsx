@@ -17,6 +17,7 @@ import { parseSchedule } from "@/lib/clinic-schedule";
 import { effectiveSchedule } from "@/lib/clinic-schedule-store";
 import { SETTINGS_TABS, SectionTabs } from "@/components/section-tabs";
 import { OtpCard } from "./otp-card";
+import { OsaSheetCard } from "./osa-sheet-card";
 
 export default async function SettingsPage() {
   const user = await getCurrentUser();
@@ -74,6 +75,11 @@ export default async function SettingsPage() {
       <div id="otp" className="scroll-mt-24">
         <h2 className="mb-1 text-sm font-semibold text-slate-700">오늘의 번호 (진료실 PC 프로그램 연결)</h2>
         <OtpCard userId={user.id} />
+      </div>
+
+      <div id="osa" className="scroll-mt-24">
+        <h2 className="mb-1 text-sm font-semibold text-slate-700">OSA 시트 연결 (CPAP 처방 등록·결과 메일 확인)</h2>
+        <OsaSheetCard connected={!!(await prisma.user.findUnique({ where: { id: user.id }, select: { osaScriptUrl: true } }))?.osaScriptUrl} />
       </div>
 
       <div>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CpapUploadSchema, cpapDue, isCpapFollowUp } from "./cpap";
+import { CpapUploadSchema, cpapDue, cpapMailQuery, cpapResultText, cpapRxText, isCpapFollowUp, smsHref } from "./cpap";
 
 describe("CPAP F/U", () => {
   it("처방일 + 개월 = 기간 끝", () => {
@@ -17,5 +17,27 @@ describe("CPAP F/U", () => {
   it("올리기 형식: 약자는 영어 대문자 두 글자", () => {
     expect(CpapUploadSchema.safeParse({ items: [{ chartNo: "12345678", cpap: { vendor: "YT", rxDate: "2026-05-12", months: 3 } }] }).success).toBe(true);
     expect(CpapUploadSchema.safeParse({ items: [{ chartNo: "12345678", cpap: { vendor: "yt" } }] }).success).toBe(false);
+  });
+});
+
+describe("양압기 회사 문자·메일", () => {
+  it("처방 의뢰 문자(사용자 문구)", () => {
+    expect(cpapRxText({ name: "홍길동", sex: "남", age: "45세", phone: "010-0000-0000", ahi: "32.5" })).toBe(
+      "안녕하세요 양산부산대병원 이비인후과 정일구입니다. 홍길동님 남/45세, 010-0000-0000, AHI 32.5 환자 의뢰드립니다.\n잘 부탁드립니다.",
+    );
+  });
+  it("결과 요청 문자 — 오늘이면 '오늘', 아니면 날짜", () => {
+    expect(cpapResultText({ name: "홍길동", visitDate: "2026-10-27", today: "2026-10-27" })).toBe(
+      "안녕하세요. 양산부산대병원 비과전임의 정일구입니다. 오늘 외래 예정인 홍길동 환자분 양압기 결과 보내주실 수 있으실까요? 제 메일 주소는 ilguuu@gmail.com 입니다.",
+    );
+    expect(cpapResultText({ name: "홍길동", visitDate: "2026-10-30", today: "2026-10-27" })).toContain("10/30 외래 예정인");
+  });
+  it("문자 주소는 하이픈 빼고 본문 인코딩", () => {
+    expect(smsHref("010-3562-0915", "가 나")).toBe("sms:01035620915?&body=%EA%B0%80%20%EB%82%98");
+  });
+  it("메일 검색어 — 받은 회사는 보낸 주소, 아니면 양압기/CPAP + 이름, 실명 없으면 안 찾음", () => {
+    expect(cpapMailQuery({ vendor: "FP", realName: "홍길동", rxDate: "2026-04-27" }, "2026-10-27")).toBe('from:busan@slmedicare.co.kr after:2026/04/27 "홍길동"');
+    expect(cpapMailQuery({ vendor: "BG", realName: "홍길동", rxDate: null }, "2026-10-27")).toBe('(양압기 OR CPAP) after:2026/08/28 "홍길동"');
+    expect(cpapMailQuery({ vendor: "FP", realName: null, rxDate: "2026-04-27" }, "2026-10-27")).toBeNull();
   });
 });
