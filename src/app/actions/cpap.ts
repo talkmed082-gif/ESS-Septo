@@ -20,35 +20,18 @@ export async function saveOsaScript(input: unknown): Promise<{ ok: boolean; erro
   return { ok: true, headers: (r.headers as string[]) ?? [], sheet: String(r.sheet ?? "") };
 }
 
-// CPAP 처방 등록 — OSA 시트에 한 줄(열 이름에 맞춰). 연락처·AHI는 사이트에 저장하지 않고 시트로만. 실명은 그 환자 PatientCare.cpap에 남김(F/U 문자용)
+// CPAP 처방 — OSA 시트는 다른 사람 소유라 자동 등록 대신 [시트용 복사](사용자 2026-10-27 "복붙할 거 붙여넣기까지만").
+// 복사할 때 그 환자의 회사·실명만 PatientCare.cpap에 남긴다(F/U 문자용). 연락처·AHI는 사이트에 저장하지 않음
 const RxSchema = z.object({
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   chartNo: z.string().trim().regex(/^\d{4,12}$/),
   name: z.string().trim().min(1).max(30),
-  sex: z.string().trim().max(10),
-  age: z.string().trim().max(20),
-  phone: z.string().trim().max(30),
-  ahi: z.string().trim().max(20),
   vendor: z.string().regex(/^[A-Z]{2}$/),
 });
-export async function registerCpapRx(input: unknown): Promise<{ ok: boolean; error?: string }> {
+export async function rememberCpapRx(input: unknown): Promise<{ ok: boolean; error?: string }> {
   const { userId } = await verifySession();
   const p = RxSchema.safeParse(input);
   if (!p.success) return { ok: false, error: "이름·등록번호·회사를 확인해 주세요." };
   const d = p.data;
-  // 시트 열 이름은 시트마다 다를 수 있어 흔한 이름을 여럿 같이 보낸다(없는 열은 웹앱이 무시)
-  const values: Record<string, string> = {};
-  for (const k of ["날짜", "처방일", "의뢰일"]) values[k] = d.date;
-  for (const k of ["이름", "성명", "환자명"]) values[k] = d.name;
-  for (const k of ["등록번호", "환자번호"]) values[k] = d.chartNo;
-  for (const k of ["성별"]) values[k] = d.sex;
-  for (const k of ["나이"]) values[k] = d.age;
-  for (const k of ["성별/나이"]) values[k] = `${d.sex}/${d.age}`;
-  for (const k of ["연락처", "전화번호", "핸드폰"]) values[k] = d.phone;
-  for (const k of ["AHI"]) values[k] = d.ahi;
-  for (const k of ["회사", "양압기 회사", "업체"]) values[k] = d.vendor;
-  const r = await callOsaScript(userId, { action: "append", values });
-  if (r.error) return { ok: false, error: r.error === "no matching columns" ? `시트 열 이름이 맞지 않습니다: ${(r.headers as string[] | undefined)?.join(", ")}` : String(r.error) };
   const old = await prisma.patientCare.findUnique({ where: { createdById_chartNo: { createdById: userId, chartNo: d.chartNo } }, select: { cpap: true } });
   const prev = CpapSchema.safeParse(old?.cpap ?? {});
   const cpap = { ...(prev.success ? prev.data : CpapSchema.parse({})), vendor: d.vendor, realName: d.name };

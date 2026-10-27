@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { buttonStyles } from "@/lib/ui";
-import { checkCpapMail, registerCpapRx } from "@/app/actions/cpap";
+import { checkCpapMail, rememberCpapRx } from "@/app/actions/cpap";
 import { CPAP_VENDORS, cpapRxText, smsHref } from "@/lib/cpap";
 
 // [메일 확인] — 앞으로의 CPAP F/U 환자 결과 메일을 Gmail(OSA 시트 웹앱)에서 찾는다
@@ -28,7 +28,7 @@ export function MailCheckButton() {
 
 type Pt = { date: string; time: string; name: string; chartNo: string; sex: string; age: string };
 
-// CPAP 처방 나갈 때(사용자 2026-10-27): 환자 고르기 → 실명·연락처·AHI·회사 → [문자 열기](회사 담당자에게 의뢰 문자, 폰에서 직접 전송) + [OSA 시트 등록].
+// CPAP 처방 나갈 때(사용자 2026-10-27): 환자 고르기 → 실명·연락처·AHI·회사 → [문자 열기](회사 담당자에게 의뢰 문자, 폰에서 직접 전송) + [시트용 복사](OSA 시트는 남의 것이라 붙여넣기만).
 // 연락처·AHI는 사이트에 저장하지 않는다(문자·시트로만). 실명은 F/U 문자용으로 그 환자에게만 남김
 export function CpapRxForm({ patients, today }: { patients: Pt[]; today: string }) {
   const router = useRouter();
@@ -48,7 +48,7 @@ export function CpapRxForm({ patients, today }: { patients: Pt[]; today: string 
 
   return (
     <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-3 text-sm">
-      <p className="font-medium">CPAP 처방 — 회사 의뢰 문자·OSA 시트 등록</p>
+      <p className="font-medium">CPAP 처방 — 회사 의뢰 문자·OSA 시트용 복사</p>
       <div className="grid gap-2 sm:grid-cols-2">
         <select className={input} value={chart} onChange={(e) => { setChart(e.target.value); setMsg(null); }} aria-label="환자">
           <option value="">환자 고르기(외래 명단)</option>
@@ -69,6 +69,7 @@ export function CpapRxForm({ patients, today }: { patients: Pt[]; today: string 
         </select>
       </div>
       <p className="whitespace-pre-wrap rounded bg-slate-50 p-2 text-xs text-slate-700">{text}</p>
+      <p className="text-[11px] text-slate-500">시트용 한 줄: 날짜 · 이름 · 등록번호 · 성별/나이 · 연락처 · AHI · 회사</p>
       <div className="flex flex-wrap items-center gap-2">
         {tel && name && pt ? (
           <a href={smsHref(tel, text)} className={buttonStyles.accent}>문자 열기({vendor})</a>
@@ -81,13 +82,18 @@ export function CpapRxForm({ patients, today }: { patients: Pt[]; today: string 
           disabled={pending || !pt || !name || !vendor}
           onClick={() =>
             start(async () => {
-              const r = await registerCpapRx({ date: today, chartNo: pt!.chartNo, name, sex, age, phone, ahi, vendor });
-              setMsg(r.ok ? "OSA 시트에 등록했습니다" : (r.error ?? "등록하지 못했습니다."));
-              if (r.ok) router.refresh();
+              // 탭으로 나눈 한 줄 — 구글 시트 빈 줄 첫 칸에 붙이면 칸별로 들어간다
+              const row = [today, name, pt!.chartNo, `${sex}/${age}`, phone, ahi, vendor].join("\t");
+              let copied = false;
+              try { await navigator.clipboard.writeText(row); copied = true; } catch { /* 권한 없으면 안내만 */ }
+              const r = await rememberCpapRx({ chartNo: pt!.chartNo, name, vendor });
+              setMsg(copied ? "복사했습니다 — OSA 시트 빈 줄 첫 칸에서 Ctrl+V" : "복사가 막혔습니다(브라우저 권한) — 다시 눌러 주세요");
+              if (!r.ok) setMsg((m) => `${m} (회사·실명 저장 실패: ${r.error})`);
+              router.refresh();
             })
           }
         >
-          OSA 시트 등록
+          시트용 복사
         </button>
         {msg && <span className="text-xs">{msg}</span>}
       </div>
