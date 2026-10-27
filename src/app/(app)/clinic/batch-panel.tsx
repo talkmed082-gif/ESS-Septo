@@ -72,7 +72,7 @@ export function BatchPanel({ date, rows, templates, defaults = clinicDefaults(nu
           </label>
           <label className="flex items-center gap-2">
             <input type="checkbox" checked={scope} onChange={toggle(setScope)} />
-            비인강경 오더 + 처방 서명
+            비인강경 오더 + 처방 서명 <span className="text-xs text-slate-500">(끄면 기록지 저장만, 서명 전)</span>
           </label>
           <label className="flex items-center gap-2 text-slate-500">
             <input type="checkbox" checked={practice} onChange={toggle(setPractice)} />

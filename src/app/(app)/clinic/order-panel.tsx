@@ -108,7 +108,7 @@ export function OrderPanel({
       </label>
       <label className="flex items-center gap-2">
         <input type="checkbox" checked={scope} onChange={(e) => setScope(e.target.checked)} />
-        비인강경 오더(ENTE7540) + 기록지 저장 + 처방 서명
+        비인강경 오더(ENTE7540) + 기록지 저장 + 처방 서명 <span className="text-xs text-slate-500">(끄면 기록지 저장만, 서명 전)</span>
       </label>
       {/* 지금 고른 보낼 곳·할 일을 기본값으로(사용자 2026-10-27) — 다른 환자·하루치 칸·다른 기기도 이 값으로 시작 */}
       <div className="flex items-center gap-2">
