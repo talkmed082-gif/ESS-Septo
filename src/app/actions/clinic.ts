@@ -72,6 +72,16 @@ export async function saveClinicDefaults(input: unknown): Promise<{ ok: boolean;
   return { ok: true };
 }
 
+// 명단 [새로고침] — 사이트 상태는 화면이 바로 다시 읽고, EMR 명단은 노트북 작업자에게 요청(다음 묻기 때 가져감, 2026-10-27)
+export async function requestOutpatientRefresh(date: unknown): Promise<{ ok: boolean; error?: string }> {
+  const { userId } = await verifySession();
+  if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return { ok: false, error: "날짜가 올바르지 않습니다." };
+  if (date < kstDate(new Date())) return { ok: false, error: "지난 날짜는 EMR 명단을 다시 읽지 않습니다." };
+  await prisma.user.update({ where: { id: userId }, data: { outpatientRefreshDate: date, outpatientRefreshAt: new Date() } });
+  revalidatePath("/clinic");
+  return { ok: true };
+}
+
 // 아직 처리 전(대기·나중에 다시)인 것만 취소
 export async function cancelClinicJob(id: string): Promise<void> {
   const { userId } = await verifySession();

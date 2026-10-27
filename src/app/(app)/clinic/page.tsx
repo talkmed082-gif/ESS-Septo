@@ -12,6 +12,7 @@ import { clinicDefaults, jobWhere } from "@/lib/opd-jobs";
 import { ClinicDetail, VISIT_CLS } from "./clinic-detail";
 import { BatchPanel } from "./batch-panel";
 import { LaptopNow, type LaptopNowView } from "./laptop-now";
+import { ListRefresh } from "./list-refresh";
 
 // 진료 화면 — 왼쪽 외래 명단, 오른쪽 고른 환자의 로드맵(도형·지금 단계 판정)·SOAP·오늘 오더(진료실 PC로 보내기).
 // EMR에 이미 있는 것(이전 기록 전문)은 두지 않고, EMR에 없는 것만 모은다(사용자 2026-10-25). 본인 데이터만
@@ -25,7 +26,7 @@ export default async function ClinicPage({ searchParams }: PageProps<"/clinic">)
   const asked = typeof dateParam === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : null;
 
   // 날짜: 고른 날 → 오늘 이후 환자가 있는 가장 가까운 외래 → 마지막 외래
-  const sel = { date: true, clinic: true, rows: true } as const;
+  const sel = { date: true, clinic: true, rows: true, updatedAt: true } as const;
   const list = asked
     ? await prisma.outpatientList.findUnique({ where: { createdById_date: { createdById: userId, date: asked } }, select: sel })
     : ((await prisma.outpatientList.findMany({ where: { createdById: userId, date: { gte: today } }, orderBy: { date: "asc" }, take: 14, select: sel })).find(
@@ -39,7 +40,7 @@ export default async function ClinicPage({ searchParams }: PageProps<"/clinic">)
   const [jobs, templates, me] = await Promise.all([
     prisma.opdJob.findMany({ where: { createdById: userId, visitDate: date }, select: { id: true, chartNo: true, status: true, result: true, tasks: true, practice: true, updatedAt: true } }),
     prisma.outpatientTemplate.findMany({ where: { createdById: userId }, orderBy: [{ audience: "asc" }, { sortOrder: "asc" }], select: { id: true, title: true, audience: true } }),
-    prisma.user.findUnique({ where: { id: userId }, select: { clinicSendDefaults: true } }),
+    prisma.user.findUnique({ where: { id: userId }, select: { clinicSendDefaults: true, outpatientRefreshDate: true, outpatientRefreshAt: true } }),
   ]);
   const defaults = clinicDefaults(me?.clinicSendDefaults);
   // [노트북 지금] — 처리 중인 노트북 일감(어느 날짜든 오늘 이후)과 고른 날짜의 노트북 일감 건수
@@ -143,6 +144,12 @@ export default async function ClinicPage({ searchParams }: PageProps<"/clinic">)
             {date}
             {date === today ? " (오늘)" : ""} {list?.clinic ?? ""} · {rows.length}명
           </p>
+          <ListRefresh
+            date={date}
+            canEmr={date >= today}
+            updatedAt={list && "updatedAt" in list && list.date === date ? list.updatedAt.toISOString() : null}
+            requested={!!me?.outpatientRefreshAt && me.outpatientRefreshDate === date}
+          />
           {date >= today && rows.length > 0 && (
             <BatchPanel
               key={date}

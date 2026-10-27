@@ -29,6 +29,14 @@ export async function POST(request: Request) {
   }
   const ask = where === "laptop" && sp.get("noAsks") !== "1" ? await claimClinicAsk(user.id, now) : null;
   if (sp.get("asksOnly") === "1") return pcJson({ job: null, ask });
+  // 진료 화면 명단 [새로고침] 요청(2026-10-27) — EMR이 한가한 노트북에 한 번만 넘기고 비운다. 작업자가 그 날짜 외래 명단을 다시 읽음
+  if (where === "laptop") {
+    const u = await prisma.user.findUnique({ where: { id: user.id }, select: { outpatientRefreshDate: true, outpatientRefreshAt: true } });
+    if (u?.outpatientRefreshAt && u.outpatientRefreshDate) {
+      const c = await prisma.user.updateMany({ where: { id: user.id, outpatientRefreshAt: u.outpatientRefreshAt }, data: { outpatientRefreshAt: null } });
+      if (c.count === 1) return pcJson({ job: null, ask, listRefresh: u.outpatientRefreshDate });
+    }
+  }
   // ?date= : 진료 어시스트 [이 PC에서 바로 하기] — 고른 날짜 일감(다른 날도 EMR 기록지가 열림, 사용자 2026-10-26). 없으면 오늘
   const qd = sp.get("date") ?? "";
   const day = where === "laptop" && /^\d{4}-\d{2}-\d{2}$/.test(qd) ? qd : kstDate(now);

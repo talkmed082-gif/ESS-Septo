@@ -46,6 +46,9 @@ model User {
   workerUntil             String?
   // 진료 화면 보내기 기본값 {where, note, dx, scope} — [이 설정 저장](사용자 2026-10-27). 비면 노트북·기록지·진단 확인, 비인강경 끔
   clinicSendDefaults      Json?
+  // 진료 화면 명단 [새로고침] 요청(사용자 2026-10-27) — 노트북 작업자가 받아 그 날짜 EMR 외래 명단을 다시 읽고(새 환자만 더함) 비운다
+  outpatientRefreshDate   String?
+  outpatientRefreshAt     DateTime?
   // 로그인 실패 횟수와 잠금 시각 — 비밀번호를 계속 대입해 보는 것을 막는다.
   failedLoginCount     Int             @default(0)
   lockedUntil          DateTime?
@@ -396,6 +399,8 @@ model PatientCare {
   planType       String? // surgery | medication | observation
   nextVisit      String? // yyyy-MM-dd(서울)
   nextVisitLabel String? // "4주" 등 고른 간격
+  // 양압기(CPAP F/U 환자 탭, 사용자 2026-10-27) — 노트북이 6개월 외래 기록에서 규칙으로 찾음 {vendor, setting, rxDate, months, rxLine, at}
+  cpap           Json?
   createdById    String
   createdBy      User     @relation(fields: [createdById], references: [id])
   updatedAt      DateTime @updatedAt

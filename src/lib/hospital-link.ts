@@ -89,10 +89,12 @@ export function pcJobState(
   return "ok";
 }
 
+// merge: 진료 화면 [새로고침](2026-10-27) — 진료를 마친 환자는 EMR 명단에서 빠지므로 덮어쓰지 않고 새 환자만 더한다
 export const OutpatientListBodySchema = z.object({
   date: z.string().regex(DATE),
   clinic: z.string().max(50),
   rows: z.array(OutpatientRowSchema).max(300),
+  merge: z.boolean().optional(),
 });
 
 export const OutpatientSoapBodySchema = z.object({

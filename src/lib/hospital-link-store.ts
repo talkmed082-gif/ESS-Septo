@@ -65,20 +65,25 @@ export async function recordPcJob(userId: string, body: { job: PcJobKey; ok: boo
 
 export async function saveOutpatientList(
   userId: string,
-  body: { date: string; clinic: string; rows: OutpatientRow[] },
+  body: { date: string; clinic: string; rows: OutpatientRow[]; merge?: boolean },
 ) {
   // 같은 날짜를 다시 올리면(매일 아침 새로 고침) 붙어 있던 SOAP는 등록번호로 유지한다
   const existing = await prisma.outpatientList.findUnique({
     where: { createdById_date: { createdById: userId, date: body.date } },
     select: { rows: true },
   });
-  const rows = existing ? carryOverSoap(existing.rows as OutpatientRow[], body.rows) : body.rows;
+  let rows = existing ? carryOverSoap(existing.rows as OutpatientRow[], body.rows) : body.rows;
+  // merge(진료 화면 [새로고침]): 예전 명단에만 있는 환자(진료를 마쳐 EMR 명단에서 빠진 환자)도 남기고 시간순으로
+  if (existing && body.merge) {
+    const now = new Set(rows.map((r) => r.chartNo));
+    rows = [...rows, ...(existing.rows as OutpatientRow[]).filter((r) => !now.has(r.chartNo))].sort((a, b) => a.time.localeCompare(b.time));
+  }
   await prisma.outpatientList.upsert({
     where: { createdById_date: { createdById: userId, date: body.date } },
     create: { date: body.date, clinic: body.clinic, rows, createdById: userId },
     update: { clinic: body.clinic, rows },
   });
-  return { ok: true, count: body.rows.length };
+  return { ok: true, count: rows.length };
 }
 
 // 병원 PC가 10분마다 확인하는 것: "타과의뢰 가져오기" 요청 시각(없으면 null), EMR에 저장·서명할 회신(replies, 요청 순),

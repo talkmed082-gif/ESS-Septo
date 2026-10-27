@@ -7,6 +7,7 @@ export const OUTPATIENT_TABS = [
   { href: "/outpatient", label: "외래 명단" },
   { href: "/templates", label: "외래 템플릿" },
   { href: "/consults", label: "타과의뢰" },
+  { href: "/cpap", label: "CPAP F/U 환자" },
 ];
 export const SETTINGS_TABS = [
   { href: "/settings", label: "일반" },
