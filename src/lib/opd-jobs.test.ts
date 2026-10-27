@@ -4,7 +4,7 @@ import { ClinicJobSchema, OpdJobResultSchema, OpdJobSubmitSchema, isClaimable, j
 describe("노트북 외래 일감", () => {
   it("맡기기 형식: 할 일 기본은 모두 켜짐, 등록번호·날짜 확인", () => {
     const p = OpdJobSubmitSchema.parse({ visitDate: "2026-10-27", items: [{ chartNo: "12345678", tasks: {} }] });
-    expect(p.items[0].tasks).toEqual({ note: true, dx: true, scope: true, soap: false, dot: false, saveOnly: false, where: "laptop" });
+    expect(p.items[0].tasks).toEqual({ note: true, dx: true, scope: false, soap: false, dot: false, saveOnly: false, where: "laptop" });
     expect(p.practice).toBe(false);
     expect(OpdJobSubmitSchema.safeParse({ visitDate: "10/27", items: [{ chartNo: "1", tasks: {} }] }).success).toBe(false);
     expect(OpdJobResultSchema.safeParse({ id: "x", status: "running" }).success).toBe(false);

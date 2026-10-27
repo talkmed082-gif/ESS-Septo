@@ -3,7 +3,7 @@ import { renderToString } from "react-dom/server";
 import { postOpBxTodo } from "@/lib/clinic-view";
 
 vi.mock("@/app/actions/pathway", () => ({ setStage: vi.fn(), removePathway: vi.fn() }));
-vi.mock("@/app/actions/clinic", () => ({ sendToClinic: vi.fn(), cancelClinicJob: vi.fn() }));
+vi.mock("@/app/actions/clinic", () => ({ sendToClinic: vi.fn(), cancelClinicJob: vi.fn(), saveClinicDefaults: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 const { PathwayFlow } = await import("./pathway-flow");
 const { OrderPanel } = await import("./order-panel");
@@ -50,6 +50,10 @@ describe("진료 화면", () => {
     expect(follow).toContain("이전 이비인후과 외래기록으로 S·O·A·P");
     expect(follow).toContain("노트북으로 보내기");
     expect(follow).toContain("기록지 열면 바로");
+    expect(follow).toContain("이 설정 저장");
+    // 비인강경은 기본 끔 — 켜진 체크 상자는 기록지·진단 확인 2개뿐
+    const html = renderToString(<OrderPanel chartNo="1" name="홍○○" visit="재진" visitDate="2026-10-27" canSend templates={[]} job={null} />);
+    expect(html.match(/checked=""/g)?.length).toBe(2);
     const first = text(
       renderToString(
         <OrderPanel
@@ -72,7 +76,7 @@ describe("진료 화면", () => {
 
 describe("하루치 보내기", () => {
   it("이미 보낸 환자는 빠진 채로, 초진은 템플릿 칸, 고른 수를 버튼에", async () => {
-    vi.doMock("@/app/actions/clinic", () => ({ sendToClinic: vi.fn(), cancelClinicJob: vi.fn(), sendBatchToLaptop: vi.fn() }));
+    vi.doMock("@/app/actions/clinic", () => ({ sendToClinic: vi.fn(), cancelClinicJob: vi.fn(), sendBatchToLaptop: vi.fn(), saveClinicDefaults: vi.fn() }));
     const { BatchPanel } = await import("./batch-panel");
     const t = text(
       renderToString(
@@ -87,8 +91,19 @@ describe("하루치 보내기", () => {
       ),
     );
     expect(t).toContain("템플릿 없음(통증 “없음”만, 진단 확인 안 함)");
-    expect(t).toContain("1명 노트북으로 보내기");
+    expect(t).toContain("① 할 일(모든 환자 공통)");
+    expect(t).toContain("③ 1명 보내기…"); // 한 번 더 [보내기 확인]을 눌러야 보냄
+    expect(t).not.toContain("보내기 확인");
+    expect(t).toContain("이 설정 저장");
     expect(t).toContain("보냄");
+  });
+  it("비인강경은 기본 끔(환자별 칸도 없음), 저장한 기본값으로 켜면 환자별 칸", async () => {
+    const { BatchPanel } = await import("./batch-panel");
+    const rows = [{ time: "09:00", name: "김○○", chartNo: "1", visit: "재진", diagnosis: "", sent: false }];
+    const off = renderToString(<BatchPanel date="2026-10-27" templates={[]} rows={rows} />);
+    expect(off.match(/type="checkbox"/g)?.length).toBe(5); // 기록지·진단·비인강경·연습 + 환자 1
+    const on = renderToString(<BatchPanel date="2026-10-27" templates={[]} rows={rows} defaults={{ where: "laptop", note: true, dx: true, scope: true }} />);
+    expect(on.match(/type="checkbox"/g)?.length).toBe(6);
   });
 });
 

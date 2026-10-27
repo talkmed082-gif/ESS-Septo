@@ -8,7 +8,7 @@ import { latestRoadmaps } from "@/lib/roadmap-store";
 import { patientRoadmaps } from "@/lib/pathway-store";
 import { summaryLine } from "@/lib/pathways";
 import { inferStage, parseRoadmap, parseSoap, type SurgeryFact } from "@/lib/clinic-view";
-import { jobWhere } from "@/lib/opd-jobs";
+import { clinicDefaults, jobWhere } from "@/lib/opd-jobs";
 import { ClinicDetail, VISIT_CLS } from "./clinic-detail";
 import { BatchPanel } from "./batch-panel";
 
@@ -35,10 +35,12 @@ export default async function ClinicPage({ searchParams }: PageProps<"/clinic">)
   const chart = typeof chartParam === "string" && rows.some((r) => r.chartNo === chartParam) ? chartParam : rows[0]?.chartNo;
   const row = rows.find((r) => r.chartNo === chart);
 
-  const [jobs, templates] = await Promise.all([
+  const [jobs, templates, me] = await Promise.all([
     prisma.opdJob.findMany({ where: { createdById: userId, visitDate: date }, select: { id: true, chartNo: true, status: true, result: true, tasks: true, practice: true, updatedAt: true } }),
     prisma.outpatientTemplate.findMany({ where: { createdById: userId }, orderBy: [{ audience: "asc" }, { sortOrder: "asc" }], select: { id: true, title: true, audience: true } }),
+    prisma.user.findUnique({ where: { id: userId }, select: { clinicSendDefaults: true } }),
   ]);
+  const defaults = clinicDefaults(me?.clinicSendDefaults);
   const jobByChart = new Map(jobs.map((j) => [j.chartNo, j]));
 
   let detail: React.ReactNode = <p className="text-sm text-slate-400">이 날짜에 명단이 없습니다.</p>;
@@ -81,6 +83,7 @@ export default async function ClinicPage({ searchParams }: PageProps<"/clinic">)
         calls={Object.fromEntries(pw.pathways.map((pp) => [pp.pathwayId, inferStage(pp, surgeries, date, pw.pathways.length)]))}
         templates={templates}
         job={j ? { id: j.id, status: j.status, result: j.result, where: jobWhere(j.tasks), practice: j.practice, updatedAt: j.updatedAt.toISOString() } : null}
+        defaults={defaults}
         date={date}
         canSend={date >= today}
       />
@@ -120,6 +123,7 @@ export default async function ClinicPage({ searchParams }: PageProps<"/clinic">)
               key={date}
               date={date}
               templates={templates}
+              defaults={defaults}
               rows={rows.map((r) => {
                 const j = jobByChart.get(r.chartNo);
                 return { time: r.time, name: r.name, chartNo: r.chartNo, visit: r.visit, diagnosis: r.diagnosis, sent: !!j && j.status !== "cancelled" };

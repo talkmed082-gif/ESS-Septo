@@ -44,6 +44,8 @@ model User {
   // 노트북 작업자(진료_대기) 평일 작업 시간 "HH:mm" — 진료 어시스트 [설정]에서 바꿈(2026-10-26). 비면 07:30~19:00
   workerFrom              String?
   workerUntil             String?
+  // 진료 화면 보내기 기본값 {where, note, dx, scope} — [이 설정 저장](사용자 2026-10-27). 비면 노트북·기록지·진단 확인, 비인강경 끔
+  clinicSendDefaults      Json?
   // 로그인 실패 횟수와 잠금 시각 — 비밀번호를 계속 대입해 보는 것을 막는다.
   failedLoginCount     Int             @default(0)
   lockedUntil          DateTime?
