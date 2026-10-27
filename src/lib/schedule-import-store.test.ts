@@ -8,12 +8,13 @@ const db = vi.hoisted(() => ({
   createPatient: vi.fn(),
   createPlan: vi.fn(),
   updateManyPlan: vi.fn(),
+  findManyPlan: vi.fn(),
 }));
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     surgeryType: { findMany: db.findManyTypes },
-    opPlan: { findFirst: db.findFirstPlan, updateMany: db.updateManyPlan },
+    opPlan: { findFirst: db.findFirstPlan, updateMany: db.updateManyPlan, findMany: db.findManyPlan },
     $transaction: (fn: (tx: unknown) => unknown) =>
       fn({
         patient: { findFirst: db.findFirstPatient, create: db.createPatient },
@@ -46,6 +47,7 @@ beforeEach(() => {
   Object.values(db).forEach((f) => f.mockReset());
   db.findManyTypes.mockResolvedValue([{ id: "t-ess", code: "ESS" }]);
   db.findFirstPlan.mockResolvedValue(null);
+  db.findManyPlan.mockResolvedValue([]);
   db.createPatient.mockResolvedValue({ id: "p-new" });
 });
 
@@ -92,6 +94,20 @@ describe("importScheduleRows", () => {
     db.updateManyPlan.mockReset();
     db.findFirstPlan.mockResolvedValue({ id: "plan-1", planData: { f_sched_side: "B" } });
     await importScheduleRows(user, [row]);
+    expect(db.updateManyPlan).not.toHaveBeenCalled();
+  });
+
+  it("외래에서 먼저 잡은 끝나지 않은 계획이 딱 하나면 새로 만들지 않고 그 계획에 EMR 날짜를 채운다(중복 없음)", async () => {
+    db.findManyPlan.mockResolvedValue([{ id: "plan-clinic", plannedDate: null }]);
+    expect(await importScheduleRows(user, [row])).toEqual({ created: 0, skipped: 1 });
+    expect(db.updateManyPlan).toHaveBeenCalledWith({ where: { id: "plan-clinic", createdById: "u1" }, data: { plannedDate: new Date("2026-10-16"), diagnosis: undefined } });
+    expect(db.createPlan).not.toHaveBeenCalled();
+  });
+
+  it("끝나지 않은 계획이 둘 이상(단계 수술 등)이면 헷갈리니 예전처럼 새로 만든다", async () => {
+    db.findManyPlan.mockResolvedValue([{ id: "a", plannedDate: null }, { id: "b", plannedDate: null }]);
+    db.findFirstPatient.mockResolvedValue({ id: "p-old" });
+    expect(await importScheduleRows(user, [row])).toEqual({ created: 1, skipped: 0 });
     expect(db.updateManyPlan).not.toHaveBeenCalled();
   });
 

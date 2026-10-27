@@ -76,6 +76,18 @@ export async function importScheduleRows(
       continue;
     }
 
+    // 외래에서 먼저 잡은 계획(날짜 미정·다른 날짜)과 EMR 수술 일정은 같은 수술 — 그 환자에게 끝나지 않은 계획이 딱 하나면
+    // 새로 만들지 않고 그 계획에 EMR 날짜를 채운다(사용자 2026-10-27 "중복해서 수술로 잡아 놓지 말고"). 둘 이상이면(단계 수술 등) 새로 만듦
+    const open = await prisma.opPlan.findMany({
+      where: { createdById: user.id, patient: { chartNo: row.chartNo, createdById: user.id }, status: { not: "DONE" }, opRecord: null },
+      select: { id: true, plannedDate: true },
+    });
+    if (open.length === 1) {
+      await prisma.opPlan.updateMany({ where: { id: open[0].id, createdById: user.id }, data: { plannedDate: new Date(row.date), diagnosis: row.diagnosis || undefined } });
+      skipped++;
+      continue;
+    }
+
     await prisma.$transaction(async (tx) => {
       const patient =
         (await tx.patient.findFirst({ where: { chartNo: row.chartNo, createdById: user.id } })) ??
