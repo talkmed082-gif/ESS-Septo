@@ -6,10 +6,11 @@ import * as z from "zod";
 // soap: 재진은 이전 기록 대신 사이트 SOAP 요약(외래 전날 AI)으로 S·O·A·P(사용자 2026-10-26)
 // dot: 초진은 템플릿이 없으면 모든 칸에 "."
 // saveOnly: 오더(비인강경·처방 서명) 없이 기록지 저장까지만
+// scope(비인강경)는 기본 끔(사용자 2026-10-27 "기본으로 하면 안 돼 — 취소하기 귀찮아")
 export const OpdJobTasksSchema = z.object({
   note: z.boolean().default(true),
   dx: z.boolean().default(true),
-  scope: z.boolean().default(true),
+  scope: z.boolean().default(false),
   soap: z.boolean().default(false),
   dot: z.boolean().default(false),
   saveOnly: z.boolean().default(false),
@@ -42,6 +43,19 @@ export const ClinicJobSchema = z.object({
   dx: z.boolean(),
   scope: z.boolean(),
 });
+
+// 진료 화면 보내기 기본값(User.clinicSendDefaults) — 환자별 칸·하루치 칸이 이 값으로 시작. 저장값이 깨졌으면 기본값
+export const ClinicDefaultsSchema = z.object({
+  where: z.enum(["laptop", "clinic"]).default("laptop"),
+  note: z.boolean().default(true),
+  dx: z.boolean().default(true),
+  scope: z.boolean().default(false),
+});
+export type ClinicDefaults = z.infer<typeof ClinicDefaultsSchema>;
+export const clinicDefaults = (v: unknown): ClinicDefaults => {
+  const r = ClinicDefaultsSchema.safeParse(v ?? {});
+  return r.success ? r.data : ClinicDefaultsSchema.parse({});
+};
 
 export const OpdJobResultSchema = z.object({
   id: z.string().min(1).max(40),

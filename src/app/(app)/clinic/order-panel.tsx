@@ -3,7 +3,8 @@
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { buttonStyles } from "@/lib/ui";
-import { cancelClinicJob, sendToClinic } from "@/app/actions/clinic";
+import { cancelClinicJob, saveClinicDefaults, sendToClinic } from "@/app/actions/clinic";
+import { clinicDefaults, type ClinicDefaults } from "@/lib/opd-jobs";
 
 export type ClinicJobView = { id: string; status: string; result: string | null; where: "laptop" | "clinic"; practice: boolean; updatedAt: string };
 type Tpl = { id: string; title: string; audience: string };
@@ -28,6 +29,7 @@ export function OrderPanel({
   canSend,
   templates,
   job,
+  defaults = clinicDefaults(null),
 }: {
   chartNo: string;
   name: string;
@@ -36,16 +38,18 @@ export function OrderPanel({
   canSend: boolean;
   templates: Tpl[];
   job: ClinicJobView | null;
+  defaults?: ClinicDefaults;
 }) {
   const router = useRouter();
   const follow = visit === "재진";
   const [templateId, setTemplateId] = useState("");
-  const [note, setNote] = useState(true);
-  const [dx, setDx] = useState(true);
-  const [scope, setScope] = useState(true);
+  const [note, setNote] = useState(defaults.note);
+  const [dx, setDx] = useState(defaults.dx);
+  const [scope, setScope] = useState(defaults.scope);
   const [practice, setPractice] = useState(false);
-  const [where, setWhere] = useState<"laptop" | "clinic">("laptop");
+  const [where, setWhere] = useState<"laptop" | "clinic">(defaults.where);
   const [msg, setMsg] = useState<string | null>(null);
+  const [saved, setSaved] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const live = job && ["pending", "running", "waiting"].includes(job.status);
 
@@ -106,6 +110,18 @@ export function OrderPanel({
         <input type="checkbox" checked={scope} onChange={(e) => setScope(e.target.checked)} />
         비인강경 오더(ENTE7540) + 기록지 저장 + 처방 서명
       </label>
+      {/* 지금 고른 보낼 곳·할 일을 기본값으로(사용자 2026-10-27) — 다른 환자·하루치 칸·다른 기기도 이 값으로 시작 */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          className={buttonStyles.secondarySmall}
+          disabled={pending}
+          onClick={() => start(async () => { const r = await saveClinicDefaults({ where, note, dx, scope }); setSaved(r.ok ? "이 설정을 기본으로 저장했습니다" : (r.error ?? "저장하지 못했습니다.")); })}
+        >
+          이 설정 저장
+        </button>
+        {saved && <span className="text-xs text-slate-500">{saved}</span>}
+      </div>
       <label className="flex items-center gap-2 text-slate-500">
         <input type="checkbox" checked={practice} onChange={(e) => setPractice(e.target.checked)} />
         연습(EMR에 쓰지 않고 할 일만 확인)

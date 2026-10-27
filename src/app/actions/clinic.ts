@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { verifySession } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
-import { ClinicJobSchema, OpdJobSubmitSchema } from "@/lib/opd-jobs";
+import { ClinicDefaultsSchema, ClinicJobSchema, OpdJobSubmitSchema } from "@/lib/opd-jobs";
 import { kstDate } from "@/lib/hospital-link";
 
 // 웹 진료 화면 [보내기] — 노트북(환자 선택·새 기록지부터 혼자 처리) 또는 진료실 PC(그 환자 기록지가 EMR에 열려 있을 때 처리).
@@ -60,6 +60,16 @@ export async function sendBatchToLaptop(input: unknown): Promise<{ ok: boolean; 
   );
   revalidatePath("/clinic");
   return { ok: true, count: items.length };
+}
+
+// [이 설정 저장] — 보낼 곳·할 일 선택을 계정 기본값으로(어느 기기에서 열어도 같음)
+export async function saveClinicDefaults(input: unknown): Promise<{ ok: boolean; error?: string }> {
+  const { userId } = await verifySession();
+  const parsed = ClinicDefaultsSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "형식이 올바르지 않습니다." };
+  await prisma.user.update({ where: { id: userId }, data: { clinicSendDefaults: parsed.data } });
+  revalidatePath("/clinic");
+  return { ok: true };
 }
 
 // 아직 처리 전(대기·나중에 다시)인 것만 취소

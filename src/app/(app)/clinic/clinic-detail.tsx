@@ -6,6 +6,7 @@ import { toggleTodo } from "@/app/actions/roadmap";
 import { RoadmapBox } from "../outpatient/roadmap-box";
 import { PathwayFlow } from "./pathway-flow";
 import { OrderPanel, type ClinicJobView } from "./order-panel";
+import type { ClinicDefaults } from "@/lib/opd-jobs";
 
 const PLAN_LABEL: Record<string, string> = { surgery: "수술", medication: "약물치료", observation: "경과관찰", return: "회송" };
 export const VISIT_CLS: Record<string, string> = { 초진: "bg-sky-100 text-sky-800", 재초: "bg-violet-100 text-violet-800", 재진: "bg-slate-100 text-slate-600" };
@@ -26,6 +27,7 @@ export function ClinicDetail(p: {
   calls: Record<string, StageCall | null>;
   templates: { id: string; title: string; audience: string }[];
   job: ClinicJobView | null;
+  defaults: ClinicDefaults;
   date: string;
   canSend: boolean;
 }) {
@@ -112,7 +114,7 @@ export function ClinicDetail(p: {
         <aside className="order-first xl:sticky xl:top-4 xl:order-none xl:self-start">
           <section className={card}>
             <h2 className="mb-3 text-sm font-semibold text-slate-500">오늘 오더</h2>
-            <OrderPanel key={row.chartNo} chartNo={row.chartNo} name={row.name} visit={row.visit} visitDate={p.date} canSend={p.canSend} templates={p.templates} job={p.job} />
+            <OrderPanel key={row.chartNo} chartNo={row.chartNo} name={row.name} visit={row.visit} visitDate={p.date} canSend={p.canSend} templates={p.templates} job={p.job} defaults={p.defaults} />
           </section>
         </aside>
       </div>
