@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
 import { AccountCard } from "./account-card";
@@ -9,6 +10,7 @@ import { effectiveSchedule } from "@/lib/clinic-schedule-store";
 import { SETTINGS_TABS, SectionTabs } from "@/components/section-tabs";
 import { OtpCard } from "./otp-card";
 import { OsaSheetCard } from "./osa-sheet-card";
+import { DeptCalendarCard } from "./dept-calendar-card";
 
 // 설정 > 일반 — 오늘의 번호, OSA 시트, 내 외래 스케줄, 문구 템플릿, 계정, 폰 앱. 수술 관련(수술명 표기·수술 캘린더·수술 종류)은 설정 > 수술 탭으로(사용자 2026-10-27)
 export default async function SettingsPage() {
@@ -30,6 +32,12 @@ export default async function SettingsPage() {
       .map((s) => `${"일월화수목금토"[s.weekday]} ${s.session === "AM" ? "오전" : "오후"} ${s.everyOtherFrom ? `격주(${s.everyOtherFrom.slice(5).replace("-", "/")} 기준)` : "매주"}`)
       .join(" · "),
   };
+
+  // 비과 일정 구독 주소 — 지금 접속한 주소(운영/미리보기) 기준(수술 탭의 개인 수술 피드와 같은 방식)
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  const proto = h.get("x-forwarded-proto") ?? "https";
+  const deptFeedUrl = user.deptCalendarToken && host ? `${proto}://${host}/api/dept-calendar/${user.deptCalendarToken}` : null;
 
   const templates = await prisma.textTemplate.findMany({
     where: { createdById: user.id },
@@ -53,6 +61,11 @@ export default async function SettingsPage() {
       <div id="osa" className="scroll-mt-24">
         <h2 className="mb-1 text-sm font-semibold text-slate-700">OSA 시트 연결 (CPAP 처방 등록·결과 메일 확인)</h2>
         <OsaSheetCard connected={!!(await prisma.user.findUnique({ where: { id: user.id }, select: { osaScriptUrl: true } }))?.osaScriptUrl} />
+      </div>
+
+      <div id="dept-calendar" className="scroll-mt-24">
+        <h2 className="mb-1 text-sm font-semibold text-slate-700">비과 일정 캘린더 구독 (교수님 4분 수술·외래·부재)</h2>
+        <DeptCalendarCard feedUrl={deptFeedUrl} />
       </div>
 
       <div>

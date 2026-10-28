@@ -15,3 +15,13 @@ export async function regenerateCalendarToken(): Promise<void> {
   });
   revalidatePath("/settings");
 }
+
+// 비과 전체 일정 구독 주소(사용자 2026-10-28) — 다른 선생님께 건넨 주소가 새면 다시 만들어 막는다
+export async function regenerateDeptCalendarToken(): Promise<void> {
+  const session = await verifySession();
+  await prisma.user.update({
+    where: { id: session.userId },
+    data: { deptCalendarToken: generateCalendarToken() },
+  });
+  revalidatePath("/settings");
+}

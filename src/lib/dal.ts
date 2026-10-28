@@ -26,6 +26,7 @@ export const verifySession = cache(async () => {
       abbreviateRegions: true,
       defaultAssistantName: true,
       calendarToken: true,
+      deptCalendarToken: true,
       importToken: true,
       reminderSyncRequestedAt: true,
       sessionVersion: true,
