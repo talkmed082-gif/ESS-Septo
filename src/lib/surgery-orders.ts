@@ -37,6 +37,9 @@ function sinusOrders(s: Set4, complex: boolean, side: "Rt." | "Lt.", why: string
 }
 
 export function surgeryOrdersFor(surgeryCode: string, v: FieldValues): SurgeryOrder[] {
+  // T&A는 비강 수술이 아니라 접구개신경절차단술(LA235) 등 아래 오더가 하나도 해당되지 않는다.
+  // T&A 오더 코드는 아직 정하지 않아 비워 둔다(사용자 2026-10-28).
+  if (surgeryCode === "TA") return [];
   const out: SurgeryOrder[] = [];
   const hasEss = surgeryCode === "ESS" || surgeryCode === "COMBO";
   const hasSepto = surgeryCode === "SEPTOPLASTY" || surgeryCode === "COMBO";

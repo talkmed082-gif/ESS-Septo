@@ -385,6 +385,9 @@ export function SurgeryPlanner({
   const septoType = surgeryTypes.find((st) => st.code === "SEPTOPLASTY");
   const essType = surgeryTypes.find((st) => st.code === "ESS");
   const comboType = surgeryTypes.find((st) => st.code === "COMBO");
+  // T&A는 비강 수술(ESS/Septo)과 같이 하지 않아 체크박스 하나로 따로 고른다(사용자 2026-10-28)
+  const taType = surgeryTypes.find((st) => st.code === "TA");
+  const taChecked = selected?.code === "TA";
   const customTypes = surgeryTypes.filter((st) => !isBuiltInSurgeryCode(st.code));
   const isCustomSelected = selected ? !isBuiltInSurgeryCode(selected.code) : false;
   const septoChecked = selected?.code === "SEPTOPLASTY" || selected?.code === "COMBO";
@@ -767,6 +770,17 @@ export function SurgeryPlanner({
                   Septo
                 </label>
               )}
+              {taType && (
+                <label className="flex items-center gap-1.5">
+                  <input
+                    type="checkbox"
+                    checked={taChecked}
+                    onChange={(e) => handleSurgeryTypeChange(e.target.checked ? taType.id : "", e)}
+                    className="h-4 w-4 rounded border-slate-300"
+                  />
+                  T&amp;A
+                </label>
+              )}
               {/* 날짜는 수술 전/후 어느 화면에서 저장해도 항상 전송되도록 늘 그려지는
                   이 줄에 둔다 — 예전엔 수술 후 화면에만 있어서, 수술 전 화면에서 저장하면
                   날짜가 빠져 저장이 실패하거나 날짜가 지워졌다. */}
@@ -1045,7 +1059,7 @@ export function SurgeryPlanner({
               {view === "post" && showSinus && (
                 <SinusDiagram values={templateValues} onChange={regenerateFromForm} hideRevisionToggle />
               )}
-              {view === "post" && selected.code !== "SEPTOPLASTY" && (
+              {view === "post" && selected.code !== "SEPTOPLASTY" && selected.code !== "TA" && (
                 <TurbinoplastyTypePicker values={templateValues} onChange={regenerateFromForm} />
               )}
               {selected.fields.some((f) => POST_OP_FINISH_KEYS.includes(f.key)) && (

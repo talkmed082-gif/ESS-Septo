@@ -496,6 +496,99 @@ export const comboFullFields: SurgeryFieldDef[] = withDefaults(
   },
 );
 
+// ---------- T&A (Tonsillectomy & Adenoidectomy, 편도·아데노이드 절제술) ----------
+// 비강 수술이 아니라 비강 소견·SPG block 오더·packing 항목은 없다(사용자 2026-10-28).
+// 수술 전 소견(적응증·편도/아데노이드 크기)은 n_ 접두어라 "수술 전" 화면으로, 술식(t_)은
+// "수술 후" 화면으로 간다(isNasalFindingKey 기준을 그대로 따름).
+export const TA_SCOPE_KEY = "t_scope";
+export const TA_SCOPE_BOTH = "T&A";
+export const TA_SCOPE_TONSIL = "Tonsillectomy only";
+export const TA_SCOPE_ADENOID = "Adenoidectomy only";
+
+export const taFindingFields: SurgeryFieldDef[] = [
+  // 같이 해당되는 경우가 많아(OSA + 편도 비대) 여러 개 고르게 한다. 값에 쉼표가 들어가면
+  // 다중 선택 저장이 쪼개지므로 쉼표 없이 쓴다.
+  {
+    key: "n_ta_indication",
+    label: "적응증 (Indication)",
+    type: "multiselect",
+    options: [
+      "OSA (수면무호흡)",
+      "Recurrent tonsillitis (반복성 편도염)",
+      "Tonsillar hypertrophy (편도 비대)",
+      "기타",
+    ],
+  },
+  // Brodsky grade — 구인두 너비 대비 편도가 차지하는 비율
+  {
+    key: "n_tonsil_grade",
+    label: "편도 크기 (Brodsky grade)",
+    type: "select",
+    options: ["0", "1", "2", "3", "4"],
+    optionLabels: {
+      "0": "Grade 0 (편도와 안, 절제 후)",
+      "1": "Grade 1 (<25%)",
+      "2": "Grade 2 (25–50%)",
+      "3": "Grade 3 (50–75%)",
+      "4": "Grade 4 (>75%)",
+    },
+  },
+  // 아데노이드 — 후비공(choana) 폐쇄 비율 기준 I–IV
+  {
+    key: "n_adenoid_grade",
+    label: "아데노이드 크기 (후비공 폐쇄 정도)",
+    type: "select",
+    options: ["I", "II", "III", "IV"],
+    optionLabels: {
+      I: "Grade I (<25%)",
+      II: "Grade II (25–50%)",
+      III: "Grade III (50–75%)",
+      IV: "Grade IV (>75%)",
+    },
+  },
+];
+
+export const taProcedureFields: SurgeryFieldDef[] = [
+  // 수술 범위 — 수술명이 이 값으로 정해진다(T&A / Tonsillectomy / Adenoidectomy)
+  {
+    key: TA_SCOPE_KEY,
+    label: "수술 범위",
+    type: "select",
+    options: [TA_SCOPE_BOTH, TA_SCOPE_TONSIL, TA_SCOPE_ADENOID],
+    optionLabels: {
+      [TA_SCOPE_BOTH]: "T&A (편도 + 아데노이드)",
+      [TA_SCOPE_TONSIL]: "편도절제술만 (Tonsillectomy)",
+      [TA_SCOPE_ADENOID]: "아데노이드절제술만 (Adenoidectomy)",
+    },
+    default: TA_SCOPE_BOTH,
+  },
+  {
+    key: "t_tonsil_method",
+    label: "편도 절제 방법",
+    type: "select",
+    options: ["Cold steel dissection", "Bipolar dissection", "Coblation"],
+    default: "Cold steel dissection",
+  },
+  {
+    key: "t_adenoid_method",
+    label: "아데노이드 절제 방법",
+    type: "select",
+    options: ["Curettage", "Microdebrider", "Coblation"],
+    default: "Curettage",
+  },
+  {
+    key: "t_hemostasis",
+    label: "지혈 방법",
+    type: "multiselect",
+    options: ["Bipolar cautery", "Suture ligation"],
+    default: "Bipolar cautery",
+  },
+  { key: "t_ebl", label: "추정 출혈량 (EBL, cc)", type: "number" },
+  { key: "t_note", label: "특이사항", type: "textarea" },
+];
+
+export const taFullFields: SurgeryFieldDef[] = [...taFindingFields, ...taProcedureFields];
+
 // Septo를 새로 켤 때 이미 있던 값(ESS에서 꺼 둔 turbinoplasty 등)보다 우선해서 켜는 기본 세트
 export const SEPTO_BASE_SET: Record<string, boolean> = {
   turb_inferior_right: true,
@@ -518,7 +611,8 @@ export function isUnusedSideField(key: string, values: Record<string, unknown>):
   return values[key.replace(/_side$/, "_present")] !== true;
 }
 
-export const BUILT_IN_SURGERY_CODES = ["ESS", "SEPTOPLASTY", "COMBO"] as const;
+// TA = 편도·아데노이드 절제술(사용자 2026-10-28)
+export const BUILT_IN_SURGERY_CODES = ["ESS", "SEPTOPLASTY", "COMBO", "TA"] as const;
 export type BuiltInSurgeryCode = (typeof BUILT_IN_SURGERY_CODES)[number];
 
 export function isBuiltInSurgeryCode(code: string): code is BuiltInSurgeryCode {
@@ -535,6 +629,7 @@ export function resolveSurgeryTypeFields(surgeryType: { code: string; fields: un
   if (surgeryType.code === "ESS") return essFullFields;
   if (surgeryType.code === "SEPTOPLASTY") return septoplastyFullFields;
   if (surgeryType.code === "COMBO") return comboFullFields;
+  if (surgeryType.code === "TA") return taFullFields;
   return parseFieldDefs(surgeryType.fields);
 }
 

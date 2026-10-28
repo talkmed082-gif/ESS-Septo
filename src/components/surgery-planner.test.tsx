@@ -9,7 +9,7 @@ const routerPush = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: routerPush }) }));
 
 import { SurgeryPlanner } from "./surgery-planner";
-import { comboFullFields, essFullFields, septoplastyFullFields } from "@/lib/op-note-defs";
+import { comboFullFields, essFullFields, septoplastyFullFields, taFullFields } from "@/lib/op-note-defs";
 
 const types = [{ id: "1", code: "ESS", name: "ESS", fields: essFullFields }];
 
@@ -735,5 +735,32 @@ describe("특이사항 (가끔 하는 것)", () => {
       />,
     );
     expect(container.querySelector("details")?.open).toBe(true);
+  });
+});
+
+describe("T&A 선택", () => {
+  const withTa = [...allTypes, { id: "4", code: "TA", name: "편도·아데노이드 절제술 (T&A)", fields: taFullFields }];
+
+  function taCheckbox(container: HTMLElement): HTMLInputElement {
+    const label = Array.from(container.querySelectorAll("label")).find((l) => l.textContent?.trim() === "T&A")!;
+    return label.querySelector("input")!;
+  }
+
+  it("T&A를 체크하면 ESS/Septo가 꺼지고 T&A 수술명·기록지가 만들어진다", () => {
+    const { container } = render(<SurgeryPlanner surgeryTypes={withTa} loggedIn />);
+    fireEvent.click(taCheckbox(container));
+    expect(taCheckbox(container).checked).toBe(true);
+    expect(new FormData(container.querySelector("form")!).get("surgeryTypeId")).toBe("4");
+    expect(container.textContent).toContain("Tonsillectomy and adenoidectomy");
+    expect(container.textContent).toContain("편도 크기 (Brodsky grade)");
+
+    fireEvent.click(byText(container, "수술 후 (수술 방법 · 기록지)"));
+    expect(container.textContent).toContain("수술 범위");
+    // 비강 수술용 Turbinoplasty 입력은 나오지 않는다
+    expect(container.textContent).not.toContain("Inferior turbinoplasty");
+    const scope = container.querySelector<HTMLSelectElement>('select[name="field_t_scope"]')!;
+    fireEvent.change(scope, { target: { value: "Tonsillectomy only" } });
+    expect(container.textContent).toContain("Crowe-Davis mouth gag");
+    expect(container.textContent).not.toContain("Tonsillectomy and adenoidectomy");
   });
 });

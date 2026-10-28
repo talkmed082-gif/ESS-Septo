@@ -4,6 +4,10 @@ import { surgeryOrdersFor } from "./surgery-orders";
 const codes = (o: ReturnType<typeof surgeryOrdersFor>) => o.map((x) => `${x.code}${x.side ? " " + x.side : ""}`);
 
 describe("수술기록 → EMR 수술 오더", () => {
+  it("T&A는 비강 오더(접구개 차단 등)를 넣지 않는다", () => {
+    expect(surgeryOrdersFor("TA", { t_scope: "T&A" })).toEqual([]);
+  });
+
   it("양측 상악+사골(용종·재수술 없음) + 접구개 차단 기본 양측", () => {
     const v = { f_right_mma: true, f_right_ant_eth: true, f_left_mma: true, f_left_post_eth: true };
     expect(codes(surgeryOrdersFor("ESS", v))).toEqual(["O1141 Rt.", "O1141 Lt.", "LA235 Rt.", "LA235 Lt."]);

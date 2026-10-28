@@ -357,7 +357,7 @@ export function RecordForm({
           />
           <SurgeryFieldInputs fields={fields.filter((f) => f.key === "f_nav")} values={liveFieldValues} />
           {showSinus && <SinusDiagram values={liveFieldValues} />}
-          {surgeryTypeCode !== "SEPTOPLASTY" && <TurbinoplastyTypePicker values={liveFieldValues} />}
+          {surgeryTypeCode !== "SEPTOPLASTY" && surgeryTypeCode !== "TA" && <TurbinoplastyTypePicker values={liveFieldValues} />}
           {fields.some((f) => POST_OP_FINISH_KEYS.includes(f.key)) && (
             <div className="rounded-md border border-slate-200 p-3">
               <p className="mb-2 text-sm font-medium text-slate-700">수술후 마무리</p>
