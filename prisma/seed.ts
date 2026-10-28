@@ -5,6 +5,7 @@ import {
   essFullFields,
   septoplastyFullFields,
   comboFullFields,
+  taFullFields,
 } from "../src/lib/op-note-defs";
 
 function toJson(fields: SurgeryFieldDef[]): Prisma.InputJsonValue {
@@ -48,7 +49,19 @@ async function main() {
     },
   });
 
-  console.log("Seed complete: ESS, SEPTOPLASTY, COMBO surgery types ready.");
+  // 편도·아데노이드 절제술 — 이비인후과 공통 기본 수술로 추가(사용자 2026-10-28)
+  await prisma.surgeryType.upsert({
+    where: { code: "TA" },
+    update: { name: "편도·아데노이드 절제술 (T&A)", fields: toJson(taFullFields), isBuiltIn: true },
+    create: {
+      code: "TA",
+      name: "편도·아데노이드 절제술 (T&A)",
+      fields: toJson(taFullFields),
+      isBuiltIn: true,
+    },
+  });
+
+  console.log("Seed complete: ESS, SEPTOPLASTY, COMBO, TA surgery types ready.");
 }
 
 main()

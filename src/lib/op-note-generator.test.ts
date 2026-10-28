@@ -564,3 +564,68 @@ describe("방향 표기 [B]", () => {
     );
   });
 });
+
+describe("T&A (편도·아데노이드 절제술)", () => {
+  it("수술 범위에 따라 수술명이 바뀐다(기본은 T&A)", () => {
+    expect(buildProcedureName("TA", {})).toBe("Tonsillectomy and adenoidectomy");
+    expect(buildProcedureName("TA", { t_scope: "T&A" })).toBe("Tonsillectomy and adenoidectomy");
+    expect(buildProcedureName("TA", { t_scope: "Tonsillectomy only" })).toBe("Tonsillectomy");
+    expect(buildProcedureName("TA", { t_scope: "Adenoidectomy only" })).toBe("Adenoidectomy");
+    expect(procedureNameFor({ code: "TA", name: "편도·아데노이드 절제술 (T&A)" }, { t_scope: "Tonsillectomy only" })).toBe(
+      "Tonsillectomy",
+    );
+  });
+
+  it("T&A 기록지 — RAE tube, mouth gag, 피막하 박리, 아데노이드 제거, 지혈 확인, 발관", () => {
+    const v: FieldValues = {
+      n_ta_indication: "OSA (수면무호흡), Tonsillar hypertrophy (편도 비대)",
+      n_tonsil_grade: "3",
+      n_adenoid_grade: "III",
+      t_scope: "T&A",
+      t_tonsil_method: "Coblation",
+      t_adenoid_method: "Microdebrider",
+      t_hemostasis: "Bipolar cautery, Suture ligation",
+      t_ebl: "20",
+      t_note: "Kissing tonsil",
+    };
+    const { findings, procedureDetail } = generateOpNote("TA", v, "record");
+    expect(findings).toBe(
+      "Indication: OSA (수면무호흡), Tonsillar hypertrophy (편도 비대)\nTonsil: Brodsky grade 3\nAdenoid: grade III\n특이사항: Kissing tonsil",
+    );
+    expect(procedureDetail).toContain("1. 환자를 앙와위로 눕히고 전신마취 하에 oral RAE tube로 기관 삽관한 후 수술을 시작함");
+    expect(procedureDetail).toContain("Crowe-Davis mouth gag");
+    expect(procedureDetail).toContain("피막하 박리면(subcapsular plane)을 따라 Coblation wand로");
+    expect(procedureDetail).toContain("bipolar cautery로 소작 및 봉합 결찰(suture ligation)하여 지혈함");
+    expect(procedureDetail).toContain("Microdebrider로 아데노이드를 제거");
+    expect(procedureDetail).toContain("양측 편도와 및 비인두에 활동성 출혈이 없음을 재확인");
+    expect(procedureDetail).toContain("추정 출혈량(EBL) 20cc");
+    expect(procedureDetail).toMatch(/발관한 후 수술을 종료함$/);
+    // 비강 수술 문장(SPG block, packing)은 들어가지 않는다
+    expect(procedureDetail).not.toContain("sphenopalatine");
+    expect(procedureDetail).not.toContain("packing");
+  });
+
+  it("편도만 하면 아데노이드 단계가, 아데노이드만 하면 편도 단계가 빠진다", () => {
+    const tonsilOnly = generateOpNote("TA", { t_scope: "Tonsillectomy only" }, "record").procedureDetail;
+    expect(tonsilOnly).toContain("cold steel dissection으로");
+    expect(tonsilOnly).not.toContain("아데노이드");
+    expect(tonsilOnly).toContain("양측 편도와에 활동성 출혈이 없음");
+
+    const adenoidOnly = generateOpNote("TA", { t_scope: "Adenoidectomy only" }, "record").procedureDetail;
+    expect(adenoidOnly).toContain("Adenoid curette로 아데노이드를 제거");
+    expect(adenoidOnly).not.toContain("편도");
+    expect(adenoidOnly).toContain("비인두에 활동성 출혈이 없음");
+  });
+
+  it("계획(plan) 모드는 마취·발관 문장 없이 술식만, 계획표는 술전 소견 칸", () => {
+    const plan = generateOpNote("TA", {}, "plan").procedureDetail;
+    expect(plan).not.toContain("RAE tube");
+    expect(plan).not.toContain("발관");
+    const table = buildPlanTable("TA", { n_tonsil_grade: "4", t_scope: "Adenoidectomy only" });
+    expect(table.procedureName).toBe("Adenoidectomy");
+    expect(table.findingsLabel).toBe("술전 소견");
+    expect(table.findings).toBe("Tonsil: Brodsky grade 4");
+    expect(table.keyValueRows).toEqual([{ label: "아데노이드 절제", value: "Curettage" }]);
+    expect(table.sideMatrix).toBeUndefined();
+  });
+});

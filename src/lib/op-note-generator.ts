@@ -6,6 +6,10 @@ import {
   fessStepLabels,
   isBuiltInSurgeryCode,
   SCHEDULE_ESS_SIDE_KEY,
+  TA_SCOPE_ADENOID,
+  TA_SCOPE_BOTH,
+  TA_SCOPE_KEY,
+  TA_SCOPE_TONSIL,
   type BuiltInSurgeryCode,
 } from "./op-note-defs";
 
@@ -832,6 +836,95 @@ function genCombo(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpN
   return { findings: nasalFindingsText(values), procedureDetail: parts.join("\n") };
 }
 
+// ---------- T&A (Tonsillectomy & Adenoidectomy, 편도·아데노이드 절제술) ----------
+// 비강 수술과 달리 SPG block·packing이 없고, 수술 범위(t_scope)에 따라 편도/아데노이드
+// 단계를 넣고 뺀다(사용자 2026-10-28).
+
+function taParts(values: FieldValues): { tonsil: boolean; adenoid: boolean } {
+  const scope = str(values, TA_SCOPE_KEY, TA_SCOPE_BOTH);
+  return { tonsil: scope !== TA_SCOPE_ADENOID, adenoid: scope !== TA_SCOPE_TONSIL };
+}
+
+const tonsilMethodPhrases: Record<string, string> = {
+  "Cold steel dissection": "cold steel dissection으로",
+  "Bipolar dissection": "bipolar forceps로",
+  Coblation: "Coblation wand로",
+};
+
+const adenoidMethodPhrases: Record<string, string> = {
+  Curettage: "Adenoid curette로",
+  Microdebrider: "Microdebrider로",
+  Coblation: "Coblation wand로",
+};
+
+function multiValues(values: FieldValues, key: string, fallback = ""): string[] {
+  return str(values, key, fallback)
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function taHemostasisPhrase(values: FieldValues): string {
+  const methods = multiValues(values, "t_hemostasis", "Bipolar cautery");
+  const words = [
+    methods.includes("Bipolar cautery") && "bipolar cautery로 소작",
+    methods.includes("Suture ligation") && "봉합 결찰(suture ligation)",
+  ].filter((s): s is string => Boolean(s));
+  return words.length > 0 ? words.join(" 및 ") : "bipolar cautery로 소작";
+}
+
+// 기록지·계획표 공통 소견 줄 — 적응증과 편도/아데노이드 크기
+function taFindingLines(values: FieldValues): string[] {
+  const indication = multiValues(values, "n_ta_indication").join(", ");
+  const tonsil = str(values, "n_tonsil_grade");
+  const adenoid = str(values, "n_adenoid_grade");
+  return [
+    indication && `Indication: ${indication}`,
+    tonsil && `Tonsil: Brodsky grade ${tonsil}`,
+    adenoid && `Adenoid: grade ${adenoid}`,
+  ].filter((s): s is string => Boolean(s));
+}
+
+function genTa(values: FieldValues, mode: OpNoteMode, anesLabel: string): OpNoteResult {
+  const { tonsil, adenoid } = taParts(values);
+  const tonsilMethod = tonsilMethodPhrases[str(values, "t_tonsil_method", "Cold steel dissection")] ?? "cold steel dissection으로";
+  const adenoidMethod = adenoidMethodPhrases[str(values, "t_adenoid_method", "Curettage")] ?? "Adenoid curette로";
+  const ebl = str(values, "t_ebl");
+
+  const steps: (string | false)[] = [];
+  if (mode === "record") {
+    steps.push(`환자를 앙와위로 눕히고 ${anesLabel} 하에 oral RAE tube로 기관 삽관한 후 수술을 시작함`);
+    steps.push("Shoulder roll로 두경부를 신전시키고 Crowe-Davis mouth gag를 거치하여 구인두를 노출함");
+  }
+  if (tonsil) {
+    steps.push(
+      `우측 편도를 Allis forceps로 내측 견인하고 anterior pillar 점막을 절개한 후, 피막하 박리면(subcapsular plane)을 따라 ${tonsilMethod} 상극에서 하극까지 박리하여 편도를 절제함`,
+    );
+    steps.push("좌측 편도도 같은 방법으로 절제함");
+    steps.push(`양측 편도와(tonsillar fossa)의 출혈 부위는 ${taHemostasisPhrase(values)}하여 지혈함`);
+  }
+  if (adenoid) {
+    steps.push("Nelaton catheter로 연구개를 견인하고 mirror(내시경) 시야에서 비인두의 아데노이드를 확인함");
+    steps.push(`${adenoidMethod} 아데노이드를 제거하고, 비인두를 거즈로 압박하여 지혈함`);
+  }
+  const sites = [tonsil && "양측 편도와", adenoid && "비인두"].filter(Boolean).join(" 및 ");
+  steps.push(`${sites}에 활동성 출혈이 없음을 재확인하고 구강 및 비인두를 suction한 후 mouth gag를 제거함`);
+  if (mode === "record") {
+    steps.push(ebl ? `추정 출혈량(EBL) ${ebl}cc` : false);
+    steps.push("환자를 마취에서 회복시켜 발관한 후 수술을 종료함");
+  }
+
+  const note = str(values, "t_note");
+  const findings = [...taFindingLines(values), note && `특이사항: ${note}`].filter(Boolean).join("\n");
+  return { findings, procedureDetail: numberSteps(steps) };
+}
+
+function taProcedureName(values: FieldValues): string {
+  const { tonsil, adenoid } = taParts(values);
+  if (tonsil && adenoid) return "Tonsillectomy and adenoidectomy";
+  return tonsil ? "Tonsillectomy" : "Adenoidectomy";
+}
+
 export function generateOpNote(
   surgeryCode: BuiltInSurgeryCode,
   values: FieldValues,
@@ -841,6 +934,7 @@ export function generateOpNote(
   const anesLabel = anesthesiaLabel(anesthesiaType);
   if (surgeryCode === "SEPTOPLASTY") return genSeptoplasty(values, mode, anesLabel);
   if (surgeryCode === "ESS") return genFess(values, mode, anesLabel);
+  if (surgeryCode === "TA") return genTa(values, mode, anesLabel);
   return genCombo(values, mode, anesLabel);
 }
 
@@ -1038,6 +1132,7 @@ export function buildProcedureName(
   style: NameStyle = DEFAULT_NAME_STYLE,
 ): string {
   if (surgeryCode === "SEPTOPLASTY") return septoplastyProcedureName(values, style);
+  if (surgeryCode === "TA") return taProcedureName(values);
 
   const hasFessRegions =
     fessRegionsForSide("f_left_", values).length > 0 || fessRegionsForSide("f_right_", values).length > 0;
@@ -1113,6 +1208,8 @@ export interface PlanSideMatrixRow {
 export interface PlanTable {
   procedureName: string;
   findings: string;
+  // 소견 칸 이름 — 비강 수술은 "비강 소견", T&A는 "술전 소견"(사용자 2026-10-28)
+  findingsLabel?: string;
   keyValueRows: PlanKeyValueRow[];
   sideMatrix?: { title: string; rows: PlanSideMatrixRow[] };
   // Turbinoplasty 시행 여부/부위를 표에서 바로 체크할 수 있게 하는 별도 표 —
@@ -1191,6 +1288,20 @@ export function buildPlanTable(
   style: NameStyle = DEFAULT_NAME_STYLE,
 ): PlanTable {
   const procedureName = buildProcedureName(surgeryCode, values, style);
+  if (surgeryCode === "TA") {
+    const { tonsil, adenoid } = taParts(values);
+    const rows: (PlanKeyValueRow | false)[] = [
+      tonsil && { label: "편도 절제", value: str(values, "t_tonsil_method", "Cold steel dissection") },
+      adenoid && { label: "아데노이드 절제", value: str(values, "t_adenoid_method", "Curettage") },
+      tonsil && { label: "지혈", value: multiValues(values, "t_hemostasis", "Bipolar cautery").join(" + ") },
+    ];
+    return {
+      procedureName,
+      findings: taFindingLines(values).join(" / "),
+      findingsLabel: "술전 소견",
+      keyValueRows: rows.filter((r): r is PlanKeyValueRow => Boolean(r)),
+    };
+  }
   const findings = nasalFindingsSummary(values);
   if (surgeryCode === "SEPTOPLASTY") {
     const [incision] = septoConciseItems(values, false);
@@ -1240,7 +1351,7 @@ export function buildPlanTable(
 
 // 복사(클립보드)용 — 표를 일반 텍스트로 풀어서 준다
 export function planTableToText(table: PlanTable): string {
-  const lines: string[] = [`수술명: ${table.procedureName}`, "", `[비강 소견] ${table.findings}`, ""];
+  const lines: string[] = [`수술명: ${table.procedureName}`, "", `[${table.findingsLabel ?? "비강 소견"}] ${table.findings}`, ""];
   for (const row of table.keyValueRows) lines.push(`${row.label}: ${row.value}`);
   if (table.sideMatrix) {
     lines.push("", table.sideMatrix.title);

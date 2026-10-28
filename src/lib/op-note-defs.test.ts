@@ -7,6 +7,8 @@ import {
   resolveSurgeryTypeFields,
   septoplastyFullFields,
   septumTurbinateFindingFields,
+  isNasalFindingKey,
+  taFullFields,
 } from "./op-note-defs";
 import { applyFieldDefaults, type SurgeryFieldDef } from "./field-types";
 
@@ -66,6 +68,20 @@ describe("resolveSurgeryTypeFields", () => {
   it("기본 3종은 DB에 저장된 옛 필드 정의 대신 항상 코드의 최신 정의를 쓴다", () => {
     const stale = [{ key: "old_field", label: "옛 항목", type: "checkbox" }];
     expect(resolveSurgeryTypeFields({ code: "ESS", fields: stale })).toBe(essFullFields);
+    expect(resolveSurgeryTypeFields({ code: "TA", fields: stale })).toBe(taFullFields);
+  });
+
+  it("T&A — 소견(n_)은 수술 전 화면, 술식(t_)은 수술 후 화면으로 가고 비강 수술 항목은 없다", () => {
+    expect(taFullFields.filter((f) => isNasalFindingKey(f.key)).map((f) => f.key)).toEqual([
+      "n_ta_indication",
+      "n_tonsil_grade",
+      "n_adenoid_grade",
+    ]);
+    expect(keys(taFullFields)).not.toContain("o_spg_block");
+    expect(keys(taFullFields)).not.toContain("dermacol");
+    expect(defaultsOf(taFullFields)).toMatchObject({ t_scope: "T&A", t_tonsil_method: "Cold steel dissection" });
+    // 다중 선택 값은 쉼표로 이어 저장하므로 선택지에 쉼표가 있으면 안 된다
+    for (const f of taFullFields) for (const o of f.options ?? []) expect(o).not.toContain(",");
   });
 
   it("커스텀 수술 종류는 DB에 저장된 필드 정의를 쓴다", () => {
