@@ -74,6 +74,9 @@ export interface CalendarFeedEvent {
   // 일정이 바뀐 시각 — 구독하는 캘린더가 수정 여부를 판단하는 기준(DTSTAMP)
   updatedAt: Date;
   description?: string;
+  // 시각이 있는 일정(비과 외래 오전/오후 등, 사용자 2026-10-28) — 둘 다 있으면 date 대신 이 시각으로 넣는다
+  start?: Date;
+  end?: Date;
 }
 
 function toIcsDateTime(date: Date): string {
@@ -104,8 +107,9 @@ export function buildIcsFeed({
       "BEGIN:VEVENT",
       `UID:${ev.uid}`,
       `DTSTAMP:${toIcsDateTime(ev.updatedAt)}`,
-      `DTSTART;VALUE=DATE:${toIcsDate(ev.date)}`,
-      `DTEND;VALUE=DATE:${toIcsDate(addDays(ev.date, 1))}`,
+      ...(ev.start && ev.end
+        ? [`DTSTART:${toIcsDateTime(ev.start)}`, `DTEND:${toIcsDateTime(ev.end)}`]
+        : [`DTSTART;VALUE=DATE:${toIcsDate(ev.date)}`, `DTEND;VALUE=DATE:${toIcsDate(addDays(ev.date, 1))}`]),
       `SUMMARY:${escapeIcsText(ev.title)}`,
     );
     if (ev.description) lines.push(`DESCRIPTION:${escapeIcsText(ev.description)}`);
