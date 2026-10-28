@@ -4,8 +4,8 @@ import { type OutpatientRow } from "@/lib/hospital-link";
 import { parseFieldValues } from "@/lib/field-types";
 import { procedureNameFor, type NameStyle } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
-import { isCancelledRoom, parseProfSurgeries, planNoteRoom, PROFESSORS, roomLabel, splitCancelled, type ProfSurgery } from "@/lib/prof-schedule";
-import { profSurgeryTags } from "@/lib/my-week";
+import { isCancelledRoom, offLabel, parseProfSurgeries, planNoteRoom, PROFESSORS, roomLabel, splitCancelled, type ProfSurgery } from "@/lib/prof-schedule";
+import { profCellLines } from "@/lib/my-week";
 
 // 내 일정 달력(외래 인원·수술) — 대시보드 2주 달력과 캘린더 메뉴(한 달)가 같이 쓴다(사용자 2026-10-25).
 // 날짜를 누르면 그날 외래·수술 환자 목록이 아래에 뜬다. 교수님 4분 외래 인원·수술도 같이(병원 PC가 2주치를 올림).
@@ -19,7 +19,7 @@ export type ScheduleData = {
   lists: Map<string, { clinic: string; rows: OutpatientRow[] }>;
   plans: Map<string, PlanItem[]>;
   // surgeries = 취소 뺀 것(건수·내 주간 일정은 이것만), cancelled = 취소된 수술(화면에만 "취소"로)
-  profs: Map<string, { doctor: string; outpatient: number; surgeries: ProfSurgery[]; cancelled: ProfSurgery[]; off: string | null }[]>;
+  profs: Map<string, { doctor: string; outpatient: number; outpatientAm: number | null; outpatientPm: number | null; surgeries: ProfSurgery[]; cancelled: ProfSurgery[]; off: string | null }[]>;
 };
 
 const planSelect = {
@@ -69,14 +69,14 @@ export async function loadSchedule(userId: string, nameStyle: NameStyle, from: s
     }),
     prisma.profSchedule.findMany({
       where: { createdById: userId, date: { gte: from, lte: to } },
-      select: { date: true, doctor: true, outpatient: true, surgeries: true, off: true },
+      select: { date: true, doctor: true, outpatient: true, outpatientAm: true, outpatientPm: true, surgeries: true, off: true },
     }),
   ]);
   const order = (d: string) => PROFESSORS.indexOf(d as (typeof PROFESSORS)[number]);
-  const profs = new Map<string, { doctor: string; outpatient: number; surgeries: ProfSurgery[]; cancelled: ProfSurgery[]; off: string | null }[]>();
+  const profs = new Map<string, { doctor: string; outpatient: number; outpatientAm: number | null; outpatientPm: number | null; surgeries: ProfSurgery[]; cancelled: ProfSurgery[]; off: string | null }[]>();
   for (const r of [...profRows].sort((a, b) => order(a.doctor) - order(b.doctor))) {
     const { active, cancelled } = splitCancelled(parseProfSurgeries(r.surgeries));
-    profs.set(r.date, [...(profs.get(r.date) ?? []), { doctor: r.doctor, outpatient: r.outpatient, surgeries: active, cancelled, off: r.off }]);
+    profs.set(r.date, [...(profs.get(r.date) ?? []), { doctor: r.doctor, outpatient: r.outpatient, outpatientAm: r.outpatientAm, outpatientPm: r.outpatientPm, surgeries: active, cancelled, off: r.off }]);
   }
   const byDate = new Map<string, PlanItem[]>();
   for (const p of plans) {
@@ -175,25 +175,34 @@ export function ScheduleCalendar({
         {dates.map((date) => {
           const n = data.lists.get(date)?.rows.length ?? 0;
           const s = data.plans.get(date)?.filter((p) => !p.cancelled).length ?? 0;
-          // 교수님별 수술 수 "박 1 · 문 1"(사용자 2026-10-25, 예전 "교수 3" 합계 대신)
-          const ps = profSurgeryTags(data.profs.get(date) ?? []);
+          // 교수님별 "박 오전 수술 1"·"박 오후 외래 11"(사용자 2026-10-28, 예전 "박 1 · 문 1" 수술 수만)
+          const ps = profCellLines(data.profs.get(date) ?? []);
           const tone =
             date === selected
               ? "border-slate-900 bg-slate-900 text-white"
               : n || s
                 ? "border-emerald-300 bg-emerald-50 hover:bg-emerald-100"
                 : "border-slate-100 text-slate-400 hover:bg-slate-50";
+          // 오늘은 테두리·"오늘" 글자로 더 눈에 띄게(사용자 2026-10-28)
+          const isToday = date === today;
           return (
             <Link
               key={date}
               href={dayHref(date)}
               scroll={false}
-              className={`flex min-h-14 flex-col items-center justify-start rounded-md border p-1 ${tone}`}
+              className={`flex min-h-14 flex-col items-center justify-start rounded-md border p-1 ${tone} ${isToday ? "ring-2 ring-emerald-600 ring-offset-1" : ""}`}
             >
-              <span className={date === today ? "font-semibold underline" : ""}>{Number(date.slice(8))}</span>
+              <span className={isToday ? "font-bold" : ""}>
+                {Number(date.slice(8))}
+                {isToday && <span className={`ml-0.5 rounded px-0.5 text-[10px] ${date === selected ? "bg-white text-slate-900" : "bg-emerald-600 text-white"}`}>오늘</span>}
+              </span>
               {n > 0 && <span className="text-[10px]">외래 {n}</span>}
               {s > 0 && <span className="text-[10px]">수술 {s}</span>}
-              {ps && <span title="교수님 수술" className={`text-[10px] leading-tight ${date === selected ? "text-slate-300" : "text-slate-500"}`}>{ps}</span>}
+              {ps.map((line) => (
+                <span key={line} title="교수님 외래·수술" className={`text-[10px] leading-tight break-keep ${date === selected ? "text-slate-300" : "text-slate-500"}`}>
+                  {line}
+                </span>
+              ))}
             </Link>
           );
         })}
@@ -226,15 +235,17 @@ export function ScheduleCalendar({
                   <li key={p.doctor}>
                     <p>
                       <span className="font-medium">{p.doctor}</span>
-                      {p.off && <span className="ml-2 rounded bg-amber-100 px-1.5 text-xs text-amber-800">{p.off}</span>}
+                      {p.off && <span className="ml-2 rounded bg-amber-100 px-1.5 text-xs text-amber-800">{offLabel(p.off)}</span>}
                       <span className="ml-2 text-slate-500">
-                        외래 {p.outpatient}명 · 수술 {p.surgeries.length}건{p.cancelled.length > 0 && ` · 취소 ${p.cancelled.length}`}
+                        외래 {p.outpatient}명
+                        {(p.outpatientAm != null || p.outpatientPm != null) && `(오전 ${p.outpatientAm ?? 0} · 오후 ${p.outpatientPm ?? 0})`} · 수술 {p.surgeries.length}건{p.cancelled.length > 0 && ` · 취소 ${p.cancelled.length}`}
                       </span>
                     </p>
                     {p.surgeries.length + p.cancelled.length > 0 && (
                       <ul className="mt-0.5 space-y-0.5 pl-3 text-slate-600">
                         {p.surgeries.map((op, i) => (
                           <li key={i}>
+                            {op.half && <span className="mr-1.5 text-xs text-slate-400">{op.half}</span>}
                             {op.name} {op.age}/{op.sex} {op.chartNo} · {op.op}
                             {op.room && <span className="ml-1.5 text-xs text-slate-400">{roomLabel(op.room)}</span>}
                           </li>

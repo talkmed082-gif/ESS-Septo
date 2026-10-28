@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { myDay, profSurgeryTags, scheduleDay, type DayFacts } from "./my-week";
+import { myDay, profCellLines, scheduleDay, type DayFacts } from "./my-week";
 
 const op = (op: string) => ({ name: "김○○", age: "50", sex: "M", chartNo: "1", op });
 const facts = (p: Partial<DayFacts> = {}): DayFacts => ({ profs: [], myOpd: { count: 0, clinic: null }, myPlans: [], pause: null, ...p });
@@ -50,10 +50,16 @@ describe("내 주간 일정", () => {
     const opWithHalf = myDay("2026-10-26", facts({ profs: [{ doctor: "박지환", outpatient: 0, surgeries: [op("ESS")], off: "반일 휴가" }] }));
     expect(opWithHalf[0].lines.map((l) => l.type)).toEqual(["text", "surgeries"]);
     expect(myDay("2026-10-30", facts({ profs: [{ doctor: "문수진", outpatient: 0, surgeries: [], off: "출장" }] }))[0].lines[0]).toMatchObject({ text: "문수진 교수님 출장" });
-    expect(profSurgeryTags([{ doctor: "문수진", outpatient: 0, surgeries: [], off: "휴가" }, { doctor: "박지환", outpatient: 3, surgeries: [op("a")], off: null }])).toBe("문 휴 · 박 1");
+    expect(profCellLines([{ doctor: "문수진", outpatient: 0, surgeries: [], off: "휴가" }, { doctor: "박지환", outpatient: 3, surgeries: [op("a")], off: null }])).toEqual(["문 휴가", "박 수술 1", "박 외래 3"]);
   });
 
-  it("달력 칸: 교수님별 수술 수", () => {
-    expect(profSurgeryTags([{ doctor: "박지환", outpatient: 9, surgeries: [op("a")] }, { doctor: "문수진", outpatient: 3, surgeries: [op("b")] }, { doctor: "최성욱", outpatient: 1, surgeries: [] }])).toBe("박 1 · 문 1");
+  it("달력 칸: 교수님별 오전/오후 수술·외래(오전/오후 없으면 합계만)", () => {
+    expect(
+      profCellLines([
+        { doctor: "박지환", outpatient: 11, outpatientAm: 0, outpatientPm: 11, surgeries: [{ ...op("a"), half: "오전" }, { ...op("b"), half: "오후" }, { ...op("c"), half: "오후" }] },
+        { doctor: "문수진", outpatient: 3, surgeries: [op("b")], off: "반차" },
+        { doctor: "최성욱", outpatient: 0, surgeries: [], off: "오전 반차" },
+      ]),
+    ).toEqual(["박 오전 수술 1", "박 오후 수술 2", "박 오후 외래 11", "문 반차?", "문 수술 1", "문 외래 3", "최 오전 반차"]);
   });
 });

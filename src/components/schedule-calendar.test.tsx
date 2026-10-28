@@ -37,7 +37,7 @@ describe("수술방 번호·취소 표시", () => {
             lists: new Map(),
             plans: new Map(),
             profs: new Map([
-              ["2026-11-03", [{ doctor: "박지환", outpatient: 3, surgeries: [{ ...op, room: "3" }], cancelled: [{ ...op, name: "다*라", room: "88" }], off: null }]],
+              ["2026-11-03", [{ doctor: "박지환", outpatient: 3, outpatientAm: null, outpatientPm: null, surgeries: [{ ...op, room: "3" }], cancelled: [{ ...op, name: "다*라", room: "88" }], off: null }]],
             ]),
           }}
         />,
@@ -46,5 +46,26 @@ describe("수술방 번호·취소 표시", () => {
     expect(html).toContain("수술 1건 · 취소 1");
     expect(html).toContain("가*나 40/M 00000001 · ESS 3번방");
     expect(html).toContain("다*라 40/M 00000001 · ESS 88번방 취소");
+  });
+
+  it("오늘 칸에 \"오늘\", 교수님 오전/오후 수술·외래", () => {
+    const html = text(
+      renderToString(
+        <ScheduleCalendar
+          dates={["2026-11-03"]}
+          today="2026-11-03"
+          dayHref={(d) => d}
+          data={{
+            lists: new Map(),
+            plans: new Map(),
+            profs: new Map([
+              ["2026-11-03", [{ doctor: "박지환", outpatient: 11, outpatientAm: 0, outpatientPm: 11, surgeries: [{ ...op, half: "오전" as const }], cancelled: [], off: null }]],
+            ]),
+          }}
+        />,
+      ),
+    );
+    expect(html).toContain("3 오늘");
+    expect(html).toContain("박 오전 수술 1 박 오후 외래 11");
   });
 });

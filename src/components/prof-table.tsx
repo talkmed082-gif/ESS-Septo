@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PROFESSORS, type ProfSurgery } from "@/lib/prof-schedule";
+import { offLabel, PROFESSORS, type ProfSurgery } from "@/lib/prof-schedule";
 
 type ProfDay = { doctor: string; outpatient: number; surgeries: ProfSurgery[]; cancelled: ProfSurgery[]; off: string | null };
 
@@ -24,7 +24,7 @@ export function ProfTable({ dates, today, profs }: { dates: string[]; today: str
                 const p = profs.get(d)?.find((x) => x.doctor === name);
                 return (
                   <td key={name} className="py-1.5 pr-2">
-                    {p?.off && <span className={`mr-1 rounded px-1 ${p.off.includes("반차") ? "bg-amber-100 text-amber-800" : "bg-rose-100 text-rose-800"}`}>{p.off}</span>}
+                    {p?.off && <span className={`mr-1 rounded px-1 ${p.off.includes("반") ? "bg-amber-100 text-amber-800" : "bg-rose-100 text-rose-800"}`}>{offLabel(p.off)}</span>}
                     {p && p.outpatient > 0 && <span className="mr-1">외래 {p.outpatient}</span>}
                     {p && p.surgeries.length > 0 && <span className="mr-1">수술 {p.surgeries.length}</span>}
                     {p && p.cancelled.length > 0 && <span className="text-slate-400 line-through">취소 {p.cancelled.length}</span>}
