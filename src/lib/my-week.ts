@@ -18,7 +18,7 @@ export const MY_WEEK: Record<number, { AM?: Duty; PM?: Duty }> = {
   5: { AM: { kind: "varies" } },
 };
 
-export type ProfDay = { doctor: string; outpatient: number; surgeries: ProfSurgery[]; off?: string | null };
+export type ProfDay = { doctor: string; outpatient: number; outpatientAm?: number | null; outpatientPm?: number | null; surgeries: ProfSurgery[]; off?: string | null };
 export type MyPlan = { id: string; name: string; procedure: string };
 export type DayFacts = {
   profs: ProfDay[];
@@ -102,11 +102,22 @@ export function scheduleDay(today: string): string {
   return new Date(Date.parse(`${today}T00:00:00Z`) + add * 86_400_000).toISOString().slice(0, 10);
 }
 
-// 달력 칸의 교수님별 수술 수 "박 1 · 문 1"(성 한 글자), 부재면 "문 휴"·"박 출"·"최 반"
-export function profSurgeryTags(profs: ProfDay[]): string {
-  const OFF: Record<string, string> = { 휴가: "휴", 출장: "출", 연차: "연", 반차: "반", "반일 휴가": "반", "오전 반차": "오전반", "오후 반차": "오후반" };
-  return profs
-    .filter((p) => p.surgeries.length || p.off)
-    .map((p) => `${p.doctor.slice(0, 1)} ${p.off && !p.surgeries.length ? (OFF[p.off] ?? "휴") : p.surgeries.length}`)
-    .join(" · ");
+// 달력 칸의 교수님별 줄 "박 오전 수술 1"·"박 오후 외래 11"·"문 연차"(성 한 글자, 사용자 2026-10-28).
+// 오전/오후는 병원 PC가 보낼 때만 붙는다 — 없으면 "박 수술 1"·"박 외래 11"
+export function profCellLines(profs: ProfDay[]): string[] {
+  const OFF: Record<string, string> = { "반일 휴가": "반차?", 반차: "반차?" };
+  const out: string[] = [];
+  for (const p of profs) {
+    const i = p.doctor.slice(0, 1);
+    if (p.off) out.push(`${i} ${OFF[p.off] ?? p.off}`);
+    for (const h of ["오전", "오후", undefined] as const) {
+      const n = p.surgeries.filter((s) => s.half === h).length;
+      if (n) out.push(`${i} ${h ? `${h} ` : ""}수술 ${n}`);
+    }
+    if (p.outpatientAm != null || p.outpatientPm != null) {
+      if (p.outpatientAm) out.push(`${i} 오전 외래 ${p.outpatientAm}`);
+      if (p.outpatientPm) out.push(`${i} 오후 외래 ${p.outpatientPm}`);
+    } else if (p.outpatient) out.push(`${i} 외래 ${p.outpatient}`);
+  }
+  return out;
 }

@@ -557,6 +557,9 @@ model ProfSchedule {
   date        String
   doctor      String
   outpatient  Int      @default(0)
+  // 오전/오후 외래 인원(병원 PC가 보낼 때만, 2026-10-28)
+  outpatientAm Int?
+  outpatientPm Int?
   surgeries   Json     @default("[]")
   // 그날 교수님 부재 — "휴가"·"출장"·"반일 휴가"로만(사유·종류는 안 남김, 2026-10-26). YES 개인별복무현황조회에서 병원 PC가 읽음
   off         String?
