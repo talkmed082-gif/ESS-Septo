@@ -69,3 +69,27 @@ describe("수술방 번호·취소 표시", () => {
     expect(html).toContain("박 오전 수술 1 박 오후 외래 11");
   });
 });
+
+describe("내 당직일", () => {
+  it("칸에 \"당직\"과 같이 서는 사람, 날짜를 누르면 각자 일직·숙직", () => {
+    const html = text(
+      renderToString(
+        <ScheduleCalendar
+          dates={["2026-10-30", "2026-10-31"]}
+          today="2026-10-31"
+          selected="2026-10-31"
+          dayHref={(d) => d}
+          data={{
+            lists: new Map(),
+            plans: new Map(),
+            profs: new Map(),
+            duty: new Map([["2026-10-31", { mine: ["일직", "숙직"], mates: [{ name: "김석현", kinds: ["일직", "숙직"] }, { name: "최재혁", kinds: ["일직"] }] }]]),
+          }}
+        />,
+      ),
+    );
+    expect(html).toContain("31 오늘 당직 김석현 최재혁");
+    expect(html).toContain("내 당직 · 일직·숙직 김석현 일직·숙직 최재혁 일직");
+    expect(html.match(/당직/g)).toHaveLength(2);
+  });
+});

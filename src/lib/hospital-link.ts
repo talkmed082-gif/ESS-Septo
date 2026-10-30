@@ -64,6 +64,7 @@ export const PC_JOBS = [
   { key: "OUTPATIENT_SOAP", label: "외래 SOAP(외래 명단 뒤)", maxAgeHours: 4 * 24 + 6 },
   { key: "OUTPATIENT_REFRESH", label: "외래 명단 새로 고침(평일 8:00, 2주)", maxAgeHours: 80 },
   { key: "PROF_SCHEDULE", label: "교수님 외래·수술(새로 고침 뒤, 2주)", maxAgeHours: 80 },
+  { key: "DUTY_ROSTER", label: "이비인후과 당직표(새로 고침 뒤, 이번 달·다음 달)", maxAgeHours: 80 },
   { key: "TSA_RANGE", label: "TSA 기간 확인(요청 시)", maxAgeHours: null },
   { key: "CONSULT", label: "타과의뢰 가져오기(요청 시)", maxAgeHours: null },
   { key: "CONSULT_REPLY", label: "타과의뢰 회신 EMR 저장·서명(요청 시)", maxAgeHours: null },

@@ -6,6 +6,7 @@ import { procedureNameFor, type NameStyle } from "@/lib/op-note-generator";
 import { safeDateStr } from "@/lib/date-format";
 import { isCancelledRoom, offLabel, parseProfSurgeries, planNoteRoom, PROFESSORS, roomLabel, splitCancelled, type ProfSurgery } from "@/lib/prof-schedule";
 import { profCellLines } from "@/lib/my-week";
+import { myDutyDays, type DutyDay } from "@/lib/duty-roster";
 
 // 내 일정 달력(외래 인원·수술) — 대시보드 2주 달력과 캘린더 메뉴(한 달)가 같이 쓴다(사용자 2026-10-25).
 // 날짜를 누르면 그날 외래·수술 환자 목록이 아래에 뜬다. 교수님 4분 외래 인원·수술도 같이(병원 PC가 2주치를 올림).
@@ -20,7 +21,11 @@ export type ScheduleData = {
   plans: Map<string, PlanItem[]>;
   // surgeries = 취소 뺀 것(건수·내 주간 일정은 이것만), cancelled = 취소된 수술(화면에만 "취소"로)
   profs: Map<string, { doctor: string; outpatient: number; outpatientAm: number | null; outpatientPm: number | null; surgeries: ProfSurgery[]; cancelled: ProfSurgery[]; off: string | null }[]>;
+  // 내 당직일 → 같이 서는 사람(사용자 2026-10-31, YES 의사직 당직근무자 조회)
+  duty?: Map<string, DutyDay>;
 };
+
+const dutyText = (kinds: string[]) => kinds.join("·");
 
 const planSelect = {
   id: true,
@@ -57,7 +62,7 @@ export function toPlanItem(
 
 // from~to(yyyy-MM-dd, 양끝 포함) 외래 명단과 수술 계획(완료 표시한 것도 — 지난 날짜에도 보이게)
 export async function loadSchedule(userId: string, nameStyle: NameStyle, from: string, to: string): Promise<ScheduleData> {
-  const [lists, plans, profRows] = await Promise.all([
+  const [lists, plans, profRows, dutyRows, me] = await Promise.all([
     prisma.outpatientList.findMany({
       where: { createdById: userId, date: { gte: from, lte: to } },
       select: { date: true, clinic: true, rows: true },
@@ -71,6 +76,12 @@ export async function loadSchedule(userId: string, nameStyle: NameStyle, from: s
       where: { createdById: userId, date: { gte: from, lte: to } },
       select: { date: true, doctor: true, outpatient: true, outpatientAm: true, outpatientPm: true, surgeries: true, off: true },
     }),
+    prisma.dutyRoster.findMany({
+      where: { createdById: userId, date: { gte: from, lte: to } },
+      select: { date: true, name: true, kind: true },
+    }),
+    // 당직표의 이름 = 계정 이름(수술 일정 가져오기의 집도의처럼)
+    prisma.user.findUnique({ where: { id: userId }, select: { name: true } }),
   ]);
   const order = (d: string) => PROFESSORS.indexOf(d as (typeof PROFESSORS)[number]);
   const profs = new Map<string, { doctor: string; outpatient: number; outpatientAm: number | null; outpatientPm: number | null; surgeries: ProfSurgery[]; cancelled: ProfSurgery[]; off: string | null }[]>();
@@ -87,6 +98,7 @@ export async function loadSchedule(userId: string, nameStyle: NameStyle, from: s
     lists: new Map(lists.map((l) => [l.date, { clinic: l.clinic, rows: l.rows as OutpatientRow[] }])),
     plans: byDate,
     profs,
+    duty: myDutyDays(dutyRows, me?.name ?? ""),
   };
 }
 
@@ -161,6 +173,7 @@ export function ScheduleCalendar({
   const dayPlans = selected ? (data.plans.get(selected) ?? []) : [];
   const dayPlanCount = dayPlans.filter((p) => !p.cancelled).length;
   const dayProfs = selected ? (data.profs.get(selected) ?? []) : [];
+  const dayDuty = selected ? data.duty?.get(selected) : undefined;
   return (
     <div>
       <div className="grid grid-cols-7 gap-1 text-center text-xs">
@@ -177,6 +190,7 @@ export function ScheduleCalendar({
           const s = data.plans.get(date)?.filter((p) => !p.cancelled).length ?? 0;
           // 교수님별 "박 오전 수술 1"·"박 오후 외래 11"(사용자 2026-10-28, 예전 "박 1 · 문 1" 수술 수만)
           const ps = profCellLines(data.profs.get(date) ?? []);
+          const duty = data.duty?.get(date);
           const tone =
             date === selected
               ? "border-slate-900 bg-slate-900 text-white"
@@ -198,6 +212,13 @@ export function ScheduleCalendar({
               </span>
               {n > 0 && <span className="text-[10px]">외래 {n}</span>}
               {s > 0 && <span className="text-[10px]">수술 {s}</span>}
+              {/* 내 당직일: "당직" + 같이 서는 사람 이름(사용자 2026-10-31) */}
+              {duty && (
+                <span title="내 당직 · 같이 당직" className={`text-[10px] leading-tight break-keep ${date === selected ? "text-violet-200" : "text-violet-700"}`}>
+                  <span className={`rounded px-0.5 font-medium ${date === selected ? "bg-white text-violet-800" : "bg-violet-100"}`}>당직</span>
+                  {duty.mates.length > 0 && ` ${duty.mates.map((m) => m.name).join(" ")}`}
+                </span>
+              )}
               {ps.map((line) => (
                 <span key={line} title="교수님 외래·수술" className={`text-[10px] leading-tight break-keep ${date === selected ? "text-slate-300" : "text-slate-500"}`}>
                   {line}
@@ -210,6 +231,22 @@ export function ScheduleCalendar({
       {selected && (
         <div id="day" className="mt-4 scroll-mt-24 space-y-3 border-t border-slate-100 pt-3">
           <p className="font-medium">{md(selected)}</p>
+          {dayDuty && (
+            <div>
+              <p className="mb-1 text-xs font-medium text-slate-500">내 당직 · {dutyText(dayDuty.mine)}</p>
+              {dayDuty.mates.length ? (
+                <ul className="space-y-0.5 text-sm">
+                  {dayDuty.mates.map((m) => (
+                    <li key={m.name}>
+                      {m.name} <span className="text-slate-500">{dutyText(m.kinds)}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-slate-400">같이 서는 사람 없음</p>
+              )}
+            </div>
+          )}
           <div>
             <p className="mb-1 text-xs font-medium text-slate-500">
               외래 {dayRows.length}명{dayList?.clinic && ` · ${dayList.clinic}`}

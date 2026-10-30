@@ -90,6 +90,7 @@ model User {
   automationPauses AutomationPause[]
   pcJobs          PcJobStatus[]
   profSchedules   ProfSchedule[]
+  dutyRosters     DutyRoster[]
   consults     Consult[]
 }
 
@@ -571,4 +572,20 @@ model ProfSchedule {
   updatedAt   DateTime @updatedAt
 
   @@unique([createdById, date, doctor])
+}
+
+// 이비인후과 의사 당직표(사용자 2026-10-31) — 병원 PC가 YES 의사직 당직근무자 조회에서 이번 달·다음 달치를 올림. 전화번호는 안 남김
+model DutyRoster {
+  id          String   @id @default(cuid())
+  date        String
+  empNo       String
+  name        String
+  kind        String
+  time        String   @default("")
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  updatedAt   DateTime @updatedAt
+
+  @@unique([createdById, date, empNo, kind])
+  @@index([createdById, date])
 }
