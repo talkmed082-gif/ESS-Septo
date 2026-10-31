@@ -60,6 +60,12 @@ describe("checkOncallTimes", () => {
     expect(checkOncallTimes({ call: "10:00", arrive: "09:00", end: "11:00" })?.error).toContain("호출");
     expect(checkOncallTimes({ call: "08:00", arrive: "10:30", end: "10:00" })?.error).toContain("종료");
   });
+  it("숙직 중 자정을 넘기면 다음 날로 본다", () => {
+    expect(checkOncallTimes({ call: "23:50", arrive: "00:10", end: "00:40" })).toBeNull();
+    expect(checkOncallTimes({ call: "23:30", arrive: "23:40", end: "01:00" })).toBeNull();
+    expect(checkOncallTimes({ call: "23:50", arrive: "00:40", end: "00:10" })?.error).toContain("종료");
+    expect(checkOncallTimes({ call: "23:00", arrive: "10:00", end: "11:00" })?.error).toContain("호출");
+  });
 });
 
 describe("erNightStart", () => {

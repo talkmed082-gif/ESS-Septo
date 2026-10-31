@@ -71,12 +71,15 @@ export function erOncallBlock(
   return taken ? `이 ${v.shift}은 이미 다른 환자로 신청했습니다(근무마다 한 명).` : null;
 }
 
-// 온콜대장 시각 확인: HH:mm, 호출 ≤ 도착 ≤ 종료(온콜대장 화면도 순서가 틀리면 저장을 막는다)
+// 온콜대장 시각 확인: HH:mm, 호출 ≤ 도착 ≤ 종료(온콜대장 화면도 순서가 틀리면 저장을 막는다).
+// 숙직 중 자정을 넘기면(23:50 호출 → 00:10 도착) 호출보다 이른 08:30 이전 시각은 다음 날로 본다 — 온콜대장 화면도 종료가 08:00 이전이면 넘김을 받는다
 export function checkOncallTimes(t: { call: string; arrive: string; end: string }): { error: string } | null {
   for (const [label, v] of [["호출", t.call], ["도착", t.arrive], ["종료", t.end]] as const) {
     if (!hhmm.test(v)) return { error: `${label} 시각을 HH:mm으로 넣어 주세요.` };
   }
-  if (t.arrive < t.call) return { error: "도착 시각이 호출 시각보다 빠릅니다." };
-  if (t.end < t.arrive) return { error: "종료 시각이 도착 시각보다 빠릅니다." };
+  const min = (v: string) => Number(v.slice(0, 2)) * 60 + Number(v.slice(3));
+  const after = (v: string) => (v < t.call && v <= "08:30" ? min(v) + 1440 : min(v));
+  if (after(t.arrive) < min(t.call)) return { error: "도착 시각이 호출 시각보다 빠릅니다." };
+  if (after(t.end) < after(t.arrive)) return { error: "종료 시각이 도착 시각보다 빠릅니다." };
   return null;
 }
