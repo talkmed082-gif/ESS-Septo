@@ -29,7 +29,7 @@ export function UnsignedNotes({ notes, date }: { notes: UnsignedNote[]; date: st
 
   const badge = (n: (typeof rows)[number]) => {
     switch (n.s.kind) {
-      case "check": return <span className="rounded bg-slate-100 px-1 text-xs text-slate-600">노트북 확인 대기(매일 8~20시 10분마다)</span>;
+      case "check": return <span className="rounded bg-slate-100 px-1 text-xs text-slate-600">노트북 확인 대기(매일 8~20시·숙직 밤 10분마다)</span>;
       case "keep": return <span className="rounded bg-amber-100 px-1 text-xs text-amber-800">직접 확인 — {n.s.reason}</span>;
       case "deleteRequested": return <span className="rounded bg-slate-100 px-1 text-xs text-slate-600">삭제 승인됨 — 노트북 대기(그날 외래는 18시 뒤, 평일 20시까지)</span>;
       case "deleteFailed": return <span className="rounded bg-red-100 px-1 text-xs text-red-800">지우지 못함 — {n.s.reason}</span>;

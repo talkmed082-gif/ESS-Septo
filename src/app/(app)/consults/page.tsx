@@ -42,7 +42,7 @@ export default async function ConsultsPage() {
       <section className="space-y-2">
         <p className="text-sm text-slate-500">
           EMR에서 본인에게 온 타과의뢰(최근 30일)를 가져옵니다. 타과의뢰 문자가 오면 아이폰 단축어가 요청하고(설정 &gt; 병원
-          연동), 그 밖에는 평일 9·13·17시에 자동으로. 병원 PC가 10분 안에 처리합니다. 이 화면은 다른 탭에 갔다 돌아오면 새로
+          연동), 그 밖에는 이 버튼으로(자동 조회는 하지 않음). 병원 PC가 10분 안에 처리합니다. 이 화면은 다른 탭에 갔다 돌아오면 새로
           고칩니다. 회신을 쓰면 병원 PC가 EMR 회신 기록지에 저장하고 일괄서명까지 합니다.
         </p>
         {user?.consultCheckRequestedAt ? (

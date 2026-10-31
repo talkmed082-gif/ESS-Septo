@@ -59,7 +59,7 @@ export const PC_JOBS = [
   { key: "SURGERY_DAILY", label: "수술 일정(평일 17:00)", maxAgeHours: 80 },
   { key: "SURGERY_WEEKLY", label: "다음 주 수술(금 17:05)", maxAgeHours: 7 * 24 + 6 },
   { key: "REMINDER_SYNC", label: "리마인더 정기 동기화(평일 17:10)", maxAgeHours: 80 },
-  { key: "REMINDER_POLL", label: "요청 확인(매일 8:00~20:00, 10분마다)", maxAgeHours: 80 },
+  { key: "REMINDER_POLL", label: "요청 확인(매일 8:00~20:00·숙직 밤 24시간, 10분마다)", maxAgeHours: 80 },
   { key: "OUTPATIENT", label: "외래 명단(월·목 17:20)", maxAgeHours: 4 * 24 + 6 },
   { key: "OUTPATIENT_SOAP", label: "외래 SOAP(외래 명단 뒤)", maxAgeHours: 4 * 24 + 6 },
   { key: "OUTPATIENT_REFRESH", label: "외래 명단 새로 고침(평일 8:00, 2주)", maxAgeHours: 80 },
