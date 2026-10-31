@@ -2,10 +2,10 @@ import { verifySession } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { buttonStyles } from "@/lib/ui";
 import { seoulNow } from "@/lib/date-format";
-import { erOncallBlock, isYmd } from "@/lib/er-visits";
+import { erOncallBlock, isYmd, ErNowRowSchema, type ErNowRow } from "@/lib/er-visits";
 import { myDutyDays } from "@/lib/duty-roster";
 import { getErDuty } from "@/lib/er-visits-store";
-import { cancelErCheck, cancelErOncall, requestErCheck } from "@/app/actions/er-visits";
+import { cancelErCheck, cancelErOncall, requestErCheck, requestErNow } from "@/app/actions/er-visits";
 import { AutoRefresh } from "../consults/auto-refresh";
 import { OncallForm } from "./oncall-form";
 
@@ -27,16 +27,19 @@ export default async function ErPage({ searchParams }: PageProps<"/er">) {
   const date = typeof dateParam === "string" && isYmd(dateParam) ? dateParam : seoulNow().date;
   const [visits, user, job, duty] = await Promise.all([
     prisma.erVisit.findMany({ where: { createdById: userId, date }, orderBy: { arrivedAt: "asc" } }),
-    prisma.user.findUnique({ where: { id: userId }, select: { name: true, erCheckDate: true, erCheckRequestedAt: true } }),
+    prisma.user.findUnique({ where: { id: userId }, select: { name: true, erCheckDate: true, erCheckRequestedAt: true, erNowRequestedAt: true, erNowAt: true, erNowRows: true } }),
     prisma.pcJobStatus.findUnique({ where: { createdById_job: { createdById: userId, job: "ER_VISITS" } } }),
     getErDuty(userId, date),
   ]);
   const { dutyNames, myShifts } = duty;
   const myDay = myDutyDays(duty.rows, user?.name ?? "").get(date);
+  // 최근 도착이 위, 맨 밑이 가장 오래 있던 환자(사용자 2026-10-31)
+  const nowRows = (ErNowRowSchema.array().safeParse(user?.erNowRows ?? []).data ?? []).sort((a, b) => b.arrivedAt.localeCompare(a.arrivedAt));
 
   return (
     <div className="space-y-6">
       <AutoRefresh />
+      <ErNowSection rows={nowRows} at={user?.erNowAt ?? null} requestedAt={user?.erNowRequestedAt ?? null} />
       <section className="space-y-2">
         <p className="text-sm text-slate-500">
           당직일(그날 08:30~다음 날 08:30) 응급실 환자 중 담당의가 그날 이비인후과 동반당직자(캘린더 당직표)인 환자만 보고, 내 응급
@@ -168,5 +171,56 @@ function OncallPart({ v, block }: { v: VisitRow; block: string | null }) {
       )}
       <OncallForm id={v.id} call={v.call ?? ""} arrive={v.arrive ?? ""} end={v.end ?? ""} />
     </div>
+  );
+}
+
+// 응급실 현황 — 지금 응급실에 있는 환자. [새로고침]을 누르면 병원 PC가 10분 안에 다시 읽어 올린다
+function ErNowSection({ rows, at, requestedAt }: { rows: ErNowRow[]; at: Date | null; requestedAt: Date | null }) {
+  return (
+    <section className="space-y-2">
+      <div className="flex flex-wrap items-center gap-3">
+        <h2 className="text-sm font-semibold text-slate-700">응급실 현황 ({rows.length}명)</h2>
+        <span className="text-xs text-slate-400">{at ? `${fmtTime.format(at)} 기준` : "아직 가져온 적 없음"}</span>
+        {requestedAt ? (
+          <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-700">{fmtTime.format(requestedAt)}에 새로고침 요청, 처리 대기</span>
+        ) : (
+          <form action={requestErNow}>
+            <button type="submit" className={buttonStyles.smallOutline}>
+              새로고침
+            </button>
+          </form>
+        )}
+      </div>
+      {rows.length > 0 && (
+        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+          <table className="min-w-full text-sm">
+            <thead className="bg-slate-50 text-left text-xs text-slate-500">
+              <tr>
+                {["이름", "환자번호", "성별", "나이", "진단명", "내원", "담당의", "과", "KTAS"].map((h) => (
+                  <th key={h} className="whitespace-nowrap px-3 py-2 font-medium">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {rows.map((r, i) => (
+                <tr key={r.chartNo || i}>
+                  <td className="whitespace-nowrap px-3 py-1.5">{r.name}</td>
+                  <td className="whitespace-nowrap px-3 py-1.5 tabular-nums">{r.chartNo}</td>
+                  <td className="px-3 py-1.5">{r.sex}</td>
+                  <td className="whitespace-nowrap px-3 py-1.5">{r.age}</td>
+                  <td className="px-3 py-1.5">{r.dx}</td>
+                  <td className="whitespace-nowrap px-3 py-1.5">{r.arrivedAt.slice(5)}</td>
+                  <td className="whitespace-nowrap px-3 py-1.5">{r.doctor}</td>
+                  <td className="whitespace-nowrap px-3 py-1.5">{r.dept}</td>
+                  <td className="whitespace-nowrap px-3 py-1.5">{r.ktas}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
   );
 }

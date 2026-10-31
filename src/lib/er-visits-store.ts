@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import { erDutyNames, erMyShifts, erNightStart, type ErOncallResult, type ErVisitItem } from "@/lib/er-visits";
+import { erDutyNames, erMyShifts, erNightStart, type ErNowRow, type ErOncallResult, type ErVisitItem } from "@/lib/er-visits";
 
 // 그 당직일의 당직표(DutyRoster, 이름 = 계정 이름) — 담당의로 볼 동반당직자와 내 근무(일직·숙직)
 export async function getErDuty(userId: string, date: string) {
@@ -16,7 +16,7 @@ export async function getErDuty(userId: string, date: string) {
 // 온콜일자는 PC가 arrivedAt(+15분 호출)로 정한다 — 숙직 새벽 환자는 당직일 다음 날
 export async function getErRequest(userId: string) {
   const [user, pending] = await Promise.all([
-    prisma.user.findUnique({ where: { id: userId }, select: { erCheckDate: true, erCheckRequestedAt: true } }),
+    prisma.user.findUnique({ where: { id: userId }, select: { erCheckDate: true, erCheckRequestedAt: true, erNowRequestedAt: true } }),
     prisma.erVisit.findMany({
       where: { createdById: userId, oncallStatus: "PENDING", oncallRequestedAt: { not: null } },
       orderBy: { oncallRequestedAt: "asc" },
@@ -25,6 +25,8 @@ export async function getErRequest(userId: string) {
   ]);
   const date = user?.erCheckRequestedAt && user.erCheckDate ? user.erCheckDate : null;
   return {
+    // 응급실 현황 [새로고침] 요청 시각(없으면 null) — PC가 er_now.ps1 -RequestedAt으로 처리
+    nowRequestedAt: user?.erNowRequestedAt?.toISOString() ?? null,
     request: date
       ? await getErDuty(userId, date).then((d) => ({ date, requestedAt: user!.erCheckRequestedAt!.toISOString(), dutyNames: d.dutyNames, nightStart: d.nightStart }))
       : null,
@@ -78,6 +80,20 @@ export async function saveErVisits(
     });
   }
   return { ok: true, count: body.items.length };
+}
+
+// 응급실 현황 반영 — 목록을 통째로 바꾼다(error면 그대로). 처리한 [새로고침] 요청이 그대로면 비운다
+export async function saveErNow(userId: string, body: { rows: ErNowRow[]; requestedAt?: string; error?: string }) {
+  if (!body.error) {
+    await prisma.user.update({ where: { id: userId }, data: { erNowRows: body.rows, erNowAt: new Date() } });
+  }
+  if (body.requestedAt) {
+    await prisma.user.updateMany({
+      where: { id: userId, erNowRequestedAt: new Date(body.requestedAt) },
+      data: { erNowRequestedAt: null },
+    });
+  }
+  return { ok: true, count: body.rows.length };
 }
 
 // 온콜대장 저장 결과 — 처리한 신청이 그대로일 때만(그 사이 취소·다시 신청했으면 무시)

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkOncallTimes, erDutyNames, erMyShifts, erNightStart, erOncallBlock } from "./er-visits";
+import { checkOncallTimes, erDutyNames, erMyShifts, erNightStart, erOncallBlock, ErNowBodySchema } from "./er-visits";
 
 const rows = [
   { date: "2026-10-30", name: "이동찬", kind: "평일 숙직" },
@@ -72,5 +72,18 @@ describe("erNightStart", () => {
   it("평일 숙직이면 17:30, 휴일이면 22:00", () => {
     expect(erNightStart(rows, "2026-10-30", "정일구")).toBe("17:30");
     expect(erNightStart(rows, "2026-10-31", "정일구")).toBe("22:00");
+  });
+});
+
+describe("ErNowBodySchema", () => {
+  const row = { name: "김*숙", chartNo: "123456789", ktas: "3등급", sex: "여", age: "72Y", dx: "acute cholecystitis", arrivedAt: "2026-10-31 00:13", doctor: "외과일반", dept: "GS" };
+  it("응급실 현황 목록을 받는다", () => {
+    expect(ErNowBodySchema.safeParse({ rows: [row], requestedAt: "2026-10-31T13:00:00.000Z" }).success).toBe(true);
+    expect(ErNowBodySchema.safeParse({ rows: [], error: "조회 실패" }).success).toBe(true);
+  });
+  it("칸이 빠지면 거부", () => {
+    const noDx: Partial<typeof row> = { ...row };
+    delete noDx.dx;
+    expect(ErNowBodySchema.safeParse({ rows: [noDx] }).success).toBe(false);
   });
 });

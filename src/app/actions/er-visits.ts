@@ -68,3 +68,10 @@ export async function cancelErOncall(formData: FormData): Promise<void> {
   });
   revalidatePath("/er");
 }
+
+// 응급실 현황 [새로고침] — 병원 PC가 10분 확인 때 지금 응급실에 있는 환자 목록을 다시 올리고 비운다
+export async function requestErNow(): Promise<void> {
+  const session = await verifySession();
+  await prisma.user.update({ where: { id: session.userId }, data: { erNowRequestedAt: new Date() } });
+  revalidatePath("/er");
+}

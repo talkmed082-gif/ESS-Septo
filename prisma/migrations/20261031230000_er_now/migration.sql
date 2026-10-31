@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN "erNowRequestedAt" TIMESTAMP(3),
+ADD COLUMN "erNowAt" TIMESTAMP(3),
+ADD COLUMN "erNowRows" JSONB;

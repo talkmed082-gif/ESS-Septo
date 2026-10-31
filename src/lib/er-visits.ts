@@ -39,6 +39,27 @@ export const ErOncallResultSchema = z.object({
 });
 export type ErOncallResult = z.infer<typeof ErOncallResultSchema>;
 
+// 응급실 현황 — 지금 응급실에 있는 환자. 병원 PC = outpatient-list\er_now.ps1(의사 메인 응급실 탭 조회, 이름은 첫·끝 글자만)
+export const ErNowRowSchema = z.object({
+  name: z.string().max(50),
+  chartNo: z.string().regex(/^\d{1,20}$/),
+  sex: z.string().max(5),
+  age: z.string().max(10),
+  dx: z.string().max(300),
+  arrivedAt: z.string().max(20), // "yyyy-MM-dd HH:mm"
+  doctor: z.string().max(30),
+  dept: z.string().max(30),
+  ktas: z.string().max(10), // "1등급"~"5등급", 미분류면 빈칸
+});
+export type ErNowRow = z.infer<typeof ErNowRowSchema>;
+
+export const ErNowBodySchema = z.object({
+  rows: z.array(ErNowRowSchema).max(300),
+  requestedAt: z.iso.datetime().optional(),
+  // EMR 조회 실패 — 목록은 그대로 두고 요청만 비운다
+  error: z.string().max(500).optional(),
+});
+
 export function isYmd(s: string) {
   return ymd.safeParse(s).success;
 }

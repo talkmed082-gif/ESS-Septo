@@ -44,6 +44,10 @@ model User {
   // "응급실 환자 가져오기" 버튼 — 날짜(yyyy-MM-dd)와 누른 시각. 병원 PC가 10분 확인 때 그날 응급실 환자 중 내 기록지가 있는 환자를 올리고 비운다
   erCheckDate             String?
   erCheckRequestedAt      DateTime?
+  // 응급실 현황(현재 재원 환자) [새로고침] 누른 시각과 병원 PC가 마지막으로 올린 목록 — 가린 이름, 등록번호 없음(사용자 2026-10-31)
+  erNowRequestedAt        DateTime?
+  erNowAt                 DateTime?
+  erNowRows               Json?
   // YES 첫 화면 캘린더의 내 외래일별 예약 인원 [{date, count}] — 병원 PC가 매일 아침 올림. 외래 스케줄 자동 판단에 씀(src/lib/clinic-schedule inferSchedule)
   clinicCalendar          Json?
   clinicCalendarAt        DateTime?
