@@ -88,8 +88,21 @@ describe("내 당직일", () => {
         />,
       ),
     );
-    expect(html).toContain("31 오늘 당직 김석현 최재혁");
+    expect(html).toContain("31 오늘 내 당직 전공의 당직: 김석현, 최재혁");
     expect(html).toContain("내 당직 · 일직·숙직 김석현 일직·숙직 최재혁 일직");
-    expect(html.match(/당직/g)).toHaveLength(2);
+  });
+
+  it("교수님이 같이 서면 교수 당직 줄이 따로", () => {
+    const html = text(
+      renderToString(
+        <ScheduleCalendar
+          dates={["2026-10-03"]}
+          today="2026-10-31"
+          dayHref={(d) => d}
+          data={{ lists: new Map(), plans: new Map(), profs: new Map(), duty: new Map([["2026-10-03", { mine: ["숙직"], mates: [{ name: "박지환", kinds: ["숙직"] }, { name: "김수경", kinds: ["숙직"] }] }]]) }}
+        />,
+      ),
+    );
+    expect(html).toContain("3 내 당직 교수 당직: 박지환 전공의 당직: 김수경");
   });
 });

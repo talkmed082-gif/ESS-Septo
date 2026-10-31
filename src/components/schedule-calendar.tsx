@@ -26,6 +26,13 @@ export type ScheduleData = {
 };
 
 const dutyText = (kinds: string[]) => kinds.join("·");
+// 같이 서는 사람을 교수님/전공의로 나눠 "전공의 당직: 김수경, 이세형"(여럿이면 옆에 이어서, 사용자 2026-10-31)
+function dutyLines(duty: DutyDay): string[] {
+  const isProf = (n: string) => (PROFESSORS as readonly string[]).includes(n);
+  const profs = duty.mates.filter((m) => isProf(m.name)).map((m) => m.name);
+  const residents = duty.mates.filter((m) => !isProf(m.name)).map((m) => m.name);
+  return [...(profs.length ? [`교수 당직: ${profs.join(", ")}`] : []), ...(residents.length ? [`전공의 당직: ${residents.join(", ")}`] : [])];
+}
 
 const planSelect = {
   id: true,
@@ -212,11 +219,14 @@ export function ScheduleCalendar({
               </span>
               {n > 0 && <span className="text-[10px]">외래 {n}</span>}
               {s > 0 && <span className="text-[10px]">수술 {s}</span>}
-              {/* 내 당직일: "당직" + 같이 서는 사람 이름(사용자 2026-10-31) */}
+              {/* 내 당직일: "내 당직" 한 줄 + "전공의 당직: 이름, 이름" 한 줄(사용자 2026-10-31 — 한 줄이면 같이 서는 사람만 당직인 것처럼 보임).
+                  교수님(PROFESSORS)이 같이 서면 "교수 당직" 줄로 따로 */}
               {duty && (
-                <span title="내 당직 · 같이 당직" className={`text-[10px] leading-tight break-keep ${date === selected ? "text-violet-200" : "text-violet-700"}`}>
-                  <span className={`rounded px-0.5 font-medium ${date === selected ? "bg-white text-violet-800" : "bg-violet-100"}`}>당직</span>
-                  {duty.mates.length > 0 && ` ${duty.mates.map((m) => m.name).join(" ")}`}
+                <span title="내 당직 · 같이 당직" className={`flex flex-col text-[10px] leading-tight break-keep ${date === selected ? "text-violet-200" : "text-violet-700"}`}>
+                  <span className={`rounded px-0.5 font-medium ${date === selected ? "bg-white text-violet-800" : "bg-violet-100"}`}>내 당직</span>
+                  {dutyLines(duty).map((line) => (
+                    <span key={line}>{line}</span>
+                  ))}
                 </span>
               )}
               {ps.map((line) => (
