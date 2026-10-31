@@ -2,9 +2,9 @@ import { verifySession } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { buttonStyles } from "@/lib/ui";
 import { seoulNow } from "@/lib/date-format";
-import { isYmd } from "@/lib/er-visits";
+import { erOncallBlock, isYmd } from "@/lib/er-visits";
 import { myDutyDays } from "@/lib/duty-roster";
-import { getErDutyNames } from "@/lib/er-visits-store";
+import { getErDuty } from "@/lib/er-visits-store";
 import { cancelErCheck, cancelErOncall, requestErCheck } from "@/app/actions/er-visits";
 import { AutoRefresh } from "../consults/auto-refresh";
 import { OncallForm } from "./oncall-form";
@@ -25,22 +25,23 @@ export default async function ErPage({ searchParams }: PageProps<"/er">) {
   const { userId } = await verifySession();
   const { date: dateParam } = await searchParams;
   const date = typeof dateParam === "string" && isYmd(dateParam) ? dateParam : seoulNow().date;
-  const [visits, user, job, roster, dutyNames] = await Promise.all([
+  const [visits, user, job, duty] = await Promise.all([
     prisma.erVisit.findMany({ where: { createdById: userId, date }, orderBy: { arrivedAt: "asc" } }),
     prisma.user.findUnique({ where: { id: userId }, select: { name: true, erCheckDate: true, erCheckRequestedAt: true } }),
     prisma.pcJobStatus.findUnique({ where: { createdById_job: { createdById: userId, job: "ER_VISITS" } } }),
-    prisma.dutyRoster.findMany({ where: { createdById: userId, date }, select: { date: true, name: true, kind: true } }),
-    getErDutyNames(userId, date),
+    getErDuty(userId, date),
   ]);
-  const myDay = myDutyDays(roster, user?.name ?? "").get(date);
+  const { dutyNames, myShifts } = duty;
+  const myDay = myDutyDays(duty.rows, user?.name ?? "").get(date);
 
   return (
     <div className="space-y-6">
       <AutoRefresh />
       <section className="space-y-2">
         <p className="text-sm text-slate-500">
-          YES 응급실재원환자 현황에서 그날 응급실 환자 중 담당의가 이비인후과 당직자(그날 당직 + 전날 숙직, 캘린더 당직표)인 환자만 보고, 내
-          응급 기록지가 있는 환자를 가져옵니다. 병원 PC가 10분 안에 처리합니다. [온콜대장 신청]을 누른 환자만 부서행정 온콜대장에 저장합니다.
+          당직일(그날 08:30~다음 날 08:30) 응급실 환자 중 담당의가 그날 이비인후과 동반당직자(캘린더 당직표)인 환자만 보고, 내 응급
+          기록지가 있는 환자를 가져옵니다. 병원 PC가 10분 안에 처리합니다. 온콜대장은 근무마다 한 명 — 휴일 일직(08:30~22:00)·숙직(22:00~08:30)
+          2명, 평일 숙직 1명. [온콜대장 신청]을 누른 환자만 부서행정 온콜대장에 저장합니다.
         </p>
         <form method="get" className="flex flex-wrap items-center gap-2 text-sm">
           <input
@@ -97,14 +98,14 @@ export default async function ErPage({ searchParams }: PageProps<"/er">) {
         </h2>
         {visits.length === 0 && <p className="text-sm text-slate-400">가져온 환자가 없습니다.</p>}
         {visits.map((v) => (
-          <VisitCard key={v.id} v={v} />
+          <VisitCard key={v.id} v={v} block={erOncallBlock(v, visits, myShifts)} />
         ))}
       </section>
     </div>
   );
 }
 
-function VisitCard({ v }: { v: VisitRow }) {
+function VisitCard({ v, block }: { v: VisitRow; block: string | null }) {
   return (
     <article className="rounded-lg border border-slate-200 bg-white p-4 text-sm">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -113,6 +114,7 @@ function VisitCard({ v }: { v: VisitRow }) {
         <span>
           {v.patientName} {v.chartNo} {v.sexAge}
         </span>
+        {v.shift && <span className="rounded-full bg-sky-50 px-2 py-0.5 text-xs text-sky-700">{v.shift}</span>}
         {v.dept && <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{v.dept}</span>}
       </div>
       <p className="mt-1 text-slate-700">
@@ -123,17 +125,17 @@ function VisitCard({ v }: { v: VisitRow }) {
         {v.dischargedAt ? `퇴실 ${v.dischargedAt} ${v.result ?? ""}` : "재실 중"}
         {v.notes && ` · 내 기록지 ${v.notes}`}
       </p>
-      <OncallPart v={v} />
+      <OncallPart v={v} block={block} />
     </article>
   );
 }
 
-function OncallPart({ v }: { v: VisitRow }) {
+function OncallPart({ v, block }: { v: VisitRow; block: string | null }) {
   const times = `호출 ${v.call} · 도착 ${v.arrive} · 종료 ${v.end}`;
   if (v.oncallStatus === "SAVED") {
     return (
       <p className="mt-3 border-t border-slate-100 pt-2 text-sm">
-        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700">온콜대장 저장됨</span>
+        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700">온콜대장 입력 완료</span>
         <span className="ml-2 text-xs text-slate-500">
           {v.oncallMessage ?? times}
           {v.oncallSavedAt && ` · ${fmtTime.format(v.oncallSavedAt)}`}
@@ -158,6 +160,7 @@ function OncallPart({ v }: { v: VisitRow }) {
       </div>
     );
   }
+  if (block) return <p className="mt-3 border-t border-slate-100 pt-2 text-xs text-slate-400">{block}</p>;
   return (
     <div className="mt-3 border-t border-slate-100 pt-2">
       {v.oncallStatus === "FAILED" && (

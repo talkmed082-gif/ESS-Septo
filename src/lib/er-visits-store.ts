@@ -1,44 +1,38 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import { erDutyNames, type ErOncallResult, type ErVisitItem } from "@/lib/er-visits";
+import { erDutyNames, erMyShifts, type ErOncallResult, type ErVisitItem } from "@/lib/er-visits";
 
-function dayBefore(date: string) {
-  const d = new Date(`${date}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() - 1);
-  return d.toISOString().slice(0, 10);
-}
-
-// 그날(+전날 숙직) 이비인후과 당직자 — 당직표(DutyRoster, 이름 = 계정 이름)에서. 나는 뺀다
-export async function getErDutyNames(userId: string, date: string) {
+// 그 당직일의 당직표(DutyRoster, 이름 = 계정 이름) — 담당의로 볼 동반당직자와 내 근무(일직·숙직)
+export async function getErDuty(userId: string, date: string) {
   const [rows, user] = await Promise.all([
-    prisma.dutyRoster.findMany({
-      where: { createdById: userId, date: { in: [dayBefore(date), date] } },
-      select: { date: true, name: true, kind: true },
-    }),
+    prisma.dutyRoster.findMany({ where: { createdById: userId, date }, select: { date: true, name: true, kind: true } }),
     prisma.user.findUnique({ where: { id: userId }, select: { name: true } }),
   ]);
-  return erDutyNames(rows, date, user?.name ?? "");
+  const me = user?.name ?? "";
+  return { rows, dutyNames: erDutyNames(rows, date, me), myShifts: erMyShifts(rows, date, me) };
 }
 
-// 병원 PC가 10분마다 확인: "응급실 환자 가져오기" 요청(날짜·시각·담당의로 볼 동반당직자)과 저장할 온콜대장 신청(요청 순)
+// 병원 PC가 10분마다 확인: "응급실 환자 가져오기" 요청(당직일·시각·담당의로 볼 동반당직자)과 저장할 온콜대장 신청(요청 순).
+// 온콜일자는 PC가 arrivedAt(+15분 호출)로 정한다 — 숙직 새벽 환자는 당직일 다음 날
 export async function getErRequest(userId: string) {
   const [user, pending] = await Promise.all([
     prisma.user.findUnique({ where: { id: userId }, select: { erCheckDate: true, erCheckRequestedAt: true } }),
     prisma.erVisit.findMany({
       where: { createdById: userId, oncallStatus: "PENDING", oncallRequestedAt: { not: null } },
       orderBy: { oncallRequestedAt: "asc" },
-      select: { id: true, date: true, chartNo: true, call: true, arrive: true, end: true, oncallRequestedAt: true },
+      select: { id: true, date: true, chartNo: true, arrivedAt: true, call: true, arrive: true, end: true, oncallRequestedAt: true },
     }),
   ]);
   const date = user?.erCheckRequestedAt && user.erCheckDate ? user.erCheckDate : null;
   return {
     request: date
-      ? { date, requestedAt: user!.erCheckRequestedAt!.toISOString(), dutyNames: await getErDutyNames(userId, date) }
+      ? { date, requestedAt: user!.erCheckRequestedAt!.toISOString(), dutyNames: (await getErDuty(userId, date)).dutyNames }
       : null,
     oncall: pending.map((v) => ({
       id: v.id,
       date: v.date,
       chartNo: v.chartNo,
+      arrivedAt: v.arrivedAt ?? "",
       call: v.call ?? "",
       arrive: v.arrive ?? "",
       end: v.end ?? "",
@@ -48,7 +42,8 @@ export async function getErRequest(userId: string) {
 }
 
 // 그날 목록 반영. 이번 목록에 없는 환자는 지우되 온콜대장을 신청·저장한 것은 남긴다. 온콜 시각은 신청 전 것만 PC 제안으로 바꾼다.
-// 처리한 요청이 그대로면 요청을 비운다. error가 있으면 목록은 그대로 두고 요청만 비운다
+// oncallSaved(온콜대장에 이미 줄이 있음 — 직접 넣었거나 저장됨)면 "입력 완료"로. 처리한 요청이 그대로면 요청을 비운다.
+// error가 있으면 목록은 그대로 두고 요청만 비운다
 export async function saveErVisits(
   userId: string,
   body: { date: string; items: ErVisitItem[]; requestedAt?: string; error?: string },
@@ -56,19 +51,22 @@ export async function saveErVisits(
   if (!body.error) {
     const keep = await prisma.erVisit.findMany({
       where: { createdById: userId, date: body.date, oncallStatus: { not: null } },
-      select: { chartNo: true },
+      select: { chartNo: true, oncallStatus: true },
     });
-    const locked = new Set(keep.map((k) => k.chartNo));
+    const status = new Map(keep.map((k) => [k.chartNo, k.oncallStatus]));
+    const now = new Date();
     await prisma.$transaction([
       prisma.erVisit.deleteMany({
         where: { createdById: userId, date: body.date, oncallStatus: null, chartNo: { notIn: body.items.map((i) => i.chartNo) } },
       }),
-      ...body.items.map((i) => {
-        const update = locked.has(i.chartNo) ? { ...i, call: undefined, arrive: undefined, end: undefined } : i;
+      ...body.items.map((item) => {
+        const { oncallSaved, ...i } = item;
+        const saved = oncallSaved && status.get(i.chartNo) !== "SAVED" ? { oncallStatus: "SAVED", oncallMessage: "온콜대장에 있음", oncallSavedAt: now } : {};
+        const update = status.has(i.chartNo) ? { ...i, call: undefined, arrive: undefined, end: undefined } : i;
         return prisma.erVisit.upsert({
           where: { createdById_date_chartNo: { createdById: userId, date: body.date, chartNo: i.chartNo } },
-          create: { ...i, date: body.date, createdById: userId },
-          update,
+          create: { ...i, ...saved, date: body.date, createdById: userId },
+          update: { ...update, ...saved },
         });
       }),
     ]);

@@ -1,26 +1,50 @@
 import { describe, expect, it } from "vitest";
-import { checkOncallTimes, erDutyNames } from "./er-visits";
+import { checkOncallTimes, erDutyNames, erMyShifts, erOncallBlock } from "./er-visits";
+
+const rows = [
+  { date: "2026-10-30", name: "이동찬", kind: "평일 숙직" },
+  { date: "2026-10-30", name: "정일구", kind: "평일 숙직" },
+  { date: "2026-10-31", name: "정일구", kind: "휴일 일직" },
+  { date: "2026-10-31", name: "정일구", kind: "휴일 숙직" },
+  { date: "2026-10-31", name: "백승한", kind: "휴일 일직" },
+  { date: "2026-10-31", name: "백승한", kind: "휴일 숙직" },
+  { date: "2026-11-01", name: "오해진", kind: "휴일 일직" },
+];
 
 describe("erDutyNames", () => {
-  const rows = [
-    { date: "2026-10-30", name: "이동찬", kind: "평일 숙직" },
-    { date: "2026-10-30", name: "김수경", kind: "휴일 일직" },
-    { date: "2026-10-31", name: "정일구", kind: "휴일 일직" },
-    { date: "2026-10-31", name: "백승한", kind: "휴일 일직" },
-    { date: "2026-10-31", name: "백승한", kind: "휴일 숙직" },
-    { date: "2026-11-01", name: "오해진", kind: "휴일 일직" },
-  ];
-
-  it("그날 당직 + 전날 숙직, 나는 빼고 한 번씩", () => {
-    expect(erDutyNames(rows, "2026-10-31", "정일구")).toEqual(["백승한", "이동찬"]);
+  it("그 당직일 당직자만, 나는 빼고 한 번씩", () => {
+    expect(erDutyNames(rows, "2026-10-31", "정일구")).toEqual(["백승한"]);
   });
-
-  it("월이 바뀌는 날도 전날을 찾는다", () => {
-    expect(erDutyNames([{ date: "2026-10-31", name: "백승한", kind: "휴일 숙직" }], "2026-11-01", "정일구")).toEqual(["백승한"]);
-  });
-
   it("당직표가 없으면 빈 목록", () => {
     expect(erDutyNames([], "2026-10-31", "정일구")).toEqual([]);
+  });
+});
+
+describe("erMyShifts", () => {
+  it("휴일 일직·숙직이면 둘, 평일 숙직이면 숙직만, 당직 없으면 없음", () => {
+    expect(erMyShifts(rows, "2026-10-31", "정일구")).toEqual(["일직", "숙직"]);
+    expect(erMyShifts(rows, "2026-10-30", "정일구")).toEqual(["숙직"]);
+    expect(erMyShifts(rows, "2026-11-01", "정일구")).toEqual([]);
+  });
+});
+
+describe("erOncallBlock", () => {
+  const day = [
+    { id: "a", shift: "일직", oncallStatus: "SAVED" },
+    { id: "b", shift: "일직", oncallStatus: null },
+    { id: "c", shift: "숙직", oncallStatus: null },
+  ];
+  it("같은 근무에 이미 저장한 환자가 있으면 막는다", () => {
+    expect(erOncallBlock(day[1], day, ["일직", "숙직"])).toContain("이미");
+  });
+  it("다른 근무는 된다", () => {
+    expect(erOncallBlock(day[2], day, ["일직", "숙직"])).toBeNull();
+  });
+  it("내 근무가 아니면 막는다(평일 일직 시간)", () => {
+    expect(erOncallBlock(day[1], [day[1]], ["숙직"])).toContain("대상이 아닙니다");
+  });
+  it("실패한 신청은 자리를 차지하지 않는다", () => {
+    expect(erOncallBlock(day[1], [{ id: "x", shift: "일직", oncallStatus: "FAILED" }, day[1]], ["일직"])).toBeNull();
   });
 });
 

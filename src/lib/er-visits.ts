@@ -15,6 +15,8 @@ export const ErVisitItemSchema = z.object({
   dischargedAt: z.string().max(20),
   result: z.string().max(100),
   notes: z.string().max(500), // 내 기록지 "10:57 응급실경과기록, …"
+  shift: z.enum(["일직", "숙직"]).optional(), // 당직일(그날 08:30~다음 날 08:30) 중 내 첫 기록지 시각: 08:30~22:00 일직, 그 밖 숙직(병원 PC가 정함)
+  oncallSaved: z.boolean().optional(), // 온콜대장에 이미 같은 날·같은 환자 줄이 있음(직접 넣었거나 저장됨)
   call: z.string().max(5),
   arrive: z.string().max(5),
   end: z.string().max(5),
@@ -41,20 +43,27 @@ export function isYmd(s: string) {
   return ymd.safeParse(s).success;
 }
 
-function prevDay(date: string) {
-  const d = new Date(`${date}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() - 1);
-  return d.toISOString().slice(0, 10);
+// 그날 응급실 환자의 담당의로 볼 이비인후과 당직자 — 그 당직일의 당직표(일직·숙직) 모두. 나는 뺀다
+export function erDutyNames(rows: { date: string; name: string; kind: string }[], date: string, myName: string): string[] {
+  const names = rows.filter((r) => r.date === date).map((r) => r.name).filter((n) => n !== myName);
+  return [...new Set(names)].sort((a, b) => a.localeCompare(b, "ko"));
 }
 
-// 그날 응급실 환자의 담당의로 볼 이비인후과 당직자 — 그날 당직(일직·숙직) 모두 + 전날 숙직(아침까지 이어짐). 나는 뺀다
-export function erDutyNames(rows: { date: string; name: string; kind: string }[], date: string, myName: string): string[] {
-  const before = prevDay(date);
-  const names = rows
-    .filter((r) => r.date === date || (r.date === before && r.kind.includes("숙직")))
-    .map((r) => r.name)
-    .filter((n) => n !== myName);
-  return [...new Set(names)].sort((a, b) => a.localeCompare(b, "ko"));
+// 그날 내 당직 종류로 온콜대장에 올릴 수 있는 근무: 휴일 일직·숙직이면 둘, 평일 숙직이면 숙직만(사용자 2026-10-31)
+export function erMyShifts(rows: { date: string; name: string; kind: string }[], date: string, myName: string): ("일직" | "숙직")[] {
+  const kinds = rows.filter((r) => r.date === date && r.name === myName).map((r) => r.kind);
+  return (["일직", "숙직"] as const).filter((s) => kinds.some((k) => k.includes(s)));
+}
+
+// 온콜대장 신청 막기: 내 근무가 아니거나, 같은 근무에 이미 신청·저장한 환자가 있으면 이유. 괜찮으면 null
+export function erOncallBlock(
+  v: { id: string; shift: string | null },
+  sameDay: { id: string; shift: string | null; oncallStatus: string | null }[],
+  myShifts: string[],
+): string | null {
+  if (!v.shift || !myShifts.includes(v.shift)) return `내 ${v.shift ?? ""} 근무가 아니라 신청 대상이 아닙니다(당직표 기준).`;
+  const taken = sameDay.find((o) => o.id !== v.id && o.shift === v.shift && (o.oncallStatus === "PENDING" || o.oncallStatus === "SAVED"));
+  return taken ? `이 ${v.shift}은 이미 다른 환자로 신청했습니다(근무마다 한 명).` : null;
 }
 
 // 온콜대장 시각 확인: HH:mm, 호출 ≤ 도착 ≤ 종료(온콜대장 화면도 순서가 틀리면 저장을 막는다)
