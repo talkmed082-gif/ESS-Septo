@@ -41,6 +41,9 @@ model User {
   consultCheckRequestedAt DateTime?
   // 아이폰 단축어(타과의뢰 문자 수신 자동화)가 "가져오기" 요청만 보낼 수 있는 토큰 — 병원 PC 토큰(importToken)과 따로
   consultTriggerToken     String?   @unique
+  // "응급실 환자 가져오기" 버튼 — 날짜(yyyy-MM-dd)와 누른 시각. 병원 PC가 10분 확인 때 그날 응급실 환자 중 내 기록지가 있는 환자를 올리고 비운다
+  erCheckDate             String?
+  erCheckRequestedAt      DateTime?
   // YES 첫 화면 캘린더의 내 외래일별 예약 인원 [{date, count}] — 병원 PC가 매일 아침 올림. 외래 스케줄 자동 판단에 씀(src/lib/clinic-schedule inferSchedule)
   clinicCalendar          Json?
   clinicCalendarAt        DateTime?
@@ -91,6 +94,7 @@ model User {
   pcJobs          PcJobStatus[]
   profSchedules   ProfSchedule[]
   dutyRosters     DutyRoster[]
+  erVisits        ErVisit[]
   consults     Consult[]
 }
 
@@ -588,4 +592,36 @@ model DutyRoster {
 
   @@unique([createdById, date, empNo, kind])
   @@index([createdById, date])
+}
+
+// 응급실에서 내가 본 환자(사용자 2026-10-31) — 병원 PC가 YES "응급실재원환자 현황"(날짜 조회)에서 담당의가 그날 이비인후과 동반당직자인
+// 환자만 골라 내 응급 기록지가 있는 환자를 올린다. [온콜대장 신청]을 누르면 병원 PC가 부서행정 호출(On-call) 대장에 한 줄 저장한다.
+// oncallStatus: PENDING(신청) → SAVED(저장됨, 이미 있던 줄 포함) / FAILED. oncallRequestedAt이 같을 때만 결과를 받는다.
+// call·arrive·end: 온콜대장 호출·도착·종료 시각("HH:mm") — PC가 제안(호출 = 응급실 도착 + 15분, 도착·종료 = 내 기록지 시각 기준), 신청 전에 고칠 수 있다
+model ErVisit {
+  id           String   @id @default(cuid())
+  date         String
+  chartNo      String
+  patientName  String
+  sexAge       String?
+  arrivedAt    String?
+  dept         String?
+  complaint    String?
+  resident     String?
+  dischargedAt String?
+  result       String?
+  notes        String?
+  call         String?
+  arrive       String?
+  end          String?
+  oncallStatus      String?
+  oncallRequestedAt DateTime?
+  oncallMessage     String?
+  oncallSavedAt     DateTime?
+  createdById  String
+  createdBy    User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([createdById, date, chartNo])
 }

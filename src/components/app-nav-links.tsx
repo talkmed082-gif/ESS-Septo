@@ -14,6 +14,7 @@ const ITEMS = [
   // "환자" → "수술환자 관리"(사용자 2026-10-26). 수술 계획·기록 화면도 이 메뉴
   { href: "/patients", label: "수술환자 관리", match: ["/patients", "/plans", "/records"] },
   { href: "/consults", label: "타과의뢰", match: ["/consults"] },
+  { href: "/er", label: "응급실", match: ["/er"] },
   { href: "/calendar", label: "캘린더", match: ["/calendar", "/reminders"] },
   // 외래 템플릿·수술 관련 설정은 설정의 외래·수술 탭(2026-10-27)
   { href: "/settings", label: "설정", match: ["/settings", "/surgery", "/hospital", "/import", "/templates", "/surgery-types"] },
