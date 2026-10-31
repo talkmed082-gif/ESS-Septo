@@ -41,7 +41,7 @@ export default async function ErPage({ searchParams }: PageProps<"/er">) {
         <p className="text-sm text-slate-500">
           당직일(그날 08:30~다음 날 08:30) 응급실 환자 중 담당의가 그날 이비인후과 동반당직자(캘린더 당직표)인 환자만 보고, 내 응급
           기록지가 있는 환자를 가져옵니다. 병원 PC가 10분 안에 처리합니다. 온콜대장은 근무마다 한 명 — 휴일 일직(08:30~22:00)·숙직(22:00~08:30)
-          2명, 평일 숙직 1명. [온콜대장 신청]을 누른 환자만 부서행정 온콜대장에 저장합니다.
+          2명, 평일 숙직(17:30~08:30) 1명. [온콜대장 신청]을 누른 환자만 부서행정 온콜대장에 저장합니다.
         </p>
         <form method="get" className="flex flex-wrap items-center gap-2 text-sm">
           <input

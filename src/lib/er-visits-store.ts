@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import { erDutyNames, erMyShifts, type ErOncallResult, type ErVisitItem } from "@/lib/er-visits";
+import { erDutyNames, erMyShifts, erNightStart, type ErOncallResult, type ErVisitItem } from "@/lib/er-visits";
 
 // 그 당직일의 당직표(DutyRoster, 이름 = 계정 이름) — 담당의로 볼 동반당직자와 내 근무(일직·숙직)
 export async function getErDuty(userId: string, date: string) {
@@ -9,10 +9,10 @@ export async function getErDuty(userId: string, date: string) {
     prisma.user.findUnique({ where: { id: userId }, select: { name: true } }),
   ]);
   const me = user?.name ?? "";
-  return { rows, dutyNames: erDutyNames(rows, date, me), myShifts: erMyShifts(rows, date, me) };
+  return { rows, dutyNames: erDutyNames(rows, date, me), myShifts: erMyShifts(rows, date, me), nightStart: erNightStart(rows, date, me) };
 }
 
-// 병원 PC가 10분마다 확인: "응급실 환자 가져오기" 요청(당직일·시각·담당의로 볼 동반당직자)과 저장할 온콜대장 신청(요청 순).
+// 병원 PC가 10분마다 확인: "응급실 환자 가져오기" 요청(당직일·시각·담당의로 볼 동반당직자·숙직 시작 시각)과 저장할 온콜대장 신청(요청 순).
 // 온콜일자는 PC가 arrivedAt(+15분 호출)로 정한다 — 숙직 새벽 환자는 당직일 다음 날
 export async function getErRequest(userId: string) {
   const [user, pending] = await Promise.all([
@@ -26,7 +26,7 @@ export async function getErRequest(userId: string) {
   const date = user?.erCheckRequestedAt && user.erCheckDate ? user.erCheckDate : null;
   return {
     request: date
-      ? { date, requestedAt: user!.erCheckRequestedAt!.toISOString(), dutyNames: (await getErDuty(userId, date)).dutyNames }
+      ? await getErDuty(userId, date).then((d) => ({ date, requestedAt: user!.erCheckRequestedAt!.toISOString(), dutyNames: d.dutyNames, nightStart: d.nightStart }))
       : null,
     oncall: pending.map((v) => ({
       id: v.id,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkOncallTimes, erDutyNames, erMyShifts, erOncallBlock } from "./er-visits";
+import { checkOncallTimes, erDutyNames, erMyShifts, erNightStart, erOncallBlock } from "./er-visits";
 
 const rows = [
   { date: "2026-10-30", name: "이동찬", kind: "평일 숙직" },
@@ -59,5 +59,12 @@ describe("checkOncallTimes", () => {
   it("순서가 틀리면 막는다", () => {
     expect(checkOncallTimes({ call: "10:00", arrive: "09:00", end: "11:00" })?.error).toContain("호출");
     expect(checkOncallTimes({ call: "08:00", arrive: "10:30", end: "10:00" })?.error).toContain("종료");
+  });
+});
+
+describe("erNightStart", () => {
+  it("평일 숙직이면 17:30, 휴일이면 22:00", () => {
+    expect(erNightStart(rows, "2026-10-30", "정일구")).toBe("17:30");
+    expect(erNightStart(rows, "2026-10-31", "정일구")).toBe("22:00");
   });
 });

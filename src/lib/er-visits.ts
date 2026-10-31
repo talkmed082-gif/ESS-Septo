@@ -55,6 +55,11 @@ export function erMyShifts(rows: { date: string; name: string; kind: string }[],
   return (["일직", "숙직"] as const).filter((s) => kinds.some((k) => k.includes(s)));
 }
 
+// 숙직 시작 시각: 평일 숙직 17:30, 휴일(일직 다음) 22:00(사용자 2026-10-31). 병원 PC가 이 시각으로 일직·숙직을 가른다
+export function erNightStart(rows: { date: string; name: string; kind: string }[], date: string, myName: string): string {
+  return rows.some((r) => r.date === date && r.name === myName && r.kind.includes("평일")) ? "17:30" : "22:00";
+}
+
 // 온콜대장 신청 막기: 내 근무가 아니거나, 같은 근무에 이미 신청·저장한 환자가 있으면 이유. 괜찮으면 null
 export function erOncallBlock(
   v: { id: string; shift: string | null },
